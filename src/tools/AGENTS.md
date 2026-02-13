@@ -153,7 +153,7 @@ task_update({
 
 ## DELEGATION SYSTEM (delegate-task)
 
-8 built-in categories: `visual-engineering`, `ultrabrain`, `deep`, `artistry`, `quick`, `unspecified-low`, `unspecified-high`, `writing`
+8 built-in categories: `construct`, `source`, `deep`, `matrix-bend`, `quick`, `blue-pill`, `red-pill`, `writing`
 
 Each category defines: model, variant, temperature, max tokens, thinking/reasoning config, prompt append, stability flag.
 

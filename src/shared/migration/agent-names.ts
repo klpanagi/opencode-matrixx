@@ -1,54 +1,67 @@
 export const AGENT_NAME_MAP: Record<string, string> = {
-  // Sisyphus variants → "sisyphus"
-  omo: "sisyphus",
-  OmO: "sisyphus",
-  Sisyphus: "sisyphus",
-  sisyphus: "sisyphus",
+  // Legacy Sisyphus variants → "morpheus"
+  omo: "morpheus",
+  OmO: "morpheus",
+  Sisyphus: "morpheus",
+  sisyphus: "morpheus",
+  morpheus: "morpheus",
 
-  // Prometheus variants → "prometheus"
-  "OmO-Plan": "prometheus",
-  "omo-plan": "prometheus",
-  "Planner-Sisyphus": "prometheus",
-  "planner-sisyphus": "prometheus",
-  "Prometheus (Planner)": "prometheus",
-  prometheus: "prometheus",
+  // Legacy Prometheus variants → "oracle"
+  "OmO-Plan": "oracle",
+  "omo-plan": "oracle",
+  "Planner-Sisyphus": "oracle",
+  "planner-sisyphus": "oracle",
+  "Prometheus (Planner)": "oracle",
+  prometheus: "oracle",
+  "oracle-planner": "oracle",
 
-  // Atlas variants → "atlas"
-  "orchestrator-sisyphus": "atlas",
-  Atlas: "atlas",
-  atlas: "atlas",
+  // Legacy Atlas variants → "architect"
+  "orchestrator-sisyphus": "architect",
+  Atlas: "architect",
+  atlas: "architect",
+  architect: "architect",
 
-  // Metis variants → "metis"
-  "plan-consultant": "metis",
-  "Metis (Plan Consultant)": "metis",
-  metis: "metis",
+  // Legacy Metis variants → "seraph"
+  "plan-consultant": "seraph",
+  "Metis (Plan Consultant)": "seraph",
+  metis: "seraph",
+  seraph: "seraph",
 
-  // Momus variants → "momus"
-  "Momus (Plan Reviewer)": "momus",
-  momus: "momus",
+  // Legacy Momus variants → "smith"
+  "Momus (Plan Reviewer)": "smith",
+  momus: "smith",
+  smith: "smith",
 
-  // Sisyphus-Junior → "sisyphus-junior"
-  "Sisyphus-Junior": "sisyphus-junior",
-  "sisyphus-junior": "sisyphus-junior",
+  // Legacy Sisyphus-Junior → "mouse"
+  "Sisyphus-Junior": "mouse",
+  "sisyphus-junior": "mouse",
+  mouse: "mouse",
 
-  // Already lowercase - passthrough
   build: "build",
   oracle: "oracle",
-  librarian: "librarian",
-  explore: "explore",
-  "multimodal-looker": "multimodal-looker",
+  merovingian: "merovingian",
+  librarian: "operator",
+  operator: "operator",
+  explore: "trinity",
+  trinity: "trinity",
+  "multimodal-looker": "construct",
+  construct: "construct",
+  hephaestus: "keymaker",
+  keymaker: "keymaker",
 }
 
 export const BUILTIN_AGENT_NAMES = new Set([
-  "sisyphus", // was "Sisyphus"
+  "morpheus",
+  "merovingian",
+  "operator",
+  "trinity",
+  "construct",
+  "seraph",
+  "smith",
   "oracle",
-  "librarian",
-  "explore",
-  "multimodal-looker",
-  "metis", // was "Metis (Plan Consultant)"
-  "momus", // was "Momus (Plan Reviewer)"
-  "prometheus", // was "Prometheus (Planner)"
-  "atlas", // was "Atlas"
+  "architect",
+  "keymaker",
+  "mouse",
   "build",
 ])
 

@@ -7,7 +7,7 @@ import type { InstallConfig } from "./types"
 import type { AgentConfig, CategoryConfig, GeneratedOmoConfig } from "./model-fallback-types"
 import { toProviderAvailability } from "./provider-availability"
 import {
-	getSisyphusFallbackChain,
+	getMorpheusFallbackChain,
 	isAnyFallbackEntryAvailable,
 	isRequiredModelAvailable,
 	isRequiredProviderAvailable,
@@ -39,7 +39,7 @@ export function generateModelConfig(config: InstallConfig): GeneratedOmoConfig {
       $schema: SCHEMA_URL,
       agents: Object.fromEntries(
         Object.entries(AGENT_MODEL_REQUIREMENTS)
-          .filter(([role, req]) => !(role === "sisyphus" && req.requiresAnyModel))
+          .filter(([role, req]) => !(role === "morpheus" && req.requiresAnyModel))
           .map(([role]) => [role, { model: ULTIMATE_FALLBACK }])
       ),
       categories: Object.fromEntries(
@@ -52,12 +52,12 @@ export function generateModelConfig(config: InstallConfig): GeneratedOmoConfig {
   const categories: Record<string, CategoryConfig> = {}
 
   for (const [role, req] of Object.entries(AGENT_MODEL_REQUIREMENTS)) {
-    if (role === "librarian" && avail.zai) {
+    if (role === "operator" && avail.zai) {
       agents[role] = { model: ZAI_MODEL }
       continue
     }
 
-    if (role === "explore") {
+    if (role === "trinity") {
       if (avail.native.claude) {
         agents[role] = { model: "anthropic/claude-haiku-4-5" }
       } else if (avail.opencodeZen) {
@@ -70,8 +70,8 @@ export function generateModelConfig(config: InstallConfig): GeneratedOmoConfig {
       continue
     }
 
-    if (role === "sisyphus") {
-      const fallbackChain = getSisyphusFallbackChain()
+    if (role === "morpheus") {
+      const fallbackChain = getMorpheusFallbackChain()
       if (req.requiresAnyModel && !isAnyFallbackEntryAvailable(fallbackChain, avail)) {
         continue
       }
@@ -100,10 +100,10 @@ export function generateModelConfig(config: InstallConfig): GeneratedOmoConfig {
   }
 
   for (const [cat, req] of Object.entries(CATEGORY_MODEL_REQUIREMENTS)) {
-    // Special case: unspecified-high downgrades to unspecified-low when not isMaxPlan
+    // Special case: red-pill downgrades to blue-pill when not isMaxPlan
     const fallbackChain =
-      cat === "unspecified-high" && !avail.isMaxPlan
-        ? CATEGORY_MODEL_REQUIREMENTS["unspecified-low"].fallbackChain
+      cat === "red-pill" && !avail.isMaxPlan
+        ? CATEGORY_MODEL_REQUIREMENTS["blue-pill"].fallbackChain
         : req.fallbackChain
 
     if (req.requiresModel && !isRequiredModelAvailable(req.requiresModel, req.fallbackChain, avail)) {

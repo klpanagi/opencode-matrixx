@@ -27,7 +27,7 @@ features/
 ├── builtin-skills/             # 5 built-in skills (10 files, 1921 LOC)
 │   └── skills/                 # git-master (1111), playwright, dev-browser, frontend-ui-ux
 ├── builtin-commands/           # 6 command templates (11 files, 1511 LOC)
-│   └── templates/              # refactor, ralph-loop, init-deep, handoff, start-work, stop-continuation
+│   └── templates/              # refactor, matrix-loop, init-deep, handoff, start-work, stop-continuation
 ├── claude-tasks/               # Task schema + storage (7 files, 1165 LOC)
 ├── context-injector/           # AGENTS.md, README.md, rules injection (6 files, 809 LOC)
 ├── claude-code-plugin-loader/  # Plugin discovery from .opencode/plugins/ (10 files)
@@ -37,7 +37,7 @@ features/
 ├── claude-code-session-state/  # Subagent session state tracking (3 files)
 ├── hook-message-injector/      # System message injection (4 files)
 ├── task-toast-manager/         # Task progress notifications (4 files)
-├── boulder-state/              # Persistent state for multi-step ops (5 files)
+├── mission-state/              # Persistent state for multi-step ops (5 files)
 └── tool-metadata-store/        # Tool execution metadata caching (3 files)
 ```
 
@@ -58,7 +58,7 @@ opencode-project (`.opencode/skills/`) > opencode (`~/.config/opencode/skills/`)
 name: my-skill
 description: "..."
 model: "claude-opus-4-6"    # optional
-agent: "sisyphus"           # optional
+agent: "morpheus"           # optional
 mcp:                        # optional embedded MCPs
   server-name:
     type: http

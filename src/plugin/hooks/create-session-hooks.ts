@@ -11,13 +11,13 @@ import {
   createAgentUsageReminderHook,
   createNonInteractiveEnvHook,
   createInteractiveBashSessionHook,
-  createRalphLoopHook,
+  createMatrixLoopHook,
   createEditErrorRecoveryHook,
   createDelegateTaskRetryHook,
   createTaskResumeInfoHook,
   createStartWorkHook,
-  createPrometheusMdOnlyHook,
-  createSisyphusJuniorNotepadHook,
+  createOracleMdOnlyHook,
+  createMouseNotepadHook,
   createQuestionLabelTruncatorHook,
   createSubagentQuestionBlockerHook,
   createPreemptiveCompactionHook,
@@ -42,12 +42,12 @@ export type SessionHooks = {
   agentUsageReminder: ReturnType<typeof createAgentUsageReminderHook> | null
   nonInteractiveEnv: ReturnType<typeof createNonInteractiveEnvHook> | null
   interactiveBashSession: ReturnType<typeof createInteractiveBashSessionHook> | null
-  ralphLoop: ReturnType<typeof createRalphLoopHook> | null
+  matrixLoop: ReturnType<typeof createMatrixLoopHook> | null
   editErrorRecovery: ReturnType<typeof createEditErrorRecoveryHook> | null
   delegateTaskRetry: ReturnType<typeof createDelegateTaskRetryHook> | null
   startWork: ReturnType<typeof createStartWorkHook> | null
-  prometheusMdOnly: ReturnType<typeof createPrometheusMdOnlyHook> | null
-  sisyphusJuniorNotepad: ReturnType<typeof createSisyphusJuniorNotepadHook> | null
+  prometheusMdOnly: ReturnType<typeof createOracleMdOnlyHook> | null
+  sisyphusJuniorNotepad: ReturnType<typeof createMouseNotepadHook> | null
   questionLabelTruncator: ReturnType<typeof createQuestionLabelTruncatorHook>
   subagentQuestionBlocker: ReturnType<typeof createSubagentQuestionBlockerHook>
   taskResumeInfo: ReturnType<typeof createTaskResumeInfoHook>
@@ -103,7 +103,7 @@ export function createSessionHooks(args: {
     ? safeHook("auto-update-checker", () =>
         createAutoUpdateCheckerHook(ctx, {
           showStartupToast: isHookEnabled("startup-toast"),
-          isSisyphusEnabled: pluginConfig.sisyphus_agent?.disabled !== true,
+          isMorpheusEnabled: pluginConfig.sisyphus_agent?.disabled !== true,
           autoUpdate: pluginConfig.auto_update ?? true,
         }))
     : null
@@ -120,10 +120,10 @@ export function createSessionHooks(args: {
     ? safeHook("interactive-bash-session", () => createInteractiveBashSessionHook(ctx))
     : null
 
-  const ralphLoop = isHookEnabled("ralph-loop")
-    ? safeHook("ralph-loop", () =>
-        createRalphLoopHook(ctx, {
-          config: pluginConfig.ralph_loop,
+  const matrixLoop = isHookEnabled("matrix-loop")
+    ? safeHook("matrix-loop", () =>
+        createMatrixLoopHook(ctx, {
+          config: pluginConfig.matrix_loop,
           checkSessionExists: async (sessionId) => sessionExists(sessionId),
         }))
     : null
@@ -141,11 +141,11 @@ export function createSessionHooks(args: {
     : null
 
   const prometheusMdOnly = isHookEnabled("prometheus-md-only")
-    ? safeHook("prometheus-md-only", () => createPrometheusMdOnlyHook(ctx))
+    ? safeHook("prometheus-md-only", () => createOracleMdOnlyHook(ctx))
     : null
 
   const sisyphusJuniorNotepad = isHookEnabled("sisyphus-junior-notepad")
-    ? safeHook("sisyphus-junior-notepad", () => createSisyphusJuniorNotepadHook(ctx))
+    ? safeHook("sisyphus-junior-notepad", () => createMouseNotepadHook(ctx))
     : null
 
   const questionLabelTruncator = createQuestionLabelTruncatorHook()
@@ -167,7 +167,7 @@ export function createSessionHooks(args: {
     agentUsageReminder,
     nonInteractiveEnv,
     interactiveBashSession,
-    ralphLoop,
+    matrixLoop,
     editErrorRecovery,
     delegateTaskRetry,
     startWork,

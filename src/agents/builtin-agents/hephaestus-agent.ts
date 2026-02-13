@@ -3,12 +3,12 @@ import type { AgentOverrides } from "../types"
 import type { CategoryConfig } from "../../config/schema"
 import type { AvailableAgent, AvailableCategory, AvailableSkill } from "../dynamic-agent-prompt-builder"
 import { AGENT_MODEL_REQUIREMENTS, isAnyProviderConnected } from "../../shared"
-import { createHephaestusAgent } from "../hephaestus"
+import { createKeymakerAgent } from "../keymaker"
 import { createEnvContext } from "../env-context"
 import { applyCategoryOverride, mergeAgentConfig } from "./agent-overrides"
 import { applyModelResolution, getFirstFallbackModel } from "./model-resolution"
 
-export function maybeCreateHephaestusConfig(input: {
+export function maybeCreateKeymakerConfig(input: {
   disabledAgents: string[]
   agentOverrides: AgentOverrides
   availableModels: Set<string>
@@ -35,35 +35,35 @@ export function maybeCreateHephaestusConfig(input: {
     useTaskSystem,
   } = input
 
-  if (disabledAgents.includes("hephaestus")) return undefined
+  if (disabledAgents.includes("keymaker")) return undefined
 
-  const hephaestusOverride = agentOverrides["hephaestus"]
-  const hephaestusRequirement = AGENT_MODEL_REQUIREMENTS["hephaestus"]
-  const hasHephaestusExplicitConfig = hephaestusOverride !== undefined
+  const keymakerOverride = agentOverrides["keymaker"]
+  const hephaestusRequirement = AGENT_MODEL_REQUIREMENTS["keymaker"]
+  const hasKeymakerExplicitConfig = keymakerOverride !== undefined
 
   const hasRequiredProvider =
     !hephaestusRequirement?.requiresProvider ||
-    hasHephaestusExplicitConfig ||
+    hasKeymakerExplicitConfig ||
     isFirstRunNoCache ||
     isAnyProviderConnected(hephaestusRequirement.requiresProvider, availableModels)
 
   if (!hasRequiredProvider) return undefined
 
   let hephaestusResolution = applyModelResolution({
-    userModel: hephaestusOverride?.model,
+    userModel: keymakerOverride?.model,
     requirement: hephaestusRequirement,
     availableModels,
     systemDefaultModel,
   })
 
-  if (isFirstRunNoCache && !hephaestusOverride?.model) {
+  if (isFirstRunNoCache && !keymakerOverride?.model) {
     hephaestusResolution = getFirstFallbackModel(hephaestusRequirement)
   }
 
   if (!hephaestusResolution) return undefined
   const { model: hephaestusModel, variant: hephaestusResolvedVariant } = hephaestusResolution
 
-  let hephaestusConfig = createHephaestusAgent(
+  let keymakerConfig = createKeymakerAgent(
     hephaestusModel,
     availableAgents,
     undefined,
@@ -72,20 +72,20 @@ export function maybeCreateHephaestusConfig(input: {
     useTaskSystem
   )
 
-  hephaestusConfig = { ...hephaestusConfig, variant: hephaestusResolvedVariant ?? "medium" }
+  keymakerConfig = { ...keymakerConfig, variant: hephaestusResolvedVariant ?? "medium" }
 
-  const hepOverrideCategory = (hephaestusOverride as Record<string, unknown> | undefined)?.category as string | undefined
+  const hepOverrideCategory = (keymakerOverride as Record<string, unknown> | undefined)?.category as string | undefined
   if (hepOverrideCategory) {
-    hephaestusConfig = applyCategoryOverride(hephaestusConfig, hepOverrideCategory, mergedCategories)
+    keymakerConfig = applyCategoryOverride(keymakerConfig, hepOverrideCategory, mergedCategories)
   }
 
-  if (directory && hephaestusConfig.prompt) {
+  if (directory && keymakerConfig.prompt) {
     const envContext = createEnvContext()
-    hephaestusConfig = { ...hephaestusConfig, prompt: hephaestusConfig.prompt + envContext }
+    keymakerConfig = { ...keymakerConfig, prompt: keymakerConfig.prompt + envContext }
   }
 
-  if (hephaestusOverride) {
-    hephaestusConfig = mergeAgentConfig(hephaestusConfig, hephaestusOverride)
+  if (keymakerOverride) {
+    keymakerConfig = mergeAgentConfig(keymakerConfig, keymakerOverride)
   }
-  return hephaestusConfig
+  return keymakerConfig
 }

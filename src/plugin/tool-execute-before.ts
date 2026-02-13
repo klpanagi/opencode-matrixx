@@ -1,7 +1,7 @@
 import type { PluginContext } from "./types"
 
 import { getMainSessionID } from "../features/claude-code-session-state"
-import { clearBoulderState } from "../features/boulder-state"
+import { clearMissionState } from "../features/mission-state"
 import { log } from "../shared"
 
 import type { CreatedHooks } from "../create-hooks"
@@ -35,17 +35,17 @@ export function createToolExecuteBeforeHandler(args: {
       const category = typeof argsObject.category === "string" ? argsObject.category : undefined
       const subagentType = typeof argsObject.subagent_type === "string" ? argsObject.subagent_type : undefined
       if (category && !subagentType) {
-        argsObject.subagent_type = "sisyphus-junior"
+        argsObject.subagent_type = "mouse"
       }
     }
 
-    if (hooks.ralphLoop && input.tool === "slashcommand") {
+    if (hooks.matrixLoop && input.tool === "slashcommand") {
       const rawCommand = typeof output.args.command === "string" ? output.args.command : undefined
       const command = rawCommand?.replace(/^\//, "").toLowerCase()
       const sessionID = input.sessionID || getMainSessionID()
 
-      if (command === "ralph-loop" && sessionID) {
-        const rawArgs = rawCommand?.replace(/^\/?(ralph-loop)\s*/i, "") || ""
+      if (command === "matrix-loop" && sessionID) {
+        const rawArgs = rawCommand?.replace(/^\/?(matrix-loop)\s*/i, "") || ""
         const taskMatch = rawArgs.match(/^["'](.+?)["']/)
         const prompt =
           taskMatch?.[1] ||
@@ -55,12 +55,12 @@ export function createToolExecuteBeforeHandler(args: {
         const maxIterMatch = rawArgs.match(/--max-iterations=(\d+)/i)
         const promiseMatch = rawArgs.match(/--completion-promise=["']?([^"'\s]+)["']?/i)
 
-        hooks.ralphLoop.startLoop(sessionID, prompt, {
+        hooks.matrixLoop.startLoop(sessionID, prompt, {
           maxIterations: maxIterMatch ? parseInt(maxIterMatch[1], 10) : undefined,
           completionPromise: promiseMatch?.[1],
         })
-      } else if (command === "cancel-ralph" && sessionID) {
-        hooks.ralphLoop.cancelLoop(sessionID)
+      } else if (command === "cancel-loop" && sessionID) {
+        hooks.matrixLoop.cancelLoop(sessionID)
       } else if (command === "ulw-loop" && sessionID) {
         const rawArgs = rawCommand?.replace(/^\/?(ulw-loop)\s*/i, "") || ""
         const taskMatch = rawArgs.match(/^["'](.+?)["']/)
@@ -72,7 +72,7 @@ export function createToolExecuteBeforeHandler(args: {
         const maxIterMatch = rawArgs.match(/--max-iterations=(\d+)/i)
         const promiseMatch = rawArgs.match(/--completion-promise=["']?([^"'\s]+)["']?/i)
 
-        hooks.ralphLoop.startLoop(sessionID, prompt, {
+        hooks.matrixLoop.startLoop(sessionID, prompt, {
           ultrawork: true,
           maxIterations: maxIterMatch ? parseInt(maxIterMatch[1], 10) : undefined,
           completionPromise: promiseMatch?.[1],
@@ -88,8 +88,8 @@ export function createToolExecuteBeforeHandler(args: {
       if (command === "stop-continuation" && sessionID) {
         hooks.stopContinuationGuard?.stop(sessionID)
         hooks.todoContinuationEnforcer?.cancelAllCountdowns()
-        hooks.ralphLoop?.cancelLoop(sessionID)
-        clearBoulderState(ctx.directory)
+        hooks.matrixLoop?.cancelLoop(sessionID)
+        clearMissionState(ctx.directory)
         log("[stop-continuation] All continuation mechanisms stopped", {
           sessionID,
         })

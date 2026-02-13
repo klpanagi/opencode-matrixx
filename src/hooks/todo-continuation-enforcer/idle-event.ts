@@ -1,7 +1,7 @@
 import type { PluginInput } from "@opencode-ai/plugin"
 
 import type { BackgroundManager } from "../../features/background-agent"
-import { readBoulderState } from "../../features/boulder-state"
+import { readMissionState } from "../../features/mission-state"
 import { subagentSessions } from "../../features/claude-code-session-state"
 import type { ToolPermission } from "../../features/hook-message-injector"
 import { log } from "../../shared/logger"
@@ -37,12 +37,12 @@ export async function handleSessionIdle(args: {
   log(`[${HOOK_NAME}] session.idle`, { sessionID })
 
    const isBackgroundTaskSession = subagentSessions.has(sessionID)
-   const boulderState = readBoulderState(ctx.directory)
-   const isBoulderSession = boulderState?.session_ids.includes(sessionID) ?? false
+   const missionState = readMissionState(ctx.directory)
+   const isMissionSession = missionState?.session_ids.includes(sessionID) ?? false
 
-   // Continuation is restricted to boulder/background sessions to prevent accidental continuation in regular sessions, ensuring controlled task resumption.
-   if (!isBackgroundTaskSession && !isBoulderSession) {
-     log(`[${HOOK_NAME}] Skipped: not boulder or background task session`, { sessionID })
+   // Continuation is restricted to mission/background sessions to prevent accidental continuation in regular sessions, ensuring controlled task resumption.
+   if (!isBackgroundTaskSession && !isMissionSession) {
+     log(`[${HOOK_NAME}] Skipped: not mission or background task session`, { sessionID })
      return
    }
 

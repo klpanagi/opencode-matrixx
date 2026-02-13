@@ -6,9 +6,9 @@ import { AGENT_MODEL_REQUIREMENTS, isAnyFallbackModelAvailable } from "../../sha
 import { applyEnvironmentContext } from "./environment-context"
 import { applyOverrides } from "./agent-overrides"
 import { applyModelResolution, getFirstFallbackModel } from "./model-resolution"
-import { createSisyphusAgent } from "../sisyphus"
+import { createMorpheusAgent } from "../morpheus"
 
-export function maybeCreateSisyphusConfig(input: {
+export function maybeCreateMorpheusConfig(input: {
   disabledAgents: string[]
   agentOverrides: AgentOverrides
   uiSelectedModel?: string
@@ -38,33 +38,33 @@ export function maybeCreateSisyphusConfig(input: {
     useTaskSystem,
   } = input
 
-  const sisyphusOverride = agentOverrides["sisyphus"]
-  const sisyphusRequirement = AGENT_MODEL_REQUIREMENTS["sisyphus"]
-  const hasSisyphusExplicitConfig = sisyphusOverride !== undefined
-  const meetsSisyphusAnyModelRequirement =
+  const morpheusOverride = agentOverrides["morpheus"]
+  const sisyphusRequirement = AGENT_MODEL_REQUIREMENTS["morpheus"]
+  const hasMorpheusExplicitConfig = morpheusOverride !== undefined
+  const meetsMorpheusAnyModelRequirement =
     !sisyphusRequirement?.requiresAnyModel ||
-    hasSisyphusExplicitConfig ||
+    hasMorpheusExplicitConfig ||
     isFirstRunNoCache ||
     isAnyFallbackModelAvailable(sisyphusRequirement.fallbackChain, availableModels)
 
-  if (disabledAgents.includes("sisyphus") || !meetsSisyphusAnyModelRequirement) return undefined
+  if (disabledAgents.includes("morpheus") || !meetsMorpheusAnyModelRequirement) return undefined
 
   let sisyphusResolution = applyModelResolution({
-    uiSelectedModel: sisyphusOverride?.model ? undefined : uiSelectedModel,
-    userModel: sisyphusOverride?.model,
+    uiSelectedModel: morpheusOverride?.model ? undefined : uiSelectedModel,
+    userModel: morpheusOverride?.model,
     requirement: sisyphusRequirement,
     availableModels,
     systemDefaultModel,
   })
 
-  if (isFirstRunNoCache && !sisyphusOverride?.model && !uiSelectedModel) {
+  if (isFirstRunNoCache && !morpheusOverride?.model && !uiSelectedModel) {
     sisyphusResolution = getFirstFallbackModel(sisyphusRequirement)
   }
 
   if (!sisyphusResolution) return undefined
-  const { model: sisyphusModel, variant: sisyphusResolvedVariant } = sisyphusResolution
+  const { model: sisyphusModel, variant: morpheusResolvedVariant } = sisyphusResolution
 
-  let sisyphusConfig = createSisyphusAgent(
+  let morpheusConfig = createMorpheusAgent(
     sisyphusModel,
     availableAgents,
     undefined,
@@ -73,12 +73,12 @@ export function maybeCreateSisyphusConfig(input: {
     useTaskSystem
   )
 
-  if (sisyphusResolvedVariant) {
-    sisyphusConfig = { ...sisyphusConfig, variant: sisyphusResolvedVariant }
+  if (morpheusResolvedVariant) {
+    morpheusConfig = { ...morpheusConfig, variant: morpheusResolvedVariant }
   }
 
-  sisyphusConfig = applyOverrides(sisyphusConfig, sisyphusOverride, mergedCategories)
-  sisyphusConfig = applyEnvironmentContext(sisyphusConfig, directory)
+  morpheusConfig = applyOverrides(morpheusConfig, morpheusOverride, mergedCategories)
+  morpheusConfig = applyEnvironmentContext(morpheusConfig, directory)
 
-  return sisyphusConfig
+  return morpheusConfig
 }

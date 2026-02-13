@@ -1,14 +1,14 @@
 import type { PluginInput } from "@opencode-ai/plugin"
 import {
-  readBoulderState,
-  writeBoulderState,
+  readMissionState,
+  writeMissionState,
   appendSessionId,
-  findPrometheusPlans,
+  findOraclePlans,
   getPlanProgress,
-  createBoulderState,
+  createMissionState,
   getPlanName,
-  clearBoulderState,
-} from "../../features/boulder-state"
+  clearMissionState,
+} from "../../features/mission-state"
 import { log } from "../../shared/logger"
 import { getSessionAgent, updateSessionAgent } from "../../features/claude-code-session-state"
 
@@ -60,7 +60,7 @@ export function createStartWorkHook(ctx: PluginInput) {
         .trim() || ""
 
       // Only trigger on actual command execution (contains <session-context> tag)
-      // NOT on description text like "Start Sisyphus work session from Prometheus plan"
+      // NOT on description text like "Start Morpheus work session from Oracle plan"
       const isStartWorkCommand = promptText.includes("<session-context>")
 
       if (!isStartWorkCommand) {
@@ -73,7 +73,7 @@ export function createStartWorkHook(ctx: PluginInput) {
 
       updateSessionAgent(input.sessionID, "atlas") // Always switch: fixes #1298
 
-      const existingState = readBoulderState(ctx.directory)
+      const existingState = readMissionState(ctx.directory)
       const sessionId = input.sessionID
       const timestamp = new Date().toISOString()
 
@@ -86,7 +86,7 @@ export function createStartWorkHook(ctx: PluginInput) {
           sessionID: input.sessionID,
         })
         
-        const allPlans = findPrometheusPlans(ctx.directory)
+        const allPlans = findOraclePlans(ctx.directory)
         const matchedPlan = findPlanByName(allPlans, explicitPlanName)
         
         if (matchedPlan) {
@@ -100,10 +100,10 @@ The requested plan "${getPlanName(matchedPlan)}" has been completed.
 All ${progress.total} tasks are done. Create a new plan with: /plan "your task"`
           } else {
             if (existingState) {
-              clearBoulderState(ctx.directory)
+              clearMissionState(ctx.directory)
             }
-            const newState = createBoulderState(matchedPlan, sessionId, "atlas")
-            writeBoulderState(ctx.directory, newState)
+            const newState = createMissionState(matchedPlan, sessionId, "atlas")
+            writeMissionState(ctx.directory, newState)
             
             contextInfo = `
 ## Auto-Selected Plan
@@ -114,7 +114,7 @@ All ${progress.total} tasks are done. Create a new plan with: /plan "your task"`
 **Session ID**: ${sessionId}
 **Started**: ${timestamp}
 
-boulder.json has been created. Read the plan and begin execution.`
+mission.json has been created. Read the plan and begin execution.`
           }
         } else {
           const incompletePlans = allPlans.filter(p => !getPlanProgress(p).isComplete)
@@ -168,7 +168,7 @@ Looking for new plans...`
       }
 
       if ((!existingState && !explicitPlanName) || (existingState && !explicitPlanName && getPlanProgress(existingState.active_plan).isComplete)) {
-        const plans = findPrometheusPlans(ctx.directory)
+        const plans = findOraclePlans(ctx.directory)
         const incompletePlans = plans.filter(p => !getPlanProgress(p).isComplete)
         
         if (plans.length === 0) {
@@ -176,8 +176,8 @@ Looking for new plans...`
 
 ## No Plans Found
 
-No Prometheus plan files found at .sisyphus/plans/
-Use Prometheus to create a work plan first: /plan "your task"`
+No Oracle plan files found at .matrix/plans/
+Use Oracle to create a work plan first: /plan "your task"`
         } else if (incompletePlans.length === 0) {
           contextInfo += `
 
@@ -187,8 +187,8 @@ All ${plans.length} plan(s) are complete. Create a new plan with: /plan "your ta
         } else if (incompletePlans.length === 1) {
           const planPath = incompletePlans[0]
           const progress = getPlanProgress(planPath)
-          const newState = createBoulderState(planPath, sessionId, "atlas")
-          writeBoulderState(ctx.directory, newState)
+          const newState = createMissionState(planPath, sessionId, "atlas")
+          writeMissionState(ctx.directory, newState)
 
           contextInfo += `
 
@@ -200,7 +200,7 @@ All ${plans.length} plan(s) are complete. Create a new plan with: /plan "your ta
 **Session ID**: ${sessionId}
 **Started**: ${timestamp}
 
-boulder.json has been created. Read the plan and begin execution.`
+mission.json has been created. Read the plan and begin execution.`
         } else {
           const planList = incompletePlans.map((p, i) => {
             const progress = getPlanProgress(p)

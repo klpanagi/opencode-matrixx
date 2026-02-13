@@ -1,16 +1,16 @@
 import { z } from "zod"
 
 export const BuiltinAgentNameSchema = z.enum([
-  "sisyphus",
-  "hephaestus",
-  "prometheus",
+  "morpheus",
+  "keymaker",
   "oracle",
-  "librarian",
-  "explore",
-  "multimodal-looker",
-  "metis",
-  "momus",
-  "atlas",
+  "merovingian",
+  "operator",
+  "trinity",
+  "construct",
+  "seraph",
+  "smith",
+  "architect",
 ])
 
 export const BuiltinSkillNameSchema = z.enum([
@@ -24,18 +24,18 @@ export const BuiltinSkillNameSchema = z.enum([
 export const OverridableAgentNameSchema = z.enum([
   "build",
   "plan",
-  "sisyphus",
-  "hephaestus",
-  "sisyphus-junior",
+  "morpheus",
+  "keymaker",
+  "mouse",
   "OpenCode-Builder",
-  "prometheus",
-  "metis",
-  "momus",
   "oracle",
-  "librarian",
-  "explore",
-  "multimodal-looker",
-  "atlas",
+  "seraph",
+  "smith",
+  "merovingian",
+  "operator",
+  "trinity",
+  "construct",
+  "architect",
 ])
 
 export const AgentNameSchema = BuiltinAgentNameSchema

@@ -57,7 +57,7 @@ export function createDelegateTask(options: DelegateTaskToolOptions): ToolDefini
 MUTUALLY EXCLUSIVE: Provide EITHER category OR subagent_type, not both (unless continuing a session).
 
 - load_skills: ALWAYS REQUIRED. Pass at least one skill name (e.g., ["playwright"], ["git-master", "frontend-ui-ux"]).
-- category: Use predefined category → Spawns Sisyphus-Junior with category config
+- category: Use predefined category → Spawns Mouse with category config
   Available categories:
 ${categoryList}
 - subagent_type: Use specific agent directly (e.g., "oracle", "explore")
@@ -88,13 +88,13 @@ Prompts MUST be in English.`
       const ctx = toolContext as ToolContextWithMetadata
 
       if (args.category) {
-        if (args.subagent_type && args.subagent_type !== "sisyphus-junior") {
-          log("[task] category provided - overriding subagent_type to sisyphus-junior", {
+        if (args.subagent_type && args.subagent_type !== "mouse") {
+          log("[task] category provided - overriding subagent_type to mouse", {
             category: args.category,
             subagent_type: args.subagent_type,
           })
         }
-        args.subagent_type = "sisyphus-junior"
+        args.subagent_type = "mouse"
       }
       await ctx.metadata?.({
         title: args.description,

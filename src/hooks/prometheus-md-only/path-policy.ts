@@ -3,13 +3,13 @@ import { relative, resolve, isAbsolute } from "node:path"
 import { ALLOWED_EXTENSIONS } from "./constants"
 
 /**
- * Cross-platform path validator for Prometheus file writes.
+ * Cross-platform path validator for Oracle file writes.
  * Uses path.resolve/relative instead of string matching to handle:
- * - Windows backslashes (e.g., .sisyphus\\plans\\x.md)
- * - Mixed separators (e.g., .sisyphus\\plans/x.md)
+ * - Windows backslashes (e.g., .matrix\\plans\\x.md)
+ * - Mixed separators (e.g., .matrix\\plans/x.md)
  * - Case-insensitive directory/extension matching
  * - Workspace confinement (blocks paths outside root or via traversal)
- * - Nested project paths (e.g., parent/.sisyphus/... when ctx.directory is parent)
+ * - Nested project paths (e.g., parent/.matrix/... when ctx.directory is parent)
  */
 export function isAllowedFile(filePath: string, workspaceRoot: string): boolean {
   // 1. Resolve to absolute path
@@ -23,9 +23,9 @@ export function isAllowedFile(filePath: string, workspaceRoot: string): boolean 
     return false
   }
 
-  // 4. Check if .sisyphus/ or .sisyphus\ exists anywhere in the path (case-insensitive)
-  // This handles both direct paths (.sisyphus/x.md) and nested paths (project/.sisyphus/x.md)
-  if (!/\.sisyphus[/\\]/i.test(rel)) {
+  // 4. Check if .matrix/ or .matrix\ exists anywhere in the path (case-insensitive)
+  // This handles both direct paths (.matrix/x.md) and nested paths (project/.matrix/x.md)
+  if (!/\.matrix[/\\]/i.test(rel)) {
     return false
   }
 

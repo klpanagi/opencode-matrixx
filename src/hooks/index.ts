@@ -26,14 +26,14 @@ export { createInteractiveBashSessionHook } from "./interactive-bash-session";
 
 export { createThinkingBlockValidatorHook } from "./thinking-block-validator";
 export { createCategorySkillReminderHook } from "./category-skill-reminder";
-export { createRalphLoopHook, type RalphLoopHook } from "./ralph-loop";
+export { createMatrixLoopHook, type MatrixLoopHook } from "./matrix-loop";
 export { createAutoSlashCommandHook } from "./auto-slash-command";
 export { createEditErrorRecoveryHook } from "./edit-error-recovery";
-export { createPrometheusMdOnlyHook } from "./prometheus-md-only";
-export { createSisyphusJuniorNotepadHook } from "./sisyphus-junior-notepad";
+export { createOracleMdOnlyHook } from "./prometheus-md-only";
+export { createMouseNotepadHook } from "./mouse-notepad";
 export { createTaskResumeInfoHook } from "./task-resume-info";
 export { createStartWorkHook } from "./start-work";
-export { createAtlasHook } from "./atlas";
+export { createAtlasHook } from "./architect";
 export { createDelegateTaskRetryHook } from "./delegate-task-retry";
 export { createQuestionLabelTruncatorHook } from "./question-label-truncator";
 export { createSubagentQuestionBlockerHook } from "./subagent-question-blocker";

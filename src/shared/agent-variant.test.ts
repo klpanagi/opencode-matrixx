@@ -23,7 +23,7 @@ describe("resolveAgentVariant", () => {
     } as OhMyOpenCodeConfig
 
     // when
-    const variant = resolveAgentVariant(config, "sisyphus")
+    const variant = resolveAgentVariant(config, "morpheus")
 
     // then
     expect(variant).toBe("low")
@@ -33,15 +33,15 @@ describe("resolveAgentVariant", () => {
     // given
     const config = {
       agents: {
-        sisyphus: { category: "ultrabrain" },
+        sisyphus: { category: "source" },
       },
       categories: {
-        ultrabrain: { model: "openai/gpt-5.2", variant: "xhigh" },
+        source: { model: "openai/gpt-5.2", variant: "xhigh" },
       },
     } as OhMyOpenCodeConfig
 
     // when
-    const variant = resolveAgentVariant(config, "sisyphus")
+    const variant = resolveAgentVariant(config, "morpheus")
 
     // then
     expect(variant).toBe("xhigh")
@@ -59,7 +59,7 @@ describe("applyAgentVariant", () => {
     const message: { variant?: string } = {}
 
     // when
-    applyAgentVariant(config, "sisyphus", message)
+    applyAgentVariant(config, "morpheus", message)
 
     // then
     expect(message.variant).toBe("low")
@@ -75,7 +75,7 @@ describe("applyAgentVariant", () => {
     const message = { variant: "max" }
 
     // when
-    applyAgentVariant(config, "sisyphus", message)
+    applyAgentVariant(config, "morpheus", message)
 
     // then
     expect(message.variant).toBe("max")
@@ -94,7 +94,7 @@ describe("resolveVariantForModel", () => {
     const model = { providerID: "anthropic", modelID: "claude-opus-4-6" }
 
     // when
-    const variant = resolveVariantForModel(config, "sisyphus", model)
+    const variant = resolveVariantForModel(config, "morpheus", model)
 
     // then
     expect(variant).toBe("high")
@@ -106,7 +106,7 @@ describe("resolveVariantForModel", () => {
     const model = { providerID: "anthropic", modelID: "claude-opus-4-6" }
 
     // when
-    const variant = resolveVariantForModel(config, "sisyphus", model)
+    const variant = resolveVariantForModel(config, "morpheus", model)
 
     // then
     expect(variant).toBe("max")
@@ -118,7 +118,7 @@ describe("resolveVariantForModel", () => {
     const model = { providerID: "openai", modelID: "gpt-5.3-codex" }
 
     // #when
-    const variant = resolveVariantForModel(config, "hephaestus", model)
+    const variant = resolveVariantForModel(config, "keymaker", model)
 
     // then
     expect(variant).toBe("medium")
@@ -130,7 +130,7 @@ describe("resolveVariantForModel", () => {
     const model = { providerID: "openai", modelID: "gpt-5.2" }
 
     // when
-    const variant = resolveVariantForModel(config, "sisyphus", model)
+    const variant = resolveVariantForModel(config, "morpheus", model)
 
     // then
     expect(variant).toBeUndefined()
@@ -142,7 +142,7 @@ describe("resolveVariantForModel", () => {
     const model = { providerID: "unknown-provider", modelID: "some-model" }
 
     // when
-    const variant = resolveVariantForModel(config, "sisyphus", model)
+    const variant = resolveVariantForModel(config, "morpheus", model)
 
     // then
     expect(variant).toBeUndefined()
@@ -166,7 +166,7 @@ describe("resolveVariantForModel", () => {
     const model = { providerID: "zai-coding-plan", modelID: "glm-4.7" }
 
     // when
-    const variant = resolveVariantForModel(config, "sisyphus", model)
+    const variant = resolveVariantForModel(config, "morpheus", model)
 
     // then
     expect(variant).toBeUndefined()
@@ -176,7 +176,7 @@ describe("resolveVariantForModel", () => {
     // given
     const config = {
       agents: {
-        "custom-agent": { category: "ultrabrain" },
+        "custom-agent": { category: "source" },
       },
     } as OhMyOpenCodeConfig
     const model = { providerID: "openai", modelID: "gpt-5.3-codex" }

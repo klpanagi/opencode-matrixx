@@ -53,7 +53,7 @@ describe("sisyphus-task-retry", () => {
     })
 
     it("should detect unknown category error", () => {
-      const output = '[ERROR] Unknown category: "invalid-cat". Available: visual-engineering, ultrabrain, quick'
+      const output = '[ERROR] Unknown category: "invalid-cat". Available: construct, source, quick'
       
       const result = detectDelegateTaskError(output)
       
@@ -95,13 +95,13 @@ describe("sisyphus-task-retry", () => {
     it("should provide fix for unknown category with available list", () => {
       const errorInfo = { 
         errorType: "unknown_category", 
-        originalOutput: '[ERROR] Unknown category: "bad". Available: visual-engineering, ultrabrain' 
+        originalOutput: '[ERROR] Unknown category: "bad". Available: construct, source' 
       }
       
       const guidance = buildRetryGuidance(errorInfo)
       
-      expect(guidance).toContain("visual-engineering")
-      expect(guidance).toContain("ultrabrain")
+      expect(guidance).toContain("construct")
+      expect(guidance).toContain("source")
     })
 
     it("should provide fix for unknown agent with available list", () => {
@@ -112,7 +112,7 @@ describe("sisyphus-task-retry", () => {
       
       const guidance = buildRetryGuidance(errorInfo)
       
-      expect(guidance).toContain("explore")
+      expect(guidance).toContain("trinity")
       expect(guidance).toContain("oracle")
     })
   })

@@ -61,18 +61,18 @@ describe("sisyphus-task", () => {
   })
 
   describe("DEFAULT_CATEGORIES", () => {
-    test("visual-engineering category has model config", () => {
+    test("construct category has model config", () => {
       // given
-      const category = DEFAULT_CATEGORIES["visual-engineering"]
+      const category = DEFAULT_CATEGORIES["construct"]
 
       // when / #then
       expect(category).toBeDefined()
       expect(category.model).toBe("google/gemini-3-pro")
     })
 
-    test("ultrabrain category has model and variant config", () => {
+    test("source category has model and variant config", () => {
       // given
-      const category = DEFAULT_CATEGORIES["ultrabrain"]
+      const category = DEFAULT_CATEGORIES["source"]
 
       // when / #then
       expect(category).toBeDefined()
@@ -92,18 +92,18 @@ describe("sisyphus-task", () => {
   })
 
   describe("CATEGORY_PROMPT_APPENDS", () => {
-    test("visual-engineering category has design-focused prompt", () => {
+    test("construct category has design-focused prompt", () => {
       // given
-      const promptAppend = CATEGORY_PROMPT_APPENDS["visual-engineering"]
+      const promptAppend = CATEGORY_PROMPT_APPENDS["construct"]
 
       // when / #then
       expect(promptAppend).toContain("VISUAL/UI")
       expect(promptAppend).toContain("Design-first")
     })
 
-    test("ultrabrain category has deep logical reasoning prompt", () => {
+    test("source category has deep logical reasoning prompt", () => {
       // given
-      const promptAppend = CATEGORY_PROMPT_APPENDS["ultrabrain"]
+      const promptAppend = CATEGORY_PROMPT_APPENDS["source"]
 
       // when / #then
       expect(promptAppend).toContain("DEEP LOGICAL REASONING")
@@ -132,9 +132,9 @@ describe("sisyphus-task", () => {
       }
     })
 
-    test("unspecified-high category exists and has description", () => {
+    test("red-pill category exists and has description", () => {
       // given / #when
-      const description = CATEGORY_DESCRIPTIONS["unspecified-high"]
+      const description = CATEGORY_DESCRIPTIONS["red-pill"]
 
       // then
       expect(description).toBeDefined()
@@ -153,7 +153,7 @@ describe("sisyphus-task", () => {
 
     test("returns false for 'prometheus' (decoupled from plan)", () => {
       //#given / #when
-      const result = isPlanAgent("prometheus")
+      const result = isPlanAgent("oracle")
 
       //#then - prometheus is NOT a plan agent
       expect(result).toBe(false)
@@ -175,11 +175,11 @@ describe("sisyphus-task", () => {
       expect(result).toBe(true)
     })
 
-    test("returns false for case-insensitive match 'Prometheus' (decoupled from plan)", () => {
+    test("returns false for case-insensitive match 'Oracle' (decoupled from plan)", () => {
       //#given / #when
-      const result = isPlanAgent("Prometheus")
+      const result = isPlanAgent("Oracle")
 
-      //#then - Prometheus is NOT a plan agent
+      //#then - Oracle is NOT a plan agent
       expect(result).toBe(false)
     })
 
@@ -193,7 +193,7 @@ describe("sisyphus-task", () => {
 
     test("returns false for 'explore'", () => {
       // given / #when
-      const result = isPlanAgent("explore")
+      const result = isPlanAgent("trinity")
 
       // then
       expect(result).toBe(false)
@@ -231,7 +231,7 @@ describe("sisyphus-task", () => {
 
     test("returns true for 'prometheus'", () => {
       //#given / #when
-      const result = isPlanFamily("prometheus")
+      const result = isPlanFamily("oracle")
       //#then
       expect(result).toBe(true)
     })
@@ -252,7 +252,7 @@ describe("sisyphus-task", () => {
 
     test("PLAN_FAMILY_NAMES contains plan and prometheus", () => {
       //#given / #when / #then
-      expect(PLAN_FAMILY_NAMES).toEqual(["plan", "prometheus"])
+      expect(PLAN_FAMILY_NAMES).toEqual(["plan", "oracle"])
     })
   })
 
@@ -266,7 +266,7 @@ describe("sisyphus-task", () => {
           id: "task-123",
           status: "pending",
           description: "Test task",
-          agent: "sisyphus-junior",
+          agent: "mouse",
           sessionID: "test-session",
         }),
       }
@@ -294,7 +294,7 @@ describe("sisyphus-task", () => {
        const toolContext = {
          sessionID: "parent-session",
          messageID: "parent-message",
-         agent: "sisyphus",
+         agent: "morpheus",
          abort: new AbortController().signal,
        }
 
@@ -317,7 +317,7 @@ describe("sisyphus-task", () => {
        await tool.execute(args, toolContext)
 
        // then
-       expect(args.subagent_type).toBe("sisyphus-junior")
+       expect(args.subagent_type).toBe("mouse")
     }, { timeout: 10000 })
 
     test("category overrides subagent_type and still maps to sisyphus-junior", async () => {
@@ -329,7 +329,7 @@ describe("sisyphus-task", () => {
           id: "task-override",
           status: "pending",
           description: "Override test",
-          agent: "sisyphus-junior",
+          agent: "mouse",
           sessionID: "test-session",
         }),
       }
@@ -358,7 +358,7 @@ describe("sisyphus-task", () => {
       const toolContext = {
         sessionID: "parent-session",
         messageID: "parent-message",
-        agent: "sisyphus",
+        agent: "morpheus",
         abort: new AbortController().signal,
       }
 
@@ -382,7 +382,7 @@ describe("sisyphus-task", () => {
       const result = await tool.execute(args, toolContext)
 
       //#then
-      expect(args.subagent_type).toBe("sisyphus-junior")
+      expect(args.subagent_type).toBe("mouse")
       expect(result).toContain("Background task launched")
     }, { timeout: 10000 })
 
@@ -390,7 +390,7 @@ describe("sisyphus-task", () => {
       // given a mock client with no model in config
       const { createDelegateTask } = require("./tools")
       
-       const mockManager = { launch: async () => ({ id: "task-123", status: "pending", description: "Test task", agent: "sisyphus-junior", sessionID: "test-session" }) }
+       const mockManager = { launch: async () => ({ id: "task-123", status: "pending", description: "Test task", agent: "mouse", sessionID: "test-session" }) }
        const mockClient = {
          app: { agents: async () => ({ data: [] }) },
          config: { get: async () => ({}) }, // No model configured
@@ -415,7 +415,7 @@ describe("sisyphus-task", () => {
        const toolContext = {
          sessionID: "parent-session",
          messageID: "parent-message",
-         agent: "sisyphus",
+         agent: "morpheus",
          abort: new AbortController().signal,
        }
        
@@ -424,7 +424,7 @@ describe("sisyphus-task", () => {
          {
            description: "Test task",
            prompt: "Do something",
-           category: "ultrabrain",
+           category: "source",
            run_in_background: true,
            load_skills: [],
          },
@@ -464,7 +464,7 @@ describe("sisyphus-task", () => {
       const toolContext = {
         sessionID: "parent-session",
         messageID: "parent-message",
-        agent: "sisyphus",
+        agent: "morpheus",
         abort: new AbortController().signal,
       }
       
@@ -496,7 +496,7 @@ describe("sisyphus-task", () => {
       const mockManager = {
         getTask: (id: string) => tasks.get(id),
         launch: async () => {
-          const task = { id: "bg_1", status: "pending", description: "Test task", agent: "explore" }
+          const task = { id: "bg_1", status: "pending", description: "Test task", agent: "trinity" }
           tasks.set(task.id, task)
           setTimeout(() => {
             tasks.set(task.id, { ...task, status: "running", sessionID: "ses_child" })
@@ -506,7 +506,7 @@ describe("sisyphus-task", () => {
       }
 
        const mockClient = {
-         app: { agents: async () => ({ data: [{ name: "explore", mode: "subagent" }] }) },
+         app: { agents: async () => ({ data: [{ name: "trinity", mode: "subagent" }] }) },
          config: { get: async () => ({}) },
          provider: { list: async () => ({ data: { connected: ["openai"] } }) },
          model: { list: async () => ({ data: [{ provider: "openai", id: "gpt-5.3-codex" }] }) },
@@ -530,7 +530,7 @@ describe("sisyphus-task", () => {
        const toolContext = {
          sessionID: "parent-session",
          messageID: "parent-message",
-        agent: "sisyphus",
+        agent: "morpheus",
         abort: new AbortController().signal,
         metadata: (input: { title?: string; metadata?: Record<string, unknown> }) => {
           metadataCalls.push(input)
@@ -540,7 +540,7 @@ describe("sisyphus-task", () => {
       const args = {
         description: "Explore task",
         prompt: "Explore features directory deeply",
-        subagent_type: "explore",
+        subagent_type: "trinity",
         run_in_background: true,
         load_skills: [],
       }
@@ -639,7 +639,7 @@ describe("sisyphus-task", () => {
 
     test("returns default model from DEFAULT_CATEGORIES for builtin category", () => {
       // given
-      const categoryName = "visual-engineering"
+      const categoryName = "construct"
 
       // when
       const result = resolveCategoryConfig(categoryName, { systemDefaultModel: SYSTEM_DEFAULT_MODEL })
@@ -652,9 +652,9 @@ describe("sisyphus-task", () => {
 
     test("user config overrides systemDefaultModel", () => {
       // given
-      const categoryName = "visual-engineering"
+      const categoryName = "construct"
       const userCategories = {
-        "visual-engineering": { model: "anthropic/claude-opus-4-6" },
+        "construct": { model: "anthropic/claude-opus-4-6" },
       }
 
       // when
@@ -667,9 +667,9 @@ describe("sisyphus-task", () => {
 
     test("user prompt_append is appended to default", () => {
       // given
-      const categoryName = "visual-engineering"
+      const categoryName = "construct"
       const userCategories = {
-        "visual-engineering": {
+        "construct": {
           model: "google/gemini-3-pro",
           prompt_append: "Custom instructions here",
         },
@@ -707,9 +707,9 @@ describe("sisyphus-task", () => {
 
     test("user category overrides temperature", () => {
       // given
-      const categoryName = "visual-engineering"
+      const categoryName = "construct"
       const userCategories = {
-        "visual-engineering": {
+        "construct": {
           model: "google/gemini-3-pro",
           temperature: 0.3,
         },
@@ -725,7 +725,7 @@ describe("sisyphus-task", () => {
 
     test("category built-in model takes precedence over inheritedModel", () => {
       // given - builtin category with its own model, parent model also provided
-      const categoryName = "visual-engineering"
+      const categoryName = "construct"
       const inheritedModel = "cliproxy/claude-opus-4-6"
 
       // when
@@ -752,9 +752,9 @@ describe("sisyphus-task", () => {
 
     test("user model takes precedence over inheritedModel", () => {
       // given
-      const categoryName = "visual-engineering"
+      const categoryName = "construct"
       const userCategories = {
-        "visual-engineering": { model: "my-provider/my-model" },
+        "construct": { model: "my-provider/my-model" },
       }
       const inheritedModel = "cliproxy/claude-opus-4-6"
 
@@ -768,7 +768,7 @@ describe("sisyphus-task", () => {
 
     test("default model from category config is used when no user model and no inheritedModel", () => {
       // given
-      const categoryName = "visual-engineering"
+      const categoryName = "construct"
 
       // when
       const result = resolveCategoryConfig(categoryName, { systemDefaultModel: SYSTEM_DEFAULT_MODEL })
@@ -792,7 +792,7 @@ describe("sisyphus-task", () => {
             id: "task-variant",
             sessionID: "session-variant",
             description: "Variant task",
-            agent: "sisyphus-junior",
+            agent: "mouse",
             status: "running",
           }
         },
@@ -813,7 +813,7 @@ describe("sisyphus-task", () => {
          manager: mockManager,
          client: mockClient,
          userCategories: {
-           ultrabrain: { model: "openai/gpt-5.2", variant: "xhigh" },
+           source: { model: "openai/gpt-5.2", variant: "xhigh" },
          },
          connectedProvidersOverride: TEST_CONNECTED_PROVIDERS,
          availableModelsOverride: createTestAvailableModels(),
@@ -822,7 +822,7 @@ describe("sisyphus-task", () => {
       const toolContext = {
         sessionID: "parent-session",
         messageID: "parent-message",
-        agent: "sisyphus",
+        agent: "morpheus",
         abort: new AbortController().signal,
       }
 
@@ -831,7 +831,7 @@ describe("sisyphus-task", () => {
         {
           description: "Variant task",
           prompt: "Do something",
-          category: "ultrabrain",
+          category: "source",
           run_in_background: true,
           load_skills: ["git-master"],
         },
@@ -858,7 +858,7 @@ describe("sisyphus-task", () => {
             id: "task-default-variant",
             sessionID: "session-default-variant",
             description: "Default variant task",
-            agent: "sisyphus-junior",
+            agent: "mouse",
             status: "running",
           }
         },
@@ -887,16 +887,16 @@ describe("sisyphus-task", () => {
       const toolContext = {
         sessionID: "parent-session",
         messageID: "parent-message",
-        agent: "sisyphus",
+        agent: "morpheus",
         abort: new AbortController().signal,
       }
 
-      // when - unspecified-high has variant: "max" in DEFAULT_CATEGORIES
+      // when - red-pill has variant: "max" in DEFAULT_CATEGORIES
       await tool.execute(
         {
-          description: "Test unspecified-high default variant",
+          description: "Test red-pill default variant",
           prompt: "Do something",
-          category: "unspecified-high",
+          category: "red-pill",
           run_in_background: true,
           load_skills: ["git-master"],
         },
@@ -948,16 +948,16 @@ describe("sisyphus-task", () => {
       const toolContext = {
         sessionID: "parent-session",
         messageID: "parent-message",
-        agent: "sisyphus",
+        agent: "morpheus",
         abort: new AbortController().signal,
       }
 
-      // when - unspecified-high has variant: "max" in DEFAULT_CATEGORIES
+      // when - red-pill has variant: "max" in DEFAULT_CATEGORIES
       await tool.execute(
         {
-          description: "Test unspecified-high sync variant",
+          description: "Test red-pill sync variant",
           prompt: "Do something",
-          category: "unspecified-high",
+          category: "red-pill",
           run_in_background: false,
           load_skills: ["git-master"],
         },
@@ -998,7 +998,7 @@ describe("sisyphus-task", () => {
       const toolContext = {
         sessionID: "parent-session",
         messageID: "parent-message",
-        agent: "sisyphus",
+        agent: "morpheus",
         abort: new AbortController().signal,
       }
 
@@ -1008,7 +1008,7 @@ describe("sisyphus-task", () => {
         {
           description: "Test task",
           prompt: "Do something",
-          category: "ultrabrain",
+          category: "source",
           run_in_background: false,
         },
         toolContext
@@ -1039,7 +1039,7 @@ describe("sisyphus-task", () => {
        const toolContext = {
          sessionID: "parent-session",
          messageID: "parent-message",
-         agent: "sisyphus",
+         agent: "morpheus",
          abort: new AbortController().signal,
        }
        
@@ -1049,7 +1049,7 @@ describe("sisyphus-task", () => {
          {
            description: "Test task",
            prompt: "Do something",
-           category: "ultrabrain",
+           category: "source",
            run_in_background: false,
            load_skills: null,
          },
@@ -1092,7 +1092,7 @@ describe("sisyphus-task", () => {
       const toolContext = {
         sessionID: "parent-session",
         messageID: "parent-message",
-        agent: "sisyphus",
+        agent: "morpheus",
         abort: new AbortController().signal,
       }
       
@@ -1101,7 +1101,7 @@ describe("sisyphus-task", () => {
         {
           description: "Test task",
           prompt: "Do something",
-          category: "ultrabrain",
+          category: "source",
           run_in_background: false,
           load_skills: [],
         },
@@ -1123,7 +1123,7 @@ describe("sisyphus-task", () => {
       id: "task-123",
       sessionID: "ses_continue_test",
       description: "Continued task",
-      agent: "explore",
+      agent: "trinity",
       status: "running",
     }
     
@@ -1187,7 +1187,7 @@ describe("sisyphus-task", () => {
      const toolContext = {
        sessionID: "parent-session",
        messageID: "parent-message",
-       agent: "sisyphus",
+       agent: "morpheus",
        abort: new AbortController().signal,
      }
      
@@ -1226,7 +1226,7 @@ describe("sisyphus-task", () => {
               info: {
                 id: "msg_001",
                 role: "user",
-                agent: "sisyphus-junior",
+                agent: "mouse",
                 model: { providerID: "anthropic", modelID: "claude-opus-4-6" },
                 variant: "max",
                 time: { created: Date.now() },
@@ -1248,14 +1248,14 @@ describe("sisyphus-task", () => {
     }
 
     const tool = createDelegateTask({
-      manager: { resume: async () => ({ id: "task-var", sessionID: "ses_var_test", description: "Variant test", agent: "sisyphus-junior", status: "running" }) },
+      manager: { resume: async () => ({ id: "task-var", sessionID: "ses_var_test", description: "Variant test", agent: "mouse", status: "running" }) },
       client: mockClient,
     })
 
     const toolContext = {
       sessionID: "parent-session",
       messageID: "parent-message",
-      agent: "sisyphus",
+      agent: "morpheus",
       abort: new AbortController().signal,
     }
 
@@ -1275,7 +1275,7 @@ describe("sisyphus-task", () => {
     expect(promptMock).toHaveBeenCalled()
     const callArgs = promptMock.mock.calls[0][0]
     expect(callArgs.body.variant).toBe("max")
-    expect(callArgs.body.agent).toBe("sisyphus-junior")
+    expect(callArgs.body.agent).toBe("mouse")
     expect(callArgs.body.model).toEqual({ providerID: "anthropic", modelID: "claude-opus-4-6" })
   }, { timeout: 10000 })
 
@@ -1287,7 +1287,7 @@ describe("sisyphus-task", () => {
       id: "task-456",
       sessionID: "ses_bg_continue",
       description: "Background continued task",
-      agent: "explore",
+      agent: "trinity",
       status: "running",
     }
     
@@ -1314,7 +1314,7 @@ describe("sisyphus-task", () => {
      const toolContext = {
        sessionID: "parent-session",
        messageID: "parent-message",
-       agent: "sisyphus",
+       agent: "morpheus",
        abort: new AbortController().signal,
      }
      
@@ -1360,7 +1360,7 @@ describe("sisyphus-task", () => {
          },
          config: { get: async () => ({ data: { model: SYSTEM_DEFAULT_MODEL } }) },
          app: {
-           agents: async () => ({ data: [{ name: "ultrabrain", mode: "subagent" }] }),
+           agents: async () => ({ data: [{ name: "source", mode: "subagent" }] }),
          },
        }
        
@@ -1372,7 +1372,7 @@ describe("sisyphus-task", () => {
       const toolContext = {
         sessionID: "parent-session",
         messageID: "parent-message",
-        agent: "sisyphus",
+        agent: "morpheus",
         abort: new AbortController().signal,
       }
       
@@ -1381,7 +1381,7 @@ describe("sisyphus-task", () => {
         {
           description: "Sync error test",
           prompt: "Do something",
-          category: "ultrabrain",
+          category: "source",
           run_in_background: false,
           load_skills: ["git-master"],
         },
@@ -1425,7 +1425,7 @@ describe("sisyphus-task", () => {
          },
          config: { get: async () => ({ data: { model: SYSTEM_DEFAULT_MODEL } }) },
          app: {
-           agents: async () => ({ data: [{ name: "ultrabrain", mode: "subagent" }] }),
+           agents: async () => ({ data: [{ name: "source", mode: "subagent" }] }),
          },
        }
        
@@ -1437,7 +1437,7 @@ describe("sisyphus-task", () => {
       const toolContext = {
         sessionID: "parent-session",
         messageID: "parent-message",
-        agent: "sisyphus",
+        agent: "morpheus",
         abort: new AbortController().signal,
       }
       
@@ -1446,7 +1446,7 @@ describe("sisyphus-task", () => {
         {
           description: "Sync success test",
           prompt: "Do something",
-          category: "ultrabrain",
+          category: "source",
           run_in_background: false,
           load_skills: ["git-master"],
         },
@@ -1481,7 +1481,7 @@ describe("sisyphus-task", () => {
          },
          config: { get: async () => ({ data: { model: SYSTEM_DEFAULT_MODEL } }) },
          app: {
-           agents: async () => ({ data: [{ name: "ultrabrain", mode: "subagent" }] }),
+           agents: async () => ({ data: [{ name: "source", mode: "subagent" }] }),
          },
        }
        
@@ -1493,7 +1493,7 @@ describe("sisyphus-task", () => {
       const toolContext = {
         sessionID: "parent-session",
         messageID: "parent-message",
-        agent: "sisyphus",
+        agent: "morpheus",
         abort: new AbortController().signal,
       }
       
@@ -1502,7 +1502,7 @@ describe("sisyphus-task", () => {
         {
           description: "Agent not found test",
           prompt: "Do something",
-          category: "ultrabrain",
+          category: "source",
           run_in_background: false,
           load_skills: ["git-master"],
         },
@@ -1552,7 +1552,7 @@ describe("sisyphus-task", () => {
       const toolContext = {
         sessionID: "parent",
         messageID: "msg",
-        agent: "sisyphus",
+        agent: "morpheus",
         abort: new AbortController().signal
       }
 
@@ -1586,7 +1586,7 @@ describe("sisyphus-task", () => {
             id: "task-unstable",
             sessionID: "ses_unstable_gemini",
             description: "Unstable gemini task",
-            agent: "sisyphus-junior",
+            agent: "mouse",
             status: "running",
           }
         },
@@ -1618,16 +1618,16 @@ describe("sisyphus-task", () => {
       const toolContext = {
         sessionID: "parent-session",
         messageID: "parent-message",
-        agent: "sisyphus",
+        agent: "morpheus",
         abort: new AbortController().signal,
       }
       
-      // when - using visual-engineering (gemini model) with run_in_background=false
+      // when - using construct (gemini model) with run_in_background=false
       const result = await tool.execute(
         {
           description: "Test gemini forced background",
           prompt: "Do something visual",
-          category: "visual-engineering",
+          category: "construct",
           run_in_background: false,
           load_skills: ["git-master"],
         },
@@ -1652,7 +1652,7 @@ describe("sisyphus-task", () => {
             id: "task-normal-bg",
             sessionID: "ses_normal_bg",
             description: "Normal background task",
-            agent: "sisyphus-junior",
+            agent: "mouse",
             status: "running",
           }
         },
@@ -1677,16 +1677,16 @@ describe("sisyphus-task", () => {
        const toolContext = {
          sessionID: "parent-session",
          messageID: "parent-message",
-         agent: "sisyphus",
+         agent: "morpheus",
          abort: new AbortController().signal,
        }
        
-       // when - using visual-engineering with run_in_background=true (normal background)
+       // when - using construct with run_in_background=true (normal background)
        const result = await tool.execute(
          {
            description: "Test normal background",
            prompt: "Do something visual",
-           category: "visual-engineering",
+           category: "construct",
            run_in_background: true,  // User explicitly says true - normal background
            load_skills: ["git-master"],
          },
@@ -1711,7 +1711,7 @@ describe("sisyphus-task", () => {
             id: "task-unstable-minimax",
             sessionID: "ses_unstable_minimax",
             description: "Unstable minimax task",
-            agent: "sisyphus-junior",
+            agent: "mouse",
             status: "running",
           }
         },
@@ -1747,7 +1747,7 @@ describe("sisyphus-task", () => {
       const toolContext = {
         sessionID: "parent-session",
         messageID: "parent-message",
-        agent: "sisyphus",
+        agent: "morpheus",
         abort: new AbortController().signal,
       }
 
@@ -1802,7 +1802,7 @@ describe("sisyphus-task", () => {
          },
        }
        
-       // Use ultrabrain which uses gpt-5.2 (non-gemini)
+       // Use source which uses gpt-5.2 (non-gemini)
        const tool = createDelegateTask({
          manager: mockManager,
          client: mockClient,
@@ -1811,16 +1811,16 @@ describe("sisyphus-task", () => {
       const toolContext = {
         sessionID: "parent-session",
         messageID: "parent-message",
-        agent: "sisyphus",
+        agent: "morpheus",
         abort: new AbortController().signal,
       }
       
-      // when - using ultrabrain (gpt model) with run_in_background=false
+      // when - using source (gpt model) with run_in_background=false
       const result = await tool.execute(
         {
           description: "Test non-gemini sync",
           prompt: "Do something smart",
-          category: "ultrabrain",
+          category: "source",
           run_in_background: false,
           load_skills: ["git-master"],
         },
@@ -1833,8 +1833,8 @@ describe("sisyphus-task", () => {
       expect(result).not.toContain("UNSTABLE AGENT MODE")
     }, { timeout: 20000 })
 
-    test("artistry category (gemini) with run_in_background=false should force background but wait for result", async () => {
-      // given - artistry also uses gemini model
+    test("matrix-bend category (gemini) with run_in_background=false should force background but wait for result", async () => {
+      // given - matrix-bend also uses gemini model
       const { createDelegateTask } = require("./tools")
       let launchCalled = false
       
@@ -1842,10 +1842,10 @@ describe("sisyphus-task", () => {
         launch: async () => {
           launchCalled = true
           return {
-            id: "task-artistry",
-            sessionID: "ses_artistry_gemini",
+            id: "task-matrix-bend",
+            sessionID: "ses_matrix-bend_gemini",
             description: "Artistry gemini task",
-            agent: "sisyphus-junior",
+            agent: "mouse",
             status: "running",
           }
         },
@@ -1857,7 +1857,7 @@ describe("sisyphus-task", () => {
          model: { list: async () => [{ provider: "google", id: "gemini-3-pro" }] },
          session: {
            get: async () => ({ data: { directory: "/project" } }),
-           create: async () => ({ data: { id: "ses_artistry_gemini" } }),
+           create: async () => ({ data: { id: "ses_matrix-bend_gemini" } }),
            prompt: async () => ({ data: {} }),
            promptAsync: async () => ({ data: {} }),
            messages: async () => ({
@@ -1865,7 +1865,7 @@ describe("sisyphus-task", () => {
                { info: { role: "assistant", time: { created: Date.now() } }, parts: [{ type: "text", text: "Artistry result here" }] }
              ]
            }),
-           status: async () => ({ data: { "ses_artistry_gemini": { type: "idle" } } }),
+           status: async () => ({ data: { "ses_matrix-bend_gemini": { type: "idle" } } }),
          },
        }
        
@@ -1877,16 +1877,16 @@ describe("sisyphus-task", () => {
       const toolContext = {
         sessionID: "parent-session",
         messageID: "parent-message",
-        agent: "sisyphus",
+        agent: "morpheus",
         abort: new AbortController().signal,
       }
       
-      // when - artistry category (gemini-3-pro with high variant)
+      // when - matrix-bend category (gemini-3-pro with high variant)
       const result = await tool.execute(
         {
-          description: "Test artistry forced background",
+          description: "Test matrix-bend forced background",
           prompt: "Do something artistic",
-          category: "artistry",
+          category: "matrix-bend",
           run_in_background: false,
           load_skills: ["git-master"],
         },
@@ -1911,7 +1911,7 @@ describe("sisyphus-task", () => {
             id: "task-writing",
             sessionID: "ses_writing_gemini",
             description: "Writing gemini task",
-            agent: "sisyphus-junior",
+            agent: "mouse",
             status: "running",
           }
         },
@@ -1943,7 +1943,7 @@ describe("sisyphus-task", () => {
       const toolContext = {
         sessionID: "parent-session",
         messageID: "parent-message",
-        agent: "sisyphus",
+        agent: "morpheus",
         abort: new AbortController().signal,
       }
       
@@ -1977,7 +1977,7 @@ describe("sisyphus-task", () => {
             id: "task-custom-unstable",
             sessionID: "ses_custom_unstable",
             description: "Custom unstable task",
-            agent: "sisyphus-junior",
+            agent: "mouse",
             status: "running",
           }
         },
@@ -2014,7 +2014,7 @@ describe("sisyphus-task", () => {
       const toolContext = {
         sessionID: "parent-session",
         messageID: "parent-message",
-        agent: "sisyphus",
+        agent: "morpheus",
         abort: new AbortController().signal,
       }
       
@@ -2053,7 +2053,7 @@ describe("sisyphus-task", () => {
             id: "task-fallback",
             sessionID: "ses_fallback_test",
             description: "Fallback test task",
-            agent: "sisyphus-junior",
+            agent: "mouse",
             status: "running",
           }
         },
@@ -2070,12 +2070,12 @@ describe("sisyphus-task", () => {
         },
       }
 
-      // NO userCategories override, NO sisyphusJuniorModel
+      // NO userCategories override, NO mouseModel
       const tool = createDelegateTask({
         manager: mockManager,
         client: mockClient,
         // userCategories: undefined - use DEFAULT_CATEGORIES only
-        // sisyphusJuniorModel: undefined
+        // mouseModel: undefined
         connectedProvidersOverride: null,
         availableModelsOverride: new Set(),
       })
@@ -2083,7 +2083,7 @@ describe("sisyphus-task", () => {
       const toolContext = {
         sessionID: "parent-session",
         messageID: "parent-message",
-        agent: "sisyphus",
+        agent: "morpheus",
         abort: new AbortController().signal,
       }
 
@@ -2117,7 +2117,7 @@ describe("sisyphus-task", () => {
             id: "task-ui-model",
             sessionID: "ses_ui_model_test",
             description: "UI model inheritance test",
-            agent: "sisyphus-junior",
+            agent: "mouse",
             status: "running",
           }
         },
@@ -2148,7 +2148,7 @@ describe("sisyphus-task", () => {
       const toolContext = {
         sessionID: "parent-session",
         messageID: "parent-message",
-        agent: "sisyphus",
+        agent: "morpheus",
         abort: new AbortController().signal,
       }
 
@@ -2181,7 +2181,7 @@ describe("sisyphus-task", () => {
             id: "task-override",
             sessionID: "ses_override_test",
             description: "Override precedence test",
-            agent: "sisyphus-junior",
+            agent: "mouse",
             status: "running",
           }
         },
@@ -2201,7 +2201,7 @@ describe("sisyphus-task", () => {
       const tool = createDelegateTask({
         manager: mockManager,
         client: mockClient,
-        sisyphusJuniorModel: "anthropic/claude-sonnet-4-5",
+        mouseModel: "anthropic/claude-sonnet-4-5",
         connectedProvidersOverride: TEST_CONNECTED_PROVIDERS,
         availableModelsOverride: createTestAvailableModels(),
       })
@@ -2209,16 +2209,16 @@ describe("sisyphus-task", () => {
       const toolContext = {
         sessionID: "parent-session",
         messageID: "parent-message",
-        agent: "sisyphus",
+        agent: "morpheus",
         abort: new AbortController().signal,
       }
 
-      // when - using ultrabrain category (default model is openai/gpt-5.3-codex)
+      // when - using source category (default model is openai/gpt-5.3-codex)
       await tool.execute(
         {
           description: "Override precedence test",
           prompt: "Do something",
-          category: "ultrabrain",
+          category: "source",
           run_in_background: true,
           load_skills: [],
         },
@@ -2242,7 +2242,7 @@ describe("sisyphus-task", () => {
             id: "task-category-precedence",
             sessionID: "ses_category_precedence_test",
             description: "Category precedence test",
-            agent: "sisyphus-junior",
+            agent: "mouse",
             status: "running",
           }
         },
@@ -2263,9 +2263,9 @@ describe("sisyphus-task", () => {
        const tool = createDelegateTask({
          manager: mockManager,
          client: mockClient,
-         sisyphusJuniorModel: "anthropic/claude-sonnet-4-5",
+         mouseModel: "anthropic/claude-sonnet-4-5",
          userCategories: {
-           ultrabrain: { model: "openai/gpt-5.3-codex" },
+           source: { model: "openai/gpt-5.3-codex" },
          },
          connectedProvidersOverride: TEST_CONNECTED_PROVIDERS,
          availableModelsOverride: createTestAvailableModels(),
@@ -2274,16 +2274,16 @@ describe("sisyphus-task", () => {
       const toolContext = {
         sessionID: "parent-session",
         messageID: "parent-message",
-        agent: "sisyphus",
+        agent: "morpheus",
         abort: new AbortController().signal,
       }
 
-      // when - using ultrabrain category with explicit model override
+      // when - using source category with explicit model override
       await tool.execute(
         {
           description: "Category precedence test",
           prompt: "Do something",
-          category: "ultrabrain",
+          category: "source",
           run_in_background: true,
           load_skills: [],
         },
@@ -2296,7 +2296,7 @@ describe("sisyphus-task", () => {
     })
 
     test("sisyphus-junior model override works with quick category (#1295)", async () => {
-      // given - user configures agents.sisyphus-junior.model but uses quick category
+      // given - user configures agents.matrix-junior.model but uses quick category
       const { createDelegateTask } = require("./tools")
       let launchInput: any
 
@@ -2307,7 +2307,7 @@ describe("sisyphus-task", () => {
             id: "task-1295-quick",
             sessionID: "ses_1295_quick",
             description: "Issue 1295 regression",
-            agent: "sisyphus-junior",
+            agent: "mouse",
             status: "running",
           }
         },
@@ -2327,7 +2327,7 @@ describe("sisyphus-task", () => {
       const tool = createDelegateTask({
         manager: mockManager,
         client: mockClient,
-        sisyphusJuniorModel: "anthropic/claude-sonnet-4-5",
+        mouseModel: "anthropic/claude-sonnet-4-5",
         connectedProvidersOverride: TEST_CONNECTED_PROVIDERS,
         availableModelsOverride: createTestAvailableModels(),
       })
@@ -2335,7 +2335,7 @@ describe("sisyphus-task", () => {
       const toolContext = {
         sessionID: "parent-session",
         messageID: "parent-message",
-        agent: "sisyphus",
+        agent: "morpheus",
         abort: new AbortController().signal,
       }
 
@@ -2368,7 +2368,7 @@ describe("sisyphus-task", () => {
             id: "task-1295-custom",
             sessionID: "ses_1295_custom",
             description: "Issue 1295 custom category",
-            agent: "sisyphus-junior",
+            agent: "mouse",
             status: "running",
           }
         },
@@ -2388,7 +2388,7 @@ describe("sisyphus-task", () => {
       const tool = createDelegateTask({
         manager: mockManager,
         client: mockClient,
-        sisyphusJuniorModel: "openai/gpt-5.2",
+        mouseModel: "openai/gpt-5.2",
         userCategories: {
           "my-custom": { temperature: 0.5 },
         },
@@ -2397,7 +2397,7 @@ describe("sisyphus-task", () => {
       const toolContext = {
         sessionID: "parent-session",
         messageID: "parent-message",
-        agent: "sisyphus",
+        agent: "morpheus",
         abort: new AbortController().signal,
       }
 
@@ -2457,7 +2457,7 @@ describe("sisyphus-task", () => {
       const toolContext = {
         sessionID: "parent-session",
         messageID: "parent-message",
-        agent: "sisyphus",
+        agent: "morpheus",
         abort: new AbortController().signal,
       }
 
@@ -2466,7 +2466,7 @@ describe("sisyphus-task", () => {
         {
           description: "Test browserProvider propagation",
           prompt: "Do something",
-          category: "ultrabrain",
+          category: "source",
           run_in_background: false,
           load_skills: ["agent-browser"],
         },
@@ -2508,7 +2508,7 @@ describe("sisyphus-task", () => {
       const toolContext = {
         sessionID: "parent-session",
         messageID: "parent-message",
-        agent: "sisyphus",
+        agent: "morpheus",
         abort: new AbortController().signal,
       }
 
@@ -2517,7 +2517,7 @@ describe("sisyphus-task", () => {
         {
           description: "Test missing browserProvider",
           prompt: "Do something",
-          category: "ultrabrain",
+          category: "source",
           run_in_background: false,
           load_skills: ["agent-browser"],
         },
@@ -2625,7 +2625,7 @@ describe("sisyphus-task", () => {
       //#when
       const result = buildSystemContent({
         skillContent,
-        agentName: "prometheus",
+        agentName: "oracle",
       })
 
       //#then - prometheus should NOT get plan agent system prepend
@@ -2633,15 +2633,15 @@ describe("sisyphus-task", () => {
       expect(result).not.toContain("MANDATORY CONTEXT GATHERING PROTOCOL")
     })
 
-    test("does not prepend plan agent prompt for Prometheus (case insensitive)", () => {
-      //#given - Prometheus (capitalized) is NOT a plan agent
+    test("does not prepend plan agent prompt for Oracle (case insensitive)", () => {
+      //#given - Oracle (capitalized) is NOT a plan agent
       const { buildSystemContent } = require("./tools")
       const skillContent = "You are a strategic planner"
 
       //#when
       const result = buildSystemContent({
         skillContent,
-        agentName: "Prometheus",
+        agentName: "Oracle",
       })
 
       //#then
@@ -2714,8 +2714,8 @@ describe("sisyphus-task", () => {
 
   describe("modelInfo detection via resolveCategoryConfig", () => {
     test("catalog model is used for category with catalog entry", () => {
-      // given - ultrabrain has catalog entry
-      const categoryName = "ultrabrain"
+      // given - source has catalog entry
+      const categoryName = "source"
       
       // when
       const resolved = resolveCategoryConfig(categoryName, { systemDefaultModel: SYSTEM_DEFAULT_MODEL })
@@ -2727,8 +2727,8 @@ describe("sisyphus-task", () => {
     })
 
     test("default model is used for category with default entry", () => {
-      // given - unspecified-low has default model
-      const categoryName = "unspecified-low"
+      // given - blue-pill has default model
+      const categoryName = "blue-pill"
       
       // when
       const resolved = resolveCategoryConfig(categoryName, { systemDefaultModel: SYSTEM_DEFAULT_MODEL })
@@ -2739,14 +2739,14 @@ describe("sisyphus-task", () => {
     })
 
     test("category built-in model takes precedence over inheritedModel for builtin category", () => {
-      // given - builtin ultrabrain category with its own model, inherited model also provided
-      const categoryName = "ultrabrain"
+      // given - builtin source category with its own model, inherited model also provided
+      const categoryName = "source"
       const inheritedModel = "cliproxy/claude-opus-4-6"
       
       // when
       const resolved = resolveCategoryConfig(categoryName, { inheritedModel, systemDefaultModel: SYSTEM_DEFAULT_MODEL })
       
-      // then - category's built-in model wins (ultrabrain uses gpt-5.3-codex)
+      // then - category's built-in model wins (source uses gpt-5.3-codex)
       expect(resolved).not.toBeNull()
       const actualModel = resolved!.config.model
       expect(actualModel).toBe("openai/gpt-5.3-codex")
@@ -2754,8 +2754,8 @@ describe("sisyphus-task", () => {
 
     test("when user defines model - modelInfo should report user-defined regardless of inheritedModel", () => {
       // given
-      const categoryName = "ultrabrain"
-      const userCategories = { "ultrabrain": { model: "my-provider/custom-model" } }
+      const categoryName = "source"
+      const userCategories = { "source": { model: "my-provider/custom-model" } }
       const inheritedModel = "cliproxy/claude-opus-4-6"
       
       // when
@@ -2772,9 +2772,9 @@ describe("sisyphus-task", () => {
     test("detection logic: actualModel comparison correctly identifies source", () => {
       // given - This test verifies the fix for PR #770 bug
       // The bug was: checking `if (inheritedModel)` instead of `if (actualModel === inheritedModel)`
-      const categoryName = "ultrabrain"
+      const categoryName = "source"
       const inheritedModel = "cliproxy/claude-opus-4-6"
-      const userCategories = { "ultrabrain": { model: "user/model" } }
+      const userCategories = { "source": { model: "user/model" } }
       
       // when - user model wins
       const resolved = resolveCategoryConfig(categoryName, { userCategories, inheritedModel, systemDefaultModel: SYSTEM_DEFAULT_MODEL })
@@ -2800,10 +2800,10 @@ describe("sisyphus-task", () => {
     test("FIXED: category built-in model takes precedence over inheritedModel", () => {
       // given a builtin category with its own model, and an inherited model from parent
       // The CORRECT chain: userConfig?.model ?? categoryBuiltIn ?? systemDefaultModel
-      const categoryName = "ultrabrain"
+      const categoryName = "source"
       const inheritedModel = "anthropic/claude-opus-4-6"
       
-      // when category has a built-in model (gpt-5.3-codex for ultrabrain)
+      // when category has a built-in model (gpt-5.3-codex for source)
       const resolved = resolveCategoryConfig(categoryName, { inheritedModel, systemDefaultModel: SYSTEM_DEFAULT_MODEL })
       
       // then category's built-in model should be used, NOT inheritedModel
@@ -2830,8 +2830,8 @@ describe("sisyphus-task", () => {
 
     test("FIXED: userConfig.model always takes priority over everything", () => {
       // given userConfig.model is explicitly set
-      const categoryName = "ultrabrain"
-      const userCategories = { "ultrabrain": { model: "custom/user-model" } }
+      const categoryName = "source"
+      const userCategories = { "source": { model: "custom/user-model" } }
       const inheritedModel = "anthropic/claude-opus-4-6"
       const systemDefaultModel = "anthropic/claude-sonnet-4-5"
       
@@ -2863,15 +2863,15 @@ describe("sisyphus-task", () => {
 
     test("FIXED: undefined userConfig.model falls back to category built-in model", () => {
       // given user sets a builtin category but leaves model undefined
-      const categoryName = "visual-engineering"
+      const categoryName = "construct"
       // Using type assertion since we're testing fallback behavior for categories without model
-      const userCategories = { "visual-engineering": { temperature: 0.2 } } as unknown as Record<string, CategoryConfig>
+      const userCategories = { "construct": { temperature: 0.2 } } as unknown as Record<string, CategoryConfig>
       const inheritedModel = "anthropic/claude-opus-4-6"
       
       // when resolveCategoryConfig is called
       const resolved = resolveCategoryConfig(categoryName, { userCategories, inheritedModel, systemDefaultModel: SYSTEM_DEFAULT_MODEL })
       
-      // then should use category's built-in model (gemini-3-pro for visual-engineering)
+      // then should use category's built-in model (gemini-3-pro for construct)
       expect(resolved).not.toBeNull()
       expect(resolved!.model).toBe("google/gemini-3-pro")
     })
@@ -2927,7 +2927,7 @@ describe("sisyphus-task", () => {
       //#when
       const result = await tool.execute(
         { description: "test", prompt: "Create a plan", subagent_type: "plan", run_in_background: false, load_skills: [] },
-        { sessionID: "p", messageID: "m", agent: "prometheus", abort: new AbortController().signal }
+        { sessionID: "p", messageID: "m", agent: "oracle", abort: new AbortController().signal }
       )
       
       //#then
@@ -2938,7 +2938,7 @@ describe("sisyphus-task", () => {
       //#given
       const { createDelegateTask } = require("./tools")
       const mockClient = {
-         app: { agents: async () => ({ data: [{ name: "prometheus", mode: "subagent" }] }) },
+         app: { agents: async () => ({ data: [{ name: "oracle", mode: "subagent" }] }) },
          config: { get: async () => ({ data: { model: SYSTEM_DEFAULT_MODEL } }) },
          session: { get: async () => ({ data: { directory: "/project" } }), create: async () => ({ data: { id: "s" } }), prompt: async () => ({ data: {} }), promptAsync: async () => ({ data: {} }), messages: async () => ({ data: [] }), status: async () => ({ data: {} }) },
        }
@@ -2946,7 +2946,7 @@ describe("sisyphus-task", () => {
       
       //#when
       const result = await tool.execute(
-        { description: "test", prompt: "Execute", subagent_type: "prometheus", run_in_background: false, load_skills: [] },
+        { description: "test", prompt: "Execute", subagent_type: "oracle", run_in_background: false, load_skills: [] },
         { sessionID: "p", messageID: "m", agent: "plan", abort: new AbortController().signal }
       )
       
@@ -2974,7 +2974,7 @@ describe("sisyphus-task", () => {
       //#when
       const result = await tool.execute(
         { description: "test", prompt: "Create a plan", subagent_type: "plan", run_in_background: false, load_skills: [] },
-        { sessionID: "p", messageID: "m", agent: "sisyphus", abort: new AbortController().signal }
+        { sessionID: "p", messageID: "m", agent: "morpheus", abort: new AbortController().signal }
       )
       
       //#then
@@ -2996,7 +2996,7 @@ describe("sisyphus-task", () => {
             id: "task-explore",
             sessionID: "ses_explore_model",
             description: "Explore task",
-            agent: "explore",
+            agent: "trinity",
             status: "running",
           }
         },
@@ -3006,7 +3006,7 @@ describe("sisyphus-task", () => {
          app: {
            agents: async () => ({
              data: [
-               { name: "explore", mode: "subagent", model: { providerID: "anthropic", modelID: "claude-haiku-4-5" } },
+               { name: "trinity", mode: "subagent", model: { providerID: "anthropic", modelID: "claude-haiku-4-5" } },
              ],
            }),
          },
@@ -3027,7 +3027,7 @@ describe("sisyphus-task", () => {
       const toolContext = {
         sessionID: "parent-session",
         messageID: "parent-message",
-        agent: "sisyphus",
+        agent: "morpheus",
         abort: new AbortController().signal,
       }
 
@@ -3036,7 +3036,7 @@ describe("sisyphus-task", () => {
         {
           description: "Explore codebase",
           prompt: "Find auth patterns",
-          subagent_type: "explore",
+          subagent_type: "trinity",
           run_in_background: true,
           load_skills: [],
         },
@@ -3091,7 +3091,7 @@ describe("sisyphus-task", () => {
       const toolContext = {
         sessionID: "parent-session",
         messageID: "parent-message",
-        agent: "sisyphus",
+        agent: "morpheus",
         abort: new AbortController().signal,
       }
 
@@ -3130,7 +3130,7 @@ describe("sisyphus-task", () => {
          app: {
            agents: async () => ({
              data: [
-               { name: "explore", mode: "subagent" },
+               { name: "trinity", mode: "subagent" },
              ],
            }),
          },
@@ -3155,7 +3155,7 @@ describe("sisyphus-task", () => {
       const toolContext = {
         sessionID: "parent-session",
         messageID: "parent-message",
-        agent: "sisyphus",
+        agent: "morpheus",
         abort: new AbortController().signal,
       }
 
@@ -3164,7 +3164,7 @@ describe("sisyphus-task", () => {
         {
           description: "Explore without model",
           prompt: "Find something",
-          subagent_type: "explore",
+          subagent_type: "trinity",
           run_in_background: false,
           load_skills: [],
         },
@@ -3219,7 +3219,7 @@ describe("sisyphus-task", () => {
       const toolContext = {
         sessionID: "parent-session",
         messageID: "parent-message",
-        agent: "sisyphus",
+        agent: "morpheus",
         abort: new AbortController().signal,
       }
 
@@ -3286,7 +3286,7 @@ describe("sisyphus-task", () => {
       const toolContext = {
         sessionID: "parent-session",
         messageID: "parent-message",
-        agent: "sisyphus",
+        agent: "morpheus",
         abort: new AbortController().signal,
       }
 
@@ -3350,7 +3350,7 @@ describe("sisyphus-task", () => {
       const toolContext = {
         sessionID: "parent-session",
         messageID: "parent-message",
-        agent: "sisyphus",
+        agent: "morpheus",
         abort: new AbortController().signal,
       }
 
@@ -3411,7 +3411,7 @@ describe("sisyphus-task", () => {
       const toolContext = {
         sessionID: "parent-session",
         messageID: "parent-message",
-        agent: "sisyphus",
+        agent: "morpheus",
         abort: new AbortController().signal,
       }
       
@@ -3437,7 +3437,7 @@ describe("sisyphus-task", () => {
       let promptBody: any
       const promptMock = async (input: any) => { promptBody = input.body; return { data: {} } }
        const mockClient = {
-         app: { agents: async () => ({ data: [{ name: "prometheus", mode: "subagent" }] }) },
+         app: { agents: async () => ({ data: [{ name: "oracle", mode: "subagent" }] }) },
          config: { get: async () => ({ data: { model: SYSTEM_DEFAULT_MODEL } }) },
          session: {
            get: async () => ({ data: { directory: "/project" } }),
@@ -3452,8 +3452,8 @@ describe("sisyphus-task", () => {
       
       //#when
       await tool.execute(
-        { description: "Test prometheus task permission", prompt: "Create a plan", subagent_type: "prometheus", run_in_background: false, load_skills: [] },
-        { sessionID: "p", messageID: "m", agent: "sisyphus", abort: new AbortController().signal }
+        { description: "Test prometheus task permission", prompt: "Create a plan", subagent_type: "oracle", run_in_background: false, load_skills: [] },
+        { sessionID: "p", messageID: "m", agent: "morpheus", abort: new AbortController().signal }
       )
       
       //#then
@@ -3495,7 +3495,7 @@ describe("sisyphus-task", () => {
       const toolContext = {
         sessionID: "parent-session",
         messageID: "parent-message",
-        agent: "sisyphus",
+        agent: "morpheus",
         abort: new AbortController().signal,
       }
       
@@ -3550,7 +3550,7 @@ describe("sisyphus-task", () => {
       const toolContext = {
         sessionID: "parent-session",
         messageID: "parent-message",
-        agent: "sisyphus",
+        agent: "morpheus",
         abort: new AbortController().signal,
       }
 
@@ -3599,7 +3599,7 @@ describe("sisyphus-task", () => {
       const toolContext = {
         sessionID: "parent-session",
         messageID: "parent-message",
-        agent: "sisyphus",
+        agent: "morpheus",
         abort: new AbortController().signal,
       }
 
@@ -3630,7 +3630,7 @@ describe("sisyphus-task", () => {
           id: "bg_meta_test",
           sessionID: "ses_bg_metadata",
           description: "Background metadata test",
-          agent: "sisyphus-junior",
+          agent: "mouse",
           status: "running",
         }),
       }
@@ -3650,14 +3650,14 @@ describe("sisyphus-task", () => {
          manager: mockManager,
          client: mockClient,
          userCategories: {
-           "sisyphus-junior": { model: "anthropic/claude-sonnet-4-5" },
+           "mouse": { model: "anthropic/claude-sonnet-4-5" },
          },
        })
 
       const toolContext = {
         sessionID: "parent-session",
         messageID: "parent-message",
-        agent: "sisyphus",
+        agent: "morpheus",
         abort: new AbortController().signal,
       }
 

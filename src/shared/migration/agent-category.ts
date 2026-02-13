@@ -6,18 +6,18 @@
  * from explicit model configs to category-based configs.
  *
  * DO NOT add new entries here. New agents should use:
- * - Category-based config (preferred): { category: "unspecified-high" }
+ * - Category-based config (preferred): { category: "red-pill" }
  * - Or inherit from OpenCode's config.model
  *
  * This map will be removed in a future major version once migration period ends.
  */
 export const MODEL_TO_CATEGORY_MAP: Record<string, string> = {
-  "google/gemini-3-pro": "visual-engineering",
-  "google/gemini-3-flash": "writing",
-  "openai/gpt-5.2": "ultrabrain",
-  "anthropic/claude-haiku-4-5": "quick",
-  "anthropic/claude-opus-4-6": "unspecified-high",
-  "anthropic/claude-sonnet-4-5": "unspecified-low",
+  "google/gemini-3-pro": "construct",
+  "google/gemini-3-flash": "broadcast",
+  "openai/gpt-5.2": "source",
+  "anthropic/claude-haiku-4-5": "bullet-time",
+  "anthropic/claude-opus-4-6": "red-pill",
+  "anthropic/claude-sonnet-4-5": "blue-pill",
 }
 
 export function migrateAgentConfigToCategory(config: Record<string, unknown>): {

@@ -1,4 +1,4 @@
-const CORE_AGENT_ORDER = ["sisyphus", "hephaestus", "prometheus", "atlas"] as const;
+const CORE_AGENT_ORDER = ["morpheus", "keymaker", "oracle", "architect"] as const;
 
 export function reorderAgentsByPriority(
   agents: Record<string, unknown>,

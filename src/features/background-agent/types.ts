@@ -39,7 +39,7 @@ export interface BackgroundTask {
   parentAgent?: string
   /** Marks if the task was launched from an unstable agent/category */
   isUnstableAgent?: boolean
-  /** Category used for this task (e.g., 'quick', 'visual-engineering') */
+  /** Category used for this task (e.g., 'quick', 'construct') */
   category?: string
 
   /** Last message count for stability detection */

@@ -4,12 +4,12 @@ import { log } from "../../shared/logger"
 import { SYSTEM_DIRECTIVE_PREFIX } from "../../shared/system-directive"
 import { getAgentDisplayName } from "../../shared/agent-display-names"
 import { getAgentFromSession } from "./agent-resolution"
-import { isPrometheusAgent } from "./agent-matcher"
+import { isOracleAgent } from "./agent-matcher"
 import { isAllowedFile } from "./path-policy"
 
 const TASK_TOOLS = ["task", "call_omo_agent"]
 
-export function createPrometheusMdOnlyHook(ctx: PluginInput) {
+export function createOracleMdOnlyHook(ctx: PluginInput) {
   return {
     "tool.execute.before": async (
       input: { tool: string; sessionID: string; callID: string },
@@ -17,13 +17,13 @@ export function createPrometheusMdOnlyHook(ctx: PluginInput) {
     ): Promise<void> => {
       const agentName = getAgentFromSession(input.sessionID, ctx.directory)
 
-      if (!isPrometheusAgent(agentName)) {
+      if (!isOracleAgent(agentName)) {
         return
       }
 
       const toolName = input.tool
 
-      // Inject read-only warning for task tools called by Prometheus
+      // Inject read-only warning for task tools called by Oracle
        if (TASK_TOOLS.includes(toolName)) {
          const prompt = output.args.prompt as string | undefined
          if (prompt && !prompt.includes(SYSTEM_DIRECTIVE_PREFIX)) {
@@ -47,14 +47,14 @@ export function createPrometheusMdOnlyHook(ctx: PluginInput) {
       }
 
        if (!isAllowedFile(filePath, ctx.directory)) {
-         log(`[${HOOK_NAME}] Blocked: Prometheus can only write to .sisyphus/*.md`, {
+         log(`[${HOOK_NAME}] Blocked: Oracle can only write to .matrix/*.md`, {
            sessionID: input.sessionID,
            tool: toolName,
            filePath,
            agent: agentName,
          })
          throw new Error(
-           `[${HOOK_NAME}] ${getAgentDisplayName("prometheus")} can only write/edit .md files inside .sisyphus/ directory. ` +
+           `[${HOOK_NAME}] ${getAgentDisplayName("prometheus")} can only write/edit .md files inside .matrix/ directory. ` +
            `Attempted to modify: ${filePath}. ` +
            `${getAgentDisplayName("prometheus")} is a READ-ONLY planner. Use /start-work to execute the plan. ` +
            `APOLOGIZE TO THE USER, REMIND OF YOUR PLAN WRITING PROCESSES, TELL USER WHAT YOU WILL GOING TO DO AS THE PROCESS, WRITE THE PLAN`
@@ -62,7 +62,7 @@ export function createPrometheusMdOnlyHook(ctx: PluginInput) {
        }
 
       const normalizedPath = filePath.toLowerCase().replace(/\\/g, "/")
-      if (normalizedPath.includes(".sisyphus/plans/") || normalizedPath.includes(".sisyphus\\plans\\")) {
+      if (normalizedPath.includes(".matrix/plans/") || normalizedPath.includes(".matrix\\plans\\")) {
         log(`[${HOOK_NAME}] Injecting workflow reminder for plan write`, {
           sessionID: input.sessionID,
           tool: toolName,
@@ -72,7 +72,7 @@ export function createPrometheusMdOnlyHook(ctx: PluginInput) {
         output.message = (output.message || "") + PROMETHEUS_WORKFLOW_REMINDER
       }
 
-      log(`[${HOOK_NAME}] Allowed: .sisyphus/*.md write permitted`, {
+      log(`[${HOOK_NAME}] Allowed: .matrix/*.md write permitted`, {
         sessionID: input.sessionID,
         tool: toolName,
         filePath,

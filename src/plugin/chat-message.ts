@@ -97,7 +97,7 @@ export function createChatMessageHandler(args: {
         .catch(() => {})
     }
 
-    if (hooks.ralphLoop) {
+    if (hooks.matrixLoop) {
       const parts = output.parts
       const promptText =
         parts
@@ -106,14 +106,14 @@ export function createChatMessageHandler(args: {
           .join("\n")
           .trim() || ""
 
-      const isRalphLoopTemplate =
-        promptText.includes("You are starting a Ralph Loop") &&
+      const isMatrixLoopTemplate =
+        promptText.includes("You are starting a Matrix Loop") &&
         promptText.includes("<user-task>")
-      const isCancelRalphTemplate = promptText.includes(
-        "Cancel the currently active Ralph Loop",
+      const isCancelMatrixTemplate = promptText.includes(
+        "Cancel the currently active Matrix Loop",
       )
 
-      if (isRalphLoopTemplate) {
+      if (isMatrixLoopTemplate) {
         const taskMatch = promptText.match(/<user-task>\s*([\s\S]*?)\s*<\/user-task>/i)
         const rawTask = taskMatch?.[1]?.trim() || ""
         const quotedMatch = rawTask.match(/^["'](.+?)["']/)
@@ -127,12 +127,12 @@ export function createChatMessageHandler(args: {
           /--completion-promise=["']?([^"'\s]+)["']?/i,
         )
 
-        hooks.ralphLoop.startLoop(input.sessionID, prompt, {
+        hooks.matrixLoop.startLoop(input.sessionID, prompt, {
           maxIterations: maxIterMatch ? parseInt(maxIterMatch[1], 10) : undefined,
           completionPromise: promiseMatch?.[1],
         })
-      } else if (isCancelRalphTemplate) {
-        hooks.ralphLoop.cancelLoop(input.sessionID)
+      } else if (isCancelMatrixTemplate) {
+        hooks.matrixLoop.cancelLoop(input.sessionID)
       }
     }
   }

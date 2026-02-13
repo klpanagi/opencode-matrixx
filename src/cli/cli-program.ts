@@ -45,7 +45,7 @@ Model Providers (Priority: Native > Copilot > OpenCode Zen > Z.ai > Kimi):
   Copilot       github-copilot/ models (fallback)
   OpenCode Zen  opencode/ models (opencode/claude-opus-4-6, etc.)
   Z.ai          zai-coding-plan/glm-4.7 (Librarian priority)
-  Kimi          kimi-for-coding/k2p5 (Sisyphus/Prometheus fallback)
+  Kimi          kimi-for-coding/k2p5 (Morpheus/Oracle fallback)
 `)
   .action(async (options) => {
     const args: InstallArgs = {
@@ -68,7 +68,7 @@ program
    .allowUnknownOption()
    .passThroughOptions()
    .description("Run opencode with todo/background task completion enforcement")
-  .option("-a, --agent <name>", "Agent to use (default: from CLI/env/config, fallback: Sisyphus)")
+  .option("-a, --agent <name>", "Agent to use (default: from CLI/env/config, fallback: Morpheus)")
   .option("-d, --directory <path>", "Working directory")
   .option("-t, --timeout <ms>", "Timeout in milliseconds (default: 30 minutes)", parseInt)
   .option("-p, --port <port>", "Server port (attaches if port already in use)", parseInt)
@@ -79,7 +79,7 @@ program
   .addHelpText("after", `
 Examples:
   $ bunx oh-my-opencode run "Fix the bug in index.ts"
-  $ bunx oh-my-opencode run --agent Sisyphus "Implement feature X"
+  $ bunx oh-my-opencode run --agent Morpheus "Implement feature X"
   $ bunx oh-my-opencode run --timeout 3600000 "Large refactoring task"
   $ bunx oh-my-opencode run --port 4321 "Fix the bug"
   $ bunx oh-my-opencode run --attach http://127.0.0.1:4321 "Fix the bug"
@@ -91,10 +91,10 @@ Agent resolution order:
   1) --agent flag
   2) OPENCODE_DEFAULT_AGENT
   3) oh-my-opencode.json "default_run_agent"
-  4) Sisyphus (fallback)
+  4) Morpheus (fallback)
 
 Available core agents:
-  Sisyphus, Hephaestus, Prometheus, Atlas
+  Morpheus, Keymaker, Oracle, Architect
 
 Unlike 'opencode run', this command waits until:
   - All todos are completed or cancelled

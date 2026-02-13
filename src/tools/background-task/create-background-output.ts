@@ -9,7 +9,7 @@ import { formatFullSession } from "./full-session-format"
 import { formatTaskResult } from "./task-result-format"
 import { formatTaskStatus } from "./task-status-format"
 
-const SISYPHUS_JUNIOR_AGENT = "sisyphus-junior"
+const SISYPHUS_JUNIOR_AGENT = "mouse"
 
 type ToolContextWithMetadata = {
   sessionID: string

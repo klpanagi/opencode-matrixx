@@ -2,9 +2,9 @@ import { z } from "zod"
 
 export const BuiltinCommandNameSchema = z.enum([
   "init-deep",
-  "ralph-loop",
+  "matrix-loop",
   "ulw-loop",
-  "cancel-ralph",
+  "cancel-loop",
   "refactor",
   "start-work",
   "stop-continuation",

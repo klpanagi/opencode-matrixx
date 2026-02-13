@@ -1,2 +1,2 @@
 export * from "./constants"
-export { createPrometheusMdOnlyHook } from "./hook"
+export { createOracleMdOnlyHook } from "./hook"

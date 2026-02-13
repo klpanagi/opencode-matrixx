@@ -9,41 +9,41 @@ const createConfig = (overrides: Partial<OhMyOpenCodeConfig> = {}): OhMyOpenCode
 describe("resolveRunAgent", () => {
   it("uses CLI agent over env and config", () => {
     // given
-    const config = createConfig({ default_run_agent: "prometheus" })
+    const config = createConfig({ default_run_agent: "oracle" })
     const env = { OPENCODE_DEFAULT_AGENT: "Atlas" }
 
     // when
     const agent = resolveRunAgent(
-      { message: "test", agent: "Hephaestus" },
+      { message: "test", agent: "Keymaker" },
       config,
       env
     )
 
     // then
-    expect(agent).toBe("hephaestus")
+    expect(agent).toBe("keymaker")
   })
 
   it("uses env agent over config", () => {
     // given
-    const config = createConfig({ default_run_agent: "prometheus" })
+    const config = createConfig({ default_run_agent: "oracle" })
     const env = { OPENCODE_DEFAULT_AGENT: "Atlas" }
 
     // when
     const agent = resolveRunAgent({ message: "test" }, config, env)
 
     // then
-    expect(agent).toBe("atlas")
+    expect(agent).toBe("architect")
   })
 
   it("uses config agent over default", () => {
     // given
-    const config = createConfig({ default_run_agent: "Prometheus" })
+    const config = createConfig({ default_run_agent: "Oracle" })
 
     // when
     const agent = resolveRunAgent({ message: "test" }, config, {})
 
     // then
-    expect(agent).toBe("prometheus")
+    expect(agent).toBe("oracle")
   })
 
   it("falls back to sisyphus when none set", () => {
@@ -54,17 +54,17 @@ describe("resolveRunAgent", () => {
     const agent = resolveRunAgent({ message: "test" }, config, {})
 
     // then
-    expect(agent).toBe("sisyphus")
+    expect(agent).toBe("morpheus")
   })
 
   it("skips disabled sisyphus for next available core agent", () => {
     // given
-    const config = createConfig({ disabled_agents: ["sisyphus"] })
+    const config = createConfig({ disabled_agents: ["morpheus"] })
 
     // when
     const agent = resolveRunAgent({ message: "test" }, config, {})
 
     // then
-    expect(agent).toBe("hephaestus")
+    expect(agent).toBe("keymaker")
   })
 })

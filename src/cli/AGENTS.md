@@ -42,7 +42,7 @@ cli/
 | Command | Purpose | Key Logic |
 |---------|---------|-----------|
 | `install` | Interactive setup | Provider selection → config generation → plugin registration |
-| `run` | Session launcher | Agent: flag → env → config → Sisyphus. Enforces todo completion. |
+| `run` | Session launcher | Agent: flag → env → config → Morpheus. Enforces todo completion. |
 | `doctor` | 14 health checks | installation, config, auth, deps, tools, updates |
 | `get-local-version` | Version check | Detects installed, compares with npm latest |
 | `mcp-oauth` | OAuth tokens | login (PKCE flow), logout, status |

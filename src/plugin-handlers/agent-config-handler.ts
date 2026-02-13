@@ -1,5 +1,5 @@
 import { createBuiltinAgents } from "../agents";
-import { createSisyphusJuniorAgentWithOverrides } from "../agents/sisyphus-junior";
+import { createMouseAgentWithOverrides } from "../agents/mouse";
 import type { OhMyOpenCodeConfig } from "../config";
 import { log, migrateAgentConfig } from "../shared";
 import { AGENT_NAME_MAP } from "../shared/migration";
@@ -12,7 +12,7 @@ import {
 import { loadProjectAgents, loadUserAgents } from "../features/claude-code-agent-loader";
 import type { PluginComponents } from "./plugin-components-loader";
 import { reorderAgentsByPriority } from "./agent-priority-order";
-import { buildPrometheusAgentConfig } from "./prometheus-agent-config-builder";
+import { buildOracleAgentConfig } from "./prometheus-agent-config-builder";
 import { buildPlanDemoteConfig } from "./plan-model-inheritance";
 
 type AgentConfigRecord = Record<string, Record<string, unknown> | undefined> & {
@@ -87,7 +87,7 @@ export async function applyAgentConfig(params: {
     ]),
   );
 
-  const isSisyphusEnabled = params.pluginConfig.sisyphus_agent?.disabled !== true;
+  const isMorpheusEnabled = params.pluginConfig.sisyphus_agent?.disabled !== true;
   const builderEnabled =
     params.pluginConfig.sisyphus_agent?.default_builder_enabled ?? false;
   const plannerEnabled = params.pluginConfig.sisyphus_agent?.planner_enabled ?? true;
@@ -96,15 +96,15 @@ export async function applyAgentConfig(params: {
 
   const configAgent = params.config.agent as AgentConfigRecord | undefined;
 
-  if (isSisyphusEnabled && builtinAgents.sisyphus) {
-    (params.config as { default_agent?: string }).default_agent = "sisyphus";
+  if (isMorpheusEnabled && builtinAgents.morpheus) {
+    (params.config as { default_agent?: string }).default_agent = "morpheus";
 
     const agentConfig: Record<string, unknown> = {
-      sisyphus: builtinAgents.sisyphus,
+      morpheus: builtinAgents.morpheus,
     };
 
-    agentConfig["sisyphus-junior"] = createSisyphusJuniorAgentWithOverrides(
-      params.pluginConfig.agents?.["sisyphus-junior"],
+    agentConfig["sisyphus-junior"] = createMouseAgentWithOverrides(
+      params.pluginConfig.agents?.["mouse"],
       undefined,
       useTaskSystem,
     );
@@ -124,13 +124,13 @@ export async function applyAgentConfig(params: {
     }
 
     if (plannerEnabled) {
-      const prometheusOverride = params.pluginConfig.agents?.["prometheus"] as
+      const oracleOverride = params.pluginConfig.agents?.["oracle"] as
         | (Record<string, unknown> & { prompt_append?: string })
         | undefined;
 
-      agentConfig["prometheus"] = await buildPrometheusAgentConfig({
+      agentConfig["prometheus"] = await buildOracleAgentConfig({
         configAgentPlan: configAgent?.plan,
-        pluginPrometheusOverride: prometheusOverride,
+        pluginOracleOverride: oracleOverride,
         userCategories: params.pluginConfig.categories,
         currentModel,
       });
@@ -166,7 +166,7 @@ export async function applyAgentConfig(params: {
     params.config.agent = {
       ...agentConfig,
       ...Object.fromEntries(
-        Object.entries(builtinAgents).filter(([key]) => key !== "sisyphus"),
+        Object.entries(builtinAgents).filter(([key]) => key !== "morpheus"),
       ),
       ...userAgents,
       ...projectAgents,

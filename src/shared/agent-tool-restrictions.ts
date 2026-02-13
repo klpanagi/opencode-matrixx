@@ -12,34 +12,34 @@ const EXPLORATION_AGENT_DENYLIST: Record<string, boolean> = {
 }
 
 const AGENT_RESTRICTIONS: Record<string, Record<string, boolean>> = {
-  explore: EXPLORATION_AGENT_DENYLIST,
+  trinity: EXPLORATION_AGENT_DENYLIST,
 
-  librarian: EXPLORATION_AGENT_DENYLIST,
+  operator: EXPLORATION_AGENT_DENYLIST,
 
-  oracle: {
+  merovingian: {
     write: false,
     edit: false,
     task: false,
     call_omo_agent: false,
   },
 
-  metis: {
+  seraph: {
     write: false,
     edit: false,
     task: false,
   },
 
-  momus: {
+  smith: {
     write: false,
     edit: false,
     task: false,
   },
 
-  "multimodal-looker": {
+  construct: {
     read: true,
   },
 
-  "sisyphus-junior": {
+  mouse: {
     task: false,
   },
 }

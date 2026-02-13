@@ -11,7 +11,7 @@ config/
 │   ├── oh-my-opencode-config.ts # Root schema composition (57 lines)
 │   ├── agent-names.ts         # BuiltinAgentNameSchema (11 agents), BuiltinSkillNameSchema
 │   ├── agent-overrides.ts     # AgentOverrideConfigSchema (model, variant, temp, thinking...)
-│   ├── categories.ts          # 8 categories: visual-engineering, ultrabrain, deep, artistry, quick, ...
+│   ├── categories.ts          # 8 categories: construct, source, deep, matrix-bend, quick, ...
 │   ├── hooks.ts               # HookNameSchema (100+ hook names)
 │   ├── commands.ts            # BuiltinCommandNameSchema
 │   ├── experimental.ts        # ExperimentalConfigSchema
@@ -20,9 +20,9 @@ config/
 │   ├── claude-code.ts         # ClaudeCodeConfigSchema
 │   ├── comment-checker.ts     # CommentCheckerConfigSchema
 │   ├── notification.ts        # NotificationConfigSchema
-│   ├── ralph-loop.ts          # RalphLoopConfigSchema
-│   ├── sisyphus.ts            # SisyphusConfigSchema
-│   ├── sisyphus-agent.ts      # SisyphusAgentConfigSchema
+│   ├── matrix-loop.ts          # RalphLoopConfigSchema
+│   ├── morpheus.ts            # MorpheusConfigSchema
+│   ├── morpheus-agent.ts      # MorpheusAgentConfigSchema
 │   ├── skills.ts              # SkillsConfigSchema (45 lines)
 │   ├── tmux.ts                # TmuxConfigSchema, TmuxLayoutSchema
 │   ├── websearch.ts           # WebsearchConfigSchema
@@ -37,7 +37,7 @@ config/
 
 ## ROOT SCHEMA
 
-`OhMyOpenCodeConfigSchema` composes: `$schema`, `new_task_system_enabled`, `default_run_agent`, `auto_update`, `disabled_{mcps,agents,skills,hooks,commands,tools}`, `agents` (14 agent keys), `categories` (8 built-in), `claude_code`, `sisyphus_agent`, `comment_checker`, `experimental`, `skills`, `ralph_loop`, `background_task`, `notification`, `babysitting`, `git_master`, `browser_automation_engine`, `websearch`, `tmux`, `sisyphus`
+`OhMyOpenCodeConfigSchema` composes: `$schema`, `new_task_system_enabled`, `default_run_agent`, `auto_update`, `disabled_{mcps,agents,skills,hooks,commands,tools}`, `agents` (14 agent keys), `categories` (8 built-in), `claude_code`, `morpheus_agent`, `comment_checker`, `experimental`, `skills`, `matrix_loop`, `background_task`, `notification`, `babysitting`, `git_master`, `browser_automation_engine`, `websearch`, `tmux`, `morpheus`
 
 ## CONFIGURATION HIERARCHY
 

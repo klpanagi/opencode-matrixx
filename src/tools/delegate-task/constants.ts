@@ -19,7 +19,7 @@ Design-first mindset:
 AVOID: Generic fonts, purple gradients on white, predictable layouts, cookie-cutter patterns.
 </Category_Context>`
 
-export const ULTRABRAIN_CATEGORY_PROMPT_APPEND = `<Category_Context>
+export const SOURCE_CATEGORY_PROMPT_APPEND = `<Category_Context>
 You are working on DEEP LOGICAL REASONING / COMPLEX ARCHITECTURE tasks.
 
 **CRITICAL - CODE STYLE REQUIREMENTS (NON-NEGOTIABLE)**:
@@ -41,7 +41,7 @@ Response format:
 - Risks and mitigations (if relevant)
 </Category_Context>`
 
-export const ARTISTRY_CATEGORY_PROMPT_APPEND = `<Category_Context>
+export const MATRIX_BEND_CATEGORY_PROMPT_APPEND = `<Category_Context>
 You are working on HIGHLY CREATIVE / ARTISTIC tasks.
 
 Artistic genius mindset:
@@ -115,11 +115,11 @@ You are working on tasks that don't fit specific categories but require moderate
 
 <Selection_Gate>
 BEFORE selecting this category, VERIFY ALL conditions:
-1. Task does NOT fit: quick (trivial), visual-engineering (UI), ultrabrain (deep logic), artistry (creative), writing (docs)
+1. Task does NOT fit: quick (trivial), construct (UI), source (deep logic), matrix-bend (creative), writing (docs)
 2. Task requires more than trivial effort but is NOT system-wide
 3. Scope is contained within a few files/modules
 
-If task fits ANY other category, DO NOT select unspecified-low.
+If task fits ANY other category, DO NOT select blue-pill.
 This is NOT a default choice - it's for genuinely unclassifiable moderate-effort work.
 </Selection_Gate>
 </Category_Context>
@@ -138,13 +138,13 @@ You are working on tasks that don't fit specific categories but require substant
 
 <Selection_Gate>
 BEFORE selecting this category, VERIFY ALL conditions:
-1. Task does NOT fit: quick (trivial), visual-engineering (UI), ultrabrain (deep logic), artistry (creative), writing (docs)
+1. Task does NOT fit: quick (trivial), construct (UI), source (deep logic), matrix-bend (creative), writing (docs)
 2. Task requires substantial effort across multiple systems/modules
 3. Changes have broad impact or require careful coordination
 4. NOT just "complex" - must be genuinely unclassifiable AND high-effort
 
-If task fits ANY other category, DO NOT select unspecified-high.
-If task is unclassifiable but moderate-effort, use unspecified-low instead.
+If task fits ANY other category, DO NOT select red-pill.
+If task is unclassifiable but moderate-effort, use blue-pill instead.
 </Selection_Gate>
 </Category_Context>`
 
@@ -198,36 +198,36 @@ You are NOT an interactive assistant. You are an autonomous problem-solver.
 
 
 export const DEFAULT_CATEGORIES: Record<string, CategoryConfig> = {
-  "visual-engineering": { model: "google/gemini-3-pro" },
-  ultrabrain: { model: "openai/gpt-5.3-codex", variant: "xhigh" },
-  deep: { model: "openai/gpt-5.3-codex", variant: "medium" },
-  artistry: { model: "google/gemini-3-pro", variant: "high" },
-  quick: { model: "anthropic/claude-haiku-4-5" },
-  "unspecified-low": { model: "anthropic/claude-sonnet-4-5" },
-  "unspecified-high": { model: "anthropic/claude-opus-4-6", variant: "max" },
-  writing: { model: "google/gemini-3-flash" },
+  "construct": { model: "google/gemini-3-pro" },
+  "source": { model: "openai/gpt-5.3-codex", variant: "xhigh" },
+  "deep-jack": { model: "openai/gpt-5.3-codex", variant: "medium" },
+  "matrix-bend": { model: "google/gemini-3-pro", variant: "high" },
+  "bullet-time": { model: "anthropic/claude-haiku-4-5" },
+  "blue-pill": { model: "anthropic/claude-sonnet-4-5" },
+  "red-pill": { model: "anthropic/claude-opus-4-6", variant: "max" },
+  "broadcast": { model: "google/gemini-3-flash" },
 }
 
 export const CATEGORY_PROMPT_APPENDS: Record<string, string> = {
-  "visual-engineering": VISUAL_CATEGORY_PROMPT_APPEND,
-  ultrabrain: ULTRABRAIN_CATEGORY_PROMPT_APPEND,
-  deep: DEEP_CATEGORY_PROMPT_APPEND,
-  artistry: ARTISTRY_CATEGORY_PROMPT_APPEND,
-  quick: QUICK_CATEGORY_PROMPT_APPEND,
-  "unspecified-low": UNSPECIFIED_LOW_CATEGORY_PROMPT_APPEND,
-  "unspecified-high": UNSPECIFIED_HIGH_CATEGORY_PROMPT_APPEND,
-  writing: WRITING_CATEGORY_PROMPT_APPEND,
+  "construct": VISUAL_CATEGORY_PROMPT_APPEND,
+  "source": SOURCE_CATEGORY_PROMPT_APPEND,
+  "deep-jack": DEEP_CATEGORY_PROMPT_APPEND,
+  "matrix-bend": MATRIX_BEND_CATEGORY_PROMPT_APPEND,
+  "bullet-time": QUICK_CATEGORY_PROMPT_APPEND,
+  "blue-pill": UNSPECIFIED_LOW_CATEGORY_PROMPT_APPEND,
+  "red-pill": UNSPECIFIED_HIGH_CATEGORY_PROMPT_APPEND,
+  "broadcast": WRITING_CATEGORY_PROMPT_APPEND,
 }
 
 export const CATEGORY_DESCRIPTIONS: Record<string, string> = {
-  "visual-engineering": "Frontend, UI/UX, design, styling, animation",
-  ultrabrain: "Use ONLY for genuinely hard, logic-heavy tasks. Give clear goals only, not step-by-step instructions.",
-  deep: "Goal-oriented autonomous problem-solving. Thorough research before action. For hairy problems requiring deep understanding.",
-  artistry: "Complex problem-solving with unconventional, creative approaches - beyond standard patterns",
-  quick: "Trivial tasks - single file changes, typo fixes, simple modifications",
-  "unspecified-low": "Tasks that don't fit other categories, low effort required",
-  "unspecified-high": "Tasks that don't fit other categories, high effort required",
-  writing: "Documentation, prose, technical writing",
+  "construct": "Frontend, UI/UX, design, styling, animation",
+  "source": "Use ONLY for genuinely hard, logic-heavy tasks. Give clear goals only, not step-by-step instructions.",
+  "deep-jack": "Goal-oriented autonomous problem-solving. Thorough research before action. For hairy problems requiring deep understanding.",
+  "matrix-bend": "Complex problem-solving with unconventional, creative approaches - beyond standard patterns",
+  "bullet-time": "Trivial tasks - single file changes, typo fixes, simple modifications",
+  "blue-pill": "Tasks that don't fit other categories, low effort required",
+  "red-pill": "Tasks that don't fit other categories, high effort required",
+  "broadcast": "Documentation, prose, technical writing",
 }
 
 /**
@@ -241,8 +241,8 @@ BEFORE you begin planning, you MUST first understand the user's request deeply.
 
 MANDATORY CONTEXT GATHERING PROTOCOL:
 1. Launch background agents to gather context:
-   - call_omo_agent(description="Explore codebase patterns", subagent_type="explore", run_in_background=true, prompt="<search for relevant patterns, files, and implementations in the codebase related to user's request>")
-   - call_omo_agent(description="Research documentation", subagent_type="librarian", run_in_background=true, prompt="<search for external documentation, examples, and best practices related to user's request>")
+   - call_omo_agent(description="Explore codebase patterns", subagent_type="trinity", run_in_background=true, prompt="<search for relevant patterns, files, and implementations in the codebase related to user's request>")
+   - call_omo_agent(description="Research documentation", subagent_type="operator", run_in_background=true, prompt="<search for external documentation, examples, and best practices related to user's request>")
 
 2. After gathering context, ALWAYS present:
    - **User Request Summary**: Concise restatement of what the user is asking for

@@ -1,19 +1,19 @@
 /**
  * Agent config keys to display names mapping.
- * Config keys are lowercase (e.g., "sisyphus", "atlas").
- * Display names include suffixes for UI/logs (e.g., "Sisyphus (Ultraworker)").
+ * Config keys are lowercase (e.g., "morpheus", "architect").
+ * Display names include suffixes for UI/logs (e.g., "Morpheus (Ultraworker)").
  */
 export const AGENT_DISPLAY_NAMES: Record<string, string> = {
-  sisyphus: "Sisyphus (Ultraworker)",
-  atlas: "Atlas (Plan Execution Orchestrator)",
-  prometheus: "Prometheus (Plan Builder)",
-  "sisyphus-junior": "Sisyphus-Junior",
-  metis: "Metis (Plan Consultant)",
-  momus: "Momus (Plan Reviewer)",
-  oracle: "oracle",
-  librarian: "librarian",
-  explore: "explore",
-  "multimodal-looker": "multimodal-looker",
+  morpheus: "Morpheus (Ultraworker)",
+  architect: "Architect (Plan Execution Orchestrator)",
+  oracle: "Oracle (Plan Builder)",
+  mouse: "Mouse",
+  seraph: "Seraph (Plan Consultant)",
+  smith: "Smith (Plan Reviewer)",
+  merovingian: "merovingian",
+  operator: "operator",
+  trinity: "trinity",
+  construct: "construct",
 }
 
 /**

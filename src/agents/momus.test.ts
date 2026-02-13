@@ -1,14 +1,14 @@
 import { describe, test, expect } from "bun:test"
-import { MOMUS_SYSTEM_PROMPT } from "./momus"
+import { SMITH_SYSTEM_PROMPT } from "./smith"
 
 function escapeRegExp(value: string) {
   return value.replace(/[.*+?^${}()|[\]\\]/g, "\\$&")
 }
 
-describe("MOMUS_SYSTEM_PROMPT policy requirements", () => {
+describe("SMITH_SYSTEM_PROMPT policy requirements", () => {
   test("should treat SYSTEM DIRECTIVE as ignorable/stripped", () => {
     // given
-    const prompt = MOMUS_SYSTEM_PROMPT
+    const prompt = SMITH_SYSTEM_PROMPT
     
     // when / #then
     // Should mention that system directives are ignored
@@ -17,12 +17,12 @@ describe("MOMUS_SYSTEM_PROMPT policy requirements", () => {
     expect(prompt).toMatch(/<system-reminder>|system-reminder/)
   })
 
-  test("should extract paths containing .sisyphus/plans/ and ending in .md", () => {
+  test("should extract paths containing .matrix/plans/ and ending in .md", () => {
     // given
-    const prompt = MOMUS_SYSTEM_PROMPT
+    const prompt = SMITH_SYSTEM_PROMPT
 
     // when / #then
-    expect(prompt).toContain(".sisyphus/plans/")
+    expect(prompt).toContain(".matrix/plans/")
     expect(prompt).toContain(".md")
     // New extraction policy should be mentioned
     expect(prompt.toLowerCase()).toMatch(/extract|search|find path/)
@@ -30,11 +30,11 @@ describe("MOMUS_SYSTEM_PROMPT policy requirements", () => {
 
   test("should NOT teach that 'Please review' is INVALID (conversational wrapper allowed)", () => {
     // given
-    const prompt = MOMUS_SYSTEM_PROMPT
+    const prompt = SMITH_SYSTEM_PROMPT
 
     // when / #then
     // In RED phase, this will FAIL because current prompt explicitly lists this as INVALID
-    const invalidExample = "Please review .sisyphus/plans/plan.md"
+    const invalidExample = "Please review .matrix/plans/plan.md"
     const rejectionTeaching = new RegExp(
       `reject.*${escapeRegExp(invalidExample)}`,
       "i",
@@ -47,7 +47,7 @@ describe("MOMUS_SYSTEM_PROMPT policy requirements", () => {
 
   test("should handle ambiguity (2+ paths) and 'no path found' rejection", () => {
     // given
-    const prompt = MOMUS_SYSTEM_PROMPT
+    const prompt = SMITH_SYSTEM_PROMPT
 
     // when / #then
     // Should mention what happens when multiple paths are found

@@ -12,7 +12,7 @@ describe("model-resolution check", () => {
       const info = getModelResolutionInfo()
 
       // then: Should have agent entries
-      const sisyphus = info.agents.find((a) => a.name === "sisyphus")
+      const sisyphus = info.agents.find((a) => a.name === "morpheus")
       expect(sisyphus).toBeDefined()
       expect(sisyphus!.requirement.fallbackChain[0]?.model).toBe("claude-opus-4-6")
       expect(sisyphus!.requirement.fallbackChain[0]?.providers).toContain("anthropic")
@@ -24,7 +24,7 @@ describe("model-resolution check", () => {
       const info = getModelResolutionInfo()
 
       // then: Should have category entries
-      const visual = info.categories.find((c) => c.name === "visual-engineering")
+      const visual = info.categories.find((c) => c.name === "construct")
       expect(visual).toBeDefined()
       expect(visual!.requirement.fallbackChain[0]?.model).toBe("gemini-3-pro")
       expect(visual!.requirement.fallbackChain[0]?.providers).toContain("google")
@@ -58,17 +58,17 @@ describe("model-resolution check", () => {
     it("shows user override for category when configured", async () => {
       const { getModelResolutionInfoWithOverrides } = await import("./model-resolution")
 
-      // given: User has override for visual-engineering category
+      // given: User has override for construct category
       const mockConfig = {
         categories: {
-          "visual-engineering": { model: "openai/gpt-5.2" },
+          "construct": { model: "openai/gpt-5.2" },
         },
       }
 
       const info = getModelResolutionInfoWithOverrides(mockConfig)
 
-      // then: visual-engineering should show the override
-      const visual = info.categories.find((c) => c.name === "visual-engineering")
+      // then: construct should show the override
+      const visual = info.categories.find((c) => c.name === "construct")
       expect(visual).toBeDefined()
       expect(visual!.userOverride).toBe("openai/gpt-5.2")
       expect(visual!.effectiveResolution).toBe("User override: openai/gpt-5.2")
@@ -83,7 +83,7 @@ describe("model-resolution check", () => {
       const info = getModelResolutionInfoWithOverrides(mockConfig)
 
       // then: Should show provider fallback chain
-      const sisyphus = info.agents.find((a) => a.name === "sisyphus")
+      const sisyphus = info.agents.find((a) => a.name === "morpheus")
       expect(sisyphus).toBeDefined()
       expect(sisyphus!.userOverride).toBeUndefined()
       expect(sisyphus!.effectiveResolution).toContain("Provider fallback:")
@@ -113,18 +113,18 @@ describe("model-resolution check", () => {
     it("captures user variant for category when configured", async () => {
       const { getModelResolutionInfoWithOverrides } = await import("./model-resolution")
 
-      //#given User has model with variant override for visual-engineering category
+      //#given User has model with variant override for construct category
       const mockConfig = {
         categories: {
-          "visual-engineering": { model: "google/gemini-3-flash-preview", variant: "high" },
+          "construct": { model: "google/gemini-3-flash-preview", variant: "high" },
         },
       }
 
       //#when getting resolution info with config
       const info = getModelResolutionInfoWithOverrides(mockConfig)
 
-      //#then visual-engineering should have userVariant set
-      const visual = info.categories.find((c) => c.name === "visual-engineering")
+      //#then construct should have userVariant set
+      const visual = info.categories.find((c) => c.name === "construct")
       expect(visual).toBeDefined()
       expect(visual!.userOverride).toBe("google/gemini-3-flash-preview")
       expect(visual!.userVariant).toBe("high")

@@ -17,13 +17,13 @@ describe("buildPlanDemoteConfig", () => {
   test("extracts all model settings from prometheus config", () => {
     //#given
     const prometheusConfig = {
-      name: "prometheus",
+      name: "oracle",
       model: "anthropic/claude-opus-4-6",
       variant: "max",
       mode: "all",
-      prompt: "You are Prometheus...",
+      prompt: "You are Oracle...",
       permission: { edit: "allow" },
-      description: "Plan agent (Prometheus)",
+      description: "Plan agent (Oracle)",
       color: "#FF5722",
       temperature: 0.1,
       top_p: 0.95,

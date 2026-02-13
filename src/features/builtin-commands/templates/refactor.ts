@@ -102,7 +102,7 @@ Fire ALL of these simultaneously using \`call_omo_agent\`:
 \`\`\`
 // Agent 1: Find the refactoring target
 call_omo_agent(
-  subagent_type="explore",
+  subagent_type="trinity",
   run_in_background=true,
   prompt="Find all occurrences and definitions of [TARGET]. 
   Report: file paths, line numbers, usage patterns."
@@ -110,7 +110,7 @@ call_omo_agent(
 
 // Agent 2: Find related code
 call_omo_agent(
-  subagent_type="explore", 
+  subagent_type="trinity", 
   run_in_background=true,
   prompt="Find all code that imports, uses, or depends on [TARGET].
   Report: dependency chains, import graphs."
@@ -118,7 +118,7 @@ call_omo_agent(
 
 // Agent 3: Find similar patterns
 call_omo_agent(
-  subagent_type="explore",
+  subagent_type="trinity",
   run_in_background=true,
   prompt="Find similar code patterns to [TARGET] in the codebase.
   Report: analogous implementations, established conventions."
@@ -126,7 +126,7 @@ call_omo_agent(
 
 // Agent 4: Find tests
 call_omo_agent(
-  subagent_type="explore",
+  subagent_type="trinity",
   run_in_background=true,
   prompt="Find all test files related to [TARGET].
   Report: test file paths, test case names, coverage indicators."
@@ -134,7 +134,7 @@ call_omo_agent(
 
 // Agent 5: Architecture context
 call_omo_agent(
-  subagent_type="explore",
+  subagent_type="trinity",
   run_in_background=true,
   prompt="Find architectural patterns and module organization around [TARGET].
   Report: module boundaries, layer structure, design patterns in use."
@@ -275,7 +275,7 @@ ls -la *_test.go
 \`\`\`
 // Find all tests related to target
 call_omo_agent(
-  subagent_type="explore",
+  subagent_type="trinity",
   run_in_background=false,  // Need this synchronously
   prompt="Analyze test coverage for [TARGET]:
   1. Which test files cover this code?

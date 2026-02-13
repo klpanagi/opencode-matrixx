@@ -8,7 +8,7 @@ export {
   BuiltinCommandNameSchema,
   SisyphusAgentConfigSchema,
   ExperimentalConfigSchema,
-  RalphLoopConfigSchema,
+  MatrixLoopConfigSchema,
   TmuxConfigSchema,
   TmuxLayoutSchema,
 } from "./schema"
@@ -24,7 +24,7 @@ export type {
   SisyphusAgentConfig,
   ExperimentalConfig,
   DynamicContextPruningConfig,
-  RalphLoopConfig,
+  MatrixLoopConfig,
   TmuxConfig,
   TmuxLayout,
   SisyphusConfig,

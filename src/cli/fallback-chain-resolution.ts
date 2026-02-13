@@ -24,8 +24,8 @@ export function resolveModelFromChain(
 	return null
 }
 
-export function getSisyphusFallbackChain(): FallbackEntry[] {
-	return AGENT_MODEL_REQUIREMENTS.sisyphus.fallbackChain
+export function getMorpheusFallbackChain(): FallbackEntry[] {
+	return AGENT_MODEL_REQUIREMENTS.morpheus.fallbackChain
 }
 
 export function isAnyFallbackEntryAvailable(

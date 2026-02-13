@@ -122,12 +122,12 @@ describe("createAutoSlashCommandHook", () => {
   })
 
   describe("excluded commands", () => {
-    it("should NOT trigger for ralph-loop command", async () => {
-      // given ralph-loop command
+    it("should NOT trigger for matrix-loop command", async () => {
+      // given matrix-loop command
       const hook = createAutoSlashCommandHook()
-      const sessionID = `test-session-ralph-${Date.now()}`
+      const sessionID = `test-session-matrix-loop-${Date.now()}`
       const input = createMockInput(sessionID)
-      const output = createMockOutput("/ralph-loop do something")
+      const output = createMockOutput("/matrix-loop do something")
       const originalText = output.parts[0].text
 
       // when hook is called
@@ -137,12 +137,12 @@ describe("createAutoSlashCommandHook", () => {
       expect(output.parts[0].text).toBe(originalText)
     })
 
-    it("should NOT trigger for cancel-ralph command", async () => {
-      // given cancel-ralph command
+    it("should NOT trigger for cancel-loop command", async () => {
+      // given cancel-loop command
       const hook = createAutoSlashCommandHook()
       const sessionID = `test-session-cancel-${Date.now()}`
       const input = createMockInput(sessionID)
-      const output = createMockOutput("/cancel-ralph")
+      const output = createMockOutput("/cancel-loop")
       const originalText = output.parts[0].text
 
       // when hook is called
@@ -296,10 +296,10 @@ describe("createAutoSlashCommandHook", () => {
       expect(output.parts.length).toBe(0)
     })
 
-    it("should inject template for known builtin commands like ralph-loop", async () => {
+    it("should inject template for known builtin commands like matrix-loop", async () => {
       //#given
       const hook = createAutoSlashCommandHook()
-      const input = createCommandInput("ralph-loop")
+      const input = createCommandInput("matrix-loop")
       const output = createCommandOutput("original")
 
       //#when
@@ -307,7 +307,7 @@ describe("createAutoSlashCommandHook", () => {
 
       //#then
       expect(output.parts[0].text).toContain("<auto-slash-command>")
-      expect(output.parts[0].text).toContain("/ralph-loop Command")
+      expect(output.parts[0].text).toContain("/matrix-loop Command")
     })
 
     it("should pass command arguments correctly", async () => {

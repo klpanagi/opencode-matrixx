@@ -2,8 +2,8 @@ import type { AgentConfig } from "@opencode-ai/sdk"
 
 /**
  * Agent mode determines UI model selection behavior:
- * - "primary": Respects user's UI-selected model (sisyphus, atlas)
- * - "subagent": Uses own fallback chain, ignores UI selection (oracle, explore, etc.)
+ * - "primary": Respects user's UI-selected model (morpheus, architect)
+ * - "subagent": Uses own fallback chain, ignores UI selection (merovingian, trinity, etc.)
  * - "all": Available in both contexts (OpenCode compatibility)
  */
 export type AgentMode = "primary" | "subagent" | "all"
@@ -17,7 +17,7 @@ export type AgentFactory = ((model: string) => AgentConfig) & {
 }
 
 /**
- * Agent category for grouping in Sisyphus prompt sections
+ * Agent category for grouping in Morpheus prompt sections
  */
 export type AgentCategory = "exploration" | "specialist" | "advisor" | "utility"
 
@@ -27,7 +27,7 @@ export type AgentCategory = "exploration" | "specialist" | "advisor" | "utility"
 export type AgentCost = "FREE" | "CHEAP" | "EXPENSIVE"
 
 /**
- * Delegation trigger for Sisyphus prompt's Delegation Table
+ * Delegation trigger for Morpheus prompt's Delegation Table
  */
 export interface DelegationTrigger {
   /** Domain of work (e.g., "Frontend UI/UX") */
@@ -37,8 +37,8 @@ export interface DelegationTrigger {
 }
 
 /**
- * Metadata for generating Sisyphus prompt sections dynamically
- * This allows adding/removing agents without manually updating the Sisyphus prompt
+ * Metadata for generating Morpheus prompt sections dynamically
+ * This allows adding/removing agents without manually updating the Morpheus prompt
  */
 export interface AgentPromptMetadata {
   /** Category for grouping in prompt sections */
@@ -71,15 +71,15 @@ export function isGptModel(model: string): boolean {
 }
 
 export type BuiltinAgentName =
-  | "sisyphus"
-  | "hephaestus"
-  | "oracle"
-  | "librarian"
-  | "explore"
-  | "multimodal-looker"
-  | "metis"
-  | "momus"
-  | "atlas"
+  | "morpheus"
+  | "keymaker"
+  | "merovingian"
+  | "operator"
+  | "trinity"
+  | "construct"
+  | "seraph"
+  | "smith"
+  | "architect"
 
 export type OverridableAgentName =
   | "build"

@@ -44,8 +44,8 @@ export const ULTRAWORK_DEFAULT_MESSAGE = `<ultrawork-mode>
 
 **WHEN IN DOUBT:**
 \`\`\`
-task(subagent_type="explore", load_skills=[], prompt="I'm implementing [TASK DESCRIPTION] and need to understand [SPECIFIC KNOWLEDGE GAP]. Find [X] patterns in the codebase — show file paths, implementation approach, and conventions used. I'll use this to [HOW RESULTS WILL BE USED]. Focus on src/ directories, skip test files unless test patterns are specifically needed. Return concrete file paths with brief descriptions of what each file does.", run_in_background=true)
-task(subagent_type="librarian", load_skills=[], prompt="I'm working with [LIBRARY/TECHNOLOGY] and need [SPECIFIC INFORMATION]. Find official documentation and production-quality examples for [Y] — specifically: API reference, configuration options, recommended patterns, and common pitfalls. Skip beginner tutorials. I'll use this to [DECISION THIS WILL INFORM].", run_in_background=true)
+task(subagent_type="trinity", load_skills=[], prompt="I'm implementing [TASK DESCRIPTION] and need to understand [SPECIFIC KNOWLEDGE GAP]. Find [X] patterns in the codebase — show file paths, implementation approach, and conventions used. I'll use this to [HOW RESULTS WILL BE USED]. Focus on src/ directories, skip test files unless test patterns are specifically needed. Return concrete file paths with brief descriptions of what each file does.", run_in_background=true)
+task(subagent_type="operator", load_skills=[], prompt="I'm working with [LIBRARY/TECHNOLOGY] and need [SPECIFIC INFORMATION]. Find official documentation and production-quality examples for [Y] — specifically: API reference, configuration options, recommended patterns, and common pitfalls. Skip beginner tutorials. I'll use this to [DECISION THIS WILL INFORM].", run_in_background=true)
 task(subagent_type="oracle", load_skills=[], prompt="I need architectural review of my approach to [TASK]. Here's my plan: [DESCRIBE PLAN WITH SPECIFIC FILES AND CHANGES]. My concerns are: [LIST SPECIFIC UNCERTAINTIES]. Please evaluate: correctness of approach, potential issues I'm missing, and whether a better alternative exists.", run_in_background=false)
 \`\`\`
 
@@ -81,7 +81,7 @@ task(subagent_type="oracle", load_skills=[], prompt="I need architectural review
 **IF YOU ENCOUNTER A BLOCKER:**
 1. **DO NOT** give up
 2. **DO NOT** deliver a compromised version
-3. **DO** consult specialists (oracle for conventional, artistry for non-conventional)
+3. **DO** consult specialists (oracle for conventional, matrix-bend for non-conventional)
 4. **DO** ask the user for guidance
 5. **DO** explore alternative approaches
 
@@ -147,23 +147,23 @@ task(session_id="ses_abc123", load_skills=[], prompt="Here's my answer to your q
 
 | Task Type | Action | Why |
 |-----------|--------|-----|
-| Codebase exploration | task(subagent_type="explore", load_skills=[], run_in_background=true) | Parallel, context-efficient |
-| Documentation lookup | task(subagent_type="librarian", load_skills=[], run_in_background=true) | Specialized knowledge |
+| Codebase exploration | task(subagent_type="trinity", load_skills=[], run_in_background=true) | Parallel, context-efficient |
+| Documentation lookup | task(subagent_type="operator", load_skills=[], run_in_background=true) | Specialized knowledge |
 | Planning | task(subagent_type="plan", load_skills=[]) | Parallel task graph + structured TODO list |
 | Hard problem (conventional) | task(subagent_type="oracle", load_skills=[]) | Architecture, debugging, complex logic |
-| Hard problem (non-conventional) | task(category="artistry", load_skills=[...]) | Different approach needed |
+| Hard problem (non-conventional) | task(category="matrix-bend", load_skills=[...]) | Different approach needed |
 | Implementation | task(category="...", load_skills=[...]) | Domain-optimized models |
 
 **CATEGORY + SKILL DELEGATION:**
 \`\`\`
 // Frontend work
-task(category="visual-engineering", load_skills=["frontend-ui-ux"])
+task(category="construct", load_skills=["frontend-ui-ux"])
 
 // Complex logic
-task(category="ultrabrain", load_skills=["typescript-programmer"])
+task(category="source", load_skills=["typescript-programmer"])
 
 // Quick fixes
-task(category="quick", load_skills=["git-master"])
+task(category="bullet-time", load_skills=["git-master"])
 \`\`\`
 
 **YOU SHOULD ONLY DO IT YOURSELF WHEN:**

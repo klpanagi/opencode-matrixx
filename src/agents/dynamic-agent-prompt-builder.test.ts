@@ -12,7 +12,7 @@ import {
 
 describe("buildCategorySkillsDelegationGuide", () => {
   const categories: AvailableCategory[] = [
-    { name: "visual-engineering", description: "Frontend, UI/UX" },
+    { name: "construct", description: "Frontend, UI/UX" },
     { name: "quick", description: "Trivial tasks" },
   ]
 

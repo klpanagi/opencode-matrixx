@@ -148,7 +148,7 @@ describe("AgentOverrideConfigSchema", () => {
   describe("category field", () => {
     test("accepts category as optional string", () => {
       // given
-      const config = { category: "visual-engineering" }
+      const config = { category: "construct" }
 
       // when
       const result = AgentOverrideConfigSchema.safeParse(config)
@@ -156,7 +156,7 @@ describe("AgentOverrideConfigSchema", () => {
       // then
       expect(result.success).toBe(true)
       if (result.success) {
-        expect(result.data.category).toBe("visual-engineering")
+        expect(result.data.category).toBe("construct")
       }
     })
 
@@ -281,7 +281,7 @@ describe("AgentOverrideConfigSchema", () => {
       // given - category should take precedence at runtime, but both should validate
       const config = { 
         model: "openai/gpt-5.2",
-        category: "ultrabrain"
+        category: "source"
       }
 
       // when
@@ -291,7 +291,7 @@ describe("AgentOverrideConfigSchema", () => {
       expect(result.success).toBe(true)
       if (result.success) {
         expect(result.data.model).toBe("openai/gpt-5.2")
-        expect(result.data.category).toBe("ultrabrain")
+        expect(result.data.category).toBe("source")
       }
     })
   })
@@ -300,7 +300,7 @@ describe("AgentOverrideConfigSchema", () => {
     test("accepts category with skills", () => {
       // given
       const config = { 
-        category: "visual-engineering",
+        category: "construct",
         skills: ["frontend-ui-ux"]
       }
 
@@ -310,7 +310,7 @@ describe("AgentOverrideConfigSchema", () => {
       // then
       expect(result.success).toBe(true)
       if (result.success) {
-        expect(result.data.category).toBe("visual-engineering")
+        expect(result.data.category).toBe("construct")
         expect(result.data.skills).toEqual(["frontend-ui-ux"])
       }
     })
@@ -318,7 +318,7 @@ describe("AgentOverrideConfigSchema", () => {
     test("accepts category with skills and other fields", () => {
       // given
       const config = { 
-        category: "ultrabrain",
+        category: "source",
         skills: ["code-reviewer"],
         temperature: 0.3,
         prompt_append: "Extra instructions"
@@ -330,7 +330,7 @@ describe("AgentOverrideConfigSchema", () => {
       // then
       expect(result.success).toBe(true)
       if (result.success) {
-        expect(result.data.category).toBe("ultrabrain")
+        expect(result.data.category).toBe("source")
         expect(result.data.skills).toEqual(["code-reviewer"])
         expect(result.data.temperature).toBe(0.3)
         expect(result.data.prompt_append).toBe("Extra instructions")
@@ -383,7 +383,7 @@ describe("CategoryConfigSchema", () => {
 describe("BuiltinCategoryNameSchema", () => {
   test("accepts all builtin category names", () => {
     // given
-    const categories = ["visual-engineering", "ultrabrain", "artistry", "quick", "unspecified-low", "unspecified-high", "writing"]
+    const categories = ["construct", "source", "matrix-bend", "quick", "blue-pill", "red-pill", "writing"]
 
     // when / #then
     for (const cat of categories) {
@@ -393,12 +393,12 @@ describe("BuiltinCategoryNameSchema", () => {
   })
 })
 
-describe("Sisyphus-Junior agent override", () => {
-  test("schema accepts agents['Sisyphus-Junior'] and retains the key after parsing", () => {
+describe("Mouse agent override", () => {
+  test("schema accepts agents['Mouse'] and retains the key after parsing", () => {
     // given
     const config = {
       agents: {
-        "sisyphus-junior": {
+        "mouse": {
           model: "openai/gpt-5.2",
           temperature: 0.2,
         },
@@ -411,9 +411,9 @@ describe("Sisyphus-Junior agent override", () => {
     // then
     expect(result.success).toBe(true)
     if (result.success) {
-      expect(result.data.agents?.["sisyphus-junior"]).toBeDefined()
-      expect(result.data.agents?.["sisyphus-junior"]?.model).toBe("openai/gpt-5.2")
-      expect(result.data.agents?.["sisyphus-junior"]?.temperature).toBe(0.2)
+      expect(result.data.agents?.["mouse"]).toBeDefined()
+      expect(result.data.agents?.["mouse"]?.model).toBe("openai/gpt-5.2")
+      expect(result.data.agents?.["mouse"]?.temperature).toBe(0.2)
     }
   })
 
@@ -421,7 +421,7 @@ describe("Sisyphus-Junior agent override", () => {
     // given
     const config = {
       agents: {
-        "sisyphus-junior": {
+        "mouse": {
           prompt_append: "Additional instructions for sisyphus-junior",
         },
       },
@@ -433,7 +433,7 @@ describe("Sisyphus-Junior agent override", () => {
     // then
     expect(result.success).toBe(true)
     if (result.success) {
-      expect(result.data.agents?.["sisyphus-junior"]?.prompt_append).toBe(
+      expect(result.data.agents?.["mouse"]?.prompt_append).toBe(
         "Additional instructions for sisyphus-junior"
       )
     }
@@ -443,7 +443,7 @@ describe("Sisyphus-Junior agent override", () => {
     // given
     const config = {
       agents: {
-        "sisyphus-junior": {
+        "mouse": {
           tools: {
             read: true,
             write: false,
@@ -458,7 +458,7 @@ describe("Sisyphus-Junior agent override", () => {
     // then
     expect(result.success).toBe(true)
     if (result.success) {
-      expect(result.data.agents?.["sisyphus-junior"]?.tools).toEqual({
+      expect(result.data.agents?.["mouse"]?.tools).toEqual({
         read: true,
         write: false,
       })
@@ -487,7 +487,7 @@ describe("Sisyphus-Junior agent override", () => {
     // then
     expect(result.success).toBe(true)
     if (result.success) {
-      expect(result.data.agents?.sisyphus?.temperature).toBe(0.1)
+      expect(result.data.agents?.matrix?.temperature).toBe(0.1)
       expect(result.data.agents?.atlas?.temperature).toBe(0.2)
       expect(result.data.agents?.prometheus?.temperature).toBe(0.3)
     }
@@ -498,7 +498,7 @@ describe("Sisyphus-Junior agent override", () => {
     const config = {
       agents: {
         metis: {
-          category: "ultrabrain",
+          category: "source",
         },
         momus: {
           category: "quick",
@@ -512,7 +512,7 @@ describe("Sisyphus-Junior agent override", () => {
     // then
     expect(result.success).toBe(true)
     if (result.success) {
-      expect(result.data.agents?.metis?.category).toBe("ultrabrain")
+      expect(result.data.agents?.metis?.category).toBe("source")
       expect(result.data.agents?.momus?.category).toBe("quick")
     }
   })

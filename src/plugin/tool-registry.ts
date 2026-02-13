@@ -51,7 +51,7 @@ export function createToolRegistry(args: {
   const callOmoAgent = createCallOmoAgent(ctx, managers.backgroundManager)
 
   const isMultimodalLookerEnabled = !(pluginConfig.disabled_agents ?? []).some(
-    (agent) => agent.toLowerCase() === "multimodal-looker",
+    (agent) => agent.toLowerCase() === "construct",
   )
   const lookAt = isMultimodalLookerEnabled ? createLookAt(ctx) : null
 
@@ -61,7 +61,7 @@ export function createToolRegistry(args: {
     directory: ctx.directory,
     userCategories: pluginConfig.categories,
     gitMasterConfig: pluginConfig.git_master,
-    sisyphusJuniorModel: pluginConfig.agents?.["sisyphus-junior"]?.model,
+    sisyphusJuniorModel: pluginConfig.agents?.["mouse"]?.model,
     browserProvider: skillContext.browserProvider,
     disabledSkills: skillContext.disabledSkills,
     availableCategories,

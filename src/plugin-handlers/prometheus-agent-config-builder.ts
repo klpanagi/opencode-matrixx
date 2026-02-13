@@ -1,5 +1,5 @@
 import type { CategoryConfig } from "../config/schema";
-import { PROMETHEUS_PERMISSION, PROMETHEUS_SYSTEM_PROMPT } from "../agents/prometheus";
+import { PROMETHEUS_PERMISSION, PROMETHEUS_SYSTEM_PROMPT } from "../agents/oracle";
 import { AGENT_MODEL_REQUIREMENTS } from "../shared/model-requirements";
 import {
   fetchAvailableModels,
@@ -8,7 +8,7 @@ import {
 } from "../shared";
 import { resolveCategoryConfig } from "./category-config-resolver";
 
-type PrometheusOverride = Record<string, unknown> & {
+type OracleOverride = Record<string, unknown> & {
   category?: string;
   model?: string;
   variant?: string;
@@ -21,14 +21,14 @@ type PrometheusOverride = Record<string, unknown> & {
   prompt_append?: string;
 };
 
-export async function buildPrometheusAgentConfig(params: {
+export async function buildOracleAgentConfig(params: {
   configAgentPlan: Record<string, unknown> | undefined;
-  pluginPrometheusOverride: PrometheusOverride | undefined;
+  pluginOracleOverride: OracleOverride | undefined;
   userCategories: Record<string, CategoryConfig> | undefined;
   currentModel: string | undefined;
 }): Promise<Record<string, unknown>> {
-  const categoryConfig = params.pluginPrometheusOverride?.category
-    ? resolveCategoryConfig(params.pluginPrometheusOverride.category, params.userCategories)
+  const categoryConfig = params.pluginOracleOverride?.category
+    ? resolveCategoryConfig(params.pluginOracleOverride.category, params.userCategories)
     : undefined;
 
   const requirement = AGENT_MODEL_REQUIREMENTS["prometheus"];
@@ -40,7 +40,7 @@ export async function buildPrometheusAgentConfig(params: {
   const modelResolution = resolveModelPipeline({
     intent: {
       uiSelectedModel: params.currentModel,
-      userModel: params.pluginPrometheusOverride?.model ?? categoryConfig?.model,
+      userModel: params.pluginOracleOverride?.model ?? categoryConfig?.model,
     },
     constraints: { availableModels },
     policy: {
@@ -52,17 +52,17 @@ export async function buildPrometheusAgentConfig(params: {
   const resolvedModel = modelResolution?.model;
   const resolvedVariant = modelResolution?.variant;
 
-  const variantToUse = params.pluginPrometheusOverride?.variant ?? resolvedVariant;
+  const variantToUse = params.pluginOracleOverride?.variant ?? resolvedVariant;
   const reasoningEffortToUse =
-    params.pluginPrometheusOverride?.reasoningEffort ?? categoryConfig?.reasoningEffort;
+    params.pluginOracleOverride?.reasoningEffort ?? categoryConfig?.reasoningEffort;
   const textVerbosityToUse =
-    params.pluginPrometheusOverride?.textVerbosity ?? categoryConfig?.textVerbosity;
-  const thinkingToUse = params.pluginPrometheusOverride?.thinking ?? categoryConfig?.thinking;
+    params.pluginOracleOverride?.textVerbosity ?? categoryConfig?.textVerbosity;
+  const thinkingToUse = params.pluginOracleOverride?.thinking ?? categoryConfig?.thinking;
   const temperatureToUse =
-    params.pluginPrometheusOverride?.temperature ?? categoryConfig?.temperature;
-  const topPToUse = params.pluginPrometheusOverride?.top_p ?? categoryConfig?.top_p;
+    params.pluginOracleOverride?.temperature ?? categoryConfig?.temperature;
+  const topPToUse = params.pluginOracleOverride?.top_p ?? categoryConfig?.top_p;
   const maxTokensToUse =
-    params.pluginPrometheusOverride?.maxTokens ?? categoryConfig?.maxTokens;
+    params.pluginOracleOverride?.maxTokens ?? categoryConfig?.maxTokens;
 
   const base: Record<string, unknown> = {
     name: "prometheus",
@@ -71,7 +71,7 @@ export async function buildPrometheusAgentConfig(params: {
     mode: "all",
     prompt: PROMETHEUS_SYSTEM_PROMPT,
     permission: PROMETHEUS_PERMISSION,
-    description: `${(params.configAgentPlan?.description as string) ?? "Plan agent"} (Prometheus - OhMyOpenCode)`,
+    description: `${(params.configAgentPlan?.description as string) ?? "Plan agent"} (Oracle - OhMyOpenCode)`,
     color: (params.configAgentPlan?.color as string) ?? "#FF5722",
     ...(temperatureToUse !== undefined ? { temperature: temperatureToUse } : {}),
     ...(topPToUse !== undefined ? { top_p: topPToUse } : {}),
@@ -86,7 +86,7 @@ export async function buildPrometheusAgentConfig(params: {
       : {}),
   };
 
-  const override = params.pluginPrometheusOverride;
+  const override = params.pluginOracleOverride;
   if (!override) return base;
 
   const { prompt_append, ...restOverride } = override;

@@ -1,8 +1,8 @@
 import { describe, test, expect } from "bun:test"
-import { PROMETHEUS_SYSTEM_PROMPT } from "./prometheus"
+import { PROMETHEUS_SYSTEM_PROMPT } from "./oracle"
 
-describe("PROMETHEUS_SYSTEM_PROMPT Momus invocation policy", () => {
-  test("should direct providing ONLY the file path string when invoking Momus", () => {
+describe("PROMETHEUS_SYSTEM_PROMPT Smith invocation policy", () => {
+  test("should direct providing ONLY the file path string when invoking Smith", () => {
     //#given
     const prompt = PROMETHEUS_SYSTEM_PROMPT
 
@@ -10,7 +10,7 @@ describe("PROMETHEUS_SYSTEM_PROMPT Momus invocation policy", () => {
     expect(prompt.toLowerCase()).toMatch(/momus.*only.*path|path.*only.*momus/)
   })
 
-  test("should forbid wrapping Momus invocation in explanations or markdown", () => {
+  test("should forbid wrapping Smith invocation in explanations or markdown", () => {
     //#given
     const prompt = PROMETHEUS_SYSTEM_PROMPT
 

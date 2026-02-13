@@ -1,7 +1,7 @@
 import type { CommandDefinition } from "../claude-code-command-loader"
 import type { BuiltinCommandName, BuiltinCommands } from "./types"
 import { INIT_DEEP_TEMPLATE } from "./templates/init-deep"
-import { RALPH_LOOP_TEMPLATE, CANCEL_RALPH_TEMPLATE } from "./templates/ralph-loop"
+import { MATRIX_LOOP_TEMPLATE, CANCEL_LOOP_TEMPLATE } from "./templates/matrix-loop"
 import { STOP_CONTINUATION_TEMPLATE } from "./templates/stop-continuation"
 import { REFACTOR_TEMPLATE } from "./templates/refactor"
 import { START_WORK_TEMPLATE } from "./templates/start-work"
@@ -19,10 +19,10 @@ $ARGUMENTS
 </user-request>`,
     argumentHint: "[--create-new] [--max-depth=N]",
   },
-   "ralph-loop": {
+   "matrix-loop": {
      description: "(builtin) Start self-referential development loop until completion",
      template: `<command-instruction>
-${RALPH_LOOP_TEMPLATE}
+${MATRIX_LOOP_TEMPLATE}
 </command-instruction>
 
 <user-task>
@@ -33,7 +33,7 @@ $ARGUMENTS
    "ulw-loop": {
      description: "(builtin) Start ultrawork loop - continues until completion with ultrawork mode",
      template: `<command-instruction>
-${RALPH_LOOP_TEMPLATE}
+${MATRIX_LOOP_TEMPLATE}
 </command-instruction>
 
 <user-task>
@@ -41,10 +41,10 @@ $ARGUMENTS
 </user-task>`,
      argumentHint: '"task description" [--completion-promise=TEXT] [--max-iterations=N]',
    },
-  "cancel-ralph": {
-    description: "(builtin) Cancel active Ralph Loop",
+  "cancel-loop": {
+    description: "(builtin) Cancel active Matrix Loop",
     template: `<command-instruction>
-${CANCEL_RALPH_TEMPLATE}
+${CANCEL_LOOP_TEMPLATE}
 </command-instruction>`,
   },
   refactor: {
@@ -56,7 +56,7 @@ ${REFACTOR_TEMPLATE}
     argumentHint: "<refactoring-target> [--scope=<file|module|project>] [--strategy=<safe|aggressive>]",
   },
   "start-work": {
-    description: "(builtin) Start Sisyphus work session from Prometheus plan",
+    description: "(builtin) Start Morpheus work session from Oracle plan",
     agent: "atlas",
     template: `<command-instruction>
 ${START_WORK_TEMPLATE}
@@ -73,7 +73,7 @@ $ARGUMENTS
     argumentHint: "[plan-name]",
   },
   "stop-continuation": {
-    description: "(builtin) Stop all continuation mechanisms (ralph loop, todo continuation, boulder) for this session",
+    description: "(builtin) Stop all continuation mechanisms (matrix loop, todo continuation, mission) for this session",
     template: `<command-instruction>
 ${STOP_CONTINUATION_TEMPLATE}
 </command-instruction>`,

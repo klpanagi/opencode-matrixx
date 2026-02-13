@@ -528,7 +528,7 @@ describe("resolveModelWithFallback", () => {
       cacheSpy.mockRestore()
     })
 
-    test("uses github-copilot when google not connected (visual-engineering scenario)", () => {
+    test("uses github-copilot when google not connected (construct scenario)", () => {
       // given - user has github-copilot but not google connected
       const cacheSpy = spyOn(connectedProvidersCache, "readConnectedProvidersCache").mockReturnValue(["github-copilot"])
       const input: ExtendedModelResolutionInput = {

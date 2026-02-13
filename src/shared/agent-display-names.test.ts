@@ -3,25 +3,25 @@ import { AGENT_DISPLAY_NAMES, getAgentDisplayName } from "./agent-display-names"
 
 describe("getAgentDisplayName", () => {
   it("returns display name for lowercase config key (new format)", () => {
-    // given config key "sisyphus"
-    const configKey = "sisyphus"
+    // given config key "morpheus"
+    const configKey = "morpheus"
 
     // when getAgentDisplayName called
     const result = getAgentDisplayName(configKey)
 
-    // then returns "Sisyphus (Ultraworker)"
-    expect(result).toBe("Sisyphus (Ultraworker)")
+    // then returns "Morpheus (Ultraworker)"
+    expect(result).toBe("Morpheus (Ultraworker)")
   })
 
   it("returns display name for uppercase config key (old format - case-insensitive)", () => {
-    // given config key "Sisyphus" (old format)
-    const configKey = "Sisyphus"
+    // given config key "Morpheus" (old format)
+    const configKey = "Morpheus"
 
     // when getAgentDisplayName called
     const result = getAgentDisplayName(configKey)
 
-    // then returns "Sisyphus (Ultraworker)" (case-insensitive lookup)
-    expect(result).toBe("Sisyphus (Ultraworker)")
+    // then returns "Morpheus (Ultraworker)" (case-insensitive lookup)
+    expect(result).toBe("Morpheus (Ultraworker)")
   })
 
   it("returns original key for unknown agents (fallback)", () => {
@@ -36,8 +36,8 @@ describe("getAgentDisplayName", () => {
   })
 
   it("returns display name for atlas", () => {
-    // given config key "atlas"
-    const configKey = "atlas"
+    // given config key "architect"
+    const configKey = "architect"
 
     // when getAgentDisplayName called
     const result = getAgentDisplayName(configKey)
@@ -47,47 +47,47 @@ describe("getAgentDisplayName", () => {
   })
 
   it("returns display name for prometheus", () => {
-    // given config key "prometheus"
-    const configKey = "prometheus"
+    // given config key "oracle"
+    const configKey = "oracle"
 
     // when getAgentDisplayName called
     const result = getAgentDisplayName(configKey)
 
-    // then returns "Prometheus (Plan Builder)"
-    expect(result).toBe("Prometheus (Plan Builder)")
+    // then returns "Oracle (Plan Builder)"
+    expect(result).toBe("Oracle (Plan Builder)")
   })
 
   it("returns display name for sisyphus-junior", () => {
-    // given config key "sisyphus-junior"
-    const configKey = "sisyphus-junior"
+    // given config key "mouse"
+    const configKey = "mouse"
 
     // when getAgentDisplayName called
     const result = getAgentDisplayName(configKey)
 
-    // then returns "Sisyphus-Junior"
-    expect(result).toBe("Sisyphus-Junior")
+    // then returns "Mouse"
+    expect(result).toBe("Mouse")
   })
 
   it("returns display name for metis", () => {
-    // given config key "metis"
-    const configKey = "metis"
+    // given config key "seraph"
+    const configKey = "seraph"
 
     // when getAgentDisplayName called
     const result = getAgentDisplayName(configKey)
 
-    // then returns "Metis (Plan Consultant)"
-    expect(result).toBe("Metis (Plan Consultant)")
+    // then returns "Seraph (Plan Consultant)"
+    expect(result).toBe("Seraph (Plan Consultant)")
   })
 
   it("returns display name for momus", () => {
-    // given config key "momus"
-    const configKey = "momus"
+    // given config key "smith"
+    const configKey = "smith"
 
     // when getAgentDisplayName called
     const result = getAgentDisplayName(configKey)
 
-    // then returns "Momus (Plan Reviewer)"
-    expect(result).toBe("Momus (Plan Reviewer)")
+    // then returns "Smith (Plan Reviewer)"
+    expect(result).toBe("Smith (Plan Reviewer)")
   })
 
   it("returns display name for oracle", () => {
@@ -102,36 +102,36 @@ describe("getAgentDisplayName", () => {
   })
 
   it("returns display name for librarian", () => {
-    // given config key "librarian"
-    const configKey = "librarian"
+    // given config key "operator"
+    const configKey = "operator"
 
     // when getAgentDisplayName called
     const result = getAgentDisplayName(configKey)
 
-    // then returns "librarian"
-    expect(result).toBe("librarian")
+    // then returns "operator"
+    expect(result).toBe("operator")
   })
 
   it("returns display name for explore", () => {
-    // given config key "explore"
-    const configKey = "explore"
+    // given config key "trinity"
+    const configKey = "trinity"
 
     // when getAgentDisplayName called
     const result = getAgentDisplayName(configKey)
 
-    // then returns "explore"
-    expect(result).toBe("explore")
+    // then returns "trinity"
+    expect(result).toBe("trinity")
   })
 
   it("returns display name for multimodal-looker", () => {
-    // given config key "multimodal-looker"
-    const configKey = "multimodal-looker"
+    // given config key "construct"
+    const configKey = "construct"
 
     // when getAgentDisplayName called
     const result = getAgentDisplayName(configKey)
 
-    // then returns "multimodal-looker"
-    expect(result).toBe("multimodal-looker")
+    // then returns "construct"
+    expect(result).toBe("construct")
   })
 })
 
@@ -139,16 +139,16 @@ describe("AGENT_DISPLAY_NAMES", () => {
   it("contains all expected agent mappings", () => {
     // given expected mappings
     const expectedMappings = {
-      sisyphus: "Sisyphus (Ultraworker)",
+      sisyphus: "Morpheus (Ultraworker)",
       atlas: "Atlas (Plan Execution Orchestrator)",
-      prometheus: "Prometheus (Plan Builder)",
-      "sisyphus-junior": "Sisyphus-Junior",
-      metis: "Metis (Plan Consultant)",
-      momus: "Momus (Plan Reviewer)",
+      prometheus: "Oracle (Plan Builder)",
+      "mouse": "Mouse",
+      metis: "Seraph (Plan Consultant)",
+      momus: "Smith (Plan Reviewer)",
       oracle: "oracle",
-      librarian: "librarian",
-      explore: "explore",
-      "multimodal-looker": "multimodal-looker",
+      librarian: "operator",
+      explore: "trinity",
+      "construct": "construct",
     }
 
     // when checking the constant

@@ -2,7 +2,7 @@ import { existsSync, readdirSync } from "node:fs"
 import { join } from "node:path"
 import { findNearestMessageWithFields, findFirstMessageWithAgent, MESSAGE_STORAGE } from "../../features/hook-message-injector"
 import { getSessionAgent } from "../../features/claude-code-session-state"
-import { readBoulderState } from "../../features/boulder-state"
+import { readMissionState } from "../../features/mission-state"
 
 function getMessageDir(sessionID: string): string | null {
   if (!existsSync(MESSAGE_STORAGE)) return null
@@ -28,23 +28,23 @@ function getAgentFromMessageFiles(sessionID: string): string | undefined {
  * Get the effective agent for the session.
  * Priority order:
  * 1. In-memory session agent (most recent, set by /start-work)
- * 2. Boulder state agent (persisted across restarts, fixes #927)
- * 3. Message files (fallback for sessions without boulder state)
+ * 2. Mission state agent (persisted across restarts, fixes #927)
+ * 3. Message files (fallback for sessions without mission state)
  *
  * This fixes issue #927 where after interruption:
  * - In-memory map is cleared (process restart)
  * - Message files return "prometheus" (oldest message from /plan)
- * - But boulder.json has agent: "atlas" (set by /start-work)
+ * - But mission.json has agent: "atlas" (set by /start-work)
  */
 export function getAgentFromSession(sessionID: string, directory: string): string | undefined {
   // Check in-memory first (current session)
   const memoryAgent = getSessionAgent(sessionID)
   if (memoryAgent) return memoryAgent
 
-  // Check boulder state (persisted across restarts) - fixes #927
-  const boulderState = readBoulderState(directory)
-  if (boulderState?.session_ids?.includes(sessionID) && boulderState.agent) {
-    return boulderState.agent
+  // Check mission state (persisted across restarts) - fixes #927
+  const missionState = readMissionState(directory)
+  if (missionState?.session_ids?.includes(sessionID) && missionState.agent) {
+    return missionState.agent
   }
 
   // Fallback to message files

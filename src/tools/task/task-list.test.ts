@@ -11,7 +11,7 @@ describe("createTaskList", () => {
   let taskDir: string
 
   beforeEach(() => {
-    taskDir = join(testProjectDir, ".sisyphus/tasks")
+    taskDir = join(testProjectDir, ".matrix/tasks")
     if (existsSync(taskDir)) {
       rmSync(taskDir, { recursive: true })
     }
@@ -28,7 +28,7 @@ describe("createTaskList", () => {
     const config = {
       sisyphus: {
         tasks: {
-          storage_path: join(testProjectDir, ".sisyphus/tasks"),
+          storage_path: join(testProjectDir, ".matrix/tasks"),
           claude_code_compat: false,
         },
       },
@@ -64,13 +64,13 @@ describe("createTaskList", () => {
       threadID: "test-session",
     }
 
-    writeJsonAtomic(join(testProjectDir, ".sisyphus/tasks", "T-1.json"), task1)
-    writeJsonAtomic(join(testProjectDir, ".sisyphus/tasks", "T-2.json"), task2)
+    writeJsonAtomic(join(testProjectDir, ".matrix/tasks", "T-1.json"), task1)
+    writeJsonAtomic(join(testProjectDir, ".matrix/tasks", "T-2.json"), task2)
 
     const config = {
       sisyphus: {
         tasks: {
-          storage_path: join(testProjectDir, ".sisyphus/tasks"),
+          storage_path: join(testProjectDir, ".matrix/tasks"),
           claude_code_compat: false,
         },
       },
@@ -107,13 +107,13 @@ describe("createTaskList", () => {
       threadID: "test-session",
     }
 
-    writeJsonAtomic(join(testProjectDir, ".sisyphus/tasks", "T-1.json"), task1)
-    writeJsonAtomic(join(testProjectDir, ".sisyphus/tasks", "T-2.json"), task2)
+    writeJsonAtomic(join(testProjectDir, ".matrix/tasks", "T-1.json"), task1)
+    writeJsonAtomic(join(testProjectDir, ".matrix/tasks", "T-2.json"), task2)
 
      const config = {
        sisyphus: {
          tasks: {
-           storage_path: join(testProjectDir, ".sisyphus/tasks"),
+           storage_path: join(testProjectDir, ".matrix/tasks"),
            claude_code_compat: false,
          },
        },
@@ -136,18 +136,18 @@ describe("createTaskList", () => {
       subject: "Test task",
       description: "This is a long description that should not be included",
       status: "in_progress",
-      owner: "sisyphus",
+      owner: "morpheus",
       blocks: [],
       blockedBy: ["T-2"],
       threadID: "test-session",
     }
 
-    writeJsonAtomic(join(testProjectDir, ".sisyphus/tasks", "T-1.json"), task)
+    writeJsonAtomic(join(testProjectDir, ".matrix/tasks", "T-1.json"), task)
 
      const config = {
        sisyphus: {
          tasks: {
-           storage_path: join(testProjectDir, ".sisyphus/tasks"),
+           storage_path: join(testProjectDir, ".matrix/tasks"),
            claude_code_compat: false,
          },
        },
@@ -170,7 +170,7 @@ describe("createTaskList", () => {
     expect(summary.id).toBe("T-1")
     expect(summary.subject).toBe("Test task")
     expect(summary.status).toBe("in_progress")
-    expect(summary.owner).toBe("sisyphus")
+    expect(summary.owner).toBe("morpheus")
     expect(summary.blockedBy).toEqual(["T-2"])
   })
 
@@ -204,14 +204,14 @@ describe("createTaskList", () => {
       threadID: "test-session",
     }
 
-    writeJsonAtomic(join(testProjectDir, ".sisyphus/tasks", "T-blocker-completed.json"), blockerCompleted)
-    writeJsonAtomic(join(testProjectDir, ".sisyphus/tasks", "T-blocker-pending.json"), blockerPending)
-    writeJsonAtomic(join(testProjectDir, ".sisyphus/tasks", "T-main.json"), mainTask)
+    writeJsonAtomic(join(testProjectDir, ".matrix/tasks", "T-blocker-completed.json"), blockerCompleted)
+    writeJsonAtomic(join(testProjectDir, ".matrix/tasks", "T-blocker-pending.json"), blockerPending)
+    writeJsonAtomic(join(testProjectDir, ".matrix/tasks", "T-main.json"), mainTask)
 
      const config = {
        sisyphus: {
          tasks: {
-           storage_path: join(testProjectDir, ".sisyphus/tasks"),
+           storage_path: join(testProjectDir, ".matrix/tasks"),
            claude_code_compat: false,
          },
        },
@@ -248,13 +248,13 @@ describe("createTaskList", () => {
        threadID: "test-session",
      }
 
-     writeJsonAtomic(join(testProjectDir, ".sisyphus/tasks", "T-1.json"), task1)
-     writeJsonAtomic(join(testProjectDir, ".sisyphus/tasks", "T-2.json"), task2)
+     writeJsonAtomic(join(testProjectDir, ".matrix/tasks", "T-1.json"), task1)
+     writeJsonAtomic(join(testProjectDir, ".matrix/tasks", "T-2.json"), task2)
 
      const config = {
        sisyphus: {
          tasks: {
-           storage_path: join(testProjectDir, ".sisyphus/tasks"),
+           storage_path: join(testProjectDir, ".matrix/tasks"),
            claude_code_compat: false,
          },
        },
@@ -281,12 +281,12 @@ describe("createTaskList", () => {
        threadID: "test-session",
      }
 
-     writeJsonAtomic(join(testProjectDir, ".sisyphus/tasks", "T-1.json"), task)
+     writeJsonAtomic(join(testProjectDir, ".matrix/tasks", "T-1.json"), task)
 
      const config = {
        sisyphus: {
          tasks: {
-           storage_path: join(testProjectDir, ".sisyphus/tasks"),
+           storage_path: join(testProjectDir, ".matrix/tasks"),
            claude_code_compat: false,
          },
        },
@@ -313,12 +313,12 @@ describe("createTaskList", () => {
        threadID: "test-session",
      }
 
-     writeJsonAtomic(join(testProjectDir, ".sisyphus/tasks", "T-1.json"), task)
+     writeJsonAtomic(join(testProjectDir, ".matrix/tasks", "T-1.json"), task)
 
      const config = {
        sisyphus: {
          tasks: {
-           storage_path: join(testProjectDir, ".sisyphus/tasks"),
+           storage_path: join(testProjectDir, ".matrix/tasks"),
            claude_code_compat: false,
          },
        },

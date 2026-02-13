@@ -42,18 +42,18 @@ export const AgentOverrideConfigSchema = z.object({
 export const AgentOverridesSchema = z.object({
   build: AgentOverrideConfigSchema.optional(),
   plan: AgentOverrideConfigSchema.optional(),
-  sisyphus: AgentOverrideConfigSchema.optional(),
-  hephaestus: AgentOverrideConfigSchema.optional(),
-  "sisyphus-junior": AgentOverrideConfigSchema.optional(),
+  morpheus: AgentOverrideConfigSchema.optional(),
+  keymaker: AgentOverrideConfigSchema.optional(),
+  mouse: AgentOverrideConfigSchema.optional(),
   "OpenCode-Builder": AgentOverrideConfigSchema.optional(),
-  prometheus: AgentOverrideConfigSchema.optional(),
-  metis: AgentOverrideConfigSchema.optional(),
-  momus: AgentOverrideConfigSchema.optional(),
   oracle: AgentOverrideConfigSchema.optional(),
-  librarian: AgentOverrideConfigSchema.optional(),
-  explore: AgentOverrideConfigSchema.optional(),
-  "multimodal-looker": AgentOverrideConfigSchema.optional(),
-  atlas: AgentOverrideConfigSchema.optional(),
+  seraph: AgentOverrideConfigSchema.optional(),
+  smith: AgentOverrideConfigSchema.optional(),
+  merovingian: AgentOverrideConfigSchema.optional(),
+  operator: AgentOverrideConfigSchema.optional(),
+  trinity: AgentOverrideConfigSchema.optional(),
+  construct: AgentOverrideConfigSchema.optional(),
+  architect: AgentOverrideConfigSchema.optional(),
 })
 
 export type AgentOverrideConfig = z.infer<typeof AgentOverrideConfigSchema>
