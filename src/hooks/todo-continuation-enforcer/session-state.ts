@@ -74,6 +74,7 @@ export function createSessionStateStore(): SessionStateStore {
       state.countdownInterval = undefined
     }
 
+    state.inFlight = false
     state.countdownStartedAt = undefined
   }
 
