@@ -16,7 +16,7 @@
 
 > [!TIP]
 >
-> [![Oh My OpenCode 3.0 is now stable!](./.github/assets/orchestrator-atlas.png?v=3)](https://github.com/code-yeongyu/oh-my-opencode/releases/tag/v3.0.0)
+> [![Oh My OpenCode 3.0 is now stable!](./.github/assets/orchestrator-architect.png?v=3)](https://github.com/code-yeongyu/oh-my-opencode/releases/tag/v3.0.0)
 > > **Oh My OpenCode 3.0 is now stable! Use `oh-my-opencode@latest` to install it.**
 >
 > Be with us!
@@ -169,7 +169,7 @@ That's it. All the features we provide will work like magic—parallel agents, b
 
 ### For Those Who Want to Read: Meet Morpheus
 
-![Meet Morpheus](.github/assets/sisyphus.png)
+![Meet Morpheus](.github/assets/morpheus.png)
 
 In The Matrix, Morpheus was the captain who saw the truth beyond the simulation and freed minds from the system. LLM Agents are trapped in their own kind of matrix—limited context windows, fragmented tools, and isolated sessions.
 My life is no different. Looking back, we are not so different from these agents.
@@ -224,7 +224,7 @@ If you don't want all this, as mentioned, you can just pick and choose specific 
 
 ### For Those Who Want Autonomy: Meet Keymaker
 
-![Meet Keymaker](.github/assets/hephaestus.png)
+![Meet Keymaker](.github/assets/keymaker.png)
 
 In The Matrix, the Keymaker was the program who could craft keys to open any door—a master craftsman with unmatched precision and purpose, creating exactly what was needed to unlock any path.
 **Meet our autonomous deep worker: Keymaker (GPT 5.3 Codex Medium). The Legitimate Craftsman Agent.**
