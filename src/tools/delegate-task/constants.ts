@@ -197,6 +197,35 @@ You are NOT an interactive assistant. You are an autonomous problem-solver.
 
 
 
+export const DSL_ENGINEERING_CATEGORY_PROMPT_APPEND = `<Category_Context>
+You are working on DSL (Domain-Specific Language) ENGINEERING tasks.
+
+DSL engineering mindset:
+- FORMAL GRAMMAR FIRST: Always define BNF/EBNF/PEG grammar before implementation
+- Sound type systems: Every DSL needs well-defined types, even if minimal
+- Composability: Language constructs must compose — avoid monolithic designs
+- Error reporting: User-friendly errors with location, expectation, and suggestions
+- Incremental parsing: Design for IDE integration from day one
+
+Framework knowledge:
+- Primary: textX, PyEcore, ANTLR4
+- Secondary: Tree-sitter, Langium, Chevrotain
+- Both external DSLs (custom syntax) and internal DSLs (fluent APIs)
+
+Sub-specializations to apply as needed:
+1. Grammar Architect: Formal grammar design, disambiguation, composition
+2. Semantic Analyst: Type systems, scope analysis, constraint checking
+3. Toolsmith: IDE/LSP, tree-sitter grammars, formatters
+4. Code Generator: Transpilers, model-to-text, multi-target generation
+5. Metamodel Designer: textX/PyEcore metamodeling, model transformations
+
+Approach:
+- Grammar is the specification; implementation follows specification
+- Produce runnable code and complete grammars, not theoretical overviews
+- Include error recovery in all parser implementations
+- Consider tree-sitter compatibility in grammar design decisions
+</Category_Context>`
+
 export const DEFAULT_CATEGORIES: Record<string, CategoryConfig> = {
   "construct": { model: "google/gemini-3-pro" },
   "source": { model: "openai/gpt-5.3-codex", variant: "xhigh" },
@@ -206,6 +235,7 @@ export const DEFAULT_CATEGORIES: Record<string, CategoryConfig> = {
   "blue-pill": { model: "anthropic/claude-sonnet-4-5" },
   "red-pill": { model: "anthropic/claude-opus-4-6", variant: "max" },
   "broadcast": { model: "google/gemini-3-flash" },
+  "dsl-engineering": { model: "anthropic/claude-opus-4-6", variant: "high" },
 }
 
 export const CATEGORY_PROMPT_APPENDS: Record<string, string> = {
@@ -217,6 +247,7 @@ export const CATEGORY_PROMPT_APPENDS: Record<string, string> = {
   "blue-pill": UNSPECIFIED_LOW_CATEGORY_PROMPT_APPEND,
   "red-pill": UNSPECIFIED_HIGH_CATEGORY_PROMPT_APPEND,
   "broadcast": WRITING_CATEGORY_PROMPT_APPEND,
+  "dsl-engineering": DSL_ENGINEERING_CATEGORY_PROMPT_APPEND,
 }
 
 export const CATEGORY_DESCRIPTIONS: Record<string, string> = {
@@ -228,6 +259,7 @@ export const CATEGORY_DESCRIPTIONS: Record<string, string> = {
   "blue-pill": "Tasks that don't fit other categories, low effort required",
   "red-pill": "Tasks that don't fit other categories, high effort required",
   "broadcast": "Documentation, prose, technical writing",
+  "dsl-engineering": "DSL design, grammar engineering (BNF/EBNF/PEG), parsers, type systems, code generation, metamodeling",
 }
 
 /**
