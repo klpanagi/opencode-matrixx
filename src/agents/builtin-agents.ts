@@ -11,6 +11,7 @@ import { createMultimodalLookerAgent, MULTIMODAL_LOOKER_PROMPT_METADATA } from "
 import { createSeraphAgent, seraphPromptMetadata } from "./seraph"
 import { createAtlasAgent, atlasPromptMetadata } from "./architect"
 import { createSmithAgent, smithPromptMetadata } from "./smith"
+import { createCipherAgent, CIPHER_PROMPT_METADATA } from "./cipher"
 import { createKeymakerAgent } from "./keymaker"
 import type { AvailableCategory } from "./dynamic-agent-prompt-builder"
 import { fetchAvailableModels, readConnectedProvidersCache } from "../shared"
@@ -35,6 +36,7 @@ const agentSources: Record<BuiltinAgentName, AgentSource> = {
   seraph: createSeraphAgent,
   smith: createSmithAgent,
   architect: createAtlasAgent as AgentFactory,
+  cipher: createCipherAgent,
 }
 
 /**
@@ -49,6 +51,7 @@ const agentMetadata: Partial<Record<BuiltinAgentName, AgentPromptMetadata>> = {
   seraph: seraphPromptMetadata,
   smith: smithPromptMetadata,
   architect: atlasPromptMetadata,
+  cipher: CIPHER_PROMPT_METADATA,
 }
 
 export async function createBuiltinAgents(
