@@ -483,17 +483,18 @@ describe("createBuiltinAgents without systemDefaultModel", () => {
      cacheSpy.mockRestore?.()
    })
 
-   test("agents NOT created when no cache and no systemDefaultModel (first run without defaults)", async () => {
-     // #given
-     const cacheSpy = spyOn(connectedProvidersCache, "readConnectedProvidersCache").mockReturnValue(null)
+   test("agents created using first fallback entry when no cache and no systemDefaultModel", async () => {
+      // #given
+      const cacheSpy = spyOn(connectedProvidersCache, "readConnectedProvidersCache").mockReturnValue(null)
 
-     // #when
-     const agents = await createBuiltinAgents([], {}, undefined, undefined)
+      // #when
+      const agents = await createBuiltinAgents([], {}, undefined, undefined)
 
-     // #then
-     expect(agents.merovingian).toBeUndefined()
-     cacheSpy.mockRestore?.()
-   })
+      // #then - first fallback entry used as last resort
+      expect(agents.merovingian).toBeDefined()
+      expect(agents.merovingian.model).toBe("openai/gpt-5.2")
+      cacheSpy.mockRestore?.()
+    })
 
   test("morpheus created via connected cache fallback when all providers available", async () => {
     // #given

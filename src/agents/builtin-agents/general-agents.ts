@@ -7,7 +7,7 @@ import { AGENT_MODEL_REQUIREMENTS, isModelAvailable } from "../../shared"
 import { buildAgent, isFactory } from "../agent-builder"
 import { applyOverrides } from "./agent-overrides"
 import { applyEnvironmentContext } from "./environment-context"
-import { applyModelResolution } from "./model-resolution"
+import { applyModelResolution, getFirstFallbackModel } from "./model-resolution"
 
 export function collectPendingBuiltinAgents(input: {
   agentSources: Record<BuiltinAgentName, import("../agent-builder").AgentSource>
@@ -70,8 +70,9 @@ export function collectPendingBuiltinAgents(input: {
       availableModels,
       systemDefaultModel,
     })
-    if (!resolution) continue
-    const { model, variant: resolvedVariant } = resolution
+    const fallbackResolution = resolution ?? getFirstFallbackModel(requirement)
+    if (!fallbackResolution) continue
+    const { model, variant: resolvedVariant } = fallbackResolution
 
     let config = buildAgent(source, model, mergedCategories, gitMasterConfig, browserProvider, disabledSkills)
 
