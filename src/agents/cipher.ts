@@ -3,7 +3,7 @@ import type { AgentMode, AgentPromptMetadata } from "./types"
 import { isGptModel } from "./types"
 import { createAgentToolRestrictions } from "../shared/permission-compat"
 
-const MODE: AgentMode = "subagent"
+const MODE: AgentMode = "all"
 
 export const CIPHER_PROMPT_METADATA: AgentPromptMetadata = {
   category: "specialist",

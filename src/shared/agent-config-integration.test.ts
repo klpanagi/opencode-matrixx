@@ -149,7 +149,7 @@ describe("Agent Config Integration", () => {
 
     test("model requirements include all builtin agents", () => {
       // given - expected builtin agents
-      const expectedAgents = ["morpheus", "architect", "oracle", "seraph", "smith", "merovingian", "operator", "trinity", "construct", "keymaker"]
+      const expectedAgents = ["morpheus", "architect", "oracle", "seraph", "smith", "merovingian", "operator", "trinity", "construct", "keymaker", "cipher"]
 
       // when - checking AGENT_MODEL_REQUIREMENTS
       const agentKeys = Object.keys(AGENT_MODEL_REQUIREMENTS)

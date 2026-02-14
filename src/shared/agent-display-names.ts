@@ -14,6 +14,7 @@ export const AGENT_DISPLAY_NAMES: Record<string, string> = {
   operator: "operator",
   trinity: "trinity",
   construct: "construct",
+  cipher: "Cipher (DSL Expert)",
 }
 
 /**

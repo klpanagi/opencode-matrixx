@@ -11,7 +11,7 @@ describe("createCipherAgent", () => {
     const config = createCipherAgent(model)
 
     expect(config.model).toBe(model)
-    expect(config.mode).toBe("subagent")
+    expect(config.mode).toBe("all")
     expect(config.temperature).toBe(0.1)
     expect(config.thinking).toEqual({ type: "enabled", budgetTokens: 32000 })
     expect(config.reasoningEffort).toBeUndefined()
@@ -32,9 +32,9 @@ describe("createCipherAgent", () => {
 
   //#given the factory function
   //#when checking static mode
-  //#then it should be subagent
-  test("has subagent mode", () => {
-    expect(createCipherAgent.mode).toBe("subagent")
+  //#then it should be "all" (selectable in menu AND available as subagent)
+  test("has all mode", () => {
+    expect(createCipherAgent.mode).toBe("all")
   })
 
   //#given a model
