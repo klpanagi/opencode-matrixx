@@ -39,13 +39,26 @@ describe("createCipherAgent", () => {
 
   //#given a model
   //#when creating the agent
-  //#then task and call_omo_agent tools should be denied
-  test("denies task and call_omo_agent tools", () => {
+  //#then call_omo_agent denied but task allowed for code generation delegation
+  test("denies call_omo_agent but allows task for delegation", () => {
     const config = createCipherAgent("anthropic/claude-opus-4-6")
 
     expect(config.permission).toBeDefined()
-    expect(config.permission!["task"]).toBe("deny")
+    expect(config.permission!["task"]).toBeUndefined()
     expect(config.permission!["call_omo_agent"]).toBe("deny")
+  })
+
+  //#given a model
+  //#when creating the agent
+  //#then prompt should contain code generation delegation instructions
+  test("prompt contains delegation instructions for language experts", () => {
+    const config = createCipherAgent("anthropic/claude-opus-4-6")
+
+    expect(config.prompt).toContain("CODE GENERATION DELEGATION")
+    expect(config.prompt).toContain("Python")
+    expect(config.prompt).toContain("Rust")
+    expect(config.prompt).toContain("JavaScript")
+    expect(config.prompt).toContain("task(")
   })
 
   //#given a model
