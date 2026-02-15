@@ -296,10 +296,10 @@ To remove matrixx:
 
    ```bash
    # Remove user config
-   rm -f ~/.config/opencode/matrixx.json
+   rm -f ~/.config/opencode/matrixx.json ~/.config/opencode/matrixx.jsonc
 
    # Remove project config (if exists)
-   rm -f .opencode/matrixx.json
+   rm -f .opencode/matrixx.json .opencode/matrixx.jsonc
    ```
 
 3. **Verify removal**
@@ -330,7 +330,7 @@ Highly opinionated, but adjustable to taste.
 See the full [Configuration Documentation](docs/configurations.md) for detailed information.
 
 **Quick Overview:**
-- **Config Locations**: `.opencode/matrixx.json` (project) or `~/.config/opencode/matrixx.json` (user)
+- **Config Locations**: `.opencode/matrixx.jsonc` or `.opencode/matrixx.json` (project), `~/.config/opencode/matrixx.jsonc` or `~/.config/opencode/matrixx.json` (user)
 - **JSONC Support**: Comments and trailing commas supported
 - **Agents**: Override models, temperatures, prompts, and permissions for any agent
 - **Built-in Skills**: `playwright` (browser automation), `git-master` (atomic commits)

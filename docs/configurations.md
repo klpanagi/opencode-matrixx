@@ -38,13 +38,13 @@ It asks about your providers (Claude, OpenAI, Gemini, etc.) and generates optima
 ## Config File Locations
 
 Config file locations (priority order):
-1. `.opencode/matrixx.json` (project)
-2. User config (platform-specific):
+1. `.opencode/matrixx.jsonc` or `.opencode/matrixx.json` (project; prefers `.jsonc` when both exist)
+2. User config (platform-specific; prefers `.jsonc` when both exist):
 
-| Platform        | User Config Path                                                                                            |
-| --------------- | ----------------------------------------------------------------------------------------------------------- |
-| **Windows**     | `~/.config/opencode/matrixx.json` (preferred) or `%APPDATA%\opencode\matrixx.json` (fallback) |
-| **macOS/Linux** | `~/.config/opencode/matrixx.json`                                                                    |
+| Platform        | User Config Path                                                                                                            |
+| --------------- | --------------------------------------------------------------------------------------------------------------------------- |
+| **Windows**     | `~/.config/opencode/matrixx.jsonc` (preferred) or `~/.config/opencode/matrixx.json` (fallback); `%APPDATA%\opencode\matrixx.jsonc` / `%APPDATA%\opencode\matrixx.json` (fallback) |
+| **macOS/Linux** | `~/.config/opencode/matrixx.jsonc` (preferred) or `~/.config/opencode/matrixx.json` (fallback)                |
 
 Schema autocomplete supported:
 
@@ -1061,9 +1061,10 @@ Don't want them? Disable via `disabled_mcps` in `~/.config/opencode/matrixx.json
 
 OpenCode provides LSP tools for analysis.
 Matrixx adds refactoring tools (rename, code actions).
-All OpenCode LSP configs and custom settings (from opencode.json) are supported, plus additional Matrixx-specific settings.
+All OpenCode LSP configs and custom settings (from `opencode.jsonc` / `opencode.json`) are supported, plus additional Matrixx-specific settings.
+For config discovery, `.jsonc` takes precedence over `.json` when both exist (applies to both `opencode.*` and `matrixx.*`).
 
-Add LSP servers via the `lsp` option in `~/.config/opencode/matrixx.json` or `.opencode/matrixx.json`:
+Add LSP servers via the `lsp` option in `~/.config/opencode/matrixx.jsonc` / `~/.config/opencode/matrixx.json` or `.opencode/matrixx.jsonc` / `.opencode/matrixx.json`:
 
 ```json
 {
