@@ -1,16 +1,8 @@
-> [!WARNING]
-> **Security warning: impersonation site**
->
-> **ohmyopencode.com is NOT affiliated with this project.** We do not operate or endorse that site.
->
-> Matrixx is **free and open-source**. Do **not** download installers or enter payment details on third-party sites that claim to be "official."
->
-> Because the impersonation site is behind a paywall, we **cannot verify what it distributes**. Treat any downloads from it as **potentially unsafe**.
-
 >
 > [![Welcome to the Martix!](./.github/assets/orchestrator-architect.png?v=3)](https://github.com/code-yeongyu/oh-my-opencode/releases/tag/v3.0.0)
 >
 > This project is based on oh-my-opencode!
+> Head to https://github.com/code-yeongyu/oh-my-opencode for more information on the core idea that forged this modified version - The Matrixx!
 >
 
 <!-- <CENTERED SECTION FOR GITHUB DISPLAY> -->
@@ -23,73 +15,6 @@
 
 > This is coding on steroids—`matrixx` in action. Run background agents, call specialized agents like merovingian, operator, and frontend engineer. Use crafted LSP/AST tools, curated MCPs, and a full Claude Code compatibility layer.
 
-# Claude OAuth Access Notice
-
-## TL;DR
-
-> Q. Can I use matrixx?
-
-Yes.
-
-> Q. Can I use it with my Claude Code subscription?
-
-Yes, technically possible. But I cannot recommend using it.
-
-## FULL
-
-> As of January 2026, Anthropic has restricted third-party OAuth access citing ToS violations.
->
-> [**Anthropic has cited this project (formerly oh-my-opencode) as justification for blocking opencode.**](https://x.com/thdxr/status/2010149530486911014)
->
-> Indeed, some plugins that spoof Claude Code's oauth request signatures exist in the community.
->
-> These tools may work regardless of technical detectability, but users should be aware of ToS implications, and I personally cannot recommend to use those.
->
-> This project is not responsible for any issues arising from the use of unofficial tools, and **we do not have any custom implementations of those oauth systems.**
-
-
-<div align="center">
-
-[![GitHub Release](https://img.shields.io/github/v/release/code-yeongyu/oh-my-opencode?color=369eff&labelColor=black&logo=github&style=flat-square)](https://github.com/code-yeongyu/oh-my-opencode/releases)
-[![npm downloads](https://img.shields.io/npm/dt/matrixx?color=ff6b35&labelColor=black&style=flat-square)](https://www.npmjs.com/package/matrixx)
-[![GitHub Contributors](https://img.shields.io/github/contributors/code-yeongyu/oh-my-opencode?color=c4f042&labelColor=black&style=flat-square)](https://github.com/code-yeongyu/oh-my-opencode/graphs/contributors)
-[![GitHub Forks](https://img.shields.io/github/forks/code-yeongyu/oh-my-opencode?color=8ae8ff&labelColor=black&style=flat-square)](https://github.com/code-yeongyu/oh-my-opencode/network/members)
-[![GitHub Stars](https://img.shields.io/github/stars/code-yeongyu/oh-my-opencode?color=ffcb47&labelColor=black&style=flat-square)](https://github.com/code-yeongyu/oh-my-opencode/stargazers)
-[![GitHub Issues](https://img.shields.io/github/issues/code-yeongyu/oh-my-opencode?color=ff80eb&labelColor=black&style=flat-square)](https://github.com/code-yeongyu/oh-my-opencode/issues)
-[![License](https://img.shields.io/badge/license-SUL--1.0-white?labelColor=black&style=flat-square)](https://github.com/code-yeongyu/oh-my-opencode/blob/master/LICENSE.md)
-[![Ask DeepWiki](https://deepwiki.com/badge.svg)](https://deepwiki.com/code-yeongyu/oh-my-opencode)
-
-[English](README.md) | [한국어](README.ko.md) | [日本語](README.ja.md) | [简体中文](README.zh-cn.md)
-
-</div>
-
-<!-- </CENTERED SECTION FOR GITHUB DISPLAY> -->
-
-## Reviews
-
-> "It made me cancel my Cursor subscription. Unbelievable things are happening in the open source community." - [Arthur Guiot](https://x.com/arthur_guiot/status/2008736347092382053?s=20)
-
-> "If Claude Code does in 7 days what a human does in 3 months, Morpheus does it in 1 hour. It just works until the task is done. It is a discipline agent." — B, Quant Researcher
-
-> "Knocked out 8000 eslint warnings with Oh My Opencode, just in a day" — [Jacob Ferrari](https://x.com/jacobferrari_/status/2003258761952289061)
-
-> "I converted a 45k line tauri app into a SaaS web app overnight using Ohmyopencode and matrix loop. Started with interview me prompt, asked it for ratings and recommendations on the questions. It was amazing to watch it work and to wake up this morning to a mostly working website!" - [James Hargis](https://x.com/hargabyte/status/2007299688261882202)
-
-> "use oh-my-opencode, you will never go back" — [d0t3ch](https://x.com/d0t3ch/status/2001685618200580503)
-
-> "I haven't really been able to articulate exactly what makes it so great yet, but the development experience has reached a completely different dimension." - [
-苔硯:こけすずり](https://x.com/kokesuzuri/status/2008532913961529372?s=20)
-
-> "Experimenting with open code, oh my opencode and supermemory this weekend to build some minecraft/souls-like abomination."
-> "Asking it to add crouch animations while I go take my post-lunch walk. [Video]" - [MagiMetal](https://x.com/MagiMetal/status/2005374704178373023)
-
-> "You guys should pull this into core and recruit him. Seriously. It's really, really, really good." — Henning Kilset
-
-> "Hire @yeon_gyu_kim if you can convince him, this dude has revolutionized opencode." — [mysticaltech](https://x.com/mysticaltech/status/2001858758608376079)
-
-> "Oh My OpenCode Is Actually Insane" - [YouTube - Darren Builds AI](https://www.youtube.com/watch?v=G_Snfh2M41M)
-
----
 
 ## Contents
 
@@ -264,7 +189,7 @@ Copy and paste this prompt to your LLM agent (Claude Code, AmpCode, Cursor, etc.
 
 ```
 Install and configure matrixx by following the instructions here:
-https://raw.githubusercontent.com/code-yeongyu/oh-my-opencode/refs/heads/master/docs/guide/installation.md
+https://raw.githubusercontent.com/klpanagi/matrixx/refs/heads/dev/docs/guide/installation.md
 ```
 
 Or read the [Installation Guide](docs/guide/installation.md) directly—but **we strongly recommend letting an agent handle it. Humans make mistakes.**
@@ -274,7 +199,7 @@ Or read the [Installation Guide](docs/guide/installation.md) directly—but **we
 Fetch the installation guide and follow it:
 
 ```bash
-curl -s https://raw.githubusercontent.com/code-yeongyu/oh-my-opencode/refs/heads/master/docs/guide/installation.md
+curl -s https://raw.githubusercontent.com/klpanagi/matrixx/refs/heads/dev/docs/guide/installation.md
 ```
 
 ## Uninstallation
@@ -384,17 +309,5 @@ I have no affiliation with any project or model mentioned here. This is purely p
 
 - Productivity might spike too hard. Don't let your coworker notice.
   - Actually, I'll spread the word. Let's see who wins.
-- If you're on [1.0.132](https://github.com/sst/opencode/releases/tag/v1.0.132) or older, an OpenCode bug may break config.
-  - [The fix](https://github.com/sst/opencode/pull/5040) was merged after 1.0.132—use a newer version.
-    - Fun fact: That PR was discovered and fixed thanks to Matrixx's Operator, Trinity, and Merovingian setup.
+- If you're on [1.1.65](https://github.com/sst/opencode/releases/tag/v1.1.65) or older, an OpenCode bug may break config.
 
-## Loved by professionals at
-
-- [Indent](https://indentcorp.com)
-  - Making Spray - influencer marketing solution, vovushop - crossborder commerce platform, vreview - ai commerce review marketing solution
-- [Google](https://google.com)
-- [Microsoft](https://microsoft.com)
-- [ELESTYLE](https://elestyle.jp)
-  - Making elepay - multi-mobile payment gateway, OneQR - mobile application SaaS for cashless solutions
-
-*Special thanks to [@junhoyeo](https://github.com/junhoyeo) for this amazing hero image.*
