@@ -364,22 +364,12 @@ See the full [Configuration Documentation](docs/configurations.md) for detailed 
 
 ## Author's Note
 
-**Curious about the philosophy behind this project?** Read the [Ultrawork Manifesto](docs/ultrawork-manifesto.md).
+**Curious about the philosophy behind the internal strategy?** Read the [Ultrawork Manifesto](docs/ultrawork-manifesto.md) from the creator of oh-my-opencode. 
 
-Install Matrixx.
-
-I've used LLMs worth $24,000 tokens purely for personal development.
-Tried every tool out there, configured them to death. OpenCode won.
-
-The answers to every problem I hit are baked into this plugin. Just install and go.
-If OpenCode is Debian/Arch, Matrixx is Ubuntu/[Omarchy](https://omarchy.org/).
-
-
-Heavily influenced by [AmpCode](https://ampcode.com) and [Claude Code](https://code.claude.com/docs/overview)—I've ported their features here, often improved. And I'm still building.
-It's **Open**Code, after all.
 
 Enjoy multi-model orchestration, stability, and rich features that other harnesses promise but can't deliver.
-I'll keep testing and updating. I'm this project's most obsessive user.
+
+I'm this Matrixx most obsessive user.
 - Which model has the sharpest logic?
 - Who's the debugging god?
 - Who writes the best prose?
@@ -388,16 +378,6 @@ I'll keep testing and updating. I'm this project's most obsessive user.
 - Which model is fastest for daily driving?
 - What new features are other harnesses shipping?
 
-This plugin is the distillation of that experience. Just take the best. Got a better idea? PRs are welcome.
-
-**Stop agonizing over agent harness choices.**
-**I'll do the research, borrow from the best, and ship updates here.**
-
-If this sounds arrogant and you have a better answer, please contribute. You're welcome.
-
-I have no affiliation with any project or model mentioned here. This is purely personal experimentation and preference.
-
-99% of this project was built using OpenCode. I tested for functionality—I don't really know how to write proper TypeScript. **But I personally reviewed and largely rewrote this doc, so read with confidence.**
 
 ## Warnings
 
