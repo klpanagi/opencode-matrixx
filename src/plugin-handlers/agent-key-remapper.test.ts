@@ -12,10 +12,11 @@ describe("remapAgentKeysToDisplayNames", () => {
     // when remapping
     const result = remapAgentKeysToDisplayNames(agents)
 
-    // then known agents get display name keys
+    // then known agents get display name keys AND retain original keys
     expect(result["Morpheus (Ultraworker)"]).toBeDefined()
     expect(result["Oracle (Plan Builder)"]).toBeDefined()
-    expect(result["morpheus"]).toBeUndefined()
+    expect(result["morpheus"]).toBeDefined()
+    expect(result["oracle"]).toBeDefined()
   })
 
   it("preserves unknown agent keys unchanged", () => {
@@ -46,15 +47,22 @@ describe("remapAgentKeysToDisplayNames", () => {
     // when remapping
     const result = remapAgentKeysToDisplayNames(agents)
 
-    // then all get display name keys
+    // then all get display name keys AND retain original keys
     expect(Object.keys(result)).toEqual([
       "Morpheus (Ultraworker)",
+      "morpheus",
       "Keymaker (Deep Agent)",
+      "keymaker",
       "Oracle (Plan Builder)",
+      "oracle",
       "Architect (Plan Execution Orchestrator)",
+      "architect",
       "Seraph (Plan Consultant)",
+      "seraph",
       "Smith (Plan Reviewer)",
+      "smith",
       "Mouse",
+      "mouse",
     ])
   })
 })
