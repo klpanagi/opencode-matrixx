@@ -29,6 +29,15 @@ export const BuiltinSkillNameSchema = z.enum([
   "eu-horizon",
   "academic-review",
   "deliverable-writing",
+  "project-management",
+  "technical-lead",
+  "academic-writing",
+  "research-methodology",
+  "literature-review",
+  "grant-writing",
+  "scientific-presentation",
+  "data-management-plan",
+  "ip-exploitation",
 ])
 
 export const OverridableAgentNameSchema = z.enum([

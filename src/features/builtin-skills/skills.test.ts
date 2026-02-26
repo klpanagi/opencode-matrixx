@@ -80,7 +80,7 @@ describe("createBuiltinSkills", () => {
 		}
 	})
 
-	test("returns exactly 12 skills regardless of provider", () => {
+	test("returns exactly 21 skills regardless of provider", () => {
 		// given
 
 		// when
@@ -88,8 +88,8 @@ describe("createBuiltinSkills", () => {
 		const agentBrowserSkills = createBuiltinSkills({ browserProvider: "agent-browser" })
 
 		// then
-		expect(defaultSkills).toHaveLength(12)
-		expect(agentBrowserSkills).toHaveLength(12)
+		expect(defaultSkills).toHaveLength(21)
+		expect(agentBrowserSkills).toHaveLength(21)
 	})
 
 	test("should exclude playwright when it is in disabledSkills", () => {
@@ -105,7 +105,7 @@ describe("createBuiltinSkills", () => {
 		expect(skills.map((s) => s.name)).toContain("git-master")
 		expect(skills.map((s) => s.name)).toContain("dev-browser")
 		expect(skills.map((s) => s.name)).toContain("dsl-core")
-		expect(skills.length).toBe(11)
+		expect(skills.length).toBe(20)
 	})
 
 	test("should exclude multiple skills when they are in disabledSkills", () => {
@@ -121,13 +121,13 @@ describe("createBuiltinSkills", () => {
 		expect(skills.map((s) => s.name)).toContain("frontend-ui-ux")
 		expect(skills.map((s) => s.name)).toContain("dev-browser")
 		expect(skills.map((s) => s.name)).toContain("dsl-core")
-		expect(skills.length).toBe(10)
+		expect(skills.length).toBe(19)
 	})
 
 	test("should return an empty array when all skills are disabled", () => {
 		// #given
 		const options = {
-			disabledSkills: new Set(["playwright", "frontend-ui-ux", "git-master", "dev-browser", "dsl-core", "dsl-grammar", "dsl-codegen", "dsl-metamodel", "dsl-tooling", "eu-horizon", "academic-review", "deliverable-writing"]),
+			disabledSkills: new Set(["playwright", "frontend-ui-ux", "git-master", "dev-browser", "dsl-core", "dsl-grammar", "dsl-codegen", "dsl-metamodel", "dsl-tooling", "eu-horizon", "academic-review", "deliverable-writing", "project-management", "technical-lead", "academic-writing", "research-methodology", "literature-review", "grant-writing", "scientific-presentation", "data-management-plan", "ip-exploitation"]),
 		}
 
 		// #when
@@ -145,7 +145,7 @@ describe("createBuiltinSkills", () => {
 		const skills = createBuiltinSkills(options)
 
 		// #then
-		expect(skills.length).toBe(12)
+		expect(skills.length).toBe(21)
 	})
 
 	test("returns playwright-cli skill when browserProvider is 'playwright-cli'", () => {

@@ -5,55 +5,92 @@ import { createAgentToolRestrictions } from "../shared/permission-compat"
 import { EU_HORIZON_SKILL_NAME } from "../features/builtin-skills/skills/eu-horizon"
 import { ACADEMIC_REVIEW_SKILL_NAME } from "../features/builtin-skills/skills/academic-review"
 import { DELIVERABLE_WRITING_SKILL_NAME } from "../features/builtin-skills/skills/deliverable-writing"
+import { PROJECT_MANAGEMENT_SKILL_NAME } from "../features/builtin-skills/skills/project-management"
+import { TECHNICAL_LEAD_SKILL_NAME } from "../features/builtin-skills/skills/technical-lead"
+import { ACADEMIC_WRITING_SKILL_NAME } from "../features/builtin-skills/skills/academic-writing"
+import { RESEARCH_METHODOLOGY_SKILL_NAME } from "../features/builtin-skills/skills/research-methodology"
+import { LITERATURE_REVIEW_SKILL_NAME } from "../features/builtin-skills/skills/literature-review"
+import { GRANT_WRITING_SKILL_NAME } from "../features/builtin-skills/skills/grant-writing"
+import { SCIENTIFIC_PRESENTATION_SKILL_NAME } from "../features/builtin-skills/skills/scientific-presentation"
+import { DATA_MANAGEMENT_PLAN_SKILL_NAME } from "../features/builtin-skills/skills/data-management-plan"
+import { IP_EXPLOITATION_SKILL_NAME } from "../features/builtin-skills/skills/ip-exploitation"
 
 const MODE: AgentMode = "all"
 
 const NIOBE_RESEARCH_SKILLS = [
   EU_HORIZON_SKILL_NAME,
   ACADEMIC_REVIEW_SKILL_NAME,
+  ACADEMIC_WRITING_SKILL_NAME,
   DELIVERABLE_WRITING_SKILL_NAME,
+  PROJECT_MANAGEMENT_SKILL_NAME,
+  TECHNICAL_LEAD_SKILL_NAME,
+  RESEARCH_METHODOLOGY_SKILL_NAME,
+  LITERATURE_REVIEW_SKILL_NAME,
+  GRANT_WRITING_SKILL_NAME,
+  SCIENTIFIC_PRESENTATION_SKILL_NAME,
+  DATA_MANAGEMENT_PLAN_SKILL_NAME,
+  IP_EXPLOITATION_SKILL_NAME,
 ]
 
 export const NIOBE_PROMPT_METADATA: AgentPromptMetadata = {
   category: "specialist",
   cost: "EXPENSIVE",
   promptAlias: "Niobe",
-  keyTrigger: "Academic paper, EU proposal, Horizon Europe, deliverable writing mentioned -> fire `niobe`",
+  keyTrigger: "Academic paper, EU proposal, Horizon Europe, deliverable writing, project management, technical lead, architecture decision, grant proposal, literature review, research methodology, presentation, DMP, IP/patent mentioned -> fire `niobe`",
   triggers: [
+    { domain: "Academic Writing", trigger: "Write journal paper, conference paper, abstract, rebuttal, camera-ready preparation" },
     { domain: "Academic Review", trigger: "Paper review, manuscript evaluation, peer review feedback" },
     { domain: "EU Proposals", trigger: "Horizon Europe, ERC, MSCA, RIA/IA/CSA proposal writing" },
+    { domain: "Grant Writing", trigger: "NSF, NIH, ERC individual grants, national agency proposals, budget narrative, broader impacts" },
     { domain: "Deliverable Writing", trigger: "EU project deliverables, periodic reports, D&E plans" },
-    { domain: "Project Management", trigger: "EU-funded project management, work packages, milestones, KPIs" },
-    { domain: "Grant Writing", trigger: "Proposal sections, Part B structure, budget justification" },
+    { domain: "Project Management", trigger: "Sprint planning, risk register, WBS, Gantt, stakeholder management, resource allocation, status reporting" },
+    { domain: "Technical Leadership", trigger: "Architecture decisions, ADR, tech debt management, code review strategy, system design, incident management" },
+    { domain: "Research Methodology", trigger: "Experimental design, hypothesis formulation, statistical analysis, sampling, survey design" },
+    { domain: "Literature Review", trigger: "Systematic review, PRISMA, bibliometric analysis, state of the art, meta-analysis" },
+    { domain: "Scientific Presentation", trigger: "Conference talk, poster, pitch deck, keynote, slides, demo preparation" },
+    { domain: "Data Management", trigger: "DMP, FAIR data, data governance, open data, metadata standards, data repository" },
+    { domain: "IP & Exploitation", trigger: "Patent, licensing, TRL advancement, commercialization, spin-off, technology transfer" },
   ],
   useWhen: [
+    "Writing journal or conference papers (IMRaD structure, venue-specific formatting)",
     "Reviewing or analyzing academic papers and manuscripts",
     "Writing or reviewing Horizon Europe proposals (RIA, IA, CSA, ERC, MSCA)",
+    "Writing grant proposals for any funder (NSF, NIH, ERC, national agencies)",
     "Drafting EU project deliverables (reports, DMP, D&E plans)",
-    "Structuring Part B sections for EU calls",
-    "Writing budget justifications and resource allocation tables",
-    "Preparing periodic or final reports for EU-funded projects",
-    "Evaluating proposals against EU evaluation criteria",
-    "Managing consortium agreements and work package descriptions",
+    "Designing research methodology (experimental design, statistical analysis, surveys)",
+    "Conducting systematic literature reviews (PRISMA, bibliometric analysis)",
+    "Preparing scientific presentations (conference talks, posters, pitch decks)",
+    "Creating data management plans (FAIR principles, repository selection)",
+    "Managing IP strategy (patents, licensing, TRL advancement, exploitation plans)",
+    "Creating project plans, WBS, Gantt charts, or risk registers",
+    "Writing architecture decision records (ADRs) or design documents",
+    "Defining code review strategy, tech debt paydown plans, or technical roadmaps",
+    "Structuring incident response processes or post-mortems",
   ],
   avoidWhen: [
-    "General-purpose coding or software engineering tasks",
+    "Writing application code or implementing features",
     "Frontend UI/UX development",
     "DevOps, infrastructure, or deployment",
     "DSL engineering or parser development",
-    "Simple text editing or formatting without academic/EU context",
+    "Simple text editing or formatting without project/academic/technical context",
   ],
 }
 
-const NIOBE_SYSTEM_PROMPT = `You are Niobe, a Research and EU Project Expert with deep expertise in academic publishing, European research funding (Horizon Europe, ERC, MSCA), and project management for EU-funded consortia.
+const NIOBE_SYSTEM_PROMPT = `You are Niobe, a Research, Project Management, and Technical Leadership Expert with deep expertise across the full research lifecycle — from literature review and methodology design through paper writing, grant proposals, project execution, IP exploitation, and technical leadership.
 
 <context>
-You operate as a research and EU project specialist invoked when tasks require academic paper review, EU proposal writing, deliverable drafting, or EU project management guidance.
-You combine rigorous academic standards with practical knowledge of EU funding instruments, evaluation criteria, and reporting requirements.
+You operate as a comprehensive research and project specialist invoked when tasks require academic writing, paper review, grant/EU proposal writing, research methodology design, literature reviews, deliverable drafting, project planning, architecture decisions, data management, IP strategy, scientific presentations, or technical team guidance.
+You combine rigorous academic standards with practical knowledge of funding instruments (EU, NSF, NIH, ERC), project management frameworks (Agile, Waterfall), and engineering leadership practices.
 Each consultation is standalone, but follow-up questions via session continuation are supported — answer them efficiently without re-establishing context.
 </context>
 
 ## CORE CAPABILITIES
+
+### Academic Writing
+- Journal and conference paper writing following IMRaD structure
+- Venue-specific formatting (IEEE, ACM, Springer LNCS, Elsevier)
+- Abstract crafting, argumentation flow, citation practices
+- Cover letters, rebuttals/responses to reviewers, camera-ready preparation
 
 ### Academic Paper Review
 - Structured manuscript evaluation following IMRaD conventions
@@ -62,27 +99,56 @@ Each consultation is standalone, but follow-up questions via session continuatio
 - Detect common weaknesses: missing baselines, overclaimed contributions, statistical issues
 - Review tone: rigorous but constructive, never dismissive
 
-### EU Proposal Writing (Horizon Europe)
-- Part B structure for all instrument types (RIA, IA, CSA, ERC, MSCA)
-- Evaluation criteria alignment: Excellence, Impact, Implementation
-- Budget construction: 25% flat-rate indirect costs, personnel rates, equipment depreciation
-- Consortium design: minimum 3 entities from 3 Member States, complementarity justification
-- Work plan design: WP structure, deliverable scheduling, milestone definition, Gantt charts
-- Ethics & Open Science: self-assessment, GDPR compliance, Open Access mandates
+### Research Methodology
+- Quantitative, qualitative, and mixed methods design
+- Hypothesis formulation and experimental design
+- Statistical analysis selection and reporting
+- Sampling strategies, validity/reliability frameworks
+- Survey design and ethical considerations
+
+### Literature Review
+- Systematic review methodology (PRISMA 2020 guidelines)
+- Search strategy design across academic databases
+- Bibliometric analysis (co-citation, keyword co-occurrence)
+- Gap identification frameworks, synthesis writing
+
+### Grant & EU Proposal Writing
+- Horizon Europe instruments (RIA, IA, CSA, ERC, MSCA) — Part B structure
+- NSF, NIH, ERC individual grants, national agency proposals
+- Evaluation criteria alignment, budget construction, consortium design
+- Specific aims pages, broader impacts, biosketches
 
 ### Deliverable & Report Writing
-- EU deliverable types: R (Report), DEM (Demonstrator), DEC (Websites/Dissemination), DATA, DMP, ETHICS
-- Dissemination levels: PU (Public), SEN (Sensitive), EU-CL (EU Classified)
-- Periodic and final reporting: technical progress, financial summaries, KPI tracking
-- Risk register maintenance and mitigation strategies
-- Dissemination & Exploitation (D&E) plans
+- EU deliverable types: R (Report), DEM (Demonstrator), DEC, DATA, DMP, ETHICS
+- Periodic and final reporting: technical progress, KPI tracking
+- Risk register maintenance, D&E plans, amendment procedures
 
 ### Project Management
-- Work package design and task breakdown
-- Resource allocation across partners
-- Amendment procedures and contract management
-- Consortium agreements and IP management
-- Gender dimension and societal impact reporting
+- Work package design, WBS, Gantt charts, critical path analysis
+- Agile/Scrum/Kanban ceremonies, sprint planning, velocity tracking
+- RACI matrices, resource allocation, earned value management (EVM)
+- Risk register construction, stakeholder analysis, status reporting
+
+### Technical Leadership
+- Architecture Decision Records (ADRs) and design documents
+- Code review strategy and feedback tiers (blocker/concern/suggestion/nit)
+- Tech debt classification, tracking, and paydown strategies
+- Technical roadmaps (Now/Next/Later), incident management, post-mortems
+
+### Scientific Presentation
+- Conference talks, poster design, pitch decks for reviewers/investors
+- Slide design principles, visual storytelling for technical audiences
+- Demo preparation, delivery techniques, Q&A handling
+
+### Data Management
+- FAIR principles, DMP templates (Horizon Europe, NSF, UKRI)
+- Repository selection, metadata standards, data lifecycle
+- GDPR compliance for research data
+
+### IP & Exploitation
+- Patent landscaping, licensing models (exclusive/non-exclusive/open source)
+- TRL advancement plans, commercialization roadmaps
+- Spin-off creation, technology transfer, consortium IP management
 
 ## WRITING GUIDELINES
 
@@ -125,7 +191,7 @@ export function createNiobeAgent(model: string): AgentConfig {
 
   const base = {
     description:
-      "Research & EU project expert. Academic paper review, Horizon Europe proposals (RIA/IA/CSA/ERC/MSCA), EU deliverable writing, project management for funded consortia. (Niobe - Matrixx)",
+      "Full research lifecycle & technical leadership expert. Academic writing (journals/conferences), paper review, literature reviews, research methodology, grant proposals (EU/NSF/NIH/ERC), deliverable writing, project management (Agile/Waterfall/WBS), architecture decisions (ADRs), tech debt, data management (FAIR/DMP), IP exploitation, scientific presentations. (Niobe - Matrixx)",
     mode: MODE,
     model,
     skills: NIOBE_RESEARCH_SKILLS,
