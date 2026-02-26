@@ -80,6 +80,17 @@ export function isGptModel(model: string): boolean {
   return GPT_MODEL_PREFIXES.some((prefix) => modelName.startsWith(prefix))
 }
 
+const ANTHROPIC_INDICATORS = ["anthropic", "claude"]
+
+/**
+ * Detect Anthropic/Claude models by provider or model name.
+ * Matches: "anthropic/claude-*", "google-vertex-anthropic/claude-*", etc.
+ */
+export function isAnthropicModel(model: string): boolean {
+  const lowered = model.toLowerCase()
+  return ANTHROPIC_INDICATORS.some((indicator) => lowered.includes(indicator))
+}
+
 export type BuiltinAgentName =
   | "morpheus"
   | "keymaker"

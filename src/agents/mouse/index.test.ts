@@ -334,6 +334,79 @@ describe("createMouseAgentWithOverrides", () => {
       expect(appendIndex).toBeGreaterThan(baseEndIndex)
     })
   })
+
+  describe("model-specific thinking/reasoning config", () => {
+    test("Claude model gets thinking config", () => {
+      //#given
+      const override = { model: "anthropic/claude-sonnet-4-5" }
+
+      //#when
+      const result = createMouseAgentWithOverrides(override)
+
+      //#then
+      expect((result as any).thinking).toEqual({ type: "enabled", budgetTokens: 32000 })
+      expect((result as any).reasoningEffort).toBeUndefined()
+    })
+
+    test("Google Vertex Anthropic model gets thinking config", () => {
+      //#given
+      const override = { model: "google-vertex-anthropic/claude-opus-4-6@default" }
+
+      //#when
+      const result = createMouseAgentWithOverrides(override)
+
+      //#then
+      expect((result as any).thinking).toEqual({ type: "enabled", budgetTokens: 32000 })
+    })
+
+    test("GPT model gets reasoningEffort config", () => {
+      //#given
+      const override = { model: "openai/gpt-5.2" }
+
+      //#when
+      const result = createMouseAgentWithOverrides(override)
+
+      //#then
+      expect((result as any).reasoningEffort).toBe("medium")
+      expect((result as any).thinking).toBeUndefined()
+    })
+
+    test("Gemini model gets NO thinking or reasoning config", () => {
+      //#given
+      const override = { model: "google-vertex/gemini-flash-latest" }
+
+      //#when
+      const result = createMouseAgentWithOverrides(override)
+
+      //#then
+      expect((result as any).thinking).toBeUndefined()
+      expect((result as any).reasoningEffort).toBeUndefined()
+    })
+
+    test("Google Gemini Pro model gets NO thinking config", () => {
+      //#given
+      const override = { model: "google/gemini-3-pro" }
+
+      //#when
+      const result = createMouseAgentWithOverrides(override)
+
+      //#then
+      expect((result as any).thinking).toBeUndefined()
+      expect((result as any).reasoningEffort).toBeUndefined()
+    })
+
+    test("unknown provider model gets NO thinking config", () => {
+      //#given
+      const override = { model: "custom-provider/custom-model" }
+
+      //#when
+      const result = createMouseAgentWithOverrides(override)
+
+      //#then
+      expect((result as any).thinking).toBeUndefined()
+      expect((result as any).reasoningEffort).toBeUndefined()
+    })
+  })
 })
 
 describe("getMousePromptSource", () => {

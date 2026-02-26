@@ -11,7 +11,7 @@
 
 import type { AgentConfig } from "@opencode-ai/sdk"
 import type { AgentMode } from "../types"
-import { isGptModel } from "../types"
+import { isGptModel, isAnthropicModel } from "../types"
 import type { AgentOverrideConfig } from "../../config/schema"
 import {
   createAgentToolRestrictions,
@@ -110,10 +110,14 @@ export function createMouseAgentWithOverrides(
     return { ...base, reasoningEffort: "medium" } as AgentConfig
   }
 
-  return {
-    ...base,
-    thinking: { type: "enabled", budgetTokens: 32000 },
-  } as AgentConfig
+  if (isAnthropicModel(model)) {
+    return {
+      ...base,
+      thinking: { type: "enabled", budgetTokens: 32000 },
+    } as AgentConfig
+  }
+
+  return base as AgentConfig
 }
 
 createMouseAgentWithOverrides.mode = MODE
