@@ -336,10 +336,10 @@ export class BackgroundManager {
         system: input.skillContent,
         tools: (() => {
           const tools = {
-            ...getAgentToolRestrictions(input.agent),
             task: false,
             call_omo_agent: true,
             question: false,
+            ...getAgentToolRestrictions(input.agent),
           }
           setSessionTools(sessionID, tools)
           return tools
@@ -609,10 +609,10 @@ export class BackgroundManager {
         ...(resumeVariant ? { variant: resumeVariant } : {}),
         tools: (() => {
           const tools = {
-            ...getAgentToolRestrictions(existingTask.agent),
             task: false,
             call_omo_agent: true,
             question: false,
+            ...getAgentToolRestrictions(existingTask.agent),
           }
           setSessionTools(existingTask.sessionID!, tools)
           return tools
@@ -1049,6 +1049,23 @@ export class BackgroundManager {
 
     void this.cancelTask(taskId, { source: "cancelPendingTask", abortSession: false })
     return true
+  }
+
+  /**
+   * Cancel all active (pending/running) tasks spawned from a parent session.
+   * Returns the number of tasks cancelled.
+   */
+  cancelAllForSession(parentSessionID: string): number {
+    const tasksToCancel: string[] = []
+    for (const task of this.tasks.values()) {
+      if (task.parentSessionID === parentSessionID && (task.status === "pending" || task.status === "running")) {
+        tasksToCancel.push(task.id)
+      }
+    }
+    for (const taskId of tasksToCancel) {
+      void this.cancelTask(taskId, { source: "stop-continuation", skipNotification: true })
+    }
+    return tasksToCancel.length
   }
 
   private startPolling(): void {
