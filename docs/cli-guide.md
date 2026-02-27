@@ -201,7 +201,7 @@ Configuration files support **JSONC (JSON with Comments)** format. You can use c
 ```jsonc
 {
   // Agent configuration
-  "sisyphus_agent": {
+  "morpheus_agent": {
     "disabled": false,
     "planner_enabled": true,
   },

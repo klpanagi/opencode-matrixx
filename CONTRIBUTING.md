@@ -1,6 +1,6 @@
-# Contributing to Oh My OpenCode
+# Contributing to Matrixx
 
-First off, thanks for taking the time to contribute! This document provides guidelines and instructions for contributing to oh-my-opencode.
+First off, thanks for taking the time to contribute! This document provides guidelines and instructions for contributing to Matrixx.
 
 ## Table of Contents
 
@@ -61,8 +61,8 @@ If English isn't your first language, don't worry! We value your contributions r
 
 ```bash
 # Clone the repository
-git clone https://github.com/code-yeongyu/oh-my-opencode.git
-cd oh-my-opencode
+git clone https://github.com/klpanagi/matrixx.git
+cd matrixx
 
 # Install dependencies (bun only - never use npm/yarn)
 bun install
@@ -84,21 +84,21 @@ After making changes, you can test your local build in OpenCode:
    ```json
    {
      "plugin": [
-       "file:///absolute/path/to/oh-my-opencode/dist/index.js"
+        "file:///absolute/path/to/matrixx/dist/index.js"
      ]
    }
    ```
    
-   For example, if your project is at `/Users/yourname/projects/oh-my-opencode`:
+   For example, if your project is at `/Users/yourname/projects/matrixx`:
    ```json
    {
      "plugin": [
-       "file:///Users/yourname/projects/oh-my-opencode/dist/index.js"
+       "file:///Users/yourname/projects/matrixx/dist/index.js"
      ]
    }
    ```
 
-   > **Note**: Remove `"oh-my-opencode"` from the plugin array if it exists, to avoid conflicts with the npm version.
+   > **Note**: Remove `"matrixx"` from the plugin array if it exists, to avoid conflicts with the npm version.
 
 3. **Restart OpenCode** to load the changes.
 
@@ -107,9 +107,9 @@ After making changes, you can test your local build in OpenCode:
 ## Project Structure
 
 ```
-oh-my-opencode/
+matrixx/
 ├── src/
-│   ├── agents/        # AI agents (OmO, oracle, librarian, explore, etc.)
+│   ├── agents/        # AI agents (Morpheus, Merovingian, Operator, Trinity, etc.)
 │   ├── hooks/         # 21 lifecycle hooks
 │   ├── tools/         # LSP (11), AST-Grep, Grep, Glob, etc.
 │   ├── mcp/           # MCP server integrations (context7, grep_app)
@@ -117,7 +117,7 @@ oh-my-opencode/
 │   ├── config/        # Zod schemas and TypeScript types
 │   ├── auth/          # Google Antigravity OAuth
 │   ├── shared/        # Common utilities
-│   └── index.ts       # Main plugin entry (OhMyOpenCodePlugin)
+│   └── index.ts       # Main plugin entry (MatrixxPlugin)
 ├── script/            # Build utilities (build-schema.ts, publish.ts)
 ├── assets/            # JSON schema
 └── dist/              # Build output (ESM + .d.ts)
@@ -265,4 +265,4 @@ export function createMyHook(input: PluginInput) {
 
 ---
 
-Thank you for contributing to Oh My OpenCode! Your efforts help make AI-assisted coding better for everyone.
+Thank you for contributing to Matrixx! Your efforts help make AI-assisted coding better for everyone.

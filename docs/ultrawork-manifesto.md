@@ -73,11 +73,11 @@ Token efficiency matters. But not at the cost of work quality or human cognitive
 
 Two approaches to achieve this:
 
-### Approach 1: Prometheus (Interview Mode)
+### Approach 1: Oracle (Interview Mode)
 
 You say: "I want to add authentication."
 
-Prometheus:
+Oracle:
 - Researches your codebase to understand existing patterns
 - Asks clarifying questions based on actual findings
 - Surfaces edge cases you hadn't considered
@@ -150,9 +150,9 @@ Everything in Matrixx is designed to make this loop work:
 
 | Feature | Purpose |
 |---------|---------|
-| Prometheus | Extract intent through intelligent interview |
-| Metis | Catch ambiguities before they become bugs |
-| Momus | Verify plans are complete before execution |
+| Oracle | Extract intent through intelligent interview |
+| Seraph | Catch ambiguities before they become bugs |
+| Smith | Verify plans are complete before execution |
 | Orchestrator | Coordinate work without human micromanagement |
 | Todo Continuation | Force completion, prevent "I'm done" lies |
 | Category System | Route to optimal model without human decision |

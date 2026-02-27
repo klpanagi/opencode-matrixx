@@ -2,13 +2,13 @@
 
 ## OVERVIEW
 
-Zod schema definitions for plugin configuration. 21 component files composing `OhMyOpenCodeConfigSchema` with multi-level inheritance and JSONC support.
+Zod schema definitions for plugin configuration. 21 component files composing `MatrixxConfigSchema` with multi-level inheritance and JSONC support.
 
 ## STRUCTURE
 ```
 config/
 ├── schema/                    # 21 schema component files
-│   ├── oh-my-opencode-config.ts # Root schema composition (57 lines)
+│   ├── matrixx-config.ts         # Root schema composition (57 lines)
 │   ├── agent-names.ts         # BuiltinAgentNameSchema (11 agents), BuiltinSkillNameSchema
 │   ├── agent-overrides.ts     # AgentOverrideConfigSchema (model, variant, temp, thinking...)
 │   ├── categories.ts          # 8 categories: construct, source, deep, matrix-bend, quick, ...
@@ -20,7 +20,7 @@ config/
 │   ├── claude-code.ts         # ClaudeCodeConfigSchema
 │   ├── comment-checker.ts     # CommentCheckerConfigSchema
 │   ├── notification.ts        # NotificationConfigSchema
-│   ├── matrix-loop.ts          # RalphLoopConfigSchema
+│   ├── matrix-loop.ts          # MatrixLoopConfigSchema
 │   ├── morpheus.ts            # MorpheusConfigSchema
 │   ├── morpheus-agent.ts      # MorpheusAgentConfigSchema
 │   ├── skills.ts              # SkillsConfigSchema (45 lines)
@@ -37,11 +37,11 @@ config/
 
 ## ROOT SCHEMA
 
-`OhMyOpenCodeConfigSchema` composes: `$schema`, `new_task_system_enabled`, `default_run_agent`, `auto_update`, `disabled_{mcps,agents,skills,hooks,commands,tools}`, `agents` (14 agent keys), `categories` (8 built-in), `claude_code`, `morpheus_agent`, `comment_checker`, `experimental`, `skills`, `matrix_loop`, `background_task`, `notification`, `babysitting`, `git_master`, `browser_automation_engine`, `websearch`, `tmux`, `morpheus`
+`MatrixxConfigSchema` composes: `$schema`, `new_task_system_enabled`, `default_run_agent`, `auto_update`, `disabled_{mcps,agents,skills,hooks,commands,tools}`, `agents` (14 agent keys), `categories` (8 built-in), `claude_code`, `morpheus_agent`, `comment_checker`, `experimental`, `skills`, `matrix_loop`, `background_task`, `notification`, `babysitting`, `git_master`, `browser_automation_engine`, `websearch`, `tmux`, `morpheus`
 
 ## CONFIGURATION HIERARCHY
 
-Project (`.opencode/oh-my-opencode.json`) → User (`~/.config/opencode/oh-my-opencode.json`) → Defaults
+Project (`.opencode/matrixx.json`) → User (`~/.config/opencode/matrixx.json`) → Defaults
 
 ## AGENT OVERRIDE FIELDS
 
@@ -49,4 +49,4 @@ Project (`.opencode/oh-my-opencode.json`) → User (`~/.config/opencode/oh-my-op
 
 ## AFTER SCHEMA CHANGES
 
-Run `bun run build:schema` to regenerate `dist/oh-my-opencode.schema.json`
+Run `bun run build:schema` to regenerate `dist/matrixx.schema.json`

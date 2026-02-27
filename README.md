@@ -69,7 +69,7 @@ Hand this doc to an agent and let them set it up.
 As following:
 
 ```
-Hey please read this readme and tell me why it is different from other agent harness? why is this actually good? https://raw.githubusercontent.com/code-yeongyu/oh-my-opencode/refs/heads/dev/README.md
+Hey please read this readme and tell me why it is different from other agent harness? why is this actually good? https://raw.githubusercontent.com/klpanagi/matrixx/refs/heads/dev/README.md
 ```
 
 ### 🪄 The Magic Word: `ultrawork`

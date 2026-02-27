@@ -7,7 +7,7 @@
 ## STRUCTURE
 ```
 shared/
-├── logger.ts                  # File logging (/tmp/oh-my-opencode.log) — 62 imports
+├── logger.ts                  # File logging (/tmp/matrixx.log) — 62 imports
 ├── dynamic-truncator.ts       # Token-aware context window management (202 lines)
 ├── model-resolver.ts          # 3-step resolution entry point (65 lines)
 ├── model-availability.ts      # Provider model fetching & fuzzy matching (359 lines)

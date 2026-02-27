@@ -1,6 +1,6 @@
 # Understanding the Orchestration System
 
-Matrixx's orchestration system transforms a simple AI agent into a coordinated development team. This document explains how the Prometheus → Atlas → Junior workflow creates high-quality, reliable code output.
+Matrixx's orchestration system transforms a simple AI agent into a coordinated development team. This document explains how the Oracle → Architect → Junior workflow creates high-quality, reliable code output.
 
 ---
 
@@ -21,62 +21,62 @@ The orchestration system solves these problems through **specialization and dele
 
 ```mermaid
 flowchart TB
-    subgraph Planning["Planning Layer (Human + Prometheus)"]
+    subgraph Planning["Planning Layer (Human + Oracle)"]
         User[("👤 User")]
-        Prometheus["🔥 Prometheus<br/>(Planner)<br/>Claude Opus 4.5"]
-        Metis["🦉 Metis<br/>(Consultant)<br/>Claude Opus 4.5"]
-        Momus["👁️ Momus<br/>(Reviewer)<br/>GPT-5.2"]
+        Oracle["🔥 Oracle<br/>(Planner)<br/>Claude Opus 4.5"]
+        Seraph["🦉 Seraph<br/>(Consultant)<br/>Claude Opus 4.5"]
+        Smith["👁️ Smith<br/>(Reviewer)<br/>GPT-5.2"]
     end
     
     subgraph Execution["Execution Layer (Orchestrator)"]
-        Orchestrator["⚡ Atlas<br/>(Conductor)<br/>Claude Opus 4.5"]
+        Orchestrator["⚡ Architect<br/>(Conductor)<br/>Claude Opus 4.5"]
     end
     
     subgraph Workers["Worker Layer (Specialized Agents)"]
-        Junior["🪨 Sisyphus-Junior<br/>(Task Executor)<br/>Claude Sonnet 4.5"]
-        Oracle["🧠 Oracle<br/>(Architecture)<br/>GPT-5.2"]
-        Explore["🔍 Explore<br/>(Codebase Grep)<br/>Grok Code"]
-        Librarian["📚 Librarian<br/>(Docs/OSS)<br/>GLM-4.7"]
+        Junior["🪨 Mouse<br/>(Task Executor)<br/>Claude Sonnet 4.5"]
+        Merovingian["🧠 Merovingian<br/>(Architecture)<br/>GPT-5.2"]
+        Trinity["🔍 Trinity<br/>(Codebase Grep)<br/>Grok Code"]
+        Operator["📚 Operator<br/>(Docs/OSS)<br/>GLM-4.7"]
         Frontend["🎨 Frontend<br/>(UI/UX)<br/>Gemini 3 Pro"]
     end
     
-    User -->|"Describe work"| Prometheus
-    Prometheus -->|"Consult"| Metis
-    Prometheus -->|"Interview"| User
-    Prometheus -->|"Generate plan"| Plan[".sisyphus/plans/*.md"]
-    Plan -->|"High accuracy?"| Momus
-    Momus -->|"OKAY / REJECT"| Prometheus
+    User -->|"Describe work"| Oracle
+    Oracle -->|"Consult"| Seraph
+    Oracle -->|"Interview"| User
+    Oracle -->|"Generate plan"| Plan[".matrixx/plans/*.md"]
+    Plan -->|"High accuracy?"| Smith
+    Smith -->|"OKAY / REJECT"| Oracle
     
     User -->|"/start-work"| Orchestrator
     Plan -->|"Read"| Orchestrator
     
     Orchestrator -->|"task(category)"| Junior
-    Orchestrator -->|"task(agent)"| Oracle
-    Orchestrator -->|"task(agent)"| Explore
-    Orchestrator -->|"task(agent)"| Librarian
+    Orchestrator -->|"task(agent)"| Merovingian
+    Orchestrator -->|"task(agent)"| Trinity
+    Orchestrator -->|"task(agent)"| Operator
     Orchestrator -->|"task(agent)"| Frontend
     
     Junior -->|"Results + Learnings"| Orchestrator
-    Oracle -->|"Advice"| Orchestrator
-    Explore -->|"Code patterns"| Orchestrator
-    Librarian -->|"Documentation"| Orchestrator
+    Merovingian -->|"Advice"| Orchestrator
+    Trinity -->|"Code patterns"| Orchestrator
+    Operator -->|"Documentation"| Orchestrator
     Frontend -->|"UI code"| Orchestrator
 ```
 
 ---
 
-## Layer 1: Planning (Prometheus + Metis + Momus)
+## Layer 1: Planning (Oracle + Seraph + Smith)
 
-### Prometheus: Your Strategic Consultant
+### Oracle: Your Strategic Consultant
 
-Prometheus is **not just a planner** - it's an intelligent interviewer that helps you think through what you actually need.
+Oracle is **not just a planner** - it's an intelligent interviewer that helps you think through what you actually need.
 
 **The Interview Process:**
 
 ```mermaid
 stateDiagram-v2
     [*] --> Interview: User describes work
-    Interview --> Research: Launch explore/librarian agents
+    Interview --> Research: Launch trinity/operator agents
     Research --> Interview: Gather codebase context
     Interview --> ClearanceCheck: After each response
     
@@ -92,33 +92,33 @@ stateDiagram-v2
         Check: ✓ Test strategy confirmed?
     }
     
-    PlanGeneration --> MetisConsult: Mandatory gap analysis
-    MetisConsult --> WritePlan: Incorporate findings
+    PlanGeneration --> SeraphConsult: Mandatory gap analysis
+    SeraphConsult --> WritePlan: Incorporate findings
     WritePlan --> HighAccuracyChoice: Present to user
     
-    HighAccuracyChoice --> MomusLoop: User wants high accuracy
+    HighAccuracyChoice --> SmithLoop: User wants high accuracy
     HighAccuracyChoice --> Done: User accepts plan
     
-    MomusLoop --> WritePlan: REJECTED - fix issues
-    MomusLoop --> Done: OKAY - plan approved
+    SmithLoop --> WritePlan: REJECTED - fix issues
+    SmithLoop --> Done: OKAY - plan approved
     
     Done --> [*]: Guide to /start-work
 ```
 
 **Intent-Specific Strategies:**
 
-Prometheus adapts its interview style based on what you're doing:
+Oracle adapts its interview style based on what you're doing:
 
-| Intent | Prometheus Focus | Example Questions |
+| Intent | Oracle Focus | Example Questions |
 |--------|------------------|-------------------|
 | **Refactoring** | Safety - behavior preservation | "What tests verify current behavior?" "Rollback strategy?" |
 | **Build from Scratch** | Discovery - patterns first | "Found pattern X in codebase. Follow it or deviate?" |
 | **Mid-sized Task** | Guardrails - exact boundaries | "What must NOT be included? Hard constraints?" |
 | **Architecture** | Strategic - long-term impact | "Expected lifespan? Scale requirements?" |
 
-### Metis: The Gap Analyzer
+### Seraph: The Gap Analyzer
 
-Before Prometheus writes the plan, **Metis catches what Prometheus missed**:
+Before Oracle writes the plan, **Seraph catches what Oracle missed**:
 
 - Hidden intentions in user's request
 - Ambiguities that could derail implementation
@@ -126,33 +126,33 @@ Before Prometheus writes the plan, **Metis catches what Prometheus missed**:
 - Missing acceptance criteria
 - Edge cases not addressed
 
-**Why Metis Exists:**
+**Why Seraph Exists:**
 
-The plan author (Prometheus) has "ADHD working memory" - it makes connections that never make it onto the page. Metis forces externalization of implicit knowledge.
+The plan author (Oracle) has "ADHD working memory" - it makes connections that never make it onto the page. Seraph forces externalization of implicit knowledge.
 
-### Momus: The Ruthless Reviewer
+### Smith: The Ruthless Reviewer
 
-For high-accuracy mode, Momus validates plans against **four core criteria**:
+For high-accuracy mode, Smith validates plans against **four core criteria**:
 
 1. **Clarity**: Does each task specify WHERE to find implementation details?
 2. **Verification**: Are acceptance criteria concrete and measurable?
 3. **Context**: Is there sufficient context to proceed without >10% guesswork?
 4. **Big Picture**: Is the purpose, background, and workflow clear?
 
-**The Momus Loop:**
+**The Smith Loop:**
 
-Momus only says "OKAY" when:
+Smith only says "OKAY" when:
 - 100% of file references verified
 - ≥80% of tasks have clear reference sources
 - ≥90% of tasks have concrete acceptance criteria
 - Zero tasks require assumptions about business logic
 - Zero critical red flags
 
-If REJECTED, Prometheus fixes issues and resubmits. **No maximum retry limit.**
+If REJECTED, Oracle fixes issues and resubmits. **No maximum retry limit.**
 
 ---
 
-## Layer 2: Execution (Atlas)
+## Layer 2: Execution (Architect)
 
 ### The Conductor Mindset
 
@@ -160,7 +160,7 @@ The Orchestrator is like an orchestra conductor: **it doesn't play instruments, 
 
 ```mermaid
 flowchart LR
-    subgraph Orchestrator["Atlas"]
+    subgraph Orchestrator["Architect"]
         Read["1. Read Plan"]
         Analyze["2. Analyze Tasks"]
         Wisdom["3. Accumulate Wisdom"]
@@ -205,7 +205,7 @@ This prevents repeating mistakes and ensures consistent patterns.
 **Notepad System:**
 
 ```
-.sisyphus/notepads/{plan-name}/
+.matrixx/notepads/{plan-name}/
 ├── learnings.md      # Patterns, conventions, successful approaches
 ├── decisions.md      # Architectural choices and rationales
 ├── issues.md         # Problems, blockers, gotchas encountered
@@ -230,7 +230,7 @@ task(category="general", prompt="Task 4...")
 
 ## Layer 3: Workers (Specialized Agents)
 
-### Sisyphus-Junior: The Task Executor
+### Mouse: The Task Executor
 
 Junior is the **workhorse** that actually writes code. Key characteristics:
 
@@ -264,7 +264,7 @@ You have incomplete todos! Complete ALL before responding:
 DO NOT respond until all todos are marked completed.
 ```
 
-This "boulder pushing" mechanism is why the system is named after Sisyphus.
+This "jacking-in" mechanism ensures the agent never stops until the mission is complete.
 
 ---
 
@@ -352,9 +352,9 @@ task(
 ```mermaid
 sequenceDiagram
     participant User
-    participant Orchestrator as Atlas
-    participant Junior as Sisyphus-Junior
-    participant Notepad as .sisyphus/notepads/
+    participant Orchestrator as Architect
+    participant Junior as Mouse
+    participant Notepad as .matrixx/notepads/
     
     User->>Orchestrator: /start-work
     Orchestrator->>Orchestrator: Read plan, build parallelization map
@@ -391,8 +391,8 @@ sequenceDiagram
 
 ### 1. Separation of Concerns
 
-- **Planning** (Prometheus): High reasoning, interview, strategic thinking
-- **Orchestration** (Atlas): Coordination, verification, wisdom accumulation
+- **Planning** (Oracle): High reasoning, interview, strategic thinking
+- **Orchestration** (Architect): Coordination, verification, wisdom accumulation
 - **Execution** (Junior): Focused implementation, no distractions
 
 ### 2. Explicit Over Implicit
@@ -427,10 +427,10 @@ Bulk work goes to cost-effective models (Sonnet, Haiku, Flash).
 
 ## Getting Started
 
-1. **Enter Prometheus Mode**: Press **Tab** at the prompt
+1. **Enter Oracle Mode**: Press **Tab** at the prompt
 2. **Describe Your Work**: "I want to add user authentication to my app"
-3. **Answer Interview Questions**: Prometheus will ask about patterns, preferences, constraints
-4. **Review the Plan**: Check `.sisyphus/plans/` for generated work plan
+3. **Answer Interview Questions**: Oracle will ask about patterns, preferences, constraints
+4. **Review the Plan**: Check `.matrixx/plans/` for generated work plan
 5. **Run `/start-work`**: Orchestrator takes over
 6. **Observe**: Watch tasks complete with verification
 7. **Done**: All todos complete, code verified, ready to ship

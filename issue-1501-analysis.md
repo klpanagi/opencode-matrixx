@@ -44,7 +44,7 @@
 
 ```
 ULW Mode 시작
-  → Sisyphus가 Plan Agent 호출 (subagent)
+  → Morpheus가 Plan Agent 호출 (subagent)
     → Plan Agent: "100% clarity 필요"
       → Clarifying questions 생성
         → 사용자 없음 (subagent)
@@ -65,7 +65,7 @@ ULW Mode 시작
 
 ```typescript
 SUBAGENT MODE DETECTION (CRITICAL):
-If you received a detailed prompt with gathered context from a parent orchestrator (e.g., Sisyphus):
+If you received a detailed prompt with gathered context from a parent orchestrator (e.g., Morpheus):
 - You are running as a SUBAGENT
 - You CANNOT directly interact with the user
 - DO NOT ask clarifying questions - proceed with available information
@@ -80,7 +80,7 @@ If you received a detailed prompt with gathered context from a parent orchestrat
 + 1. Launch background agents to gather context (ONLY if not already provided):
 ```
 
-**효과:** 이미 Sisyphus가 context를 수집한 경우 중복 방지
+**효과:** 이미 Morpheus가 context를 수집한 경우 중복 방지
 
 #### 3. Clarifying Questions → Assumptions
 
@@ -173,7 +173,7 @@ Plan 생성 (assumptions 문서화)
 ### 해결되는 문제
 
 1. **ULW mode 무한루프** ✓
-2. **Sisyphus에서 Plan Agent 호출 시 블로킹** ✓
+2. **Morpheus에서 Plan Agent 호출 시 블로킹** ✓
 3. **작은 토큰 반복 요청** ✓
 4. **1분마다 재시도** ✓
 
@@ -197,14 +197,14 @@ Plan 생성 (assumptions 문서화)
 
 1. **ULW mode에서 Plan Agent 호출**
    ```bash
-   oh-my-opencode run "Complex task requiring planning. ulw"
+   matrixx run "Complex task requiring planning. ulw"
    ```
    - 예상: Plan 생성 후 정상 종료
    - 확인: 무한루프 없음
 
 2. **Interactive mode (변경 없어야 함)**
    ```bash
-   oh-my-opencode run --agent prometheus "Design X"
+   matrixx run --agent prometheus "Design X"
    ```
    - 예상: Clarifying questions 여전히 가능
    - 확인: 사용자와 대화 가능
@@ -286,7 +286,7 @@ src/tools/delegate-task/constants.ts
 ### Call Stack
 
 ```
-Sisyphus (ULW mode)
+Morpheus (ULW mode)
   ↓
 task(category="deep", ...)
   ↓
@@ -334,7 +334,7 @@ Plan Agent 실행
 - **Issue:** #1501 - [Bug]: ULW mode will 100% cause PLAN AGENT to get stuck
 - **Files Modified:** `src/tools/delegate-task/constants.ts`
 - **Related Concepts:** Ultrawork mode, Plan Agent, Subagent delegation
-- **Agent Architecture:** Sisyphus → Prometheus → Atlas workflow
+- **Agent Architecture:** Morpheus → Oracle → Architect workflow
 
 ---
 
@@ -352,6 +352,6 @@ Plan Agent 실행
 **Tested:** ⏳ Pending  
 **Deployed:** ⏳ Pending  
 
-**Analyst:** Sisyphus (oh-my-opencode ultrawork mode)  
+**Analyst:** Morpheus (matrixx ultrawork mode)  
 **Date:** 2026-02-05  
 **Session:** fast-ember

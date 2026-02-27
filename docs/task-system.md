@@ -74,7 +74,7 @@ TaskUpdate({ id: "T-002", status: "completed" })
 Tasks are stored as JSON files:
 
 ```
-.sisyphus/tasks/
+.matrixx/tasks/
 ```
 
 ## Difference from TodoWrite

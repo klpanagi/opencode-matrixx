@@ -107,7 +107,7 @@ Matrixx (v3.4.0): multi-model agent orchestration with 11 specialized agents (Cl
 ## STRUCTURE
 
 ```
-oh-my-opencode/
+matrixx/
 ├── src/
 │   ├── agents/              # 11 AI agents - see src/agents/AGENTS.md
 │   ├── hooks/               # 41 lifecycle hooks - see src/hooks/AGENTS.md

@@ -16,7 +16,7 @@ It asks about your providers (Claude, OpenAI, Gemini, etc.) and generates optima
 
 ```jsonc
 {
-  "$schema": "https://raw.githubusercontent.com/code-yeongyu/oh-my-opencode/master/assets/matrixx.schema.json",
+  "$schema": "https://raw.githubusercontent.com/klpanagi/matrixx/master/assets/matrixx.schema.json",
   
   // Override specific agent models
   "agents": {
@@ -50,7 +50,7 @@ Schema autocomplete supported:
 
 ```json
 {
-  "$schema": "https://raw.githubusercontent.com/code-yeongyu/oh-my-opencode/master/assets/matrixx.schema.json"
+  "$schema": "https://raw.githubusercontent.com/klpanagi/matrixx/master/assets/matrixx.schema.json"
 }
 ```
 
@@ -67,7 +67,7 @@ When both `matrixx.jsonc` and `matrixx.json` files exist, `.jsonc` takes priorit
 
 ```jsonc
 {
-  "$schema": "https://raw.githubusercontent.com/code-yeongyu/oh-my-opencode/master/assets/matrixx.schema.json",
+  "$schema": "https://raw.githubusercontent.com/klpanagi/matrixx/master/assets/matrixx.schema.json",
 
   /* Agent overrides - customize models for specific tasks */
   "agents": {
@@ -143,7 +143,7 @@ If you encounter `JSON Parse error: Unexpected EOF`:
 
 The proper long-term fix requires Claude Code SDK to parse NDJSON responses correctly. Until then, use `stream: false` as a workaround.
 
-**Tracking**: https://github.com/code-yeongyu/oh-my-opencode/issues/1124
+**Tracking**: https://github.com/klpanagi/matrixx/issues/1124
 
 ## Agents
 
@@ -156,7 +156,7 @@ Override built-in agent settings:
       "model": "anthropic/claude-haiku-4-5",
       "temperature": 0.5
     },
-    "multimodal-looker": {
+    "construct": {
       "disable": true
     }
   }
@@ -209,7 +209,7 @@ Use `prompt_append` to add extra instructions without replacing the default syst
 }
 ```
 
-You can also override settings for `Sisyphus` (the main orchestrator) and `build` (the default agent) using the same options.
+You can also override settings for `Morpheus` (the main orchestrator) and `build` (the default agent) using the same options.
 
 ### Permission Options
 
@@ -241,11 +241,11 @@ Or disable via `disabled_agents` in `~/.config/opencode/matrixx.json` or `.openc
 
 ```json
 {
-  "disabled_agents": ["oracle", "multimodal-looker"]
+  "disabled_agents": ["oracle", "construct"]
 }
 ```
 
-Available agents: `sisyphus`, `prometheus`, `oracle`, `librarian`, `explore`, `multimodal-looker`, `metis`, `momus`, `atlas`
+Available agents: `morpheus`, `oracle`, `merovingian`, `operator`, `trinity`, `construct`, `seraph`, `smith`, `architect`, `cipher`, `niobe`
 
 ## Built-in Skills
 
@@ -602,23 +602,23 @@ Configure git-master skill behavior:
 
 | Option                   | Default | Description                                                                      |
 | ------------------------ | ------- | -------------------------------------------------------------------------------- |
-| `commit_footer`          | `true`  | Adds "Ultraworked with Sisyphus" footer to commit messages.                      |
-| `include_co_authored_by` | `true`  | Adds `Co-authored-by: Sisyphus <clio-agent@sisyphuslabs.ai>` trailer to commits. |
+| `commit_footer`          | `true`  | Adds "Ultraworked with Morpheus" footer to commit messages.                      |
+| `include_co_authored_by` | `true`  | Adds `Co-authored-by: Morpheus <morpheus@matrixx.ai>` trailer to commits. |
 
-## Sisyphus Agent
+## Morpheus Agent
 
-When enabled (default), Sisyphus provides a powerful orchestrator with optional specialized agents:
+When enabled (default), Morpheus provides a powerful orchestrator with optional specialized agents:
 
-- **Sisyphus**: Primary orchestrator agent (Claude Opus 4.5)
+- **Morpheus**: Primary orchestrator agent (Claude Opus 4.6)
 - **OpenCode-Builder**: OpenCode's default build agent, renamed due to SDK limitations (disabled by default)
-- **Prometheus (Planner)**: OpenCode's default plan agent with work-planner methodology (enabled by default)
-- **Metis (Plan Consultant)**: Pre-planning analysis agent that identifies hidden requirements and AI failure points
+- **Oracle (Planner)**: OpenCode's default plan agent with work-planner methodology (enabled by default)
+- **Seraph (Plan Consultant)**: Pre-planning analysis agent that identifies hidden requirements and AI failure points
 
 **Configuration Options:**
 
 ```json
 {
-  "sisyphus_agent": {
+  "morpheus_agent": {
     "disabled": false,
     "default_builder_enabled": false,
     "planner_enabled": true,
@@ -631,40 +631,40 @@ When enabled (default), Sisyphus provides a powerful orchestrator with optional 
 
 ```json
 {
-  "sisyphus_agent": {
+  "morpheus_agent": {
     "default_builder_enabled": true
   }
 }
 ```
 
-This enables OpenCode-Builder agent alongside Sisyphus. The default build agent is always demoted to subagent mode when Sisyphus is enabled.
+This enables OpenCode-Builder agent alongside Morpheus. The default build agent is always demoted to subagent mode when Morpheus is enabled.
 
-**Example: Disable all Sisyphus orchestration:**
+**Example: Disable all Morpheus orchestration:**
 
 ```json
 {
-  "sisyphus_agent": {
+  "morpheus_agent": {
     "disabled": true
   }
 }
 ```
 
-You can also customize Sisyphus agents like other agents:
+You can also customize Morpheus agents like other agents:
 
 ```json
 {
   "agents": {
-    "Sisyphus": {
-      "model": "anthropic/claude-sonnet-4",
-      "temperature": 0.3
+    "Morpheus": {
+      "model": "anthropic/claude-opus-4-6",
+      "temperature": 0.1
     },
     "OpenCode-Builder": {
       "model": "anthropic/claude-opus-4"
     },
-    "Prometheus (Planner)": {
+    "Oracle (Planner)": {
       "model": "openai/gpt-5.2"
     },
-    "Metis (Plan Consultant)": {
+    "Seraph (Plan Consultant)": {
       "model": "anthropic/claude-sonnet-4-5"
     }
   }
@@ -673,10 +673,10 @@ You can also customize Sisyphus agents like other agents:
 
 | Option                    | Default | Description                                                                                                                            |
 | ------------------------- | ------- | -------------------------------------------------------------------------------------------------------------------------------------- |
-| `disabled`                | `false` | When `true`, disables all Sisyphus orchestration and restores original build/plan as primary.                                          |
+| `disabled`                | `false` | When `true`, disables all Morpheus orchestration and restores original build/plan as primary.                                          |
 | `default_builder_enabled` | `false` | When `true`, enables OpenCode-Builder agent (same as OpenCode build, renamed due to SDK limitations). Disabled by default.             |
-| `planner_enabled`         | `true`  | When `true`, enables Prometheus (Planner) agent with work-planner methodology. Enabled by default.                                     |
-| `replace_plan`            | `true`  | When `true`, demotes default plan agent to subagent mode. Set to `false` to keep both Prometheus (Planner) and default plan available. |
+| `planner_enabled`         | `true`  | When `true`, enables Oracle (Planner) agent with work-planner methodology. Enabled by default.                                     |
+| `replace_plan`            | `true`  | When `true`, demotes default plan agent to subagent mode. Set to `false` to keep both Oracle (Planner) and default plan available. |
 
 ## Background Tasks
 
@@ -716,7 +716,7 @@ Configure concurrency limits for background agent tasks. This controls how many 
 
 ## Categories
 
-Categories enable domain-specific task delegation via the `task` tool. Each category applies runtime presets (model, temperature, prompt additions) when calling the `Sisyphus-Junior` agent.
+Categories enable domain-specific task delegation via the `task` tool. Each category applies runtime presets (model, temperature, prompt additions) when calling the `Mouse` agent.
 
 ### Built-in Categories
 
@@ -866,7 +866,7 @@ At runtime, Matrixx uses a 3-step resolution process to determine which model to
 │   ┌─────────────────────────────────────────────────────────┐   │
 │   │ For each provider in requirement.providers order:       │   │
 │   │                                                         │   │
-│   │ Example for Sisyphus:                                   │   │
+│   │ Example for Morpheus:                                    │   │
 │   │ anthropic → github-copilot → opencode → antigravity     │   │
 │   │     │            │              │            │          │   │
 │   │     ▼            ▼              ▼            ▼          │   │
@@ -894,15 +894,15 @@ Each agent has a defined provider priority chain. The system tries providers in 
 
 | Agent | Model (no prefix) | Provider Priority Chain |
 |-------|-------------------|-------------------------|
-| **Sisyphus** | `claude-opus-4-6` | anthropic → kimi-for-coding → zai-coding-plan → openai → google |
+| **Morpheus** | `claude-opus-4-6` | anthropic → kimi-for-coding → zai-coding-plan → openai → google |
 | **oracle** | `gpt-5.2` | openai → google → anthropic |
-| **librarian** | `glm-4.7` | zai-coding-plan → opencode → anthropic |
-| **explore** | `claude-haiku-4-5` | anthropic → github-copilot → opencode |
-| **multimodal-looker** | `gemini-3-flash` | google → openai → zai-coding-plan → kimi-for-coding → anthropic → opencode |
-| **Prometheus (Planner)** | `claude-opus-4-6` | anthropic → kimi-for-coding → openai → google |
-| **Metis (Plan Consultant)** | `claude-opus-4-6` | anthropic → kimi-for-coding → openai → google |
-| **Momus (Plan Reviewer)** | `gpt-5.2` | openai → anthropic → google |
-| **Atlas** | `claude-sonnet-4-5` | anthropic → kimi-for-coding → openai → google |
+| **operator** | `glm-4.7` | zai-coding-plan → opencode → anthropic |
+| **trinity** | `claude-haiku-4-5` | anthropic → github-copilot → opencode |
+| **construct** | `gemini-3-flash` | google → openai → zai-coding-plan → kimi-for-coding → anthropic → opencode |
+| **Oracle (Planner)** | `claude-opus-4-6` | anthropic → kimi-for-coding → openai → google |
+| **Seraph (Plan Consultant)** | `claude-opus-4-6` | anthropic → kimi-for-coding → openai → google |
+| **Smith (Plan Reviewer)** | `gpt-5.2` | openai → anthropic → google |
+| **Architect** | `claude-sonnet-4-5` | anthropic → kimi-for-coding → openai → google |
 
 ### Category Provider Chains
 
@@ -940,7 +940,7 @@ Override any agent or category model in `matrixx.json`:
 ```json
 {
   "agents": {
-    "Sisyphus": {
+    "Morpheus": {
       "model": "anthropic/claude-sonnet-4-5"
     },
     "oracle": {
@@ -967,7 +967,7 @@ Disable specific built-in hooks via `disabled_hooks` in `~/.config/opencode/matr
 }
 ```
 
-Available hooks: `todo-continuation-enforcer`, `context-window-monitor`, `session-recovery`, `session-notification`, `comment-checker`, `grep-output-truncator`, `tool-output-truncator`, `directory-agents-injector`, `directory-readme-injector`, `empty-task-response-detector`, `think-mode`, `anthropic-context-window-limit-recovery`, `rules-injector`, `background-notification`, `auto-update-checker`, `startup-toast`, `keyword-detector`, `agent-usage-reminder`, `non-interactive-env`, `interactive-bash-session`, `compaction-context-injector`, `thinking-block-validator`, `claude-code-hooks`, `ralph-loop`, `preemptive-compaction`, `auto-slash-command`, `sisyphus-junior-notepad`, `start-work`
+Available hooks: `todo-continuation-enforcer`, `context-window-monitor`, `session-recovery`, `session-notification`, `comment-checker`, `grep-output-truncator`, `tool-output-truncator`, `directory-agents-injector`, `directory-readme-injector`, `empty-task-response-detector`, `think-mode`, `anthropic-context-window-limit-recovery`, `rules-injector`, `background-notification`, `auto-update-checker`, `startup-toast`, `keyword-detector`, `agent-usage-reminder`, `non-interactive-env`, `interactive-bash-session`, `compaction-context-injector`, `thinking-block-validator`, `claude-code-hooks`, `matrix-loop`, `preemptive-compaction`, `auto-slash-command`, `mouse-notepad`, `start-work`
 
 **Note on `directory-agents-injector`**: This hook is **automatically disabled** when running on OpenCode 1.1.37+ because OpenCode now has native support for dynamically resolving AGENTS.md files from subdirectories (PR #10678). This prevents duplicate AGENTS.md injection. For older OpenCode versions, the hook remains active to provide the same functionality.
 
@@ -1017,16 +1017,16 @@ Configure notification behavior for background task completion.
 | -------------- | ------- | ---------------------------------------------------------------------------------------------- |
 | `force_enable` | `false` | Force enable session-notification even if external notification plugins are detected. Default: `false`. |
 
-## Sisyphus Tasks
+## Morpheus Tasks
 
-Configure Sisyphus Tasks system for advanced task management.
+Configure Morpheus Tasks system for advanced task management.
 
 ```json
 {
-  "sisyphus": {
+  "morpheus": {
     "tasks": {
       "enabled": false,
-      "storage_path": ".sisyphus/tasks",
+      "storage_path": ".matrixx/tasks",
       "claude_code_compat": false
     }
   }
@@ -1037,8 +1037,8 @@ Configure Sisyphus Tasks system for advanced task management.
 
 | Option               | Default            | Description                                                               |
 | -------------------- | ------------------ | ------------------------------------------------------------------------- |
-| `enabled`            | `false`            | Enable Sisyphus Tasks system                                               |
-| `storage_path`       | `.sisyphus/tasks`  | Storage path for tasks (relative to project root)                           |
+| `enabled`            | `false`            | Enable Morpheus Tasks system                                               |
+| `storage_path`       | `.matrixx/tasks`   | Storage path for tasks (relative to project root)                           |
 | `claude_code_compat` | `false`            | Enable Claude Code path compatibility mode                                   |
 
 ## MCPs

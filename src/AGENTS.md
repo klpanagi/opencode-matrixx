@@ -8,7 +8,7 @@ Main plugin entry point and orchestration layer. Plugin initialization, hook reg
 
 ```
 src/
-├── index.ts                          # Main plugin entry (106 lines) — OhMyOpenCodePlugin factory
+├── index.ts                          # Main plugin entry (106 lines) — MatrixxPlugin factory
 ├── create-hooks.ts                   # Hook coordination: core, continuation, skill (62 lines)
 ├── create-managers.ts                # Manager initialization: Tmux, Background, SkillMcp, Config (80 lines)
 ├── create-tools.ts                   # Tool registry + skill context composition (54 lines)

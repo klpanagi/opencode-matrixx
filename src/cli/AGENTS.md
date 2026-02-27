@@ -2,7 +2,7 @@
 
 ## OVERVIEW
 
-CLI entry: `bunx oh-my-opencode`. 107+ files with Commander.js + @clack/prompts TUI.
+CLI entry: `bunx matrixx`. 107+ files with Commander.js + @clack/prompts TUI.
 
 **Commands**: install, run, doctor, get-local-version, mcp-oauth
 

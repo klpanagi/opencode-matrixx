@@ -10,39 +10,39 @@ Matrixx provides 11 specialized AI agents. Each has distinct expertise, optimize
 
 | Agent | Model | Purpose |
 |-------|-------|---------|
-| **Sisyphus** | `anthropic/claude-opus-4-6` | **The default orchestrator.** Plans, delegates, and executes complex tasks using specialized subagents with aggressive parallel execution. Todo-driven workflow with extended thinking (32k budget). Fallback: kimi-k2.5 → glm-4.7 → gpt-5.3-codex → gemini-3-pro. |
-| **Hephaestus** | `openai/gpt-5.3-codex` | **The Legitimate Craftsman.** Autonomous deep worker inspired by AmpCode's deep mode. Goal-oriented execution with thorough research before action. Explores codebase patterns, completes tasks end-to-end without premature stopping. Named after the Greek god of forge and craftsmanship. Requires gpt-5.3-codex (no fallback - only activates when this model is available). |
-| **oracle** | `openai/gpt-5.2` | Architecture decisions, code review, debugging. Read-only consultation - stellar logical reasoning and deep analysis. Inspired by AmpCode. |
-| **librarian** | `zai-coding-plan/glm-4.7` | Multi-repo analysis, documentation lookup, OSS implementation examples. Deep codebase understanding with evidence-based answers. Fallback: glm-4.7-free → claude-sonnet-4-5. |
-| **explore** | `anthropic/claude-haiku-4-5` | Fast codebase exploration and contextual grep. Fallback: gpt-5-mini → gpt-5-nano. |
-| **multimodal-looker** | `google/gemini-3-flash` | Visual content specialist. Analyzes PDFs, images, diagrams to extract information. Fallback: gpt-5.2 → glm-4.6v → kimi-k2.5 → claude-haiku-4-5 → gpt-5-nano. |
+| **Morpheus** | `anthropic/claude-opus-4-6` | **The default orchestrator.** Plans, delegates, and executes complex tasks using specialized subagents with aggressive parallel execution. Todo-driven workflow with extended thinking (32k budget). Fallback: kimi-k2.5 → glm-4.7 → gpt-5.3-codex → gemini-3-pro. |
+| **Keymaker** | `openai/gpt-5.3-codex` | **The Legitimate Craftsman.** Autonomous deep worker inspired by AmpCode's deep mode. Goal-oriented execution with thorough research before action. Explores codebase patterns, completes tasks end-to-end without premature stopping. Requires gpt-5.3-codex (no fallback - only activates when this model is available). |
+| **Merovingian** | `openai/gpt-5.2` | Architecture decisions, code review, debugging. Read-only consultation - stellar logical reasoning and deep analysis. |
+| **Operator** | `zai-coding-plan/glm-4.7` | Multi-repo analysis, documentation lookup, OSS implementation examples. Deep codebase understanding with evidence-based answers. Fallback: glm-4.7-free → claude-sonnet-4-5. |
+| **Trinity** | `anthropic/claude-haiku-4-5` | Fast codebase exploration and contextual grep. Fallback: gpt-5-mini → gpt-5-nano. |
+| **Construct** | `google/gemini-3-flash` | Visual content specialist. Analyzes PDFs, images, diagrams to extract information. Fallback: gpt-5.2 → glm-4.6v → kimi-k2.5 → claude-haiku-4-5 → gpt-5-nano. |
 
 ### Planning Agents
 
 | Agent | Model | Purpose |
 |-------|-------|---------|
-| **Prometheus** | `anthropic/claude-opus-4-6` | Strategic planner with interview mode. Creates detailed work plans through iterative questioning. Fallback: kimi-k2.5 → gpt-5.2 → gemini-3-pro. |
-| **Metis** | `anthropic/claude-opus-4-6` | Plan consultant - pre-planning analysis. Identifies hidden intentions, ambiguities, and AI failure points. Fallback: kimi-k2.5 → gpt-5.2 → gemini-3-pro. |
-| **Momus** | `openai/gpt-5.2` | Plan reviewer - validates plans against clarity, verifiability, and completeness standards. Fallback: gpt-5.2 → claude-opus-4-6 → gemini-3-pro. |
+| **Oracle** | `anthropic/claude-opus-4-6` | Strategic planner with interview mode. Creates detailed work plans through iterative questioning. Fallback: kimi-k2.5 → gpt-5.2 → gemini-3-pro. |
+| **Seraph** | `anthropic/claude-opus-4-6` | Plan consultant - pre-planning analysis. Identifies hidden intentions, ambiguities, and AI failure points. Fallback: kimi-k2.5 → gpt-5.2 → gemini-3-pro. |
+| **Smith** | `openai/gpt-5.2` | Plan reviewer - validates plans against clarity, verifiability, and completeness standards. Fallback: gpt-5.2 → claude-opus-4-6 → gemini-3-pro. |
 
 ### Invoking Agents
 
 The main agent invokes these automatically, but you can call them explicitly:
 
 ```
-Ask @oracle to review this design and propose an architecture
-Ask @librarian how this is implemented - why does the behavior keep changing?
-Ask @explore for the policy on this feature
+Ask @merovingian to review this design and propose an architecture
+Ask @operator how this is implemented - why does the behavior keep changing?
+Ask @trinity for the policy on this feature
 ```
 
 ### Tool Restrictions
 
 | Agent | Restrictions |
 |-------|-------------|
-| oracle | Read-only: cannot write, edit, or delegate |
-| librarian | Cannot write, edit, or delegate |
-| explore | Cannot write, edit, or delegate |
-| multimodal-looker | Allowlist only: read, glob, grep |
+| merovingian | Read-only: cannot write, edit, or delegate |
+| operator | Cannot write, edit, or delegate |
+| trinity | Cannot write, edit, or delegate |
+| construct | Allowlist only: read, glob, grep |
 
 ### Background Agents
 
@@ -214,11 +214,11 @@ Commands are slash-triggered workflows that execute predefined templates.
 | Command | Description |
 |---------|-------------|
 | `/init-deep` | Initialize hierarchical AGENTS.md knowledge base |
-| `/ralph-loop` | Start self-referential development loop until completion |
+| `/matrix-loop` | Start self-referential development loop until completion |
 | `/ulw-loop` | Start ultrawork loop - continues with ultrawork mode |
-| `/cancel-ralph` | Cancel active Ralph Loop |
+| `/cancel-loop` | Cancel active Matrix Loop |
 | `/refactor` | Intelligent refactoring with LSP, AST-grep, architecture analysis, and TDD verification |
-| `/start-work` | Start Sisyphus work session from Prometheus plan |
+| `/start-work` | Start Morpheus work session from Oracle plan |
 
 ### Command: /init-deep
 
@@ -239,29 +239,27 @@ project/
 │       └── AGENTS.md      # Component-specific context
 ```
 
-### Command: /ralph-loop
+### Command: /matrix-loop
 
 **Purpose**: Self-referential development loop that runs until task completion
 
-**Named after**: Anthropic's Ralph Wiggum plugin
-
 **Usage**:
 ```
-/ralph-loop "Build a REST API with authentication"
-/ralph-loop "Refactor the payment module" --max-iterations=50
+/matrix-loop "Build a REST API with authentication"
+/matrix-loop "Refactor the payment module" --max-iterations=50
 ```
 
 **Behavior**:
 - Agent works continuously toward the goal
 - Detects `<promise>DONE</promise>` to know when complete
 - Auto-continues if agent stops without completion
-- Ends when: completion detected, max iterations reached (default 100), or `/cancel-ralph`
+- Ends when: completion detected, max iterations reached (default 100), or `/cancel-loop`
 
-**Configure**: `{ "ralph_loop": { "enabled": true, "default_max_iterations": 100 } }`
+**Configure**: `{ "matrix_loop": { "enabled": true, "default_max_iterations": 100 } }`
 
 ### Command: /ulw-loop
 
-**Purpose**: Same as ralph-loop but with ultrawork mode active
+**Purpose**: Same as matrix-loop but with ultrawork mode active
 
 Everything runs at maximum intensity - parallel agents, background tasks, aggressive exploration.
 
@@ -283,14 +281,14 @@ Everything runs at maximum intensity - parallel agents, background tasks, aggres
 
 ### Command: /start-work
 
-**Purpose**: Start execution from a Prometheus-generated plan
+**Purpose**: Start execution from an Oracle-generated plan
 
 **Usage**:
 ```
 /start-work [plan-name]
 ```
 
-Uses atlas agent to execute planned tasks systematically.
+Uses Architect agent to execute planned tasks systematically.
 
 ### Custom Commands
 
@@ -332,7 +330,7 @@ Hooks intercept and modify behavior at key points in the agent lifecycle.
 |------|-------|-------------|
 | **keyword-detector** | UserPromptSubmit | Detects keywords and activates modes: `ultrawork`/`ulw` (max performance), `search`/`find` (parallel exploration), `analyze`/`investigate` (deep analysis). |
 | **think-mode** | UserPromptSubmit | Auto-detects extended thinking needs. Catches "think deeply", "ultrathink" and adjusts model settings. |
-| **ralph-loop** | Stop | Manages self-referential loop continuation. |
+| **matrix-loop** | Stop | Manages self-referential loop continuation. |
 | **start-work** | PostToolUse | Handles /start-work command execution. |
 | **auto-slash-command** | UserPromptSubmit | Automatically executes slash commands from prompts. |
 
@@ -364,7 +362,7 @@ Hooks intercept and modify behavior at key points in the agent lifecycle.
 
 | Hook | Event | Description |
 |------|-------|-------------|
-| **auto-update-checker** | UserPromptSubmit | Checks for new versions, shows startup toast with version and Sisyphus status. |
+| **auto-update-checker** | UserPromptSubmit | Checks for new versions, shows startup toast with version and Morpheus status. |
 | **background-notification** | Stop | Notifies when background agent tasks complete. |
 | **session-notification** | Stop | OS notifications when agents go idle. Works on macOS, Linux, Windows. |
 | **agent-usage-reminder** | PostToolUse | Reminds you to leverage specialized agents for better results. |
@@ -381,7 +379,7 @@ Hooks intercept and modify behavior at key points in the agent lifecycle.
 | Hook | Event | Description |
 |------|-------|-------------|
 | **claude-code-hooks** | All | Executes hooks from Claude Code's settings.json. |
-| **atlas** | All | Main orchestration logic (771 lines). |
+| **architect** | All | Main orchestration logic (771 lines). |
 | **interactive-bash-session** | PreToolUse | Manages tmux sessions for interactive CLI. |
 | **non-interactive-env** | PreToolUse | Handles non-interactive environment constraints. |
 
@@ -389,7 +387,7 @@ Hooks intercept and modify behavior at key points in the agent lifecycle.
 
 | Hook | Event | Description |
 |------|-------|-------------|
-| **prometheus-md-only** | PostToolUse | Enforces markdown-only output for Prometheus planner. |
+| **oracle-md-only** | PostToolUse | Enforces markdown-only output for Oracle planner. |
 
 ### Claude Code Hooks Integration
 
@@ -453,7 +451,7 @@ Disable specific hooks in config:
 
 | Tool | Description |
 |------|-------------|
-| **call_omo_agent** | Spawn explore/librarian agents. Supports `run_in_background`. |
+| **call_omo_agent** | Spawn trinity/operator agents. Supports `run_in_background`. |
 | **task** | Category-based task delegation. Supports categories (visual, business-logic) or direct agent targeting. |
 | **background_output** | Retrieve background task results |
 | **background_cancel** | Cancel running background tasks |
