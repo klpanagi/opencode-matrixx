@@ -257,7 +257,7 @@ describe("generateOmoConfig - model fallback system", () => {
     const result = generateOmoConfig(config)
 
     // #then Morpheus uses Claude (OR logic - at least one provider available)
-    expect(result.$schema).toBe("https://raw.githubusercontent.com/code-yeongyu/oh-my-opencode/master/assets/matrixx.schema.json")
+    expect(result.$schema).toBe("https://raw.githubusercontent.com/klpanagi/matrixx/dev/assets/matrixx.schema.json")
     expect(result.agents).toBeDefined()
     expect((result.agents as Record<string, { model: string }>).morpheus.model).toBe("anthropic/claude-opus-4-6")
   })
@@ -319,7 +319,7 @@ describe("generateOmoConfig - model fallback system", () => {
     const result = generateOmoConfig(config)
 
     // #then Morpheus is omitted (requires all fallback providers)
-    expect(result.$schema).toBe("https://raw.githubusercontent.com/code-yeongyu/oh-my-opencode/master/assets/matrixx.schema.json")
+    expect(result.$schema).toBe("https://raw.githubusercontent.com/klpanagi/matrixx/dev/assets/matrixx.schema.json")
     expect((result.agents as Record<string, { model: string }>).morpheus).toBeUndefined()
   })
 
