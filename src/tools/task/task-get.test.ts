@@ -7,7 +7,7 @@ import { createTaskGetTool } from "./task-get"
 const TEST_STORAGE = ".test-task-get-tool"
 const TEST_DIR = join(process.cwd(), TEST_STORAGE)
 const TEST_CONFIG = {
-  sisyphus: {
+  morpheus: {
     tasks: {
       storage_path: TEST_STORAGE,
     },

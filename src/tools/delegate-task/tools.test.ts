@@ -18,6 +18,7 @@ const TEST_AVAILABLE_MODELS = new Set([
   "anthropic/claude-sonnet-4-5",
   "anthropic/claude-haiku-4-5",
   "google/gemini-3-pro",
+  "google/gemini-3.1-pro",
   "google/gemini-3-flash",
   "openai/gpt-5.2",
   "openai/gpt-5.3-codex",
@@ -52,7 +53,7 @@ describe("morpheus-task", () => {
     providerModelsSpy = spyOn(connectedProvidersCache, "readProviderModelsCache").mockReturnValue({
       models: {
         anthropic: ["claude-opus-4-6", "claude-sonnet-4-5", "claude-haiku-4-5"],
-        google: ["gemini-3-pro", "gemini-3-flash"],
+        google: ["gemini-3-pro", "gemini-3.1-pro", "gemini-3-flash"],
         openai: ["gpt-5.2", "gpt-5.3-codex"],
       },
       connected: ["anthropic", "google", "openai"],

@@ -26,7 +26,7 @@ describe("createTaskList", () => {
   it("returns empty array when no tasks exist", async () => {
     //#given
     const config = {
-      sisyphus: {
+      morpheus: {
         tasks: {
           storage_path: join(testProjectDir, ".matrix/tasks"),
           claude_code_compat: false,
@@ -68,7 +68,7 @@ describe("createTaskList", () => {
     writeJsonAtomic(join(testProjectDir, ".matrix/tasks", "T-2.json"), task2)
 
     const config = {
-      sisyphus: {
+      morpheus: {
         tasks: {
           storage_path: join(testProjectDir, ".matrix/tasks"),
           claude_code_compat: false,
@@ -111,7 +111,7 @@ describe("createTaskList", () => {
     writeJsonAtomic(join(testProjectDir, ".matrix/tasks", "T-2.json"), task2)
 
      const config = {
-       sisyphus: {
+       morpheus: {
          tasks: {
            storage_path: join(testProjectDir, ".matrix/tasks"),
            claude_code_compat: false,
@@ -145,7 +145,7 @@ describe("createTaskList", () => {
     writeJsonAtomic(join(testProjectDir, ".matrix/tasks", "T-1.json"), task)
 
      const config = {
-       sisyphus: {
+       morpheus: {
          tasks: {
            storage_path: join(testProjectDir, ".matrix/tasks"),
            claude_code_compat: false,
@@ -209,7 +209,7 @@ describe("createTaskList", () => {
     writeJsonAtomic(join(testProjectDir, ".matrix/tasks", "T-main.json"), mainTask)
 
      const config = {
-       sisyphus: {
+       morpheus: {
          tasks: {
            storage_path: join(testProjectDir, ".matrix/tasks"),
            claude_code_compat: false,
@@ -252,7 +252,7 @@ describe("createTaskList", () => {
      writeJsonAtomic(join(testProjectDir, ".matrix/tasks", "T-2.json"), task2)
 
      const config = {
-       sisyphus: {
+       morpheus: {
          tasks: {
            storage_path: join(testProjectDir, ".matrix/tasks"),
            claude_code_compat: false,
@@ -284,7 +284,7 @@ describe("createTaskList", () => {
      writeJsonAtomic(join(testProjectDir, ".matrix/tasks", "T-1.json"), task)
 
      const config = {
-       sisyphus: {
+       morpheus: {
          tasks: {
            storage_path: join(testProjectDir, ".matrix/tasks"),
            claude_code_compat: false,
@@ -316,7 +316,7 @@ describe("createTaskList", () => {
      writeJsonAtomic(join(testProjectDir, ".matrix/tasks", "T-1.json"), task)
 
      const config = {
-       sisyphus: {
+       morpheus: {
          tasks: {
            storage_path: join(testProjectDir, ".matrix/tasks"),
            claude_code_compat: false,

@@ -16,7 +16,7 @@ const { createOracleMdOnlyHook } = await import("./index")
 const { MESSAGE_STORAGE } = await import("../../features/hook-message-injector")
 
 describe("oracle-md-only", () => {
-  const TEST_SESSION_ID = "test-session-oracle"
+  const TEST_SESSION_ID = "ses_test-session-oracle"
   let testMessageDir: string
 
   function createMockPluginInput() {
