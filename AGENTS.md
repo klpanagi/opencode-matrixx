@@ -216,17 +216,19 @@ MatrixxPlugin(ctx)
 
 | Agent | Model | Temp | Purpose |
 |-------|-------|------|---------|
-| Morpheus | anthropic/claude-opus-4-6 | 0.1 | Primary orchestrator (fallback: kimi-k2.5 → glm-4.7 → gpt-5.3-codex → gemini-3-pro) |
-| Keymaker | openai/gpt-5.3-codex | 0.1 | Autonomous deep worker (NO fallback) |
-| Architect | anthropic/claude-sonnet-4-5 | 0.1 | Master orchestrator (fallback: kimi-k2.5 → gpt-5.2) |
-| Oracle | anthropic/claude-opus-4-6 | 0.1 | Strategic planning (fallback: kimi-k2.5 → gpt-5.2) |
-| oracle | openai/gpt-5.2 | 0.1 | Consultation, debugging (fallback: claude-opus-4-6) |
-| librarian | zai-coding-plan/glm-4.7 | 0.1 | Docs, GitHub search (fallback: glm-4.7-free) |
-| explore | xai/grok-code-fast-1 | 0.1 | Fast codebase grep (fallback: claude-haiku-4-5 → gpt-5-mini → gpt-5-nano) |
-| construct | google/gemini-3-flash | 0.1 | PDF/image analysis |
-| Seraph | anthropic/claude-opus-4-6 | 0.3 | Pre-planning analysis (fallback: kimi-k2.5 → gpt-5.2) |
-| Smith | openai/gpt-5.2 | 0.1 | Plan validation (fallback: claude-opus-4-6) |
-| Mouse | anthropic/claude-sonnet-4-5 | 0.1 | Category-spawned executor |
+| Morpheus | anthropic/claude-opus-4-6 | 0.1 | Primary orchestrator (fallback: kimi-k2.5-free → glm-5 → big-pickle) |
+| Keymaker | openai/gpt-5.3-codex | 0.1 | Autonomous deep worker (fallback: gpt-5.2) |
+| Architect | opencode/kimi-k2.5-free | 0.1 | Master orchestrator (fallback: claude-sonnet-4-6 → gpt-5.2) |
+| Oracle | anthropic/claude-opus-4-6 | 0.1 | Strategic planning (fallback: gpt-5.2 → kimi-k2.5-free → gemini-3.1-pro) |
+| Merovingian | openai/gpt-5.2 | 0.1 | Consultation, debugging (fallback: gemini-3.1-pro → claude-opus-4-6) |
+| Operator | zai-coding-plan/glm-4.7 | 0.1 | Docs, GitHub search (fallback: glm-4.7-free → minimax-m2.5-free → claude-sonnet-4-6) |
+| Trinity | xai/grok-code-fast-1 | 0.1 | Fast codebase grep (fallback: minimax-m2.5-free → claude-haiku-4-5 → gpt-5-nano) |
+| Construct | opencode/kimi-k2.5-free | 0.1 | PDF/image analysis (fallback: gemini-3-flash → gpt-5.2 → glm-4.6v → gpt-5-nano) |
+| Seraph | anthropic/claude-opus-4-6 | 0.3 | Pre-planning analysis (fallback: kimi-k2.5-free → gpt-5.2 → gemini-3.1-pro) |
+| Smith | openai/gpt-5.2 | 0.1 | Plan validation (fallback: claude-opus-4-6 → gemini-3.1-pro) |
+| Cipher | anthropic/claude-opus-4-6 | 0.1 | DSL engineering (fallback: gpt-5.2 → kimi-k2.5-free → gemini-3.1-pro) |
+| Niobe | anthropic/claude-opus-4-6 | 0.15 | Research & leadership (fallback: gpt-5.2 → kimi-k2.5-free → gemini-3.1-pro) |
+| Mouse | anthropic/claude-sonnet-4-6 | 0.1 | Category-spawned executor |
 
 ## OPENCODE PLUGIN API
 

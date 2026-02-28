@@ -44,26 +44,28 @@ agents/
 
 | Agent | Model | Temp | Fallback Chain | Cost |
 |-------|-------|------|----------------|------|
-| Morpheus | claude-opus-4-6 | 0.1 | kimi-k2.5 → glm-4.7 → gpt-5.3-codex → gemini-3-pro | EXPENSIVE |
-| Keymaker | gpt-5.3-codex | 0.1 | NONE (required) | EXPENSIVE |
-| Architect | claude-sonnet-4-5 | 0.1 | kimi-k2.5 → gpt-5.2 | EXPENSIVE |
-| Oracle | claude-opus-4-6 | 0.1 | kimi-k2.5 → gpt-5.2 | EXPENSIVE |
-| oracle | gpt-5.2 | 0.1 | claude-opus-4-6 | EXPENSIVE |
-| librarian | glm-4.7 | 0.1 | glm-4.7-free | CHEAP |
-| explore | grok-code-fast-1 | 0.1 | claude-haiku-4-5 → gpt-5-mini → gpt-5-nano | FREE |
-| construct | gemini-3-flash | 0.1 | NONE | CHEAP |
-| Seraph | claude-opus-4-6 | 0.3 | kimi-k2.5 → gpt-5.2 | EXPENSIVE |
-| Smith | gpt-5.2 | 0.1 | claude-opus-4-6 | EXPENSIVE |
-| Mouse | claude-sonnet-4-5 | 0.1 | (user-configurable) | EXPENSIVE |
+| Morpheus | claude-opus-4-6 | 0.1 | kimi-k2.5-free → glm-5 → big-pickle | EXPENSIVE |
+| Keymaker | gpt-5.3-codex | 0.1 | gpt-5.2 (requires openai/github-copilot/venice/opencode) | EXPENSIVE |
+| Architect | kimi-k2.5-free | 0.1 | claude-sonnet-4-6 → gpt-5.2 | FREE |
+| Oracle | claude-opus-4-6 | 0.1 | gpt-5.2 → kimi-k2.5-free → gemini-3.1-pro | EXPENSIVE |
+| Merovingian | gpt-5.2 | 0.1 | gemini-3.1-pro → claude-opus-4-6 | EXPENSIVE |
+| Operator | glm-4.7 | 0.1 | glm-4.7-free → minimax-m2.5-free → claude-sonnet-4-6 | CHEAP |
+| Trinity | grok-code-fast-1 | 0.1 | minimax-m2.5-free → claude-haiku-4-5 → gpt-5-nano | FREE |
+| Construct | kimi-k2.5-free | 0.1 | gemini-3-flash → gpt-5.2 → glm-4.6v → gpt-5-nano | FREE |
+| Seraph | claude-opus-4-6 | 0.3 | kimi-k2.5-free → gpt-5.2 → gemini-3.1-pro | EXPENSIVE |
+| Smith | gpt-5.2 | 0.1 | claude-opus-4-6 → gemini-3.1-pro | EXPENSIVE |
+| Cipher | claude-opus-4-6 | 0.1 | claude-opus-4-6@default → gpt-5.2 → kimi-k2.5-free → gemini-3.1-pro | EXPENSIVE |
+| Niobe | claude-opus-4-6 | 0.15 | claude-opus-4-6@default → gpt-5.2 → kimi-k2.5-free → gemini-3.1-pro | EXPENSIVE |
+| Mouse | claude-sonnet-4-6 | 0.1 | (user-configurable) | EXPENSIVE |
 
 ## TOOL RESTRICTIONS
 
 | Agent | Denied | Allowed |
 |-------|--------|---------|
-| oracle | write, edit, task, call_omo_agent | Read-only consultation |
-| librarian | write, edit, task, call_omo_agent | Research tools only |
-| explore | write, edit, task, call_omo_agent | Search tools only |
-| construct | ALL except `read` | Vision-only |
+| Merovingian | write, edit, task, call_omo_agent | Read-only consultation |
+| Operator | write, edit, task, call_omo_agent | Research tools only |
+| Trinity | write, edit, task, call_omo_agent | Search tools only |
+| Construct | ALL except `read` | Vision-only |
 | Mouse | task | No delegation |
 | Architect | task, call_omo_agent | Orchestration only |
 

@@ -34,7 +34,7 @@ Meet the main agent: **Morpheus** (Claude Opus 4.6). Everything below is customi
 | **Trinity** | Fast codebase grep | Grok Code Fast |
 | **Cipher** | DSL engineering | Claude Opus 4.6 |
 | **Niobe** | Research, grants, technical leadership | Claude Opus 4.6 |
-| **Construct** | PDF/image analysis | Gemini 3 Flash |
+| **Construct** | PDF/image analysis | Kimi K2.5 (free) |
 | **Oracle** | Strategic planning | Claude Opus 4.6 |
 | **Seraph** | Pre-planning analysis | Claude Opus 4.6 |
 | **Smith** | Plan validation | GPT 5.2 |
@@ -86,7 +86,7 @@ Cipher is the agent you call when you need to design, build, or extend domain-sp
 
 | Property | Value |
 |----------|-------|
-| **Model** | Claude Opus 4.6 (fallback: GPT 5.2 → Kimi K2.5 → Gemini 3 Pro) |
+| **Model** | Claude Opus 4.6 (fallback: GPT 5.2 → Kimi K2.5 → Gemini 3.1 Pro) |
 | **Mode** | `all` — selectable in agent menu AND spawnable as subagent |
 | **Thinking** | Extended thinking enabled (32k budget) |
 | **Max Tokens** | 64,000 — DSL tasks produce large outputs (grammars + parsers + code generators) |
@@ -225,7 +225,7 @@ Niobe covers the entire research lifecycle — from literature review and method
 
 | Property | Value |
 |----------|-------|
-| **Model** | Claude Opus 4.6 (fallback: GPT 5.2 → Kimi K2.5 → Gemini 3 Pro) |
+| **Model** | Claude Opus 4.6 (fallback: GPT 5.2 → Kimi K2.5 → Gemini 3.1 Pro) |
 | **Mode** | `all` — selectable in agent menu AND spawnable as subagent |
 | **Thinking** | Extended thinking enabled (32k budget) |
 | **Max Tokens** | 64,000 — proposals and deliverables produce large structured outputs |

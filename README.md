@@ -100,12 +100,12 @@ Academic papers, EU proposals, systematic reviews, project management, IP exploi
 |-------|------|-------|
 | **Oracle** | Strategic planning with interview mode | Claude Opus 4.6 |
 | **Merovingian** | Architecture decisions & debugging | GPT 5.2 |
-| **Architect** | Plan execution orchestrator | Claude Sonnet 4.5 |
+| **Architect** | Plan execution orchestrator | Kimi K2.5 (free) |
 | **Seraph** | Pre-planning analysis | Claude Opus 4.6 |
 | **Smith** | Plan validation & review | GPT 5.2 |
 | **Operator** | Documentation & OSS search | GLM 4.7 |
 | **Trinity** | Blazing fast codebase grep | Grok Code Fast |
-| **Construct** | PDF, image & diagram analysis | Gemini 3 Flash |
+| **Construct** | PDF, image & diagram analysis | Kimi K2.5 (free) |
 
 Every agent, model, temperature, and permission is fully customizable. [**Meet the full team &rarr;**](docs/agents.md)
 

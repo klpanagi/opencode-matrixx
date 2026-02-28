@@ -10,20 +10,20 @@ Matrixx provides 11 specialized AI agents. Each has distinct expertise, optimize
 
 | Agent | Model | Purpose |
 |-------|-------|---------|
-| **Morpheus** | `anthropic/claude-opus-4-6` | **The default orchestrator.** Plans, delegates, and executes complex tasks using specialized subagents with aggressive parallel execution. Todo-driven workflow with extended thinking (32k budget). Fallback: kimi-k2.5 → glm-4.7 → gpt-5.3-codex → gemini-3-pro. |
-| **Keymaker** | `openai/gpt-5.3-codex` | **The Legitimate Craftsman.** Autonomous deep worker inspired by AmpCode's deep mode. Goal-oriented execution with thorough research before action. Explores codebase patterns, completes tasks end-to-end without premature stopping. Requires gpt-5.3-codex (no fallback - only activates when this model is available). |
-| **Merovingian** | `openai/gpt-5.2` | Architecture decisions, code review, debugging. Read-only consultation - stellar logical reasoning and deep analysis. |
-| **Operator** | `zai-coding-plan/glm-4.7` | Multi-repo analysis, documentation lookup, OSS implementation examples. Deep codebase understanding with evidence-based answers. Fallback: glm-4.7-free → claude-sonnet-4-5. |
-| **Trinity** | `anthropic/claude-haiku-4-5` | Fast codebase exploration and contextual grep. Fallback: gpt-5-mini → gpt-5-nano. |
-| **Construct** | `google/gemini-3-flash` | Visual content specialist. Analyzes PDFs, images, diagrams to extract information. Fallback: gpt-5.2 → glm-4.6v → kimi-k2.5 → claude-haiku-4-5 → gpt-5-nano. |
+| **Morpheus** | `anthropic/claude-opus-4-6` | **The default orchestrator.** Plans, delegates, and executes complex tasks using specialized subagents with aggressive parallel execution. Todo-driven workflow with extended thinking (32k budget). Fallback: kimi-k2.5-free → glm-5 → big-pickle. |
+| **Keymaker** | `openai/gpt-5.3-codex` | **The Legitimate Craftsman.** Autonomous deep worker inspired by AmpCode's deep mode. Goal-oriented execution with thorough research before action. Explores codebase patterns, completes tasks end-to-end without premature stopping. Fallback: gpt-5.2. Requires openai/github-copilot/venice/opencode provider. |
+| **Merovingian** | `openai/gpt-5.2` | Architecture decisions, code review, debugging. Read-only consultation - stellar logical reasoning and deep analysis. Fallback: gemini-3.1-pro → claude-opus-4-6. |
+| **Operator** | `zai-coding-plan/glm-4.7` | Multi-repo analysis, documentation lookup, OSS implementation examples. Deep codebase understanding with evidence-based answers. Fallback: glm-4.7-free → minimax-m2.5-free → claude-sonnet-4-6. |
+| **Trinity** | `xai/grok-code-fast-1` | Fast codebase exploration and contextual grep. Fallback: minimax-m2.5-free → claude-haiku-4-5 → gpt-5-nano. |
+| **Construct** | `opencode/kimi-k2.5-free` | Visual content specialist. Analyzes PDFs, images, diagrams to extract information. Fallback: gemini-3-flash → gpt-5.2 → glm-4.6v → gpt-5-nano. |
 
 ### Planning Agents
 
 | Agent | Model | Purpose |
 |-------|-------|---------|
-| **Oracle** | `anthropic/claude-opus-4-6` | Strategic planner with interview mode. Creates detailed work plans through iterative questioning. Fallback: kimi-k2.5 → gpt-5.2 → gemini-3-pro. |
-| **Seraph** | `anthropic/claude-opus-4-6` | Plan consultant - pre-planning analysis. Identifies hidden intentions, ambiguities, and AI failure points. Fallback: kimi-k2.5 → gpt-5.2 → gemini-3-pro. |
-| **Smith** | `openai/gpt-5.2` | Plan reviewer - validates plans against clarity, verifiability, and completeness standards. Fallback: gpt-5.2 → claude-opus-4-6 → gemini-3-pro. |
+| **Oracle** | `anthropic/claude-opus-4-6` | Strategic planner with interview mode. Creates detailed work plans through iterative questioning. Fallback: gpt-5.2 → kimi-k2.5-free → gemini-3.1-pro. |
+| **Seraph** | `anthropic/claude-opus-4-6` | Plan consultant - pre-planning analysis. Identifies hidden intentions, ambiguities, and AI failure points. Fallback: kimi-k2.5-free → gpt-5.2 → gemini-3.1-pro. |
+| **Smith** | `openai/gpt-5.2` | Plan reviewer - validates plans against clarity, verifiability, and completeness standards. Fallback: claude-opus-4-6 → gemini-3.1-pro. |
 
 ### Invoking Agents
 

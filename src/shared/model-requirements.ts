@@ -16,23 +16,23 @@ export const AGENT_MODEL_REQUIREMENTS: Record<string, ModelRequirement> = {
   morpheus: {
     fallbackChain: [
       { providers: ["anthropic", "github-copilot", "opencode"], model: "claude-opus-4-6", variant: "max" },
-      { providers: ["kimi-for-coding"], model: "k2p5" },
       { providers: ["opencode"], model: "kimi-k2.5-free" },
-      { providers: ["zai-coding-plan"], model: "glm-4.7" },
-      { providers: ["opencode"], model: "glm-4.7-free" },
+      { providers: ["zai-coding-plan", "opencode"], model: "glm-5" },
+      { providers: ["opencode"], model: "big-pickle" },
     ],
     requiresAnyModel: true,
   },
   keymaker: {
     fallbackChain: [
-      { providers: ["openai", "github-copilot", "opencode"], model: "gpt-5.3-codex", variant: "medium" },
+      { providers: ["openai", "venice", "github-copilot", "opencode"], model: "gpt-5.3-codex", variant: "medium" },
+      { providers: ["github-copilot"], model: "gpt-5.2", variant: "medium" },
     ],
-    requiresProvider: ["openai", "github-copilot", "opencode"],
+    requiresProvider: ["openai", "github-copilot", "venice", "opencode"],
   },
   merovingian: {
     fallbackChain: [
       { providers: ["openai", "github-copilot", "opencode"], model: "gpt-5.2", variant: "high" },
-      { providers: ["google", "github-copilot", "opencode"], model: "gemini-3-pro", variant: "high" },
+      { providers: ["google", "github-copilot", "opencode"], model: "gemini-3.1-pro", variant: "high" },
       { providers: ["anthropic", "github-copilot", "opencode"], model: "claude-opus-4-6", variant: "max" },
     ],
   },
@@ -40,59 +40,55 @@ export const AGENT_MODEL_REQUIREMENTS: Record<string, ModelRequirement> = {
     fallbackChain: [
       { providers: ["zai-coding-plan"], model: "glm-4.7" },
       { providers: ["opencode"], model: "glm-4.7-free" },
-      { providers: ["anthropic", "github-copilot", "opencode"], model: "claude-sonnet-4-5" },
+      { providers: ["opencode"], model: "minimax-m2.5-free" },
+      { providers: ["anthropic", "github-copilot", "opencode"], model: "claude-sonnet-4-6" },
     ],
   },
   trinity: {
     fallbackChain: [
       { providers: ["github-copilot"], model: "grok-code-fast-1" },
+      { providers: ["opencode"], model: "minimax-m2.5-free" },
       { providers: ["anthropic", "opencode"], model: "claude-haiku-4-5" },
       { providers: ["opencode"], model: "gpt-5-nano" },
     ],
   },
   construct: {
     fallbackChain: [
+      { providers: ["opencode"], model: "kimi-k2.5-free" },
       { providers: ["google", "github-copilot", "opencode"], model: "gemini-3-flash" },
       { providers: ["openai", "github-copilot", "opencode"], model: "gpt-5.2" },
       { providers: ["zai-coding-plan"], model: "glm-4.6v" },
-      { providers: ["kimi-for-coding"], model: "k2p5" },
-      { providers: ["opencode"], model: "kimi-k2.5-free" },
-      { providers: ["anthropic", "github-copilot", "opencode"], model: "claude-haiku-4-5" },
-      { providers: ["opencode"], model: "gpt-5-nano" },
+      { providers: ["openai", "github-copilot", "opencode"], model: "gpt-5-nano" },
     ],
   },
   oracle: {
     fallbackChain: [
       { providers: ["anthropic", "github-copilot", "opencode"], model: "claude-opus-4-6", variant: "max" },
-      { providers: ["kimi-for-coding"], model: "k2p5" },
-      { providers: ["opencode"], model: "kimi-k2.5-free" },
       { providers: ["openai", "github-copilot", "opencode"], model: "gpt-5.2", variant: "high" },
-      { providers: ["google", "github-copilot", "opencode"], model: "gemini-3-pro" },
+      { providers: ["opencode"], model: "kimi-k2.5-free" },
+      { providers: ["google", "github-copilot", "opencode"], model: "gemini-3.1-pro" },
     ],
   },
   seraph: {
     fallbackChain: [
       { providers: ["anthropic", "github-copilot", "opencode"], model: "claude-opus-4-6", variant: "max" },
-      { providers: ["kimi-for-coding"], model: "k2p5" },
       { providers: ["opencode"], model: "kimi-k2.5-free" },
       { providers: ["openai", "github-copilot", "opencode"], model: "gpt-5.2", variant: "high" },
-      { providers: ["google", "github-copilot", "opencode"], model: "gemini-3-pro", variant: "high" },
+      { providers: ["google", "github-copilot", "opencode"], model: "gemini-3.1-pro", variant: "high" },
     ],
   },
   smith: {
     fallbackChain: [
       { providers: ["openai", "github-copilot", "opencode"], model: "gpt-5.2", variant: "medium" },
       { providers: ["anthropic", "github-copilot", "opencode"], model: "claude-opus-4-6", variant: "max" },
-      { providers: ["google", "github-copilot", "opencode"], model: "gemini-3-pro", variant: "high" },
+      { providers: ["google", "github-copilot", "opencode"], model: "gemini-3.1-pro", variant: "high" },
     ],
   },
   architect: {
     fallbackChain: [
-      { providers: ["kimi-for-coding"], model: "k2p5" },
       { providers: ["opencode"], model: "kimi-k2.5-free" },
-      { providers: ["anthropic", "github-copilot", "opencode"], model: "claude-sonnet-4-5" },
+      { providers: ["anthropic", "github-copilot", "opencode"], model: "claude-sonnet-4-6" },
       { providers: ["openai", "github-copilot", "opencode"], model: "gpt-5.2" },
-      { providers: ["google", "github-copilot", "opencode"], model: "gemini-3-pro" },
     ],
   },
   cipher: {
@@ -100,9 +96,8 @@ export const AGENT_MODEL_REQUIREMENTS: Record<string, ModelRequirement> = {
       { providers: ["anthropic", "github-copilot", "opencode"], model: "claude-opus-4-6", variant: "max" },
       { providers: ["google-vertex-anthropic"], model: "claude-opus-4-6@default", variant: "max" },
       { providers: ["openai", "github-copilot", "opencode"], model: "gpt-5.2", variant: "high" },
-      { providers: ["kimi-for-coding"], model: "k2p5" },
       { providers: ["opencode"], model: "kimi-k2.5-free" },
-      { providers: ["google", "github-copilot", "opencode"], model: "gemini-3-pro" },
+      { providers: ["google", "github-copilot", "opencode"], model: "gemini-3.1-pro" },
     ],
   },
   niobe: {
@@ -110,9 +105,8 @@ export const AGENT_MODEL_REQUIREMENTS: Record<string, ModelRequirement> = {
       { providers: ["anthropic", "github-copilot", "opencode"], model: "claude-opus-4-6", variant: "max" },
       { providers: ["google-vertex-anthropic"], model: "claude-opus-4-6@default", variant: "max" },
       { providers: ["openai", "github-copilot", "opencode"], model: "gpt-5.2", variant: "high" },
-      { providers: ["kimi-for-coding"], model: "k2p5" },
       { providers: ["opencode"], model: "kimi-k2.5-free" },
-      { providers: ["google", "github-copilot", "opencode"], model: "gemini-3-pro" },
+      { providers: ["google", "github-copilot", "opencode"], model: "gemini-3.1-pro" },
     ],
   },
 }
@@ -120,16 +114,16 @@ export const AGENT_MODEL_REQUIREMENTS: Record<string, ModelRequirement> = {
 export const CATEGORY_MODEL_REQUIREMENTS: Record<string, ModelRequirement> = {
   construct: {
     fallbackChain: [
-      { providers: ["google", "github-copilot", "opencode"], model: "gemini-3-pro", variant: "high" },
-      { providers: ["zai-coding-plan"], model: "glm-5" },
+      { providers: ["google", "github-copilot", "opencode"], model: "gemini-3.1-pro", variant: "high" },
+      { providers: ["zai-coding-plan", "opencode"], model: "glm-5" },
       { providers: ["anthropic", "github-copilot", "opencode"], model: "claude-opus-4-6", variant: "max" },
-      { providers: ["kimi-for-coding"], model: "k2p5" },
+      { providers: ["opencode"], model: "kimi-k2.5-free" },
     ],
   },
   source: {
     fallbackChain: [
       { providers: ["openai", "github-copilot", "opencode"], model: "gpt-5.3-codex", variant: "xhigh" },
-      { providers: ["google", "github-copilot", "opencode"], model: "gemini-3-pro", variant: "high" },
+      { providers: ["google", "github-copilot", "opencode"], model: "gemini-3.1-pro", variant: "high" },
       { providers: ["anthropic", "github-copilot", "opencode"], model: "claude-opus-4-6", variant: "max" },
     ],
   },
@@ -137,17 +131,17 @@ export const CATEGORY_MODEL_REQUIREMENTS: Record<string, ModelRequirement> = {
     fallbackChain: [
       { providers: ["openai", "github-copilot", "opencode"], model: "gpt-5.3-codex", variant: "medium" },
       { providers: ["anthropic", "github-copilot", "opencode"], model: "claude-opus-4-6", variant: "max" },
-      { providers: ["google", "github-copilot", "opencode"], model: "gemini-3-pro", variant: "high" },
+      { providers: ["google", "github-copilot", "opencode"], model: "gemini-3.1-pro", variant: "high" },
     ],
     requiresModel: "gpt-5.3-codex",
   },
   "matrix-bend": {
     fallbackChain: [
-      { providers: ["google", "github-copilot", "opencode"], model: "gemini-3-pro", variant: "high" },
+      { providers: ["google", "github-copilot", "opencode"], model: "gemini-3.1-pro", variant: "high" },
       { providers: ["anthropic", "github-copilot", "opencode"], model: "claude-opus-4-6", variant: "max" },
       { providers: ["openai", "github-copilot", "opencode"], model: "gpt-5.2" },
     ],
-    requiresModel: "gemini-3-pro",
+    requiresModel: "gemini-3.1-pro",
   },
   "bullet-time": {
     fallbackChain: [
@@ -158,8 +152,8 @@ export const CATEGORY_MODEL_REQUIREMENTS: Record<string, ModelRequirement> = {
   },
   "blue-pill": {
     fallbackChain: [
-      { providers: ["anthropic", "github-copilot", "opencode"], model: "claude-sonnet-4-5" },
-      { providers: ["openai", "github-copilot", "opencode"], model: "gpt-5.3-codex", variant: "medium" },
+      { providers: ["anthropic", "github-copilot", "opencode"], model: "claude-sonnet-4-6" },
+      { providers: ["openai", "opencode"], model: "gpt-5.3-codex", variant: "medium" },
       { providers: ["google", "github-copilot", "opencode"], model: "gemini-3-flash" },
     ],
   },
@@ -167,14 +161,14 @@ export const CATEGORY_MODEL_REQUIREMENTS: Record<string, ModelRequirement> = {
     fallbackChain: [
       { providers: ["anthropic", "github-copilot", "opencode"], model: "claude-opus-4-6", variant: "max" },
       { providers: ["openai", "github-copilot", "opencode"], model: "gpt-5.2", variant: "high" },
-      { providers: ["google", "github-copilot", "opencode"], model: "gemini-3-pro" },
+      { providers: ["google", "github-copilot", "opencode"], model: "gemini-3.1-pro" },
     ],
   },
   broadcast: {
     fallbackChain: [
-      { providers: ["kimi-for-coding"], model: "k2p5" },
+      { providers: ["opencode"], model: "kimi-k2.5-free" },
       { providers: ["google", "github-copilot", "opencode"], model: "gemini-3-flash" },
-      { providers: ["anthropic", "github-copilot", "opencode"], model: "claude-sonnet-4-5" },
+      { providers: ["anthropic", "github-copilot", "opencode"], model: "claude-sonnet-4-6" },
     ],
   },
 }

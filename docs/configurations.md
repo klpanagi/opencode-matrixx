@@ -724,13 +724,14 @@ All 7 categories come with optimal model defaults, but **you must configure them
 
 | Category             | Built-in Default Model             | Description                                                          |
 | -------------------- | ---------------------------------- | -------------------------------------------------------------------- |
-| `visual-engineering` | `google/gemini-3-pro-preview`      | Frontend, UI/UX, design, styling, animation                          |
-| `ultrabrain`         | `openai/gpt-5.3-codex` (xhigh)     | Deep logical reasoning, complex architecture decisions               |
-| `artistry`           | `google/gemini-3-pro-preview` (max)| Highly creative/artistic tasks, novel ideas                          |
-| `quick`              | `anthropic/claude-haiku-4-5`       | Trivial tasks - single file changes, typo fixes, simple modifications|
-| `unspecified-low`    | `anthropic/claude-sonnet-4-5`      | Tasks that don't fit other categories, low effort required           |
-| `unspecified-high`   | `anthropic/claude-opus-4-6` (max)  | Tasks that don't fit other categories, high effort required          |
-| `writing`            | `google/gemini-3-flash-preview`    | Documentation, prose, technical writing                              |
+| `construct`          | `google/gemini-3.1-pro` (high)     | Frontend, UI/UX, design, styling, animation                          |
+| `source`             | `openai/gpt-5.3-codex` (xhigh)    | Deep logical reasoning, complex architecture decisions               |
+| `deep-jack`          | `openai/gpt-5.3-codex` (medium)   | Goal-oriented autonomous problem-solving, thorough research          |
+| `matrix-bend`        | `google/gemini-3.1-pro` (high)     | Complex problem-solving with creative approaches                     |
+| `bullet-time`        | `anthropic/claude-haiku-4-5`       | Trivial tasks - single file changes, typo fixes, simple modifications|
+| `blue-pill`          | `anthropic/claude-sonnet-4-6`      | Tasks that don't fit other categories, low effort required           |
+| `red-pill`           | `anthropic/claude-opus-4-6` (max)  | Tasks that don't fit other categories, high effort required          |
+| `broadcast`          | `opencode/kimi-k2.5-free`          | Documentation, prose, technical writing                              |
 
 ### ⚠️ Critical: Model Resolution Priority
 
@@ -894,15 +895,18 @@ Each agent has a defined provider priority chain. The system tries providers in 
 
 | Agent | Model (no prefix) | Provider Priority Chain |
 |-------|-------------------|-------------------------|
-| **Morpheus** | `claude-opus-4-6` | anthropic → kimi-for-coding → zai-coding-plan → openai → google |
-| **oracle** | `gpt-5.2` | openai → google → anthropic |
-| **operator** | `glm-4.7` | zai-coding-plan → opencode → anthropic |
-| **trinity** | `claude-haiku-4-5` | anthropic → github-copilot → opencode |
-| **construct** | `gemini-3-flash` | google → openai → zai-coding-plan → kimi-for-coding → anthropic → opencode |
-| **Oracle (Planner)** | `claude-opus-4-6` | anthropic → kimi-for-coding → openai → google |
-| **Seraph (Plan Consultant)** | `claude-opus-4-6` | anthropic → kimi-for-coding → openai → google |
-| **Smith (Plan Reviewer)** | `gpt-5.2` | openai → anthropic → google |
-| **Architect** | `claude-sonnet-4-5` | anthropic → kimi-for-coding → openai → google |
+| **Morpheus** | `claude-opus-4-6` | anthropic → opencode (kimi-k2.5-free) → zai-coding-plan (glm-5) → opencode (big-pickle) |
+| **Keymaker** | `gpt-5.3-codex` | openai/venice → github-copilot (gpt-5.2) |
+| **Merovingian** | `gpt-5.2` | openai → google (gemini-3.1-pro) → anthropic (claude-opus-4-6) |
+| **Operator** | `glm-4.7` | zai-coding-plan → opencode (glm-4.7-free) → opencode (minimax-m2.5-free) → anthropic (claude-sonnet-4-6) |
+| **Trinity** | `grok-code-fast-1` | github-copilot → opencode (minimax-m2.5-free) → anthropic (claude-haiku-4-5) → opencode (gpt-5-nano) |
+| **Construct** | `kimi-k2.5-free` | opencode → google (gemini-3-flash) → openai (gpt-5.2) → zai-coding-plan (glm-4.6v) → opencode (gpt-5-nano) |
+| **Oracle (Planner)** | `claude-opus-4-6` | anthropic → openai (gpt-5.2) → opencode (kimi-k2.5-free) → google (gemini-3.1-pro) |
+| **Seraph (Plan Consultant)** | `claude-opus-4-6` | anthropic → opencode (kimi-k2.5-free) → openai (gpt-5.2) → google (gemini-3.1-pro) |
+| **Smith (Plan Reviewer)** | `gpt-5.2` | openai → anthropic (claude-opus-4-6) → google (gemini-3.1-pro) |
+| **Architect** | `kimi-k2.5-free` | opencode → anthropic (claude-sonnet-4-6) → openai (gpt-5.2) |
+| **Cipher** | `claude-opus-4-6` | anthropic → google-vertex-anthropic → openai (gpt-5.2) → opencode (kimi-k2.5-free) → google (gemini-3.1-pro) |
+| **Niobe** | `claude-opus-4-6` | anthropic → google-vertex-anthropic → openai (gpt-5.2) → opencode (kimi-k2.5-free) → google (gemini-3.1-pro) |
 
 ### Category Provider Chains
 
@@ -910,14 +914,14 @@ Categories follow the same resolution logic:
 
 | Category | Model (no prefix) | Provider Priority Chain |
 |----------|-------------------|-------------------------|
-| **visual-engineering** | `gemini-3-pro` | google → anthropic → zai-coding-plan |
-| **ultrabrain** | `gpt-5.3-codex` | openai → google → anthropic |
-| **deep** | `gpt-5.3-codex` | openai → anthropic → google |
-| **artistry** | `gemini-3-pro` | google → anthropic → openai |
-| **quick** | `claude-haiku-4-5` | anthropic → google → opencode |
-| **unspecified-low** | `claude-sonnet-4-5` | anthropic → openai → google |
-| **unspecified-high** | `claude-opus-4-6` | anthropic → openai → google |
-| **writing** | `gemini-3-flash` | google → anthropic → zai-coding-plan → openai |
+| **construct** | `gemini-3.1-pro` | google → zai-coding-plan (glm-5) → anthropic (claude-opus-4-6) → opencode (kimi-k2.5-free) |
+| **source** | `gpt-5.3-codex` | openai → google (gemini-3.1-pro) → anthropic (claude-opus-4-6) |
+| **deep-jack** | `gpt-5.3-codex` | openai → anthropic (claude-opus-4-6) → google (gemini-3.1-pro) |
+| **matrix-bend** | `gemini-3.1-pro` | google → anthropic (claude-opus-4-6) → openai (gpt-5.2) |
+| **bullet-time** | `claude-haiku-4-5` | anthropic → google (gemini-3-flash) → opencode (gpt-5-nano) |
+| **blue-pill** | `claude-sonnet-4-6` | anthropic → openai (gpt-5.3-codex) → google (gemini-3-flash) |
+| **red-pill** | `claude-opus-4-6` | anthropic → openai (gpt-5.2) → google (gemini-3.1-pro) |
+| **broadcast** | `kimi-k2.5-free` | opencode → google (gemini-3-flash) → anthropic (claude-sonnet-4-6) |
 
 ### Checking Your Configuration
 
