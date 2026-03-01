@@ -11,6 +11,8 @@ import {
   createTasksTodowriteDisablerHook,
   createWriteExistingFileGuardHook,
   createHashlineReadEnhancerHook,
+  createSecretLeakGuardHook,
+  createEnvFileWriteGuardHook,
 } from "../../hooks"
 import {
   getOpenCodeVersion,
@@ -30,6 +32,8 @@ export type ToolGuardHooks = {
   tasksTodowriteDisabler: ReturnType<typeof createTasksTodowriteDisablerHook> | null
   writeExistingFileGuard: ReturnType<typeof createWriteExistingFileGuardHook> | null
   hashlineReadEnhancer: ReturnType<typeof createHashlineReadEnhancerHook> | null
+  secretLeakGuard: ReturnType<typeof createSecretLeakGuardHook> | null
+  envFileWriteGuard: ReturnType<typeof createEnvFileWriteGuardHook> | null
 }
 
 export function createToolGuardHooks(args: {
@@ -91,6 +95,14 @@ export function createToolGuardHooks(args: {
     ? safeHook("hashline-read-enhancer", () => createHashlineReadEnhancerHook(ctx, { hashline_edit: { enabled: pluginConfig.experimental?.hashline_edit ?? false } }))
     : null
 
+  const secretLeakGuard = isHookEnabled("secret-leak-guard")
+    ? safeHook("secret-leak-guard", () => createSecretLeakGuardHook(ctx, pluginConfig.security?.secret_scanning))
+    : null
+
+  const envFileWriteGuard = isHookEnabled("env-file-write-guard")
+    ? safeHook("env-file-write-guard", () => createEnvFileWriteGuardHook(pluginConfig.security?.env_file_guard))
+    : null
+
   return {
     commentChecker,
     toolOutputTruncator,
@@ -101,5 +113,7 @@ export function createToolGuardHooks(args: {
     tasksTodowriteDisabler,
     writeExistingFileGuard,
     hashlineReadEnhancer,
+    secretLeakGuard,
+    envFileWriteGuard,
   }
 }
