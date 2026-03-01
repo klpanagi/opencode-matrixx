@@ -1,0 +1,1 @@
+export { createSecretLeakGuardHook } from "./hook"
