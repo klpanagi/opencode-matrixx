@@ -1,6 +1,7 @@
 import { createWebsearchConfig } from "./websearch"
 import { context7 } from "./context7"
 import { grep_app } from "./grep-app"
+import { document_reader } from "./document-reader"
 import type { MatrixxConfig } from "../config/schema"
 
 export { McpNameSchema, type McpName } from "./types"
@@ -13,8 +14,16 @@ type RemoteMcpConfig = {
   oauth?: false
 }
 
+type LocalMcpConfig = {
+  type: "local"
+  command: string[]
+  enabled: boolean
+}
+
+type BuiltinMcpConfig = RemoteMcpConfig | LocalMcpConfig
+
 export function createBuiltinMcps(disabledMcps: string[] = [], config?: MatrixxConfig) {
-  const mcps: Record<string, RemoteMcpConfig> = {}
+  const mcps: Record<string, BuiltinMcpConfig> = {}
 
   if (!disabledMcps.includes("websearch")) {
     mcps.websearch = createWebsearchConfig(config?.websearch)
@@ -26,6 +35,10 @@ export function createBuiltinMcps(disabledMcps: string[] = [], config?: MatrixxC
 
   if (!disabledMcps.includes("grep_app")) {
     mcps.grep_app = grep_app
+  }
+
+  if (!disabledMcps.includes("document_reader")) {
+    mcps.document_reader = document_reader
   }
 
   return mcps
