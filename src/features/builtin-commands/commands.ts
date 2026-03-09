@@ -6,6 +6,7 @@ import { STOP_CONTINUATION_TEMPLATE } from "./templates/stop-continuation"
 import { REFACTOR_TEMPLATE } from "./templates/refactor"
 import { START_WORK_TEMPLATE } from "./templates/start-work"
 import { HANDOFF_TEMPLATE } from "./templates/handoff"
+import { PICKUP_TEMPLATE } from "./templates/pickup"
 import { REMOVE_DEADCODE_TEMPLATE } from "./templates/remove-deadcode"
 
 const BUILTIN_COMMAND_DEFINITIONS: Record<BuiltinCommandName, Omit<CommandDefinition, "name">> = {
@@ -94,6 +95,17 @@ Timestamp: $TIMESTAMP
 $ARGUMENTS
 </user-request>`,
     argumentHint: "[goal]",
+  },
+  pickup: {
+    description: "(builtin) Load handoff context from a previous session",
+    template: `<command-instruction>
+${PICKUP_TEMPLATE}
+</command-instruction>
+
+<user-request>
+$ARGUMENTS
+</user-request>`,
+    argumentHint: "[task to continue with]",
   },
   "remove-deadcode": {
     description: "(builtin) Find and remove dead code (zero-reference symbols) using LSP analysis",
