@@ -63,7 +63,10 @@ export async function runAggressiveTruncationStrategy(params: {
       try {
         await params.client.session.promptAsync({
           path: { id: params.sessionID },
-          body: { auto: true } as never,
+          body: {
+            parts: [{ type: "text", text: "continue" }],
+            noReply: false,
+          },
           query: { directory: params.directory },
         })
       } catch {}

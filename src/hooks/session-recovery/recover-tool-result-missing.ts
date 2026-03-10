@@ -65,20 +65,18 @@ export async function recoverToolResultMissing(
     return false
   }
 
-  const toolResultParts = toolUseIds.map((id) => ({
-    type: "tool_result" as const,
-    tool_use_id: id,
-    content: "Operation cancelled by user (ESC pressed)",
-  }))
-
-  const promptInput = {
-    path: { id: sessionID },
-    body: { parts: toolResultParts },
-  }
-
   try {
-    // @ts-expect-error - SDK types may not include tool_result parts
-    await client.session.promptAsync(promptInput)
+    await client.session.promptAsync({
+      path: { id: sessionID },
+      body: {
+        parts: [
+          {
+            type: "text",
+            text: `Tool operations were interrupted. ${toolUseIds.length} tool call(s) did not complete. Please acknowledge and continue.`,
+          },
+        ],
+      },
+    })
 
     return true
   } catch {
