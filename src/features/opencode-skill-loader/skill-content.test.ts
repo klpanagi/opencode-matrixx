@@ -258,7 +258,7 @@ describe("resolveMultipleSkillsAsync", () => {
 		// then: watermark section is injected
 		expect(result.resolved.size).toBe(1)
 		const gitMasterContent = result.resolved.get("git-master")
-		expect(gitMasterContent).toContain("Ultraworked with [Morpheus]")
+		expect(gitMasterContent).toContain("Ultraworked with [Matrixx]")
 		expect(gitMasterContent).toContain("Co-authored-by: Morpheus")
 	})
 
@@ -277,7 +277,7 @@ describe("resolveMultipleSkillsAsync", () => {
 
 		// then: only footer is injected
 		const gitMasterContent = result.resolved.get("git-master")
-		expect(gitMasterContent).toContain("Ultraworked with [Morpheus]")
+		expect(gitMasterContent).toContain("Ultraworked with [Matrixx]")
 		expect(gitMasterContent).not.toContain("Co-authored-by: Morpheus")
 	})
 
@@ -291,7 +291,7 @@ describe("resolveMultipleSkillsAsync", () => {
 		// then: watermark is injected (default is ON)
 		expect(result.resolved.size).toBe(1)
 		const gitMasterContent = result.resolved.get("git-master")
-		expect(gitMasterContent).toContain("Ultraworked with [Morpheus]")
+		expect(gitMasterContent).toContain("Ultraworked with [Matrixx]")
 		expect(gitMasterContent).toContain("Co-authored-by: Morpheus")
 	})
 
@@ -310,7 +310,7 @@ describe("resolveMultipleSkillsAsync", () => {
 
 		// then: only co-author is injected
 		const gitMasterContent = result.resolved.get("git-master")
-		expect(gitMasterContent).not.toContain("Ultraworked with [Morpheus]")
+		expect(gitMasterContent).not.toContain("Ultraworked with [Matrixx]")
 		expect(gitMasterContent).toContain("Co-authored-by: Morpheus")
 	})
 
@@ -331,7 +331,7 @@ describe("resolveMultipleSkillsAsync", () => {
 		// then: custom footer is injected instead of default
 		const gitMasterContent = result.resolved.get("git-master")
 		expect(gitMasterContent).toContain(customFooter)
-		expect(gitMasterContent).not.toContain("Ultraworked with [Morpheus]")
+		expect(gitMasterContent).not.toContain("Ultraworked with [Matrixx]")
 	})
 
 	it("should use default Morpheus footer when commit_footer is boolean true", async () => {
@@ -349,7 +349,7 @@ describe("resolveMultipleSkillsAsync", () => {
 
 		// then: default Morpheus footer is injected
 		const gitMasterContent = result.resolved.get("git-master")
-		expect(gitMasterContent).toContain("Ultraworked with [Morpheus]")
+		expect(gitMasterContent).toContain("Ultraworked with [Matrixx]")
 	})
 
 	it("should handle empty array", async () => {
