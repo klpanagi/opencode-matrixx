@@ -74,7 +74,7 @@ Approach:
 </Category_Context>
 
 <Caller_Warning>
-THIS CATEGORY USES A LESS CAPABLE MODEL (claude-haiku-4-5).
+THIS CATEGORY USES A LESS CAPABLE MODEL (gpt-5.4-mini).
 
 The model executing this task has LIMITED reasoning capacity. Your prompt MUST be:
 
@@ -241,7 +241,7 @@ export const DEFAULT_CATEGORIES: Record<string, CategoryConfig> = {
   "source": { model: "openai/gpt-5.3-codex", variant: "xhigh" },
   "deep-jack": { model: "openai/gpt-5.3-codex", variant: "medium" },
   "matrix-bend": { model: "google/gemini-3-pro", variant: "high" },
-  "bullet-time": { model: "anthropic/claude-haiku-4-5" },
+  "bullet-time": { model: "openai/gpt-5.4-mini" },
   "blue-pill": { model: "anthropic/claude-sonnet-4-5" },
   "red-pill": { model: "anthropic/claude-opus-4-6", variant: "max" },
   "broadcast": { model: "kimi-for-coding/k2p5" },
