@@ -117,23 +117,23 @@ export const THINKING_CONFIGS = {
   anthropic: {
     thinking: {
       type: "enabled",
-      budgetTokens: 64000,
+      budgetTokens: 32000,
     },
-    maxTokens: 128000,
+    maxTokens: 64000,
   },
   "google-vertex-anthropic": {
     thinking: {
       type: "enabled",
-      budgetTokens: 64000,
+      budgetTokens: 32000,
     },
-    maxTokens: 128000,
+    maxTokens: 64000,
   },
   "amazon-bedrock": {
     reasoningConfig: {
       type: "enabled",
-      budgetTokens: 32000,
+      budgetTokens: 16000,
     },
-    maxTokens: 64000,
+    maxTokens: 32000,
   },
   google: {
     providerOptions: {

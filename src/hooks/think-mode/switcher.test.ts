@@ -24,7 +24,7 @@ describe("think-mode switcher", () => {
           "enabled"
         )
         expect((config?.thinking as Record<string, unknown>)?.budgetTokens).toBe(
-          64000
+          32000
         )
       })
 
@@ -280,7 +280,7 @@ describe("think-mode switcher", () => {
       expect(config?.thinking).toBeDefined()
       expect((config?.thinking as Record<string, unknown>)?.type).toBe("enabled")
       expect((config?.thinking as Record<string, unknown>)?.budgetTokens).toBe(
-        64000
+        32000
       )
     })
 
@@ -329,7 +329,7 @@ describe("think-mode switcher", () => {
     it("should have correct structure for anthropic", () => {
       const config = THINKING_CONFIGS.anthropic
       expect(config.thinking).toBeDefined()
-      expect(config.maxTokens).toBe(128000)
+      expect(config.maxTokens).toBe(64000)
     })
 
     it("should have correct structure for google-vertex-anthropic", () => {
@@ -340,7 +340,7 @@ describe("think-mode switcher", () => {
 
       //#then it should match anthropic style structure
       expect(config.thinking).toBeDefined()
-      expect(config.maxTokens).toBe(128000)
+      expect(config.maxTokens).toBe(64000)
     })
 
     it("should have correct structure for google", () => {
@@ -356,7 +356,7 @@ describe("think-mode switcher", () => {
     it("should have correct structure for amazon-bedrock", () => {
       const config = THINKING_CONFIGS["amazon-bedrock"]
       expect(config.reasoningConfig).toBeDefined()
-      expect(config.maxTokens).toBe(64000)
+      expect(config.maxTokens).toBe(32000)
     })
   })
 
