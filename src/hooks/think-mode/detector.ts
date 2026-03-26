@@ -1,4 +1,8 @@
-const ENGLISH_PATTERNS = [/\bultrathink\b/i, /\bthink\b/i]
+const ENGLISH_PATTERNS = [
+  /\bultrathink\b/i,
+  /\bthink\s+(deeply|hard|carefully|step.by.step|step-by-step|through\s+this|this\s+through)\b/i,
+  /\b(deep|extended|careful)\s+think(ing)?\b/i,
+]
 
 const MULTILINGUAL_KEYWORDS = [
   "생각", "고민", "검토", "제대로",

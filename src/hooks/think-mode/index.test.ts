@@ -57,7 +57,7 @@ describe("createThinkModeHook integration", () => {
         )
         expect(
           (message.thinking as Record<string, unknown>)?.budgetTokens
-        ).toBe(64000)
+        ).toBe(32000)
       })
 
       it("should handle github-copilot Claude with dots in version", async () => {
@@ -84,7 +84,7 @@ describe("createThinkModeHook integration", () => {
         const input = createMockInput(
           "github-copilot",
           "claude-sonnet-4-5",
-          "think about this"
+          "think deeply about this"
         )
 
         // when the chat.params hook is called
@@ -104,7 +104,7 @@ describe("createThinkModeHook integration", () => {
         const input = createMockInput(
           "github-copilot",
           "gemini-3-pro",
-          "think about this"
+          "think carefully about this"
         )
 
         // when the chat.params hook is called
@@ -146,7 +146,7 @@ describe("createThinkModeHook integration", () => {
         const input = createMockInput(
           "github-copilot",
           "gpt-5.2",
-          "please think"
+          "please think carefully"
         )
 
         // when the chat.params hook is called
@@ -202,7 +202,7 @@ describe("createThinkModeHook integration", () => {
       const input = createMockInput(
         "anthropic",
         "claude-sonnet-4-5",
-        "think about this"
+        "think carefully about this"
       )
 
       // when the chat.params hook is called
@@ -231,7 +231,7 @@ describe("createThinkModeHook integration", () => {
       expect(input.message.model?.modelID).toBe("claude-opus-4-6-high")
       expect(message.thinking).toBeDefined()
       expect((message.thinking as Record<string, unknown>)?.budgetTokens).toBe(
-        64000
+        32000
       )
     })
 
@@ -241,7 +241,7 @@ describe("createThinkModeHook integration", () => {
       const input = createMockInput(
         "google",
         "gemini-3-pro",
-        "think about this"
+        "think carefully"
       )
 
       // when the chat.params hook is called
@@ -256,7 +256,7 @@ describe("createThinkModeHook integration", () => {
     it("should still work for direct openai provider", async () => {
       // given direct openai provider
       const hook = createThinkModeHook()
-      const input = createMockInput("openai", "gpt-5", "think about this")
+      const input = createMockInput("openai", "gpt-5", "think carefully")
 
       // when the chat.params hook is called
       await hook["chat.params"](input, sessionID)
@@ -273,7 +273,7 @@ describe("createThinkModeHook integration", () => {
       const input = createMockInput(
         "amazon-bedrock",
         "claude-sonnet-4-5",
-        "think"
+        "ultrathink"
       )
 
       // when the chat.params hook is called
@@ -332,7 +332,7 @@ describe("createThinkModeHook integration", () => {
       const input = createMockInput(
         "github-copilot",
         "llama-3-70b",
-        "think about this"
+        "think carefully about this"
       )
 
       // when the chat.params hook is called
@@ -348,7 +348,7 @@ describe("createThinkModeHook integration", () => {
       // given input without a model
       const hook = createThinkModeHook()
       const input: ThinkModeInput = {
-        parts: [{ type: "text", text: "think about this" }],
+        parts: [{ type: "text", text: "think carefully about this" }],
         message: {},
       }
 
