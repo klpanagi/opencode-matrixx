@@ -14,6 +14,7 @@ import {
   createSecretLeakGuardHook,
   createEnvFileWriteGuardHook,
   createJsonErrorRecoveryHook,
+  createBashFileReadGuardHook,
 } from "../../hooks"
 import {
   getOpenCodeVersion,
@@ -36,6 +37,7 @@ export type ToolGuardHooks = {
   secretLeakGuard: ReturnType<typeof createSecretLeakGuardHook> | null
   envFileWriteGuard: ReturnType<typeof createEnvFileWriteGuardHook> | null
   jsonErrorRecovery: ReturnType<typeof createJsonErrorRecoveryHook> | null
+  bashFileReadGuard: ReturnType<typeof createBashFileReadGuardHook> | null
 }
 
 export function createToolGuardHooks(args: {
@@ -109,6 +111,10 @@ export function createToolGuardHooks(args: {
     ? safeHook("json-error-recovery", () => createJsonErrorRecoveryHook(ctx))
     : null
 
+  const bashFileReadGuard = isHookEnabled("bash-file-read-guard")
+    ? safeHook("bash-file-read-guard", () => createBashFileReadGuardHook())
+    : null
+
   return {
     commentChecker,
     toolOutputTruncator,
@@ -122,5 +128,6 @@ export function createToolGuardHooks(args: {
     secretLeakGuard,
     envFileWriteGuard,
     jsonErrorRecovery,
+    bashFileReadGuard,
   }
 }
