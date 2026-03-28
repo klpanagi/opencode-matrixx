@@ -59,7 +59,7 @@ jobs:
       - name: Check if already published
         id: check
         run: |
-          PKG_NAME="matrixx-${{ matrix.platform }}"
+          PKG_NAME="opencode-matrixx-${{ matrix.platform }}"
           VERSION="${{ inputs.version }}"
           STATUS=$(curl -s -o /dev/null -w "%{http_code}" "https://registry.npmjs.org/${PKG_NAME}/${VERSION}")
           # Convert platform name for output (replace - with _)
@@ -160,7 +160,7 @@ jobs:
       - name: Check if already published
         id: check
         run: |
-          PKG_NAME="matrixx-${{ matrix.platform }}"
+          PKG_NAME="opencode-matrixx-${{ matrix.platform }}"
           VERSION="${{ inputs.version }}"
           STATUS=$(curl -s -o /dev/null -w "%{http_code}" "https://registry.npmjs.org/${PKG_NAME}/${VERSION}")
           if [ "$STATUS" = "200" ]; then

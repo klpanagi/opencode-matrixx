@@ -1,5 +1,5 @@
 {
-  "name": "matrixx-linux-x64-musl-baseline",
+  "name": "opencode-matrixx-linux-x64-musl-baseline",
   "version": "3.1.1",
   "description": "Platform-specific binary for "matrixx (linux-x64-musl-baseline, no AVX2)",
   "license": "MIT",

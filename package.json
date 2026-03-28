@@ -1,5 +1,5 @@
 {
-  "name": "matrixx",
+  "name": "opencode-matrixx",
   "version": "3.5.3",
   "description": "The Best AI Agent Harness - Batteries-Included OpenCode Plugin with Multi-Model Orchestration, Parallel Background Agents, and Crafted LSP/AST Tools",
   "main": "dist/index.js",
@@ -62,7 +62,7 @@
     "detect-libc": "^2.0.0",
     "js-yaml": "^4.1.1",
     "jsonc-parser": "^3.3.1",
-    "matrixx": ".",
+    "opencode-matrixx": ".",
     "picocolors": "^1.1.1",
     "picomatch": "^4.0.2",
     "vscode-jsonrpc": "^8.2.0",
@@ -75,13 +75,13 @@
     "typescript": "^5.7.3"
   },
   "optionalDependencies": {
-    "matrixx-darwin-arm64": "3.5.3",
-    "matrixx-darwin-x64": "3.5.3",
-    "matrixx-linux-arm64": "3.5.3",
-    "matrixx-linux-arm64-musl": "3.5.3",
-    "matrixx-linux-x64": "3.5.3",
-    "matrixx-linux-x64-musl": "3.5.3",
-    "matrixx-windows-x64": "3.5.3"
+    "opencode-matrixx-darwin-arm64": "3.5.3",
+    "opencode-matrixx-darwin-x64": "3.5.3",
+    "opencode-matrixx-linux-arm64": "3.5.3",
+    "opencode-matrixx-linux-arm64-musl": "3.5.3",
+    "opencode-matrixx-linux-x64": "3.5.3",
+    "opencode-matrixx-linux-x64-musl": "3.5.3",
+    "opencode-matrixx-windows-x64": "3.5.3"
   },
   "trustedDependencies": [
     "@ast-grep/cli",

@@ -1,7 +1,7 @@
 {
-  "name": "matrixx-linux-x64",
+  "name": "opencode-matrixx-linux-x64",
   "version": "3.5.3",
-  "description": "Platform-specific binary for matrixx (linux-x64)",
+  "description": "Platform-specific binary for opencode-matrixx (linux-x64)",
   "license": "MIT",
   "repository": {
     "type": "git",
