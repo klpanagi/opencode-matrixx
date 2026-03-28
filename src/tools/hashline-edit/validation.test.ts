@@ -1,32 +1,37 @@
 import { describe, it, expect } from "bun:test"
-import { parseLineRef, validateLineRef } from "./validation"
+import { parseLineRef, validateLineRef, normalizeLineRef } from "./validation"
+import { computeLineHash } from "./hash-computation"
 
 describe("parseLineRef", () => {
-  it("parses valid line reference", () => {
+  it("parses valid LINE#ID reference", () => {
     //#given
-    const ref = "42:a3"
+    const hash = computeLineHash(42, "function hello() {")
+    const ref = `42#${hash}`
 
     //#when
     const result = parseLineRef(ref)
 
     //#then
-    expect(result).toEqual({ line: 42, hash: "a3" })
+    expect(result.line).toBe(42)
+    expect(result.hash).toBe(hash)
   })
 
-  it("parses line reference with different hash", () => {
+  it("parses line reference with line 1", () => {
     //#given
-    const ref = "1:ff"
+    const hash = computeLineHash(1, "const x = 1")
+    const ref = `1#${hash}`
 
     //#when
     const result = parseLineRef(ref)
 
     //#then
-    expect(result).toEqual({ line: 1, hash: "ff" })
+    expect(result.line).toBe(1)
+    expect(result.hash).toBe(hash)
   })
 
-  it("throws on invalid format - no colon", () => {
+  it("throws on invalid format - no hash separator", () => {
     //#given
-    const ref = "42a3"
+    const ref = "42ZP"
 
     //#when & #then
     expect(() => parseLineRef(ref)).toThrow()
@@ -34,15 +39,15 @@ describe("parseLineRef", () => {
 
   it("throws on invalid format - non-numeric line", () => {
     //#given
-    const ref = "abc:a3"
+    const ref = "abc#ZP"
 
     //#when & #then
     expect(() => parseLineRef(ref)).toThrow()
   })
 
-  it("throws on invalid format - invalid hash", () => {
+  it("throws on invalid format - invalid hash chars (lowercase hex)", () => {
     //#given
-    const ref = "42:xyz"
+    const ref = "42#a3"
 
     //#when & #then
     expect(() => parseLineRef(ref)).toThrow()
@@ -55,13 +60,53 @@ describe("parseLineRef", () => {
     //#when & #then
     expect(() => parseLineRef(ref)).toThrow()
   })
+
+  it("strips pipe suffix when normalizing", () => {
+    //#given
+    const hash = computeLineHash(5, "const x = 1")
+    const ref = `5#${hash}|const x = 1`
+
+    //#when
+    const result = parseLineRef(ref)
+
+    //#then
+    expect(result.line).toBe(5)
+    expect(result.hash).toBe(hash)
+  })
+})
+
+describe("normalizeLineRef", () => {
+  it("strips >>> prefix", () => {
+    //#given
+    const hash = computeLineHash(3, "foo")
+    const ref = `>>> 3#${hash}`
+
+    //#when
+    const result = normalizeLineRef(ref)
+
+    //#then
+    expect(result).toBe(`3#${hash}`)
+  })
+
+  it("strips pipe suffix", () => {
+    //#given
+    const hash = computeLineHash(3, "foo")
+    const ref = `3#${hash}|foo`
+
+    //#when
+    const result = normalizeLineRef(ref)
+
+    //#then
+    expect(result).toBe(`3#${hash}`)
+  })
 })
 
 describe("validateLineRef", () => {
   it("validates matching hash", () => {
     //#given
     const lines = ["function hello() {", "  return 42", "}"]
-    const ref = "1:42"
+    const hash = computeLineHash(1, lines[0])
+    const ref = `1#${hash}`
 
     //#when & #then
     expect(() => validateLineRef(lines, ref)).not.toThrow()
@@ -70,7 +115,7 @@ describe("validateLineRef", () => {
   it("throws on hash mismatch", () => {
     //#given
     const lines = ["function hello() {", "  return 42", "}"]
-    const ref = "1:00" // Wrong hash
+    const ref = "1#ZZ"
 
     //#when & #then
     expect(() => validateLineRef(lines, ref)).toThrow()
@@ -79,27 +124,27 @@ describe("validateLineRef", () => {
   it("throws on line out of bounds", () => {
     //#given
     const lines = ["function hello() {", "  return 42", "}"]
-    const ref = "99:a3"
+    const ref = "99#ZP"
 
     //#when & #then
     expect(() => validateLineRef(lines, ref)).toThrow()
   })
 
-  it("throws on invalid line number", () => {
+  it("throws on invalid line number (0)", () => {
     //#given
     const lines = ["function hello() {"]
-    const ref = "0:a3" // Line numbers start at 1
+    const ref = "0#ZP"
 
     //#when & #then
     expect(() => validateLineRef(lines, ref)).toThrow()
   })
 
-  it("error message includes current hash", () => {
+  it("error message includes updated hash references", () => {
     //#given
     const lines = ["function hello() {"]
-    const ref = "1:00"
+    const ref = "1#ZZ"
 
     //#when & #then
-    expect(() => validateLineRef(lines, ref)).toThrow(/current hash/)
+    expect(() => validateLineRef(lines, ref)).toThrow(/changed since last read/)
   })
 })

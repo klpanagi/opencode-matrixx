@@ -1,253 +1,86 @@
 import { describe, expect, it } from "bun:test"
-import {
-  applyHashlineEdits,
-  applyInsertAfter,
-  applyReplace,
-  applyReplaceLines,
-  applySetLine,
-} from "./edit-operations"
-import type { HashlineEdit, InsertAfter, Replace, ReplaceLines, SetLine } from "./types"
+import { applyHashlineEdits, applyHashlineEditsWithReport } from "./edit-operations"
+import { applyAppend, applyInsertAfter, applyPrepend, applyReplaceLines, applySetLine } from "./edit-operation-primitives"
+import { computeLineHash } from "./hash-computation"
+import type { HashlineEdit } from "./types"
 
-describe("applySetLine", () => {
-  it("replaces a single line at the specified anchor", () => {
+function anchorFor(lines: string[], line: number): string {
+  return `${line}#${computeLineHash(line, lines[line - 1])}`
+}
+
+describe("hashline edit operations", () => {
+  it("applies set_line with LINE#ID anchor", () => {
     //#given
     const lines = ["line 1", "line 2", "line 3"]
-    const anchor = "2:b2" // line 2 hash
 
     //#when
-    const result = applySetLine(lines, anchor, "new line 2")
+    const result = applySetLine(lines, anchorFor(lines, 2), "new line 2")
 
     //#then
     expect(result).toEqual(["line 1", "new line 2", "line 3"])
   })
 
-  it("handles newline escapes in replacement text", () => {
+  it("applies replace_lines with LINE#ID anchors", () => {
     //#given
-    const lines = ["line 1", "line 2", "line 3"]
-    const anchor = "2:b2"
+    const lines = ["line 1", "line 2", "line 3", "line 4"]
 
     //#when
-    const result = applySetLine(lines, anchor, "new\\nline")
+    const result = applyReplaceLines(lines, anchorFor(lines, 2), anchorFor(lines, 3), "replaced")
 
     //#then
-    expect(result).toEqual(["line 1", "new\nline", "line 3"])
+    expect(result).toEqual(["line 1", "replaced", "line 4"])
   })
 
-  it("throws on hash mismatch", () => {
+  it("applies insert_after with LINE#ID anchor", () => {
     //#given
     const lines = ["line 1", "line 2", "line 3"]
-    const anchor = "2:ff" // wrong hash
-
-    //#when / #then
-    expect(() => applySetLine(lines, anchor, "new")).toThrow("Hash mismatch")
-  })
-
-  it("throws on out of bounds line", () => {
-    //#given
-    const lines = ["line 1", "line 2"]
-    const anchor = "5:00"
-
-    //#when / #then
-    expect(() => applySetLine(lines, anchor, "new")).toThrow("out of bounds")
-  })
-})
-
-describe("applyReplaceLines", () => {
-  it("replaces a range of lines", () => {
-    //#given
-    const lines = ["line 1", "line 2", "line 3", "line 4", "line 5"]
-    const startAnchor = "2:b2"
-    const endAnchor = "4:5f"
 
     //#when
-    const result = applyReplaceLines(lines, startAnchor, endAnchor, "replacement")
-
-    //#then
-    expect(result).toEqual(["line 1", "replacement", "line 5"])
-  })
-
-  it("handles newline escapes in replacement text", () => {
-    //#given
-    const lines = ["line 1", "line 2", "line 3"]
-    const startAnchor = "2:b2"
-    const endAnchor = "2:b2"
-
-    //#when
-    const result = applyReplaceLines(lines, startAnchor, endAnchor, "a\\nb")
-
-    //#then
-    expect(result).toEqual(["line 1", "a", "b", "line 3"])
-  })
-
-  it("throws on start hash mismatch", () => {
-    //#given
-    const lines = ["line 1", "line 2", "line 3"]
-    const startAnchor = "2:ff"
-    const endAnchor = "3:83"
-
-    //#when / #then
-    expect(() => applyReplaceLines(lines, startAnchor, endAnchor, "new")).toThrow(
-      "Hash mismatch"
-    )
-  })
-
-  it("throws on end hash mismatch", () => {
-    //#given
-    const lines = ["line 1", "line 2", "line 3"]
-    const startAnchor = "2:b2"
-    const endAnchor = "3:ff"
-
-    //#when / #then
-    expect(() => applyReplaceLines(lines, startAnchor, endAnchor, "new")).toThrow(
-      "Hash mismatch"
-    )
-  })
-
-  it("throws when start > end", () => {
-    //#given
-    const lines = ["line 1", "line 2", "line 3"]
-    const startAnchor = "3:83"
-    const endAnchor = "2:b2"
-
-    //#when / #then
-    expect(() => applyReplaceLines(lines, startAnchor, endAnchor, "new")).toThrow(
-      "start line 3 cannot be greater than end line 2"
-    )
-  })
-})
-
-describe("applyInsertAfter", () => {
-  it("inserts text after the specified line", () => {
-    //#given
-    const lines = ["line 1", "line 2", "line 3"]
-    const anchor = "2:b2"
-
-    //#when
-    const result = applyInsertAfter(lines, anchor, "inserted")
+    const result = applyInsertAfter(lines, anchorFor(lines, 2), "inserted")
 
     //#then
     expect(result).toEqual(["line 1", "line 2", "inserted", "line 3"])
   })
 
-  it("handles newline escapes to insert multiple lines", () => {
+  it("applies insert_before with LINE#ID anchor", () => {
     //#given
     const lines = ["line 1", "line 2", "line 3"]
-    const anchor = "2:b2"
 
     //#when
-    const result = applyInsertAfter(lines, anchor, "a\\nb\\nc")
+    const result = applyHashlineEdits(
+      lines.join("\n"),
+      [{ op: "prepend", pos: anchorFor(lines, 2), lines: "before 2" }]
+    )
 
     //#then
-    expect(result).toEqual(["line 1", "line 2", "a", "b", "c", "line 3"])
+    expect(result).toEqual("line 1\nbefore 2\nline 2\nline 3")
   })
 
-  it("inserts at end when anchor is last line", () => {
+  it("throws when insert_after receives empty text array", () => {
     //#given
     const lines = ["line 1", "line 2"]
-    const anchor = "2:b2"
 
-    //#when
-    const result = applyInsertAfter(lines, anchor, "inserted")
-
-    //#then
-    expect(result).toEqual(["line 1", "line 2", "inserted"])
+    //#when / #then
+    expect(() => applyInsertAfter(lines, anchorFor(lines, 1), [])).toThrow(/non-empty/i)
   })
 
-  it("throws on hash mismatch", () => {
+  it("throws when insert_before receives empty text array", () => {
     //#given
     const lines = ["line 1", "line 2"]
-    const anchor = "2:ff"
 
     //#when / #then
-    expect(() => applyInsertAfter(lines, anchor, "new")).toThrow("Hash mismatch")
-  })
-})
-
-describe("applyReplace", () => {
-  it("replaces exact text match", () => {
-    //#given
-    const content = "hello world foo bar"
-    const oldText = "world"
-    const newText = "universe"
-
-    //#when
-    const result = applyReplace(content, oldText, newText)
-
-    //#then
-    expect(result).toEqual("hello universe foo bar")
+    expect(() =>
+      applyHashlineEdits(lines.join("\n"), [{ op: "prepend", pos: anchorFor(lines, 1), lines: [] }])
+    ).toThrow(/non-empty/i)
   })
 
-  it("replaces all occurrences", () => {
-    //#given
-    const content = "foo bar foo baz foo"
-    const oldText = "foo"
-    const newText = "qux"
-
-    //#when
-    const result = applyReplace(content, oldText, newText)
-
-    //#then
-    expect(result).toEqual("qux bar qux baz qux")
-  })
-
-  it("handles newline escapes in newText", () => {
-    //#given
-    const content = "hello world"
-    const oldText = "world"
-    const newText = "new\\nline"
-
-    //#when
-    const result = applyReplace(content, oldText, newText)
-
-    //#then
-    expect(result).toEqual("hello new\nline")
-  })
-
-  it("throws when oldText not found", () => {
-    //#given
-    const content = "hello world"
-    const oldText = "notfound"
-    const newText = "replacement"
-
-    //#when / #then
-    expect(() => applyReplace(content, oldText, newText)).toThrow("Text not found")
-  })
-})
-
-describe("applyHashlineEdits", () => {
-  it("applies single set_line edit", () => {
+  it("applies mixed edits in one pass", () => {
     //#given
     const content = "line 1\nline 2\nline 3"
-    const edits: SetLine[] = [{ type: "set_line", line: "2:b2", text: "new line 2" }]
-
-    //#when
-    const result = applyHashlineEdits(content, edits)
-
-    //#then
-    expect(result).toEqual("line 1\nnew line 2\nline 3")
-  })
-
-  it("applies multiple edits bottom-up (descending line order)", () => {
-    //#given
-    const content = "line 1\nline 2\nline 3\nline 4\nline 5"
-    const edits: SetLine[] = [
-      { type: "set_line", line: "2:b2", text: "new 2" },
-      { type: "set_line", line: "4:5f", text: "new 4" },
-    ]
-
-    //#when
-    const result = applyHashlineEdits(content, edits)
-
-    //#then
-    expect(result).toEqual("line 1\nnew 2\nline 3\nnew 4\nline 5")
-  })
-
-  it("applies mixed edit types", () => {
-    //#given
-    const content = "line 1\nline 2\nline 3"
+    const lines = content.split("\n")
     const edits: HashlineEdit[] = [
-      { type: "insert_after", line: "1:02", text: "inserted" },
-      { type: "set_line", line: "3:83", text: "modified" },
+      { op: "append", pos: anchorFor(lines, 1), lines: "inserted" },
+      { op: "replace", pos: anchorFor(lines, 3), lines: "modified" },
     ]
 
     //#when
@@ -257,65 +90,319 @@ describe("applyHashlineEdits", () => {
     expect(result).toEqual("line 1\ninserted\nline 2\nmodified")
   })
 
-  it("applies replace_lines edit", () => {
-    //#given
-    const content = "line 1\nline 2\nline 3\nline 4"
-    const edits: ReplaceLines[] = [
-      { type: "replace_lines", start_line: "2:b2", end_line: "3:83", text: "replaced" },
-    ]
-
-    //#when
-    const result = applyHashlineEdits(content, edits)
-
-    //#then
-    expect(result).toEqual("line 1\nreplaced\nline 4")
-  })
-
-  it("applies replace fallback edit", () => {
-    //#given
-    const content = "hello world foo"
-    const edits: Replace[] = [{ type: "replace", old_text: "world", new_text: "universe" }]
-
-    //#when
-    const result = applyHashlineEdits(content, edits)
-
-    //#then
-    expect(result).toEqual("hello universe foo")
-  })
-
-  it("handles empty edits array", () => {
-    //#given
-    const content = "line 1\nline 2"
-    const edits: HashlineEdit[] = []
-
-    //#when
-    const result = applyHashlineEdits(content, edits)
-
-    //#then
-    expect(result).toEqual("line 1\nline 2")
-  })
-
-  it("throws on hash mismatch with descriptive error", () => {
+  it("applies replace before prepend when both target same line", () => {
     //#given
     const content = "line 1\nline 2\nline 3"
-    const edits: SetLine[] = [{ type: "set_line", line: "2:ff", text: "new" }]
-
-    //#when / #then
-    expect(() => applyHashlineEdits(content, edits)).toThrow("Hash mismatch")
-  })
-
-  it("correctly handles index shifting with multiple edits", () => {
-    //#given
-    const content = "a\nb\nc\nd\ne"
-    const edits: InsertAfter[] = [
-      { type: "insert_after", line: "2:bf", text: "x" },
-      { type: "insert_after", line: "4:90", text: "y" },
+    const lines = content.split("\n")
+    const edits: HashlineEdit[] = [
+      { op: "prepend", pos: anchorFor(lines, 2), lines: "before line 2" },
+      { op: "replace", pos: anchorFor(lines, 2), lines: "modified line 2" },
     ]
 
     //#when
     const result = applyHashlineEdits(content, edits)
 
     //#then
-    expect(result).toEqual("a\nb\nx\nc\nd\ny\ne")
+    expect(result).toEqual("line 1\nbefore line 2\nmodified line 2\nline 3")
+  })
+
+  it("deduplicates identical insert edits in one pass", () => {
+    //#given
+    const content = "line 1\nline 2"
+    const lines = content.split("\n")
+    const edits: HashlineEdit[] = [
+      { op: "append", pos: anchorFor(lines, 1), lines: "inserted" },
+      { op: "append", pos: anchorFor(lines, 1), lines: "inserted" },
+    ]
+
+    //#when
+    const result = applyHashlineEdits(content, edits)
+
+    //#then
+    expect(result).toEqual("line 1\ninserted\nline 2")
+  })
+
+  it("keeps literal backslash-n in plain string text", () => {
+    //#given
+    const lines = ["line 1", "line 2", "line 3"]
+
+    //#when
+    const result = applySetLine(lines, anchorFor(lines, 2), "join(\\n)")
+
+    //#then
+    expect(result).toEqual(["line 1", "join(\\n)", "line 3"])
+  })
+
+  it("strips copied hashline prefixes from multiline text", () => {
+    //#given
+    const lines = ["line 1", "line 2", "line 3"]
+
+    //#when
+    const result = applySetLine(lines, anchorFor(lines, 2), "1#VK|first\n2#NP|second")
+
+    //#then
+    expect(result).toEqual(["line 1", "first", "second", "line 3"])
+  })
+
+  it("autocorrects anchor echo for insert_after payload", () => {
+    //#given
+    const lines = ["line 1", "line 2"]
+
+    //#when
+    const result = applyInsertAfter(lines, anchorFor(lines, 1), ["line 1", "inserted"])
+
+    //#then
+    expect(result).toEqual(["line 1", "inserted", "line 2"])
+  })
+
+  it("throws when insert_after payload only repeats anchor line", () => {
+    //#given
+    const lines = ["line 1", "line 2"]
+
+    //#when / #then
+    expect(() => applyInsertAfter(lines, anchorFor(lines, 1), ["line 1"])).toThrow(/non-empty/i)
+  })
+
+  it("restores indentation for paired single-line replacement", () => {
+    //#given
+    const lines = ["if (x) {", "  return 1", "}"]
+
+    //#when
+    const result = applySetLine(lines, anchorFor(lines, 2), "return 2")
+
+    //#then
+    expect(result).toEqual(["if (x) {", "  return 2", "}"])
+  })
+
+  it("preserves intentional indentation removal (tab to no-tab)", () => {
+    //#given
+    const lines = ["# Title", "\t1절", "content"]
+
+    //#when
+    const result = applySetLine(lines, anchorFor(lines, 2), "1절")
+
+    //#then
+    expect(result).toEqual(["# Title", "1절", "content"])
+  })
+
+  it("preserves intentional indentation removal (spaces to no-spaces)", () => {
+    //#given
+    const lines = ["function foo() {", "    indented", "}"]
+
+    //#when
+    const result = applySetLine(lines, anchorFor(lines, 2), "indented")
+
+    //#then
+    expect(result).toEqual(["function foo() {", "indented", "}"])
+  })
+
+  it("strips boundary echo around replace_lines content", () => {
+    //#given
+    const lines = ["before", "old 1", "old 2", "after"]
+
+    //#when
+    const result = applyReplaceLines(
+      lines,
+      anchorFor(lines, 2),
+      anchorFor(lines, 3),
+      ["before", "new 1", "new 2", "after"]
+    )
+
+    //#then
+    expect(result).toEqual(["before", "new 1", "new 2", "after"])
+  })
+
+  it("restores indentation for first replace_lines entry", () => {
+    //#given
+    const lines = ["if (x) {", "  return 1", "  return 2", "}"]
+
+    //#when
+    const result = applyReplaceLines(lines, anchorFor(lines, 2), anchorFor(lines, 3), ["return 3", "return 4"])
+
+    //#then
+    expect(result).toEqual(["if (x) {", "  return 3", "  return 4", "}"])
+  })
+
+  it("preserves blank lines and indentation in range replace (no false unwrap)", () => {
+    //#given
+    const lines = ["", "동해물과 백두산이 마르고 닳도록", "하느님이 보우하사 우리나라 만세", "", "무궁화 삼천리 화려강산", "대한사람 대한으로 길이 보전하세", ""]
+
+    //#when
+    const result = applyReplaceLines(
+      lines,
+      anchorFor(lines, 1),
+      anchorFor(lines, 7),
+      ["", "  동해물과 백두산이 마르고 닳도록", "  하느님이 보우하사 우리나라 만세", "", "  무궁화 삼천리 화려강산", "  대한사람 대한으로 길이 보전하세", ""]
+    )
+
+    //#then
+    expect(result).toEqual(["", "  동해물과 백두산이 마르고 닳도록", "  하느님이 보우하사 우리나라 만세", "", "  무궁화 삼천리 화려강산", "  대한사람 대한으로 길이 보전하세", ""])
+  })
+
+  it("collapses wrapped replacement span back to unique original single line", () => {
+    //#given
+    const lines = [
+      "const request = buildRequest({ method: \"GET\", retries: 3 })",
+      "const done = true",
+    ]
+
+    //#when
+    const result = applyReplaceLines(
+      lines,
+      anchorFor(lines, 1),
+      anchorFor(lines, 1),
+      ["const request = buildRequest({", "method: \"GET\", retries: 3 })"]
+    )
+
+    //#then
+    expect(result).toEqual([
+      "const request = buildRequest({ method: \"GET\", retries: 3 })",
+      "const done = true",
+    ])
+  })
+
+  it("keeps wrapped replacement when canonical match is not unique in original lines", () => {
+    //#given
+    const lines = ["const query = a + b", "const query = a+b", "const done = true"]
+
+    //#when
+    const result = applyReplaceLines(lines, anchorFor(lines, 1), anchorFor(lines, 2), ["const query = a +", "b"])
+
+    //#then
+    expect(result).toEqual(["const query = a +", "b", "const done = true"])
+  })
+
+  it("keeps wrapped replacement when same canonical candidate appears multiple times", () => {
+    //#given
+    const lines = ["const expression = alpha + beta + gamma", "const done = true"]
+
+    //#when
+    const result = applyReplaceLines(lines, anchorFor(lines, 1), anchorFor(lines, 1), [
+      "const expression = alpha +",
+      "beta + gamma",
+      "const expression = alpha +",
+      "beta + gamma",
+    ])
+
+    //#then
+    expect(result).toEqual([
+      "const expression = alpha +",
+      "beta + gamma",
+      "const expression = alpha +",
+      "beta + gamma",
+      "const done = true",
+    ])
+  })
+
+  it("keeps wrapped replacement when canonical match is shorter than threshold", () => {
+    //#given
+    const lines = ["a + b", "const done = true"]
+
+    //#when
+    const result = applyReplaceLines(lines, anchorFor(lines, 1), anchorFor(lines, 1), ["a +", "b"])
+
+    //#then
+    expect(result).toEqual(["a +", "b", "const done = true"])
+  })
+
+  it("applies append and prepend operations", () => {
+    //#given
+    const content = "line 1\nline 2"
+
+    //#when
+    const result = applyHashlineEdits(content, [
+      { op: "append", lines: ["line 3"] },
+      { op: "prepend", lines: ["line 0"] },
+    ])
+
+    //#then
+    expect(result).toEqual("line 0\nline 1\nline 2\nline 3")
+  })
+
+  it("appends to empty file without extra blank line", () => {
+    //#given
+    const lines = [""]
+
+    //#when
+    const result = applyAppend(lines, ["line1"])
+
+    //#then
+    expect(result).toEqual(["line1"])
+  })
+
+  it("prepends to empty file without extra blank line", () => {
+    //#given
+    const lines = [""]
+
+    //#when
+    const result = applyPrepend(lines, ["line1"])
+
+    //#then
+    expect(result).toEqual(["line1"])
+  })
+
+  it("autocorrects single-line merged replacement into original line count", () => {
+    //#given
+    const lines = ["const a = 1;", "const b = 2;"]
+
+    //#when
+    const result = applyReplaceLines(
+      lines,
+      anchorFor(lines, 1),
+      anchorFor(lines, 2),
+      "const a = 10; const b = 20;"
+    )
+
+    //#then
+    expect(result).toEqual(["const a = 10;", "const b = 20;"])
+  })
+
+  it("throws on overlapping range edits", () => {
+    //#given
+    const content = "line 1\nline 2\nline 3\nline 4\nline 5"
+    const lines = content.split("\n")
+    const edits: HashlineEdit[] = [
+      { op: "replace", pos: anchorFor(lines, 1), end: anchorFor(lines, 3), lines: "replaced A" },
+      { op: "replace", pos: anchorFor(lines, 2), end: anchorFor(lines, 4), lines: "replaced B" },
+    ]
+
+    //#when / #then
+    expect(() => applyHashlineEdits(content, edits)).toThrow(/overlapping/i)
+  })
+
+  it("allows non-overlapping range edits", () => {
+    //#given
+    const content = "line 1\nline 2\nline 3\nline 4\nline 5"
+    const lines = content.split("\n")
+    const edits: HashlineEdit[] = [
+      { op: "replace", pos: anchorFor(lines, 1), end: anchorFor(lines, 2), lines: "replaced A" },
+      { op: "replace", pos: anchorFor(lines, 4), end: anchorFor(lines, 5), lines: "replaced B" },
+    ]
+
+    //#when
+    const result = applyHashlineEdits(content, edits)
+
+    //#then
+    expect(result).toEqual("replaced A\nline 3\nreplaced B")
+  })
+})
+
+describe("dedupe anchor canonicalization", () => {
+  it("deduplicates edits with whitespace-variant anchors", () => {
+    //#given
+    const content = "line 1\nline 2"
+    const lines = content.split("\n")
+    const canonical = `1#${computeLineHash(1, lines[0])}`
+    const spaced = ` 1 # ${computeLineHash(1, lines[0])} `
+
+    //#when
+    const report = applyHashlineEditsWithReport(content, [
+      { op: "append", pos: canonical, lines: ["inserted"] },
+      { op: "append", pos: spaced, lines: ["inserted"] },
+    ])
+
+    //#then
+    expect(report.deduplicatedEdits).toBe(1)
+    expect(report.content).toBe("line 1\ninserted\nline 2")
   })
 })
