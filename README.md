@@ -114,12 +114,12 @@ Scans for vulnerabilities but never touches code. OWASP Top 10, SAST, DAST, depe
 |-------|------|-------|
 | **Oracle** | Strategic planning with interview mode | Claude Opus 4.6 |
 | **Merovingian** | Architecture decisions & debugging | GPT 5.2 |
-| **Architect** | Plan execution orchestrator | Kimi K2.5 (free) |
+| **Architect** | Plan execution orchestrator | Claude Sonnet 4.6 |
 | **Seraph** | Pre-planning analysis | Claude Opus 4.6 |
 | **Smith** | Plan validation & review | GPT 5.2 |
 | **Operator** | Documentation & OSS search | GLM 4.7 |
 | **Trinity** | Blazing fast codebase grep | Grok Code Fast |
-| **Construct** | PDF, image & diagram analysis | Kimi K2.5 (free) |
+| **Construct** | PDF, image & diagram analysis | Gemini 3 Flash |
 
 Every agent, model, temperature, and permission is fully customizable. [**Meet the full team &rarr;**](docs/agents.md)
 
