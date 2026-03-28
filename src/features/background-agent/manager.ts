@@ -20,6 +20,12 @@ import {
   TASK_CLEANUP_DELAY_MS,
   TASK_TTL_MS,
 } from "./constants"
+import {
+  resolveCircuitBreakerSettings,
+  recordToolCall,
+  detectRepetitiveToolUse,
+  type CircuitBreakerSettings,
+} from "./loop-detector"
 
 import { subagentSessions } from "../claude-code-session-state"
 import { getTaskToastManager } from "../task-toast-manager"
@@ -37,7 +43,7 @@ interface MessagePartInfo {
   type?: string
   tool?: string
   id?: string
-  state?: { status?: string }
+  state?: { status?: string; input?: Record<string, unknown> }
 }
 
 interface EventProperties {
@@ -96,6 +102,7 @@ export class BackgroundManager {
   private idleDeferralTimers: Map<string, ReturnType<typeof setTimeout>> = new Map()
   private notificationQueueByParent: Map<string, Promise<void>> = new Map()
   private enableParentSessionNotifications: boolean
+  private cachedCircuitBreakerSettings?: CircuitBreakerSettings
   readonly taskHistory = new TaskHistory()
 
   constructor(
@@ -705,6 +712,51 @@ export class BackgroundManager {
           task.progress.countedToolPartIDs = countedToolPartIDs
           task.progress.toolCalls += 1
           task.progress.lastTool = partInfo.tool
+
+          const circuitBreaker = this.cachedCircuitBreakerSettings
+            ?? (this.cachedCircuitBreakerSettings = resolveCircuitBreakerSettings(this.config))
+
+          if (partInfo.tool) {
+            task.progress.toolCallWindow = recordToolCall(
+              task.progress.toolCallWindow,
+              partInfo.tool,
+              circuitBreaker,
+              partInfo.state?.input
+            )
+
+            if (circuitBreaker.enabled) {
+              const loopDetection = detectRepetitiveToolUse(task.progress.toolCallWindow)
+              if (loopDetection.triggered) {
+                log("[background-agent] Circuit breaker: consecutive tool usage detected", {
+                  taskId: task.id,
+                  agent: task.agent,
+                  sessionID,
+                  toolName: loopDetection.toolName,
+                  repeatedCount: loopDetection.repeatedCount,
+                })
+                void this.cancelTask(task.id, {
+                  source: "circuit-breaker",
+                  reason: `Subagent called ${loopDetection.toolName} ${loopDetection.repeatedCount} consecutive times (threshold: ${circuitBreaker.consecutiveThreshold}). This usually indicates an infinite loop. The task was automatically cancelled to prevent excessive token usage.`,
+                })
+                return
+              }
+            }
+          }
+
+          const maxToolCalls = circuitBreaker.maxToolCalls
+          if (task.progress.toolCalls >= maxToolCalls) {
+            log("[background-agent] Circuit breaker: tool call limit reached", {
+              taskId: task.id,
+              toolCalls: task.progress.toolCalls,
+              maxToolCalls,
+              agent: task.agent,
+              sessionID,
+            })
+            void this.cancelTask(task.id, {
+              source: "circuit-breaker",
+              reason: `Subagent exceeded maximum tool call limit (${maxToolCalls}). This usually indicates an infinite loop. The task was automatically cancelled to prevent excessive token usage.`,
+            })
+          }
         }
       }
     }
