@@ -39,7 +39,7 @@ describe("createHashlineReadEnhancerHook", () => {
       await hook["tool.execute.after"](input, output)
 
       //#then
-      expect(output.output).toContain("1:")
+      expect(output.output).toContain("1#")
       expect(output.output).toContain("|")
     })
 
@@ -115,7 +115,7 @@ describe("createHashlineReadEnhancerHook", () => {
   })
 
   describe("output transformation", () => {
-    it("should transform 'N: content' format to 'N:HASH|content'", async () => {
+    it("should transform 'N: content' format to 'N#HASH|content'", async () => {
       //#given
       const hook = createHashlineReadEnhancerHook(mockCtx, createMockConfig(true))
       const input = { tool: "read", sessionID, callID: "call-1" }
@@ -126,9 +126,9 @@ describe("createHashlineReadEnhancerHook", () => {
 
       //#then
       const lines = output.output.split("\n")
-      expect(lines[0]).toMatch(/^1:[a-f0-9]{2}\|function hello\(\) \{$/)
-      expect(lines[1]).toMatch(/^2:[a-f0-9]{2}\|  console\.log\('world'\)$/)
-      expect(lines[2]).toMatch(/^3:[a-f0-9]{2}\|\}$/)
+      expect(lines[0]).toMatch(/^1#[ZPMQVRWSNKTXJBYH]{2}\|function hello\(\) \{$/)
+      expect(lines[1]).toMatch(/^2#[ZPMQVRWSNKTXJBYH]{2}\|  console\.log\('world'\)$/)
+      expect(lines[2]).toMatch(/^3#[ZPMQVRWSNKTXJBYH]{2}\|\}$/)
     })
 
     it("should handle empty output", async () => {
@@ -154,7 +154,7 @@ describe("createHashlineReadEnhancerHook", () => {
       await hook["tool.execute.after"](input, output)
 
       //#then
-      expect(output.output).toMatch(/^1:[a-f0-9]{2}\|const x = 1$/)
+      expect(output.output).toMatch(/^1#[ZPMQVRWSNKTXJBYH]{2}\|const x = 1$/)
     })
   })
 
@@ -226,9 +226,9 @@ describe("createHashlineReadEnhancerHook", () => {
 
       //#then
       const lines = output.output.split("\n")
-      expect(lines[0]).toMatch(/^1:[a-f0-9]{2}\|hello$/)
-      expect(lines[1]).toMatch(/^2:[a-f0-9]{2}\|$/)
-      expect(lines[2]).toMatch(/^3:[a-f0-9]{2}\|world$/)
+      expect(lines[0]).toMatch(/^1#[ZPMQVRWSNKTXJBYH]{2}\|hello$/)
+      expect(lines[1]).toMatch(/^2#[ZPMQVRWSNKTXJBYH]{2}\|$/)
+      expect(lines[2]).toMatch(/^3#[ZPMQVRWSNKTXJBYH]{2}\|world$/)
     })
 
     it("should handle very long lines", async () => {
@@ -242,7 +242,7 @@ describe("createHashlineReadEnhancerHook", () => {
       await hook["tool.execute.after"](input, output)
 
       //#then
-      expect(output.output).toMatch(/^1:[a-f0-9]{2}\|a+$/)
+      expect(output.output).toMatch(/^1#[ZPMQVRWSNKTXJBYH]{2}\|a+$/)
     })
   })
 })
