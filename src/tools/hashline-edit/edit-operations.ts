@@ -1,123 +1,103 @@
-import { parseLineRef, validateLineRef } from "./validation"
+import { dedupeEdits } from "./edit-deduplication"
+import { collectLineRefs, detectOverlappingRanges, getEditLineNumber } from "./edit-ordering"
 import type { HashlineEdit } from "./types"
+import {
+  applyAppend,
+  applyInsertAfter,
+  applyInsertBefore,
+  applyPrepend,
+  applyReplaceLines,
+  applySetLine,
+} from "./edit-operation-primitives"
+import { validateLineRefs } from "./validation"
 
-function unescapeNewlines(text: string): string {
-  return text.replace(/\\n/g, "\n")
-}
-
-export function applySetLine(lines: string[], anchor: string, newText: string): string[] {
-  validateLineRef(lines, anchor)
-  const { line } = parseLineRef(anchor)
-  const result = [...lines]
-  result[line - 1] = unescapeNewlines(newText)
-  return result
-}
-
-export function applyReplaceLines(
-  lines: string[],
-  startAnchor: string,
-  endAnchor: string,
-  newText: string
-): string[] {
-  validateLineRef(lines, startAnchor)
-  validateLineRef(lines, endAnchor)
-
-  const { line: startLine } = parseLineRef(startAnchor)
-  const { line: endLine } = parseLineRef(endAnchor)
-
-  if (startLine > endLine) {
-    throw new Error(
-      `Invalid range: start line ${startLine} cannot be greater than end line ${endLine}`
-    )
+function arraysEqual(a: string[], b: string[]): boolean {
+  if (a.length !== b.length) return false
+  for (let i = 0; i < a.length; i++) {
+    if (a[i] !== b[i]) return false
   }
-
-  const result = [...lines]
-  const newLines = unescapeNewlines(newText).split("\n")
-  result.splice(startLine - 1, endLine - startLine + 1, ...newLines)
-  return result
+  return true
 }
 
-export function applyInsertAfter(lines: string[], anchor: string, text: string): string[] {
-  validateLineRef(lines, anchor)
-  const { line } = parseLineRef(anchor)
-  const result = [...lines]
-  const newLines = unescapeNewlines(text).split("\n")
-  result.splice(line, 0, ...newLines)
-  return result
+export interface HashlineApplyReport {
+  content: string
+  noopEdits: number
+  deduplicatedEdits: number
 }
 
-export function applyReplace(content: string, oldText: string, newText: string): string {
-  if (!content.includes(oldText)) {
-    throw new Error(`Text not found: "${oldText}"`)
-  }
-  return content.replaceAll(oldText, unescapeNewlines(newText))
-}
-
-function getEditLineNumber(edit: HashlineEdit): number {
-  switch (edit.type) {
-    case "set_line":
-      return parseLineRef(edit.line).line
-    case "replace_lines":
-      return parseLineRef(edit.end_line).line
-    case "insert_after":
-      return parseLineRef(edit.line).line
-    case "replace":
-      return Number.NEGATIVE_INFINITY
-    default:
-      return Number.POSITIVE_INFINITY
-  }
-}
-
-export function applyHashlineEdits(content: string, edits: HashlineEdit[]): string {
+export function applyHashlineEditsWithReport(content: string, edits: HashlineEdit[]): HashlineApplyReport {
   if (edits.length === 0) {
-    return content
+    return {
+      content,
+      noopEdits: 0,
+      deduplicatedEdits: 0,
+    }
   }
 
-  const sortedEdits = [...edits].sort((a, b) => getEditLineNumber(b) - getEditLineNumber(a))
+  const dedupeResult = dedupeEdits(edits)
+  const EDIT_PRECEDENCE: Record<string, number> = { replace: 0, append: 1, prepend: 2 }
+  const sortedEdits = [...dedupeResult.edits].sort((a, b) => {
+    const lineA = getEditLineNumber(a)
+    const lineB = getEditLineNumber(b)
+    if (lineB !== lineA) return lineB - lineA
+    return (EDIT_PRECEDENCE[a.op] ?? 3) - (EDIT_PRECEDENCE[b.op] ?? 3)
+  })
 
-  let result = content
-  let lines = result.split("\n")
+  let noopEdits = 0
+
+  let lines = content.length === 0 ? [] : content.split("\n")
+
+  const refs = collectLineRefs(sortedEdits)
+  validateLineRefs(lines, refs)
+
+  const overlapError = detectOverlappingRanges(sortedEdits)
+  if (overlapError) throw new Error(overlapError)
 
   for (const edit of sortedEdits) {
-    switch (edit.type) {
-      case "set_line": {
-        validateLineRef(lines, edit.line)
-        const { line } = parseLineRef(edit.line)
-        lines[line - 1] = unescapeNewlines(edit.text)
-        break
-      }
-      case "replace_lines": {
-        validateLineRef(lines, edit.start_line)
-        validateLineRef(lines, edit.end_line)
-        const { line: startLine } = parseLineRef(edit.start_line)
-        const { line: endLine } = parseLineRef(edit.end_line)
-        if (startLine > endLine) {
-          throw new Error(
-            `Invalid range: start line ${startLine} cannot be greater than end line ${endLine}`
-          )
-        }
-        const newLines = unescapeNewlines(edit.text).split("\n")
-        lines.splice(startLine - 1, endLine - startLine + 1, ...newLines)
-        break
-      }
-      case "insert_after": {
-        validateLineRef(lines, edit.line)
-        const { line } = parseLineRef(edit.line)
-        const newLines = unescapeNewlines(edit.text).split("\n")
-        lines.splice(line, 0, ...newLines)
-        break
-      }
+    switch (edit.op) {
       case "replace": {
-        result = lines.join("\n")
-        if (!result.includes(edit.old_text)) {
-          throw new Error(`Text not found: "${edit.old_text}"`)
+        const next = edit.end
+          ? applyReplaceLines(lines, edit.pos, edit.end, edit.lines, { skipValidation: true })
+          : applySetLine(lines, edit.pos, edit.lines, { skipValidation: true })
+        if (arraysEqual(next, lines)) {
+          noopEdits += 1
+          break
         }
-        result = result.replaceAll(edit.old_text, unescapeNewlines(edit.new_text))
-        lines = result.split("\n")
+        lines = next
+        break
+      }
+      case "append": {
+        const next = edit.pos
+          ? applyInsertAfter(lines, edit.pos, edit.lines, { skipValidation: true })
+          : applyAppend(lines, edit.lines)
+        if (arraysEqual(next, lines)) {
+          noopEdits += 1
+          break
+        }
+        lines = next
+        break
+      }
+      case "prepend": {
+        const next = edit.pos
+          ? applyInsertBefore(lines, edit.pos, edit.lines, { skipValidation: true })
+          : applyPrepend(lines, edit.lines)
+        if (arraysEqual(next, lines)) {
+          noopEdits += 1
+          break
+        }
+        lines = next
         break
       }
     }
   }
 
-  return lines.join("\n")
+  return {
+    content: lines.join("\n"),
+    noopEdits,
+    deduplicatedEdits: dedupeResult.deduplicatedEdits,
+  }
+}
+
+export function applyHashlineEdits(content: string, edits: HashlineEdit[]): string {
+  return applyHashlineEditsWithReport(content, edits).content
 }

@@ -1,26 +1,20 @@
-export interface SetLine {
-  type: "set_line"
-  line: string
-  text: string
+export interface ReplaceEdit {
+  op: "replace"
+  pos: string
+  end?: string
+  lines: string | string[]
 }
 
-export interface ReplaceLines {
-  type: "replace_lines"
-  start_line: string
-  end_line: string
-  text: string
+export interface AppendEdit {
+  op: "append"
+  pos?: string
+  lines: string | string[]
 }
 
-export interface InsertAfter {
-  type: "insert_after"
-  line: string
-  text: string
+export interface PrependEdit {
+  op: "prepend"
+  pos?: string
+  lines: string | string[]
 }
 
-export interface Replace {
-  type: "replace"
-  old_text: string
-  new_text: string
-}
-
-export type HashlineEdit = SetLine | ReplaceLines | InsertAfter | Replace
+export type HashlineEdit = ReplaceEdit | AppendEdit | PrependEdit
