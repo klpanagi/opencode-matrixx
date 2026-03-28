@@ -90,16 +90,6 @@ export async function promptInstallConfig(detected: DetectedConfig): Promise<Ins
   })
   if (!zaiCodingPlan) return null
 
-  const kimiForCoding = await selectOrCancel({
-    message: "Do you have a Kimi For Coding subscription?",
-    options: [
-      { value: "no", label: "No", hint: "Will use other configured providers" },
-      { value: "yes", label: "Yes", hint: "Kimi K2.5 for Morpheus/Oracle fallback" },
-    ],
-    initialValue: initial.kimiForCoding,
-  })
-  if (!kimiForCoding) return null
-
   return {
     hasClaude: claude !== "no",
     isMax20: claude === "max20",
@@ -108,6 +98,5 @@ export async function promptInstallConfig(detected: DetectedConfig): Promise<Ins
     hasCopilot: copilot === "yes",
     hasOpencodeZen: opencodeZen === "yes",
     hasZaiCodingPlan: zaiCodingPlan === "yes",
-    hasKimiForCoding: kimiForCoding === "yes",
   }
 }

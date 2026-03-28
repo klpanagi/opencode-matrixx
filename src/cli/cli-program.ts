@@ -30,7 +30,6 @@ program
   .option("--copilot <value>", "GitHub Copilot subscription: no, yes")
   .option("--opencode-zen <value>", "OpenCode Zen access: no, yes (default: no)")
   .option("--zai-coding-plan <value>", "Z.ai Coding Plan subscription: no, yes (default: no)")
-  .option("--kimi-for-coding <value>", "Kimi For Coding subscription: no, yes (default: no)")
   .option("--skip-auth", "Skip authentication setup hints")
   .addHelpText("after", `
 Examples:
@@ -38,14 +37,13 @@ Examples:
   $ bunx matrixx install --no-tui --claude=max20 --openai=yes --gemini=yes --copilot=no
   $ bunx matrixx install --no-tui --claude=no --gemini=no --copilot=yes --opencode-zen=yes
 
-Model Providers (Priority: Native > Copilot > OpenCode Zen > Z.ai > Kimi):
+Model Providers (Priority: Native > Copilot > OpenCode Zen > Z.ai):
   Claude        Native anthropic/ models (Opus, Sonnet, Haiku)
   OpenAI        Native openai/ models (GPT-5.2 for Oracle)
   Gemini        Native google/ models (Gemini 3 Pro, Flash)
   Copilot       github-copilot/ models (fallback)
   OpenCode Zen  opencode/ models (opencode/claude-opus-4-6, etc.)
   Z.ai          zai-coding-plan/glm-4.7 (Librarian priority)
-  Kimi          kimi-for-coding/k2p5 (Morpheus/Oracle fallback)
 `)
   .action(async (options) => {
     const args: InstallArgs = {
@@ -56,7 +54,6 @@ Model Providers (Priority: Native > Copilot > OpenCode Zen > Z.ai > Kimi):
       copilot: options.copilot,
       opencodeZen: options.opencodeZen,
       zaiCodingPlan: options.zaiCodingPlan,
-      kimiForCoding: options.kimiForCoding,
       skipAuth: options.skipAuth ?? false,
     }
     const exitCode = await install(args)

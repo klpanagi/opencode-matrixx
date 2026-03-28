@@ -28,10 +28,10 @@ describe("AGENT_MODEL_REQUIREMENTS", () => {
     const morpheus = AGENT_MODEL_REQUIREMENTS["morpheus"]
 
     // #when - accessing Morpheus requirement
-    // #then - fallbackChain has claude-opus-4-6 first, glm-4.7-free last
+    // #then - fallbackChain has claude-opus-4-6 first, big-pickle last
     expect(morpheus).toBeDefined()
     expect(morpheus.fallbackChain).toBeArray()
-    expect(morpheus.fallbackChain).toHaveLength(4)
+    expect(morpheus.fallbackChain).toHaveLength(3)
     expect(morpheus.requiresAnyModel).toBe(true)
 
     const primary = morpheus.fallbackChain[0]
@@ -39,7 +39,7 @@ describe("AGENT_MODEL_REQUIREMENTS", () => {
     expect(primary.model).toBe("claude-opus-4-6")
     expect(primary.variant).toBe("max")
 
-    const last = morpheus.fallbackChain[3]
+    const last = morpheus.fallbackChain[2]
     expect(last.providers[0]).toBe("opencode")
     expect(last.model).toBe("big-pickle")
   })
@@ -86,19 +86,19 @@ describe("AGENT_MODEL_REQUIREMENTS", () => {
     expect(quaternary.model).toBe("gpt-5-nano")
   })
 
-  test("construct has valid fallbackChain with kimi-k2.5-free as primary", () => {
+  test("construct has valid fallbackChain with gemini-3-flash as primary", () => {
     // given - construct agent requirement
     const construct = AGENT_MODEL_REQUIREMENTS["construct"]
 
     // when - accessing construct requirement
-    // then - fallbackChain exists with kimi-k2.5-free as first entry
+    // then - fallbackChain exists with gemini-3-flash as first entry
     expect(construct).toBeDefined()
     expect(construct.fallbackChain).toBeArray()
     expect(construct.fallbackChain.length).toBeGreaterThan(0)
 
     const primary = construct.fallbackChain[0]
-    expect(primary.providers[0]).toBe("opencode")
-    expect(primary.model).toBe("kimi-k2.5-free")
+    expect(primary.providers).toContain("google")
+    expect(primary.model).toBe("gemini-3-flash")
   })
 
   test("oracle (planner) has claude-opus-4-6 as primary", () => {
@@ -149,19 +149,19 @@ describe("AGENT_MODEL_REQUIREMENTS", () => {
     expect(primary.providers[0]).toBe("openai")
   })
 
-  test("architect has valid fallbackChain with kimi-k2.5-free as primary", () => {
+  test("architect has valid fallbackChain with claude-sonnet-4-6 as primary", () => {
     // given - architect agent requirement
     const architect = AGENT_MODEL_REQUIREMENTS["architect"]
 
     // when - accessing Architect requirement
-    // then - fallbackChain exists with kimi-k2.5-free as first entry (free model prioritized)
+    // then - fallbackChain exists with claude-sonnet-4-6 as first entry
     expect(architect).toBeDefined()
     expect(architect.fallbackChain).toBeArray()
     expect(architect.fallbackChain.length).toBeGreaterThan(0)
 
     const primary = architect.fallbackChain[0]
-    expect(primary.model).toBe("kimi-k2.5-free")
-    expect(primary.providers[0]).toBe("opencode")
+    expect(primary.model).toBe("claude-sonnet-4-6")
+    expect(primary.providers).toContain("anthropic")
   })
 
   test("keymaker requires openai/github-copilot/opencode provider", () => {
@@ -262,19 +262,19 @@ describe("CATEGORY_MODEL_REQUIREMENTS", () => {
     expect(primary.model).toBe("gemini-3.1-pro")
   })
 
-  test("bullet-time has valid fallbackChain with claude-haiku-4-5 as primary", () => {
+  test("bullet-time has valid fallbackChain with gpt-5.4-mini as primary", () => {
     // given - bullet-time category requirement
     const bulletTime = CATEGORY_MODEL_REQUIREMENTS["bullet-time"]
 
     // when - accessing bullet-time requirement
-    // then - fallbackChain exists with claude-haiku-4-5 as first entry
+    // #then - fallbackChain exists with gpt-5.4-mini as first entry
     expect(bulletTime).toBeDefined()
     expect(bulletTime.fallbackChain).toBeArray()
     expect(bulletTime.fallbackChain.length).toBeGreaterThan(0)
 
     const primary = bulletTime.fallbackChain[0]
-    expect(primary.model).toBe("claude-haiku-4-5")
-    expect(primary.providers[0]).toBe("anthropic")
+    expect(primary.model).toBe("gpt-5.4-mini")
+    expect(primary.providers[0]).toBe("openai")
   })
 
   test("blue-pill has valid fallbackChain with claude-sonnet-4-6 as primary", () => {
@@ -324,19 +324,19 @@ describe("CATEGORY_MODEL_REQUIREMENTS", () => {
     expect(primary.providers[0]).toBe("google")
   })
 
-  test("broadcast has valid fallbackChain with kimi-k2.5-free as primary", () => {
+  test("broadcast has valid fallbackChain with gemini-3-flash as primary", () => {
     // given - broadcast category requirement
     const broadcast = CATEGORY_MODEL_REQUIREMENTS["broadcast"]
 
     // when - accessing broadcast requirement
-    // then - fallbackChain exists with kimi-k2.5-free as first entry
+    // then - fallbackChain exists with gemini-3-flash as first entry
     expect(broadcast).toBeDefined()
     expect(broadcast.fallbackChain).toBeArray()
     expect(broadcast.fallbackChain.length).toBeGreaterThan(0)
 
     const primary = broadcast.fallbackChain[0]
-    expect(primary.model).toBe("kimi-k2.5-free")
-    expect(primary.providers[0]).toBe("opencode")
+    expect(primary.model).toBe("gemini-3-flash")
+    expect(primary.providers).toContain("google")
   })
 
   test("all 8 categories have valid fallbackChain arrays", () => {

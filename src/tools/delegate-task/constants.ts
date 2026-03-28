@@ -244,7 +244,7 @@ export const DEFAULT_CATEGORIES: Record<string, CategoryConfig> = {
   "bullet-time": { model: "openai/gpt-5.4-mini" },
   "blue-pill": { model: "anthropic/claude-sonnet-4-5" },
   "red-pill": { model: "anthropic/claude-opus-4-6", variant: "max" },
-  "broadcast": { model: "kimi-for-coding/k2p5" },
+  "broadcast": { model: "anthropic/claude-sonnet-4-6" },
   "dsl-engineering": { model: "anthropic/claude-opus-4-6", variant: "high" },
 }
 

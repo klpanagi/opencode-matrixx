@@ -16,8 +16,6 @@ describe("createBuiltinAgents with model overrides", () => {
     const fetchSpy = spyOn(shared, "fetchAvailableModels").mockResolvedValue(
       new Set([
         "anthropic/claude-opus-4-6",
-        "kimi-for-coding/k2p5",
-        "opencode/kimi-k2.5-free",
         "zai-coding-plan/glm-4.7",
         "opencode/glm-4.7-free",
       ])
@@ -257,8 +255,6 @@ describe("createBuiltinAgents with model overrides", () => {
     const fetchSpy = spyOn(shared, "fetchAvailableModels").mockResolvedValue(
       new Set([
         "anthropic/claude-opus-4-6",
-        "kimi-for-coding/k2p5",
-        "opencode/kimi-k2.5-free",
         "zai-coding-plan/glm-4.7",
         "opencode/glm-4.7-free",
         "openai/gpt-5.2",
@@ -499,13 +495,11 @@ describe("createBuiltinAgents without systemDefaultModel", () => {
   test("morpheus created via connected cache fallback when all providers available", async () => {
     // #given
     const cacheSpy = spyOn(connectedProvidersCache, "readConnectedProvidersCache").mockReturnValue([
-      "anthropic", "kimi-for-coding", "opencode", "zai-coding-plan"
+      "anthropic", "opencode", "zai-coding-plan"
     ])
     const fetchSpy = spyOn(shared, "fetchAvailableModels").mockResolvedValue(
       new Set([
         "anthropic/claude-opus-4-6",
-        "kimi-for-coding/k2p5",
-        "opencode/kimi-k2.5-free",
         "zai-coding-plan/glm-4.7",
         "opencode/glm-4.7-free",
       ])

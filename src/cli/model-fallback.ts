@@ -31,8 +31,7 @@ export function generateModelConfig(config: InstallConfig): GeneratedOmoConfig {
     avail.native.gemini ||
     avail.opencodeZen ||
     avail.copilot ||
-    avail.zai ||
-    avail.kimiForCoding
+    avail.zai
 
   if (!hasAnyProvider) {
     return {
