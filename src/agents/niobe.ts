@@ -232,6 +232,6 @@ export function createNiobeAgent(model: string): AgentConfig {
     return { ...base, maxTokens: 16000, reasoningEffort: "medium", textVerbosity: "high" } as AgentConfig
   }
 
-  return { ...base, maxTokens: 16000 } as AgentConfig
+  return { ...base, maxTokens: 16000, thinking: { type: "enabled", budgetTokens: 8000 } } as AgentConfig
 }
 createNiobeAgent.mode = MODE

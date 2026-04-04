@@ -157,6 +157,6 @@ export function createCipherAgent(model: string): AgentConfig {
     return { ...base, maxTokens: 16000, reasoningEffort: "medium", textVerbosity: "high" } as AgentConfig
   }
 
-  return { ...base, maxTokens: 16000 } as AgentConfig
+  return { ...base, maxTokens: 16000, thinking: { type: "enabled", budgetTokens: 10000 } } as AgentConfig
 }
 createCipherAgent.mode = MODE
