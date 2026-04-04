@@ -40,6 +40,9 @@ exports[`generateModelConfig no providers available returns ULTIMATE_FALLBACK fo
     "trinity": {
       "model": "opencode/glm-4.7-free",
     },
+    "zion": {
+      "model": "opencode/glm-4.7-free",
+    },
   },
   "categories": {
     "blue-pill": {
@@ -78,8 +81,7 @@ exports[`generateModelConfig single native provider uses Claude models when only
       "model": "anthropic/claude-sonnet-4-6",
     },
     "cipher": {
-      "model": "anthropic/claude-opus-4-6",
-      "variant": "max",
+      "model": "anthropic/claude-sonnet-4-6",
     },
     "construct": {
       "model": "opencode/glm-4.7-free",
@@ -93,8 +95,7 @@ exports[`generateModelConfig single native provider uses Claude models when only
       "variant": "max",
     },
     "niobe": {
-      "model": "anthropic/claude-opus-4-6",
-      "variant": "max",
+      "model": "anthropic/claude-sonnet-4-6",
     },
     "operator": {
       "model": "anthropic/claude-sonnet-4-6",
@@ -104,8 +105,7 @@ exports[`generateModelConfig single native provider uses Claude models when only
       "variant": "max",
     },
     "sentinel": {
-      "model": "anthropic/claude-opus-4-6",
-      "variant": "max",
+      "model": "anthropic/claude-sonnet-4-6",
     },
     "seraph": {
       "model": "anthropic/claude-opus-4-6",
@@ -117,6 +117,9 @@ exports[`generateModelConfig single native provider uses Claude models when only
     },
     "trinity": {
       "model": "anthropic/claude-haiku-4-5",
+    },
+    "zion": {
+      "model": "anthropic/claude-sonnet-4-6",
     },
   },
   "categories": {
@@ -152,8 +155,7 @@ exports[`generateModelConfig single native provider uses Claude models with isMa
       "model": "anthropic/claude-sonnet-4-6",
     },
     "cipher": {
-      "model": "anthropic/claude-opus-4-6",
-      "variant": "max",
+      "model": "anthropic/claude-sonnet-4-6",
     },
     "construct": {
       "model": "opencode/glm-4.7-free",
@@ -167,8 +169,7 @@ exports[`generateModelConfig single native provider uses Claude models with isMa
       "variant": "max",
     },
     "niobe": {
-      "model": "anthropic/claude-opus-4-6",
-      "variant": "max",
+      "model": "anthropic/claude-sonnet-4-6",
     },
     "operator": {
       "model": "anthropic/claude-sonnet-4-6",
@@ -178,8 +179,7 @@ exports[`generateModelConfig single native provider uses Claude models with isMa
       "variant": "max",
     },
     "sentinel": {
-      "model": "anthropic/claude-opus-4-6",
-      "variant": "max",
+      "model": "anthropic/claude-sonnet-4-6",
     },
     "seraph": {
       "model": "anthropic/claude-opus-4-6",
@@ -191,6 +191,9 @@ exports[`generateModelConfig single native provider uses Claude models with isMa
     },
     "trinity": {
       "model": "anthropic/claude-haiku-4-5",
+    },
+    "zion": {
+      "model": "anthropic/claude-sonnet-4-6",
     },
   },
   "categories": {
@@ -228,7 +231,6 @@ exports[`generateModelConfig single native provider uses OpenAI models when only
     },
     "cipher": {
       "model": "openai/gpt-5.2",
-      "variant": "high",
     },
     "construct": {
       "model": "openai/gpt-5.2",
@@ -243,18 +245,16 @@ exports[`generateModelConfig single native provider uses OpenAI models when only
     },
     "niobe": {
       "model": "openai/gpt-5.2",
-      "variant": "high",
     },
     "operator": {
       "model": "opencode/glm-4.7-free",
     },
     "oracle": {
-      "model": "openai/gpt-5.2",
+      "model": "openai/gpt-5.4",
       "variant": "high",
     },
     "sentinel": {
       "model": "openai/gpt-5.2",
-      "variant": "high",
     },
     "seraph": {
       "model": "openai/gpt-5.2",
@@ -267,6 +267,9 @@ exports[`generateModelConfig single native provider uses OpenAI models when only
     "trinity": {
       "model": "opencode/gpt-5-nano",
     },
+    "zion": {
+      "model": "openai/gpt-5.2",
+    },
   },
   "categories": {
     "blue-pill": {
@@ -277,7 +280,7 @@ exports[`generateModelConfig single native provider uses OpenAI models when only
       "model": "opencode/glm-4.7-free",
     },
     "bullet-time": {
-      "model": "opencode/glm-4.7-free",
+      "model": "openai/gpt-5.4-mini",
     },
     "construct": {
       "model": "opencode/glm-4.7-free",
@@ -307,7 +310,6 @@ exports[`generateModelConfig single native provider uses OpenAI models with isMa
     },
     "cipher": {
       "model": "openai/gpt-5.2",
-      "variant": "high",
     },
     "construct": {
       "model": "openai/gpt-5.2",
@@ -322,18 +324,16 @@ exports[`generateModelConfig single native provider uses OpenAI models with isMa
     },
     "niobe": {
       "model": "openai/gpt-5.2",
-      "variant": "high",
     },
     "operator": {
       "model": "opencode/glm-4.7-free",
     },
     "oracle": {
-      "model": "openai/gpt-5.2",
+      "model": "openai/gpt-5.4",
       "variant": "high",
     },
     "sentinel": {
       "model": "openai/gpt-5.2",
-      "variant": "high",
     },
     "seraph": {
       "model": "openai/gpt-5.2",
@@ -346,6 +346,9 @@ exports[`generateModelConfig single native provider uses OpenAI models with isMa
     "trinity": {
       "model": "opencode/gpt-5-nano",
     },
+    "zion": {
+      "model": "openai/gpt-5.2",
+    },
   },
   "categories": {
     "blue-pill": {
@@ -356,7 +359,7 @@ exports[`generateModelConfig single native provider uses OpenAI models with isMa
       "model": "opencode/glm-4.7-free",
     },
     "bullet-time": {
-      "model": "opencode/glm-4.7-free",
+      "model": "openai/gpt-5.4-mini",
     },
     "construct": {
       "model": "opencode/glm-4.7-free",
@@ -416,6 +419,9 @@ exports[`generateModelConfig single native provider uses Gemini models when only
     },
     "trinity": {
       "model": "opencode/gpt-5-nano",
+    },
+    "zion": {
+      "model": "google/gemini-3.1-pro",
     },
   },
   "categories": {
@@ -487,6 +493,9 @@ exports[`generateModelConfig single native provider uses Gemini models with isMa
     "trinity": {
       "model": "opencode/gpt-5-nano",
     },
+    "zion": {
+      "model": "google/gemini-3.1-pro",
+    },
   },
   "categories": {
     "blue-pill": {
@@ -525,8 +534,7 @@ exports[`generateModelConfig all native providers uses preferred models from fal
       "model": "anthropic/claude-sonnet-4-6",
     },
     "cipher": {
-      "model": "anthropic/claude-opus-4-6",
-      "variant": "max",
+      "model": "anthropic/claude-sonnet-4-6",
     },
     "construct": {
       "model": "google/gemini-3-flash",
@@ -544,8 +552,7 @@ exports[`generateModelConfig all native providers uses preferred models from fal
       "variant": "max",
     },
     "niobe": {
-      "model": "anthropic/claude-opus-4-6",
-      "variant": "max",
+      "model": "anthropic/claude-sonnet-4-6",
     },
     "operator": {
       "model": "anthropic/claude-sonnet-4-6",
@@ -555,8 +562,7 @@ exports[`generateModelConfig all native providers uses preferred models from fal
       "variant": "max",
     },
     "sentinel": {
-      "model": "anthropic/claude-opus-4-6",
-      "variant": "max",
+      "model": "anthropic/claude-sonnet-4-6",
     },
     "seraph": {
       "model": "anthropic/claude-opus-4-6",
@@ -569,6 +575,9 @@ exports[`generateModelConfig all native providers uses preferred models from fal
     "trinity": {
       "model": "anthropic/claude-haiku-4-5",
     },
+    "zion": {
+      "model": "anthropic/claude-sonnet-4-6",
+    },
   },
   "categories": {
     "blue-pill": {
@@ -578,7 +587,7 @@ exports[`generateModelConfig all native providers uses preferred models from fal
       "model": "google/gemini-3-flash",
     },
     "bullet-time": {
-      "model": "anthropic/claude-haiku-4-5",
+      "model": "openai/gpt-5.4-mini",
     },
     "construct": {
       "model": "google/gemini-3.1-pro",
@@ -611,8 +620,7 @@ exports[`generateModelConfig all native providers uses preferred models with isM
       "model": "anthropic/claude-sonnet-4-6",
     },
     "cipher": {
-      "model": "anthropic/claude-opus-4-6",
-      "variant": "max",
+      "model": "anthropic/claude-sonnet-4-6",
     },
     "construct": {
       "model": "google/gemini-3-flash",
@@ -630,8 +638,7 @@ exports[`generateModelConfig all native providers uses preferred models with isM
       "variant": "max",
     },
     "niobe": {
-      "model": "anthropic/claude-opus-4-6",
-      "variant": "max",
+      "model": "anthropic/claude-sonnet-4-6",
     },
     "operator": {
       "model": "anthropic/claude-sonnet-4-6",
@@ -641,8 +648,7 @@ exports[`generateModelConfig all native providers uses preferred models with isM
       "variant": "max",
     },
     "sentinel": {
-      "model": "anthropic/claude-opus-4-6",
-      "variant": "max",
+      "model": "anthropic/claude-sonnet-4-6",
     },
     "seraph": {
       "model": "anthropic/claude-opus-4-6",
@@ -655,6 +661,9 @@ exports[`generateModelConfig all native providers uses preferred models with isM
     "trinity": {
       "model": "anthropic/claude-haiku-4-5",
     },
+    "zion": {
+      "model": "anthropic/claude-sonnet-4-6",
+    },
   },
   "categories": {
     "blue-pill": {
@@ -664,7 +673,7 @@ exports[`generateModelConfig all native providers uses preferred models with isM
       "model": "google/gemini-3-flash",
     },
     "bullet-time": {
-      "model": "anthropic/claude-haiku-4-5",
+      "model": "openai/gpt-5.4-mini",
     },
     "construct": {
       "model": "google/gemini-3.1-pro",
@@ -695,14 +704,13 @@ exports[`generateModelConfig fallback providers uses OpenCode Zen models when on
   "$schema": "https://raw.githubusercontent.com/klpanagi/matrixx/dev/assets/matrixx.schema.json",
   "agents": {
     "architect": {
-      "model": "opencode/kimi-k2.5-free",
+      "model": "opencode/claude-sonnet-4-6",
     },
     "cipher": {
-      "model": "opencode/claude-opus-4-6",
-      "variant": "max",
+      "model": "opencode/claude-sonnet-4-6",
     },
     "construct": {
-      "model": "opencode/kimi-k2.5-free",
+      "model": "opencode/gemini-3-flash",
     },
     "keymaker": {
       "model": "opencode/gpt-5.3-codex",
@@ -717,8 +725,7 @@ exports[`generateModelConfig fallback providers uses OpenCode Zen models when on
       "variant": "max",
     },
     "niobe": {
-      "model": "opencode/claude-opus-4-6",
-      "variant": "max",
+      "model": "opencode/claude-sonnet-4-6",
     },
     "operator": {
       "model": "opencode/glm-4.7-free",
@@ -728,8 +735,7 @@ exports[`generateModelConfig fallback providers uses OpenCode Zen models when on
       "variant": "max",
     },
     "sentinel": {
-      "model": "opencode/claude-opus-4-6",
-      "variant": "max",
+      "model": "opencode/claude-sonnet-4-6",
     },
     "seraph": {
       "model": "opencode/claude-opus-4-6",
@@ -742,16 +748,19 @@ exports[`generateModelConfig fallback providers uses OpenCode Zen models when on
     "trinity": {
       "model": "opencode/claude-haiku-4-5",
     },
+    "zion": {
+      "model": "opencode/claude-sonnet-4-6",
+    },
   },
   "categories": {
     "blue-pill": {
       "model": "opencode/claude-sonnet-4-6",
     },
     "broadcast": {
-      "model": "opencode/kimi-k2.5-free",
+      "model": "opencode/gemini-3-flash",
     },
     "bullet-time": {
-      "model": "opencode/claude-haiku-4-5",
+      "model": "opencode/gpt-5.4-mini",
     },
     "construct": {
       "model": "opencode/gemini-3.1-pro",
@@ -781,14 +790,13 @@ exports[`generateModelConfig fallback providers uses OpenCode Zen models with is
   "$schema": "https://raw.githubusercontent.com/klpanagi/matrixx/dev/assets/matrixx.schema.json",
   "agents": {
     "architect": {
-      "model": "opencode/kimi-k2.5-free",
+      "model": "opencode/claude-sonnet-4-6",
     },
     "cipher": {
-      "model": "opencode/claude-opus-4-6",
-      "variant": "max",
+      "model": "opencode/claude-sonnet-4-6",
     },
     "construct": {
-      "model": "opencode/kimi-k2.5-free",
+      "model": "opencode/gemini-3-flash",
     },
     "keymaker": {
       "model": "opencode/gpt-5.3-codex",
@@ -803,8 +811,7 @@ exports[`generateModelConfig fallback providers uses OpenCode Zen models with is
       "variant": "max",
     },
     "niobe": {
-      "model": "opencode/claude-opus-4-6",
-      "variant": "max",
+      "model": "opencode/claude-sonnet-4-6",
     },
     "operator": {
       "model": "opencode/glm-4.7-free",
@@ -814,8 +821,7 @@ exports[`generateModelConfig fallback providers uses OpenCode Zen models with is
       "variant": "max",
     },
     "sentinel": {
-      "model": "opencode/claude-opus-4-6",
-      "variant": "max",
+      "model": "opencode/claude-sonnet-4-6",
     },
     "seraph": {
       "model": "opencode/claude-opus-4-6",
@@ -828,16 +834,19 @@ exports[`generateModelConfig fallback providers uses OpenCode Zen models with is
     "trinity": {
       "model": "opencode/claude-haiku-4-5",
     },
+    "zion": {
+      "model": "opencode/claude-sonnet-4-6",
+    },
   },
   "categories": {
     "blue-pill": {
       "model": "opencode/claude-sonnet-4-6",
     },
     "broadcast": {
-      "model": "opencode/kimi-k2.5-free",
+      "model": "opencode/gemini-3-flash",
     },
     "bullet-time": {
-      "model": "opencode/claude-haiku-4-5",
+      "model": "opencode/gpt-5.4-mini",
     },
     "construct": {
       "model": "opencode/gemini-3.1-pro",
@@ -871,8 +880,7 @@ exports[`generateModelConfig fallback providers uses GitHub Copilot models when 
       "model": "github-copilot/claude-sonnet-4-6",
     },
     "cipher": {
-      "model": "github-copilot/claude-opus-4.6",
-      "variant": "max",
+      "model": "github-copilot/claude-sonnet-4-6",
     },
     "construct": {
       "model": "github-copilot/gemini-3-flash-preview",
@@ -890,8 +898,7 @@ exports[`generateModelConfig fallback providers uses GitHub Copilot models when 
       "variant": "max",
     },
     "niobe": {
-      "model": "github-copilot/claude-opus-4.6",
-      "variant": "max",
+      "model": "github-copilot/claude-sonnet-4-6",
     },
     "operator": {
       "model": "github-copilot/claude-sonnet-4-6",
@@ -901,8 +908,7 @@ exports[`generateModelConfig fallback providers uses GitHub Copilot models when 
       "variant": "max",
     },
     "sentinel": {
-      "model": "github-copilot/claude-opus-4.6",
-      "variant": "max",
+      "model": "github-copilot/claude-sonnet-4-6",
     },
     "seraph": {
       "model": "github-copilot/claude-opus-4.6",
@@ -915,6 +921,9 @@ exports[`generateModelConfig fallback providers uses GitHub Copilot models when 
     "trinity": {
       "model": "github-copilot/gpt-5-mini",
     },
+    "zion": {
+      "model": "github-copilot/claude-sonnet-4-6",
+    },
   },
   "categories": {
     "blue-pill": {
@@ -924,7 +933,7 @@ exports[`generateModelConfig fallback providers uses GitHub Copilot models when 
       "model": "github-copilot/gemini-3-flash-preview",
     },
     "bullet-time": {
-      "model": "github-copilot/claude-haiku-4.5",
+      "model": "github-copilot/gpt-5.4-mini",
     },
     "construct": {
       "model": "github-copilot/gemini-3.1-pro",
@@ -957,8 +966,7 @@ exports[`generateModelConfig fallback providers uses GitHub Copilot models with 
       "model": "github-copilot/claude-sonnet-4-6",
     },
     "cipher": {
-      "model": "github-copilot/claude-opus-4.6",
-      "variant": "max",
+      "model": "github-copilot/claude-sonnet-4-6",
     },
     "construct": {
       "model": "github-copilot/gemini-3-flash-preview",
@@ -976,8 +984,7 @@ exports[`generateModelConfig fallback providers uses GitHub Copilot models with 
       "variant": "max",
     },
     "niobe": {
-      "model": "github-copilot/claude-opus-4.6",
-      "variant": "max",
+      "model": "github-copilot/claude-sonnet-4-6",
     },
     "operator": {
       "model": "github-copilot/claude-sonnet-4-6",
@@ -987,8 +994,7 @@ exports[`generateModelConfig fallback providers uses GitHub Copilot models with 
       "variant": "max",
     },
     "sentinel": {
-      "model": "github-copilot/claude-opus-4.6",
-      "variant": "max",
+      "model": "github-copilot/claude-sonnet-4-6",
     },
     "seraph": {
       "model": "github-copilot/claude-opus-4.6",
@@ -1001,6 +1007,9 @@ exports[`generateModelConfig fallback providers uses GitHub Copilot models with 
     "trinity": {
       "model": "github-copilot/gpt-5-mini",
     },
+    "zion": {
+      "model": "github-copilot/claude-sonnet-4-6",
+    },
   },
   "categories": {
     "blue-pill": {
@@ -1010,7 +1019,7 @@ exports[`generateModelConfig fallback providers uses GitHub Copilot models with 
       "model": "github-copilot/gemini-3-flash-preview",
     },
     "bullet-time": {
-      "model": "github-copilot/claude-haiku-4.5",
+      "model": "github-copilot/gpt-5.4-mini",
     },
     "construct": {
       "model": "github-copilot/gemini-3.1-pro",
@@ -1076,6 +1085,9 @@ exports[`generateModelConfig fallback providers uses ZAI model for librarian whe
     "trinity": {
       "model": "opencode/gpt-5-nano",
     },
+    "zion": {
+      "model": "opencode/glm-4.7-free",
+    },
   },
   "categories": {
     "blue-pill": {
@@ -1140,6 +1152,9 @@ exports[`generateModelConfig fallback providers uses ZAI model for librarian wit
     "trinity": {
       "model": "opencode/gpt-5-nano",
     },
+    "zion": {
+      "model": "opencode/glm-4.7-free",
+    },
   },
   "categories": {
     "blue-pill": {
@@ -1169,14 +1184,13 @@ exports[`generateModelConfig mixed provider scenarios uses Claude + OpenCode Zen
   "$schema": "https://raw.githubusercontent.com/klpanagi/matrixx/dev/assets/matrixx.schema.json",
   "agents": {
     "architect": {
-      "model": "opencode/kimi-k2.5-free",
+      "model": "anthropic/claude-sonnet-4-6",
     },
     "cipher": {
-      "model": "anthropic/claude-opus-4-6",
-      "variant": "max",
+      "model": "anthropic/claude-sonnet-4-6",
     },
     "construct": {
-      "model": "opencode/kimi-k2.5-free",
+      "model": "opencode/gemini-3-flash",
     },
     "keymaker": {
       "model": "opencode/gpt-5.3-codex",
@@ -1191,8 +1205,7 @@ exports[`generateModelConfig mixed provider scenarios uses Claude + OpenCode Zen
       "variant": "max",
     },
     "niobe": {
-      "model": "anthropic/claude-opus-4-6",
-      "variant": "max",
+      "model": "anthropic/claude-sonnet-4-6",
     },
     "operator": {
       "model": "opencode/glm-4.7-free",
@@ -1202,8 +1215,7 @@ exports[`generateModelConfig mixed provider scenarios uses Claude + OpenCode Zen
       "variant": "max",
     },
     "sentinel": {
-      "model": "anthropic/claude-opus-4-6",
-      "variant": "max",
+      "model": "anthropic/claude-sonnet-4-6",
     },
     "seraph": {
       "model": "anthropic/claude-opus-4-6",
@@ -1216,16 +1228,19 @@ exports[`generateModelConfig mixed provider scenarios uses Claude + OpenCode Zen
     "trinity": {
       "model": "anthropic/claude-haiku-4-5",
     },
+    "zion": {
+      "model": "anthropic/claude-sonnet-4-6",
+    },
   },
   "categories": {
     "blue-pill": {
       "model": "anthropic/claude-sonnet-4-6",
     },
     "broadcast": {
-      "model": "opencode/kimi-k2.5-free",
+      "model": "opencode/gemini-3-flash",
     },
     "bullet-time": {
-      "model": "anthropic/claude-haiku-4-5",
+      "model": "opencode/gpt-5.4-mini",
     },
     "construct": {
       "model": "opencode/gemini-3.1-pro",
@@ -1258,8 +1273,7 @@ exports[`generateModelConfig mixed provider scenarios uses OpenAI + Copilot comb
       "model": "github-copilot/claude-sonnet-4-6",
     },
     "cipher": {
-      "model": "github-copilot/claude-opus-4.6",
-      "variant": "max",
+      "model": "github-copilot/claude-sonnet-4-6",
     },
     "construct": {
       "model": "github-copilot/gemini-3-flash-preview",
@@ -1277,8 +1291,7 @@ exports[`generateModelConfig mixed provider scenarios uses OpenAI + Copilot comb
       "variant": "max",
     },
     "niobe": {
-      "model": "github-copilot/claude-opus-4.6",
-      "variant": "max",
+      "model": "github-copilot/claude-sonnet-4-6",
     },
     "operator": {
       "model": "github-copilot/claude-sonnet-4-6",
@@ -1288,8 +1301,7 @@ exports[`generateModelConfig mixed provider scenarios uses OpenAI + Copilot comb
       "variant": "max",
     },
     "sentinel": {
-      "model": "github-copilot/claude-opus-4.6",
-      "variant": "max",
+      "model": "github-copilot/claude-sonnet-4-6",
     },
     "seraph": {
       "model": "github-copilot/claude-opus-4.6",
@@ -1302,6 +1314,9 @@ exports[`generateModelConfig mixed provider scenarios uses OpenAI + Copilot comb
     "trinity": {
       "model": "github-copilot/gpt-5-mini",
     },
+    "zion": {
+      "model": "github-copilot/claude-sonnet-4-6",
+    },
   },
   "categories": {
     "blue-pill": {
@@ -1311,7 +1326,7 @@ exports[`generateModelConfig mixed provider scenarios uses OpenAI + Copilot comb
       "model": "github-copilot/gemini-3-flash-preview",
     },
     "bullet-time": {
-      "model": "github-copilot/claude-haiku-4.5",
+      "model": "openai/gpt-5.4-mini",
     },
     "construct": {
       "model": "github-copilot/gemini-3.1-pro",
@@ -1344,8 +1359,7 @@ exports[`generateModelConfig mixed provider scenarios uses Claude + ZAI combinat
       "model": "anthropic/claude-sonnet-4-6",
     },
     "cipher": {
-      "model": "anthropic/claude-opus-4-6",
-      "variant": "max",
+      "model": "anthropic/claude-sonnet-4-6",
     },
     "construct": {
       "model": "zai-coding-plan/glm-4.6v",
@@ -1359,8 +1373,7 @@ exports[`generateModelConfig mixed provider scenarios uses Claude + ZAI combinat
       "variant": "max",
     },
     "niobe": {
-      "model": "anthropic/claude-opus-4-6",
-      "variant": "max",
+      "model": "anthropic/claude-sonnet-4-6",
     },
     "operator": {
       "model": "zai-coding-plan/glm-4.7",
@@ -1370,8 +1383,7 @@ exports[`generateModelConfig mixed provider scenarios uses Claude + ZAI combinat
       "variant": "max",
     },
     "sentinel": {
-      "model": "anthropic/claude-opus-4-6",
-      "variant": "max",
+      "model": "anthropic/claude-sonnet-4-6",
     },
     "seraph": {
       "model": "anthropic/claude-opus-4-6",
@@ -1383,6 +1395,9 @@ exports[`generateModelConfig mixed provider scenarios uses Claude + ZAI combinat
     },
     "trinity": {
       "model": "anthropic/claude-haiku-4-5",
+    },
+    "zion": {
+      "model": "anthropic/claude-sonnet-4-6",
     },
   },
   "categories": {
@@ -1417,8 +1432,7 @@ exports[`generateModelConfig mixed provider scenarios uses Gemini + Claude combi
       "model": "anthropic/claude-sonnet-4-6",
     },
     "cipher": {
-      "model": "anthropic/claude-opus-4-6",
-      "variant": "max",
+      "model": "anthropic/claude-sonnet-4-6",
     },
     "construct": {
       "model": "google/gemini-3-flash",
@@ -1432,8 +1446,7 @@ exports[`generateModelConfig mixed provider scenarios uses Gemini + Claude combi
       "variant": "max",
     },
     "niobe": {
-      "model": "anthropic/claude-opus-4-6",
-      "variant": "max",
+      "model": "anthropic/claude-sonnet-4-6",
     },
     "operator": {
       "model": "anthropic/claude-sonnet-4-6",
@@ -1443,8 +1456,7 @@ exports[`generateModelConfig mixed provider scenarios uses Gemini + Claude combi
       "variant": "max",
     },
     "sentinel": {
-      "model": "anthropic/claude-opus-4-6",
-      "variant": "max",
+      "model": "anthropic/claude-sonnet-4-6",
     },
     "seraph": {
       "model": "anthropic/claude-opus-4-6",
@@ -1456,6 +1468,9 @@ exports[`generateModelConfig mixed provider scenarios uses Gemini + Claude combi
     },
     "trinity": {
       "model": "anthropic/claude-haiku-4-5",
+    },
+    "zion": {
+      "model": "anthropic/claude-sonnet-4-6",
     },
   },
   "categories": {
@@ -1492,14 +1507,13 @@ exports[`generateModelConfig mixed provider scenarios uses all fallback provider
   "$schema": "https://raw.githubusercontent.com/klpanagi/matrixx/dev/assets/matrixx.schema.json",
   "agents": {
     "architect": {
-      "model": "opencode/kimi-k2.5-free",
+      "model": "github-copilot/claude-sonnet-4-6",
     },
     "cipher": {
-      "model": "github-copilot/claude-opus-4.6",
-      "variant": "max",
+      "model": "github-copilot/claude-sonnet-4-6",
     },
     "construct": {
-      "model": "opencode/kimi-k2.5-free",
+      "model": "github-copilot/gemini-3-flash-preview",
     },
     "keymaker": {
       "model": "github-copilot/gpt-5.3-codex",
@@ -1514,8 +1528,7 @@ exports[`generateModelConfig mixed provider scenarios uses all fallback provider
       "variant": "max",
     },
     "niobe": {
-      "model": "github-copilot/claude-opus-4.6",
-      "variant": "max",
+      "model": "github-copilot/claude-sonnet-4-6",
     },
     "operator": {
       "model": "zai-coding-plan/glm-4.7",
@@ -1525,8 +1538,7 @@ exports[`generateModelConfig mixed provider scenarios uses all fallback provider
       "variant": "max",
     },
     "sentinel": {
-      "model": "github-copilot/claude-opus-4.6",
-      "variant": "max",
+      "model": "github-copilot/claude-sonnet-4-6",
     },
     "seraph": {
       "model": "github-copilot/claude-opus-4.6",
@@ -1539,16 +1551,19 @@ exports[`generateModelConfig mixed provider scenarios uses all fallback provider
     "trinity": {
       "model": "opencode/claude-haiku-4-5",
     },
+    "zion": {
+      "model": "github-copilot/claude-sonnet-4-6",
+    },
   },
   "categories": {
     "blue-pill": {
       "model": "github-copilot/claude-sonnet-4-6",
     },
     "broadcast": {
-      "model": "opencode/kimi-k2.5-free",
+      "model": "github-copilot/gemini-3-flash-preview",
     },
     "bullet-time": {
-      "model": "github-copilot/claude-haiku-4.5",
+      "model": "github-copilot/gpt-5.4-mini",
     },
     "construct": {
       "model": "github-copilot/gemini-3.1-pro",
@@ -1578,14 +1593,13 @@ exports[`generateModelConfig mixed provider scenarios uses all providers togethe
   "$schema": "https://raw.githubusercontent.com/klpanagi/matrixx/dev/assets/matrixx.schema.json",
   "agents": {
     "architect": {
-      "model": "opencode/kimi-k2.5-free",
+      "model": "anthropic/claude-sonnet-4-6",
     },
     "cipher": {
-      "model": "anthropic/claude-opus-4-6",
-      "variant": "max",
+      "model": "anthropic/claude-sonnet-4-6",
     },
     "construct": {
-      "model": "opencode/kimi-k2.5-free",
+      "model": "google/gemini-3-flash",
     },
     "keymaker": {
       "model": "openai/gpt-5.3-codex",
@@ -1600,8 +1614,7 @@ exports[`generateModelConfig mixed provider scenarios uses all providers togethe
       "variant": "max",
     },
     "niobe": {
-      "model": "anthropic/claude-opus-4-6",
-      "variant": "max",
+      "model": "anthropic/claude-sonnet-4-6",
     },
     "operator": {
       "model": "zai-coding-plan/glm-4.7",
@@ -1611,8 +1624,7 @@ exports[`generateModelConfig mixed provider scenarios uses all providers togethe
       "variant": "max",
     },
     "sentinel": {
-      "model": "anthropic/claude-opus-4-6",
-      "variant": "max",
+      "model": "anthropic/claude-sonnet-4-6",
     },
     "seraph": {
       "model": "anthropic/claude-opus-4-6",
@@ -1625,16 +1637,19 @@ exports[`generateModelConfig mixed provider scenarios uses all providers togethe
     "trinity": {
       "model": "anthropic/claude-haiku-4-5",
     },
+    "zion": {
+      "model": "anthropic/claude-sonnet-4-6",
+    },
   },
   "categories": {
     "blue-pill": {
       "model": "anthropic/claude-sonnet-4-6",
     },
     "broadcast": {
-      "model": "opencode/kimi-k2.5-free",
+      "model": "google/gemini-3-flash",
     },
     "bullet-time": {
-      "model": "anthropic/claude-haiku-4-5",
+      "model": "openai/gpt-5.4-mini",
     },
     "construct": {
       "model": "google/gemini-3.1-pro",
@@ -1664,14 +1679,13 @@ exports[`generateModelConfig mixed provider scenarios uses all providers with is
   "$schema": "https://raw.githubusercontent.com/klpanagi/matrixx/dev/assets/matrixx.schema.json",
   "agents": {
     "architect": {
-      "model": "opencode/kimi-k2.5-free",
+      "model": "anthropic/claude-sonnet-4-6",
     },
     "cipher": {
-      "model": "anthropic/claude-opus-4-6",
-      "variant": "max",
+      "model": "anthropic/claude-sonnet-4-6",
     },
     "construct": {
-      "model": "opencode/kimi-k2.5-free",
+      "model": "google/gemini-3-flash",
     },
     "keymaker": {
       "model": "openai/gpt-5.3-codex",
@@ -1686,8 +1700,7 @@ exports[`generateModelConfig mixed provider scenarios uses all providers with is
       "variant": "max",
     },
     "niobe": {
-      "model": "anthropic/claude-opus-4-6",
-      "variant": "max",
+      "model": "anthropic/claude-sonnet-4-6",
     },
     "operator": {
       "model": "zai-coding-plan/glm-4.7",
@@ -1697,8 +1710,7 @@ exports[`generateModelConfig mixed provider scenarios uses all providers with is
       "variant": "max",
     },
     "sentinel": {
-      "model": "anthropic/claude-opus-4-6",
-      "variant": "max",
+      "model": "anthropic/claude-sonnet-4-6",
     },
     "seraph": {
       "model": "anthropic/claude-opus-4-6",
@@ -1711,16 +1723,19 @@ exports[`generateModelConfig mixed provider scenarios uses all providers with is
     "trinity": {
       "model": "anthropic/claude-haiku-4-5",
     },
+    "zion": {
+      "model": "anthropic/claude-sonnet-4-6",
+    },
   },
   "categories": {
     "blue-pill": {
       "model": "anthropic/claude-sonnet-4-6",
     },
     "broadcast": {
-      "model": "opencode/kimi-k2.5-free",
+      "model": "google/gemini-3-flash",
     },
     "bullet-time": {
-      "model": "anthropic/claude-haiku-4-5",
+      "model": "openai/gpt-5.4-mini",
     },
     "construct": {
       "model": "google/gemini-3.1-pro",

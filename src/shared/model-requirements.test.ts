@@ -175,8 +175,8 @@ describe("AGENT_MODEL_REQUIREMENTS", () => {
     expect(keymaker.requiresModel).toBeUndefined()
   })
 
-  test("all 12 builtin agents have valid fallbackChain arrays", () => {
-    // #given - list of 12 agent names
+  test("all 14 builtin agents have valid fallbackChain arrays", () => {
+    // #given - list of 14 agent names
     const expectedAgents = [
       "morpheus",
       "keymaker",
@@ -191,13 +191,14 @@ describe("AGENT_MODEL_REQUIREMENTS", () => {
       "cipher",
       "niobe",
       "sentinel",
+      "zion",
     ]
 
     // when - checking AGENT_MODEL_REQUIREMENTS
     const definedAgents = Object.keys(AGENT_MODEL_REQUIREMENTS)
 
     // #then - all agents present with valid fallbackChain
-    expect(definedAgents).toHaveLength(13)
+    expect(definedAgents).toHaveLength(14)
     for (const agent of expectedAgents) {
       const requirement = AGENT_MODEL_REQUIREMENTS[agent]
       expect(requirement).toBeDefined()
