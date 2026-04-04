@@ -110,6 +110,14 @@ export const AGENT_MODEL_REQUIREMENTS: Record<string, ModelRequirement> = {
       { providers: ["google", "github-copilot", "opencode"], model: "gemini-3.1-pro" },
     ],
   },
+  zion: {
+    fallbackChain: [
+      { providers: ["anthropic", "github-copilot", "opencode"], model: "claude-sonnet-4-6" },
+      { providers: ["google-vertex-anthropic"], model: "claude-sonnet-4-6@default" },
+      { providers: ["google", "github-copilot", "opencode"], model: "gemini-3.1-pro" },
+      { providers: ["openai", "github-copilot", "opencode"], model: "gpt-5.2" },
+    ],
+  },
 }
 
 export const CATEGORY_MODEL_REQUIREMENTS: Record<string, ModelRequirement> = {

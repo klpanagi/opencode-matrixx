@@ -14,6 +14,7 @@ export const BuiltinAgentNameSchema = z.enum([
   "cipher",
   "niobe",
   "sentinel",
+  "zion",
 ])
 
 export const BuiltinSkillNameSchema = z.enum([
@@ -54,6 +55,9 @@ export const BuiltinSkillNameSchema = z.enum([
   "security-crypto",
   "security-infra",
   "security-review",
+  "crypto-market-analysis",
+  "crypto-trading",
+  "crypto-onchain",
 ])
 
 export const OverridableAgentNameSchema = z.enum([
@@ -74,6 +78,7 @@ export const OverridableAgentNameSchema = z.enum([
   "cipher",
   "niobe",
   "sentinel",
+  "zion",
 ])
 
 export const AgentNameSchema = BuiltinAgentNameSchema

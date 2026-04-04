@@ -14,6 +14,7 @@ import { createSmithAgent, smithPromptMetadata } from "./smith"
 import { createCipherAgent, CIPHER_PROMPT_METADATA } from "./cipher"
 import { createNiobeAgent, NIOBE_PROMPT_METADATA } from "./niobe"
 import { createSentinelAgent, SENTINEL_PROMPT_METADATA } from "./sentinel"
+import { createZionAgent, ZION_PROMPT_METADATA } from "./zion"
 import { createKeymakerAgent } from "./keymaker"
 import type { AvailableCategory } from "./dynamic-agent-prompt-builder"
 import {
@@ -45,6 +46,7 @@ const agentSources: Record<BuiltinAgentName, AgentSource> = {
   cipher: createCipherAgent,
   niobe: createNiobeAgent,
   sentinel: createSentinelAgent,
+  zion: createZionAgent,
 }
 
 /**
@@ -62,6 +64,7 @@ const agentMetadata: Partial<Record<BuiltinAgentName, AgentPromptMetadata>> = {
   cipher: CIPHER_PROMPT_METADATA,
   niobe: NIOBE_PROMPT_METADATA,
   sentinel: SENTINEL_PROMPT_METADATA,
+  zion: ZION_PROMPT_METADATA,
 }
 
 export async function createBuiltinAgents(
