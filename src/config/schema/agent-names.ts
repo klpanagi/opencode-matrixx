@@ -58,6 +58,7 @@ export const BuiltinSkillNameSchema = z.enum([
   "crypto-market-analysis",
   "crypto-trading",
   "crypto-onchain",
+  "tdd-enforcer",
 ])
 
 export const OverridableAgentNameSchema = z.enum([

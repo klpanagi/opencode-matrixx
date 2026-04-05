@@ -11,6 +11,7 @@ import { CommentCheckerConfigSchema } from "./comment-checker"
 import { BuiltinCommandNameSchema } from "./commands"
 import { ExperimentalConfigSchema } from "./experimental"
 import { GitMasterConfigSchema } from "./git-master"
+import { TddEnforcerConfigSchema } from "./tdd-enforcer"
 import { HookNameSchema } from "./hooks"
 import { SecurityConfigSchema } from "./security"
 import { NotificationConfigSchema } from "./notification"
@@ -49,6 +50,7 @@ export const MatrixxConfigSchema = z.object({
   notification: NotificationConfigSchema.optional(),
   babysitting: BabysittingConfigSchema.optional(),
   git_master: GitMasterConfigSchema.optional(),
+  tdd_enforcer: TddEnforcerConfigSchema.optional(),
   browser_automation_engine: BrowserAutomationConfigSchema.optional(),
   websearch: WebsearchConfigSchema.optional(),
   tmux: TmuxConfigSchema.optional(),
