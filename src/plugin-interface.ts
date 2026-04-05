@@ -7,6 +7,7 @@ import { createMessagesTransformHandler } from "./plugin/messages-transform"
 import { createEventHandler } from "./plugin/event"
 import { createToolExecuteAfterHandler } from "./plugin/tool-execute-after"
 import { createToolExecuteBeforeHandler } from "./plugin/tool-execute-before"
+import { createToolDefinitionHandler } from "./plugin/tool-definition"
 
 import type { CreatedHooks } from "./create-hooks"
 import type { Managers } from "./create-managers"
@@ -59,6 +60,10 @@ export function createPluginInterface(args: {
     }),
 
     "tool.execute.after": createToolExecuteAfterHandler({
+      hooks,
+    }),
+
+    "tool.definition": createToolDefinitionHandler({
       hooks,
     }),
   }

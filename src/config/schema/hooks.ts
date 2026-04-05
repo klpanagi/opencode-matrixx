@@ -50,6 +50,7 @@ export const HookNameSchema = z.enum([
   "env-file-write-guard",
   "json-error-recovery",
   "bash-file-read-guard",
+  "todo-description-override",
 ])
 
 export type HookName = z.infer<typeof HookNameSchema>

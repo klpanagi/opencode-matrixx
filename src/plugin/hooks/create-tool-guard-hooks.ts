@@ -15,6 +15,7 @@ import {
   createEnvFileWriteGuardHook,
   createJsonErrorRecoveryHook,
   createBashFileReadGuardHook,
+  createTodoDescriptionOverrideHook,
 } from "../../hooks"
 import {
   getOpenCodeVersion,
@@ -38,6 +39,7 @@ export type ToolGuardHooks = {
   envFileWriteGuard: ReturnType<typeof createEnvFileWriteGuardHook> | null
   jsonErrorRecovery: ReturnType<typeof createJsonErrorRecoveryHook> | null
   bashFileReadGuard: ReturnType<typeof createBashFileReadGuardHook> | null
+  todoDescriptionOverride: ReturnType<typeof createTodoDescriptionOverrideHook> | null
 }
 
 export function createToolGuardHooks(args: {
@@ -115,6 +117,10 @@ export function createToolGuardHooks(args: {
     ? safeHook("bash-file-read-guard", () => createBashFileReadGuardHook())
     : null
 
+  const todoDescriptionOverride = isHookEnabled("todo-description-override")
+    ? safeHook("todo-description-override", () => createTodoDescriptionOverrideHook())
+    : null
+
   return {
     commentChecker,
     toolOutputTruncator,
@@ -129,5 +135,6 @@ export function createToolGuardHooks(args: {
     envFileWriteGuard,
     jsonErrorRecovery,
     bashFileReadGuard,
+    todoDescriptionOverride,
   }
 }

@@ -48,3 +48,4 @@ export { createSecretLeakGuardHook } from "./secret-leak-guard";
 export { createEnvFileWriteGuardHook } from "./env-file-write-guard"
 export { createJsonErrorRecoveryHook } from "./json-error-recovery"
 export { createBashFileReadGuardHook } from "./bash-file-read-guard"
+export { createTodoDescriptionOverrideHook } from "./todo-description-override"
