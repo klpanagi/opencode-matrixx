@@ -44,6 +44,7 @@ import {
   securityCryptoSkill,
   securityInfraSkill,
   securityReviewSkill,
+  tddEnforcerSkill,
 } from "./skills/index"
 
 export interface CreateBuiltinSkillsOptions {
@@ -63,7 +64,7 @@ export function createBuiltinSkills(options: CreateBuiltinSkillsOptions = {}): B
     browserSkill = playwrightSkill
   }
 
-  const skills = [browserSkill, frontendUiUxSkill, gitMasterSkill, devBrowserSkill, dslCoreSkill, dslGrammarSkill, dslCodegenSkill, dslMetamodelSkill, dslToolingSkill, dslTextxEcosystemSkill, dslPyecoreAdvancedSkill, dslModelTransformationSkill, dslTestingSkill, dslValidationSkill, dslCompositionSkill, euHorizonSkill, academicReviewSkill, deliverableWritingSkill, projectManagementSkill, technicalLeadSkill, academicWritingSkill, researchMethodologySkill, literatureReviewSkill, grantWritingSkill, scientificPresentationSkill, dataManagementPlanSkill, ipExploitationSkill, documentReaderSkill, cryptoMarketAnalysisSkill, cryptoTradingSkill, cryptoOnchainSkill, securityCoreSkill, securitySecretsSkill, securitySastSkill, securityDastSkill, securityDependenciesSkill, securityApiSkill, securityCryptoSkill, securityInfraSkill, securityReviewSkill]
+  const skills = [browserSkill, frontendUiUxSkill, gitMasterSkill, devBrowserSkill, dslCoreSkill, dslGrammarSkill, dslCodegenSkill, dslMetamodelSkill, dslToolingSkill, dslTextxEcosystemSkill, dslPyecoreAdvancedSkill, dslModelTransformationSkill, dslTestingSkill, dslValidationSkill, dslCompositionSkill, euHorizonSkill, academicReviewSkill, deliverableWritingSkill, projectManagementSkill, technicalLeadSkill, academicWritingSkill, researchMethodologySkill, literatureReviewSkill, grantWritingSkill, scientificPresentationSkill, dataManagementPlanSkill, ipExploitationSkill, documentReaderSkill, cryptoMarketAnalysisSkill, cryptoTradingSkill, cryptoOnchainSkill, securityCoreSkill, securitySecretsSkill, securitySastSkill, securityDastSkill, securityDependenciesSkill, securityApiSkill, securityCryptoSkill, securityInfraSkill, securityReviewSkill, tddEnforcerSkill]
 
   if (!disabledSkills) {
     return skills
