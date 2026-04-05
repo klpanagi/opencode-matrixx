@@ -42,6 +42,9 @@ export async function createSkillContext(args: {
     pluginConfig.browser_automation_engine?.provider ?? "playwright"
 
   const disabledSkills = new Set<string>(pluginConfig.disabled_skills ?? [])
+  if (!pluginConfig.tdd_enforcer?.enabled) {
+    disabledSkills.add("tdd-enforcer")
+  }
   const systemMcpNames = getSystemMcpServerNames()
 
   const builtinSkills = createBuiltinSkills({

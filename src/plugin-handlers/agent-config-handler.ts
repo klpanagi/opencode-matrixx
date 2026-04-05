@@ -72,6 +72,9 @@ export async function applyAgentConfig(params: {
     params.pluginConfig.browser_automation_engine?.provider ?? "playwright";
   const currentModel = params.config.model as string | undefined;
   const disabledSkills = new Set<string>(params.pluginConfig.disabled_skills ?? []);
+  if (!params.pluginConfig.tdd_enforcer?.enabled) {
+    disabledSkills.add("tdd-enforcer");
+  }
   const useTaskSystem = params.pluginConfig.experimental?.task_system ?? false;
 
   const builtinAgents = await createBuiltinAgents(
