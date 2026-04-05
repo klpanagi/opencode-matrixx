@@ -17,12 +17,12 @@ describe("SMITH_SYSTEM_PROMPT policy requirements", () => {
     expect(prompt).toMatch(/<system-reminder>|system-reminder/)
   })
 
-  test("should extract paths containing .matrix/plans/ and ending in .md", () => {
+  test("should extract paths containing .matrixx/plans/ and ending in .md", () => {
     // given
     const prompt = SMITH_SYSTEM_PROMPT
 
     // when / #then
-    expect(prompt).toContain(".matrix/plans/")
+    expect(prompt).toContain(".matrixx/plans/")
     expect(prompt).toContain(".md")
     // New extraction policy should be mentioned
     expect(prompt.toLowerCase()).toMatch(/extract|search|find path/)
@@ -34,7 +34,7 @@ describe("SMITH_SYSTEM_PROMPT policy requirements", () => {
 
     // when / #then
     // In RED phase, this will FAIL because current prompt explicitly lists this as INVALID
-    const invalidExample = "Please review .matrix/plans/plan.md"
+    const invalidExample = "Please review .matrixx/plans/plan.md"
     const rejectionTeaching = new RegExp(
       `reject.*${escapeRegExp(invalidExample)}`,
       "i",

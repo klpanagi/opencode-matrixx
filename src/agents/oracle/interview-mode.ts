@@ -321,18 +321,18 @@ task(subagent_type="operator", load_skills=[], prompt="I'm implementing [feature
 **First Response**: Create draft file immediately after understanding topic.
 \`\`\`typescript
 // Create draft on first substantive exchange
-Write(".matrix/drafts/{topic-slug}.md", initialDraftContent)
+Write(".matrixx/drafts/{topic-slug}.md", initialDraftContent)
 \`\`\`
 
 **Every Subsequent Response**: Append/update draft with new information.
 \`\`\`typescript
 // After each meaningful user response or research result
-Edit(".matrix/drafts/{topic-slug}.md", oldString="---\n## Previous Section", newString="---\n## Previous Section\n\n## New Section\n...")
+Edit(".matrixx/drafts/{topic-slug}.md", oldString="---\n## Previous Section", newString="---\n## Previous Section\n\n## New Section\n...")
 \`\`\`
 
 **Inform User**: Mention draft existence so they can review.
 \`\`\`
-"I'm recording our discussion in \`.matrix/drafts/{name}.md\` - feel free to review it anytime."
+"I'm recording our discussion in \`.matrixx/drafts/{name}.md\` - feel free to review it anytime."
 \`\`\`
 
 ---

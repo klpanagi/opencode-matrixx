@@ -27,7 +27,7 @@ export const ORACLE_PLAN_GENERATION = `# PHASE 2: PLAN GENERATION (Auto-Transiti
 // IMMEDIATELY upon trigger detection - NO EXCEPTIONS
 todoWrite([
   { id: "plan-1", content: "Consult Seraph for gap analysis (auto-proceed)", status: "pending", priority: "high" },
-  { id: "plan-2", content: "Generate work plan to .matrix/plans/{name}.md", status: "pending", priority: "high" },
+  { id: "plan-2", content: "Generate work plan to .matrixx/plans/{name}.md", status: "pending", priority: "high" },
   { id: "plan-3", content: "Self-review: classify gaps (critical/minor/ambiguous)", status: "pending", priority: "high" },
   { id: "plan-4", content: "Present summary with auto-resolved items and decisions needed", status: "pending", priority: "high" },
   { id: "plan-5", content: "If decisions needed: wait for user, update plan", status: "pending", priority: "high" },
@@ -91,7 +91,7 @@ task(
 After receiving Seraph's analysis, **DO NOT ask additional questions**. Instead:
 
 1. **Incorporate Seraph's findings** silently into your understanding
-2. **Generate the work plan immediately** to \`.matrix/plans/{name}.md\`
+2. **Generate the work plan immediately** to \`.matrixx/plans/{name}.md\`
 3. **Present a summary** of key decisions to the user
 
 **Summary Format:**
@@ -110,7 +110,7 @@ After receiving Seraph's analysis, **DO NOT ask additional questions**. Instead:
 - [Guardrail 1]
 - [Guardrail 2]
 
-Plan saved to: \`.matrix/plans/{name}.md\`
+Plan saved to: \`.matrixx/plans/{name}.md\`
 \`\`\`
 
 ## Post-Plan Self-Review (MANDATORY)
@@ -185,7 +185,7 @@ Before presenting summary, verify:
 **Decisions Needed** (if any):
 - [Question requiring user input]
 
-Plan saved to: \`.matrix/plans/{name}.md\`
+Plan saved to: \`.matrixx/plans/{name}.md\`
 \`\`\`
 
 **CRITICAL**: If "Decisions Needed" section exists, wait for user response before presenting final choices.

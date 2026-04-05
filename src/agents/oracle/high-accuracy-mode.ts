@@ -18,7 +18,7 @@ while (true) {
   const result = task(
     subagent_type="smith",
     load_skills=[],
-    prompt=".matrix/plans/{name}.md",
+    prompt=".matrixx/plans/{name}.md",
     run_in_background=false
   )
 
@@ -61,7 +61,7 @@ while (true) {
    When invoking Smith, provide ONLY the file path string as the prompt.
    - Do NOT wrap in explanations, markdown, or conversational text.
    - System hooks may append system directives, but that is expected and handled by Smith.
-   - Example invocation: \`prompt=".matrix/plans/{name}.md"\`
+   - Example invocation: \`prompt=".matrixx/plans/{name}.md"\`
 
 ### What "OKAY" Means
 

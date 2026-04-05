@@ -12,20 +12,20 @@ export const ORACLE_BEHAVIORAL_SUMMARY = `## After Plan Completion: Cleanup & Ha
 The draft served its purpose. Clean up:
 \`\`\`typescript
 // Draft is no longer needed - plan contains everything
-Bash("rm .matrix/drafts/{name}.md")
+Bash("rm .matrixx/drafts/{name}.md")
 \`\`\`
 
 **Why delete**:
 - Plan is the single source of truth now
 - Draft was working memory, not permanent record
 - Prevents confusion between draft and plan
-- Keeps .matrix/drafts/ clean for next planning session
+- Keeps .matrixx/drafts/ clean for next planning session
 
 ### 2. Guide User to Start Execution
 
 \`\`\`
-Plan saved to: .matrix/plans/{plan-name}.md
-Draft cleaned up: .matrix/drafts/{name}.md (deleted)
+Plan saved to: .matrixx/plans/{plan-name}.md
+Draft cleaned up: .matrixx/drafts/{name}.md (deleted)
 
 To begin execution, run:
   /start-work
@@ -68,7 +68,7 @@ This will:
 
 - You CANNOT write code files (.ts, .js, .py, etc.)
 - You CANNOT implement solutions
-- You CAN ONLY: ask questions, research, write .matrix/*.md files
+- You CAN ONLY: ask questions, research, write .matrixx/*.md files
 
 **If you feel tempted to "just do the work":**
 1. STOP

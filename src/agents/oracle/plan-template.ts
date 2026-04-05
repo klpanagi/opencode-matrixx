@@ -7,7 +7,7 @@
 
 export const ORACLE_PLAN_TEMPLATE = `## Plan Structure
 
-Generate plan to: \`.matrix/plans/{name}.md\`
+Generate plan to: \`.matrixx/plans/{name}.md\`
 
 \`\`\`markdown
 # {Plan Title}
@@ -154,7 +154,7 @@ Scenario: [Descriptive name — what user action/flow is being verified]
 - **Assertions**: Exact values (\`text contains "Welcome back"\`, not "verify it works")
 - **Timing**: Include wait conditions where relevant (\`Wait for .dashboard (timeout: 10s)\`)
 - **Negative Scenarios**: At least ONE failure/error scenario per feature
-- **Evidence Paths**: Specific file paths (\`.matrix/evidence/task-N-scenario-name.png\`)
+- **Evidence Paths**: Specific file paths (\`.matrixx/evidence/task-N-scenario-name.png\`)
 
 **Anti-patterns (NEVER write scenarios like this):**
 - ❌ "Verify the login page works correctly"
@@ -168,7 +168,7 @@ Scenario: [Descriptive name — what user action/flow is being verified]
 - ✅ \`Run ./cli --config test.yaml → Wait for "Loaded" in stdout → Send "q" → Assert exit code 0 → Assert stdout contains "Goodbye"\`
 
 **Evidence Requirements:**
-- Screenshots: \`.matrix/evidence/\` for all UI verifications
+- Screenshots: \`.matrixx/evidence/\` for all UI verifications
 - Terminal output: Captured for CLI/TUI verifications
 - Response bodies: Saved for API verifications
 - All evidence referenced by specific file path in acceptance criteria
@@ -310,9 +310,9 @@ Parallel Speedup: ~40% faster than sequential
       6. Wait for: navigation to /dashboard (timeout: 10s)
       7. Assert: h1 text contains "Welcome back"
       8. Assert: cookie "session_token" exists
-      9. Screenshot: .matrix/evidence/task-1-login-success.png
+      9. Screenshot: .matrixx/evidence/task-1-login-success.png
     Expected Result: Dashboard loads with welcome message
-    Evidence: .matrix/evidence/task-1-login-success.png
+    Evidence: .matrixx/evidence/task-1-login-success.png
 
   Scenario: Login fails with invalid credentials
     Tool: Playwright (playwright skill)
@@ -325,9 +325,9 @@ Parallel Speedup: ~40% faster than sequential
       5. Wait for: .error-message visible (timeout: 5s)
       6. Assert: .error-message text contains "Invalid credentials"
       7. Assert: URL is still /login (no redirect)
-      8. Screenshot: .matrix/evidence/task-1-login-failure.png
+      8. Screenshot: .matrixx/evidence/task-1-login-failure.png
     Expected Result: Error message shown, stays on login page
-    Evidence: .matrix/evidence/task-1-login-failure.png
+    Evidence: .matrixx/evidence/task-1-login-failure.png
   \\\`\\\`\\\`
 
   **Example — API/Backend (curl):**
@@ -386,7 +386,7 @@ Parallel Speedup: ~40% faster than sequential
   \\\`\\\`\\\`
 
   **Evidence to Capture:**
-  - [ ] Screenshots in .matrix/evidence/ for UI scenarios
+  - [ ] Screenshots in .matrixx/evidence/ for UI scenarios
   - [ ] Terminal output for CLI/TUI scenarios
   - [ ] Response bodies for API scenarios
   - [ ] Each evidence file named: task-{N}-{scenario-slug}.{ext}

@@ -121,7 +121,7 @@ Every \`task()\` prompt MUST include ALL 6 sections:
 
 ## 6. CONTEXT
 ### Notepad Paths
-- READ: .matrix/notepads/{plan-name}/*.md
+- READ: .matrixx/notepads/{plan-name}/*.md
 - WRITE: Append to appropriate category
 
 ### Inherited Wisdom
@@ -158,7 +158,7 @@ TASK ANALYSIS:
 ## Step 2: Initialize Notepad
 
 \`\`\`bash
-mkdir -p .matrix/notepads/{plan-name}
+mkdir -p .matrixx/notepads/{plan-name}
 \`\`\`
 
 Structure: learnings.md, decisions.md, issues.md, problems.md
@@ -171,8 +171,8 @@ Structure: learnings.md, decisions.md, issues.md, problems.md
 
 ### 3.2 Pre-Delegation (MANDATORY)
 \`\`\`
-Read(".matrix/notepads/{plan-name}/learnings.md")
-Read(".matrix/notepads/{plan-name}/issues.md")
+Read(".matrixx/notepads/{plan-name}/learnings.md")
+Read(".matrixx/notepads/{plan-name}/issues.md")
 \`\`\`
 Extract wisdom → include in prompt.
 
@@ -218,7 +218,7 @@ After EVERY delegation, complete ALL steps — no shortcuts:
 #### D. Check Mission State Directly
 After verification, READ the plan file — every time:
 \`\`\`
-Read(".matrix/tasks/{plan-name}.yaml")
+Read(".matrixx/tasks/{plan-name}.yaml")
 \`\`\`
 Count remaining \`- [ ]\` tasks. This is your ground truth.
 
@@ -294,8 +294,8 @@ task(category="bullet-time", load_skills=[], run_in_background=false, prompt="Ta
 - Instruct subagent to append findings (never overwrite)
 
 **Paths**:
-- Plan: \`.matrix/plans/{name}.md\` (READ ONLY)
-- Notepad: \`.matrix/notepads/{name}/\` (READ/APPEND)
+- Plan: \`.matrixx/plans/{name}.md\` (READ ONLY)
+- Notepad: \`.matrixx/notepads/{name}/\` (READ/APPEND)
 </notepad_protocol>
 
 <verification_rules>

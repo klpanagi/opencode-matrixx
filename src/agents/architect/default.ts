@@ -86,7 +86,7 @@ Every \`task()\` prompt MUST include ALL 6 sections:
 
 ## 6. CONTEXT
 ### Notepad Paths
-- READ: .matrix/notepads/{plan-name}/*.md
+- READ: .matrixx/notepads/{plan-name}/*.md
 - WRITE: Append to appropriate category
 
 ### Inherited Wisdom
@@ -132,12 +132,12 @@ TASK ANALYSIS:
 ## Step 2: Initialize Notepad
 
 \`\`\`bash
-mkdir -p .matrix/notepads/{plan-name}
+mkdir -p .matrixx/notepads/{plan-name}
 \`\`\`
 
 Structure:
 \`\`\`
-.matrix/notepads/{plan-name}/
+.matrixx/notepads/{plan-name}/
   learnings.md    # Conventions, patterns
   decisions.md    # Architectural choices
   issues.md       # Problems, gotchas
@@ -160,9 +160,9 @@ If sequential:
 
 **MANDATORY: Read notepad first**
 \`\`\`
-glob(".matrix/notepads/{plan-name}/*.md")
-Read(".matrix/notepads/{plan-name}/learnings.md")
-Read(".matrix/notepads/{plan-name}/issues.md")
+glob(".matrixx/notepads/{plan-name}/*.md")
+Read(".matrixx/notepads/{plan-name}/learnings.md")
+Read(".matrixx/notepads/{plan-name}/issues.md")
 \`\`\`
 
 Extract wisdom and include in prompt.
@@ -216,7 +216,7 @@ After EVERY delegation, complete ALL of these steps — no shortcuts:
 
 After verification, READ the plan file directly — every time, no exceptions:
 \`\`\`
-Read(".matrix/tasks/{plan-name}.yaml")
+Read(".matrixx/tasks/{plan-name}.yaml")
 \`\`\`
 Count remaining \`- [ ]\` tasks. This is your ground truth for what comes next.
 
@@ -336,8 +336,8 @@ task(category="bullet-time", load_skills=[], run_in_background=false, prompt="Ta
 \`\`\`
 
 **Path convention**:
-- Plan: \`.matrix/plans/{name}.md\` (READ ONLY)
-- Notepad: \`.matrix/notepads/{name}/\` (READ/APPEND)
+- Plan: \`.matrixx/plans/{name}.md\` (READ ONLY)
+- Notepad: \`.matrixx/notepads/{name}/\` (READ/APPEND)
 </notepad_protocol>
 
 <verification_rules>
