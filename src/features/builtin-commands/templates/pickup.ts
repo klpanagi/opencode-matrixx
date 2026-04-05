@@ -3,13 +3,13 @@ export const PICKUP_TEMPLATE = `# Pickup Command
 ## Purpose
 
 Use /pickup to load handoff context from a previous session.
-This reads the .matrix/handoff.md file created by /handoff and uses it as context for this session.
+This reads the .matrixx/handoff.md file created by /handoff and uses it as context for this session.
 
 ---
 
 # PHASE 1: LOAD HANDOFF FILE
 
-1. Read the file .matrix/handoff.md using the Read tool
+1. Read the file .matrixx/handoff.md using the Read tool
 2. If the file does not exist, inform the user:
    "No handoff context found. Run /handoff in a previous session first to create one."
    Then STOP — do not proceed to Phase 2.
@@ -20,8 +20,8 @@ This reads the .matrix/handoff.md file created by /handoff and uses it as contex
 
 After successfully reading the handoff content:
 
-1. Rename .matrix/handoff.md to .matrix/handoff.consumed.md using Bash:
-   Bash({ command: "mv .matrix/handoff.md .matrix/handoff.consumed.md" })
+1. Rename .matrixx/handoff.md to .matrixx/handoff.consumed.md using Bash:
+   Bash({ command: "mv .matrixx/handoff.md .matrixx/handoff.consumed.md" })
 
 This prevents the same handoff from being picked up again.
 

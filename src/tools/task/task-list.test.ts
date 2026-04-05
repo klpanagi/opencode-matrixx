@@ -11,7 +11,7 @@ describe("createTaskList", () => {
   let taskDir: string
 
   beforeEach(() => {
-    taskDir = join(testProjectDir, ".matrix/tasks")
+    taskDir = join(testProjectDir, ".matrixx/tasks")
     if (existsSync(taskDir)) {
       rmSync(taskDir, { recursive: true })
     }
@@ -28,7 +28,7 @@ describe("createTaskList", () => {
     const config = {
       morpheus: {
         tasks: {
-          storage_path: join(testProjectDir, ".matrix/tasks"),
+          storage_path: join(testProjectDir, ".matrixx/tasks"),
           claude_code_compat: false,
         },
       },
@@ -64,13 +64,13 @@ describe("createTaskList", () => {
       threadID: "test-session",
     }
 
-    writeJsonAtomic(join(testProjectDir, ".matrix/tasks", "T-1.json"), task1)
-    writeJsonAtomic(join(testProjectDir, ".matrix/tasks", "T-2.json"), task2)
+    writeJsonAtomic(join(testProjectDir, ".matrixx/tasks", "T-1.json"), task1)
+    writeJsonAtomic(join(testProjectDir, ".matrixx/tasks", "T-2.json"), task2)
 
     const config = {
       morpheus: {
         tasks: {
-          storage_path: join(testProjectDir, ".matrix/tasks"),
+          storage_path: join(testProjectDir, ".matrixx/tasks"),
           claude_code_compat: false,
         },
       },
@@ -107,13 +107,13 @@ describe("createTaskList", () => {
       threadID: "test-session",
     }
 
-    writeJsonAtomic(join(testProjectDir, ".matrix/tasks", "T-1.json"), task1)
-    writeJsonAtomic(join(testProjectDir, ".matrix/tasks", "T-2.json"), task2)
+    writeJsonAtomic(join(testProjectDir, ".matrixx/tasks", "T-1.json"), task1)
+    writeJsonAtomic(join(testProjectDir, ".matrixx/tasks", "T-2.json"), task2)
 
      const config = {
        morpheus: {
          tasks: {
-           storage_path: join(testProjectDir, ".matrix/tasks"),
+           storage_path: join(testProjectDir, ".matrixx/tasks"),
            claude_code_compat: false,
          },
        },
@@ -142,12 +142,12 @@ describe("createTaskList", () => {
       threadID: "test-session",
     }
 
-    writeJsonAtomic(join(testProjectDir, ".matrix/tasks", "T-1.json"), task)
+    writeJsonAtomic(join(testProjectDir, ".matrixx/tasks", "T-1.json"), task)
 
      const config = {
        morpheus: {
          tasks: {
-           storage_path: join(testProjectDir, ".matrix/tasks"),
+           storage_path: join(testProjectDir, ".matrixx/tasks"),
            claude_code_compat: false,
          },
        },
@@ -204,14 +204,14 @@ describe("createTaskList", () => {
       threadID: "test-session",
     }
 
-    writeJsonAtomic(join(testProjectDir, ".matrix/tasks", "T-blocker-completed.json"), blockerCompleted)
-    writeJsonAtomic(join(testProjectDir, ".matrix/tasks", "T-blocker-pending.json"), blockerPending)
-    writeJsonAtomic(join(testProjectDir, ".matrix/tasks", "T-main.json"), mainTask)
+    writeJsonAtomic(join(testProjectDir, ".matrixx/tasks", "T-blocker-completed.json"), blockerCompleted)
+    writeJsonAtomic(join(testProjectDir, ".matrixx/tasks", "T-blocker-pending.json"), blockerPending)
+    writeJsonAtomic(join(testProjectDir, ".matrixx/tasks", "T-main.json"), mainTask)
 
      const config = {
        morpheus: {
          tasks: {
-           storage_path: join(testProjectDir, ".matrix/tasks"),
+           storage_path: join(testProjectDir, ".matrixx/tasks"),
            claude_code_compat: false,
          },
        },
@@ -248,13 +248,13 @@ describe("createTaskList", () => {
        threadID: "test-session",
      }
 
-     writeJsonAtomic(join(testProjectDir, ".matrix/tasks", "T-1.json"), task1)
-     writeJsonAtomic(join(testProjectDir, ".matrix/tasks", "T-2.json"), task2)
+     writeJsonAtomic(join(testProjectDir, ".matrixx/tasks", "T-1.json"), task1)
+     writeJsonAtomic(join(testProjectDir, ".matrixx/tasks", "T-2.json"), task2)
 
      const config = {
        morpheus: {
          tasks: {
-           storage_path: join(testProjectDir, ".matrix/tasks"),
+           storage_path: join(testProjectDir, ".matrixx/tasks"),
            claude_code_compat: false,
          },
        },
@@ -281,12 +281,12 @@ describe("createTaskList", () => {
        threadID: "test-session",
      }
 
-     writeJsonAtomic(join(testProjectDir, ".matrix/tasks", "T-1.json"), task)
+     writeJsonAtomic(join(testProjectDir, ".matrixx/tasks", "T-1.json"), task)
 
      const config = {
        morpheus: {
          tasks: {
-           storage_path: join(testProjectDir, ".matrix/tasks"),
+           storage_path: join(testProjectDir, ".matrixx/tasks"),
            claude_code_compat: false,
          },
        },
@@ -313,12 +313,12 @@ describe("createTaskList", () => {
        threadID: "test-session",
      }
 
-     writeJsonAtomic(join(testProjectDir, ".matrix/tasks", "T-1.json"), task)
+     writeJsonAtomic(join(testProjectDir, ".matrixx/tasks", "T-1.json"), task)
 
      const config = {
        morpheus: {
          tasks: {
-           storage_path: join(testProjectDir, ".matrix/tasks"),
+           storage_path: join(testProjectDir, ".matrixx/tasks"),
            claude_code_compat: false,
          },
        },

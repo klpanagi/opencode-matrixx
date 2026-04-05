@@ -34,7 +34,7 @@ export function formatFileChanges(stats: GitFileStat[], notepadPath?: string): s
   }
 
   if (notepadPath) {
-    const notepadStat = stats.find((s) => s.path.includes("notepad") || s.path.includes(".matrix"))
+    const notepadStat = stats.find((s) => s.path.includes("notepad") || s.path.includes(".matrixx"))
     if (notepadStat) {
       lines.push("[NOTEPAD UPDATED]")
       lines.push(`  ${notepadStat.path}  (+${notepadStat.added})`)

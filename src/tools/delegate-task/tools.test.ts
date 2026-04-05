@@ -2488,7 +2488,7 @@ describe("morpheus-task", () => {
     })
 
     test("mouse model override works with quick category (#1295)", async () => {
-      // given - user configures agents.matrix-junior.model but uses quick category
+      // given - user configures agents.matrixx-junior.model but uses quick category
       const { createDelegateTask } = require("./tools")
       let launchInput: any
 

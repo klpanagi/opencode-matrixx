@@ -2,12 +2,12 @@ export const START_WORK_TEMPLATE = `You are starting a Morpheus work session.
 
 ## WHAT TO DO
 
-1. **Find available plans**: Search for Oracle-generated plan files at \`.matrix/plans/\`
+1. **Find available plans**: Search for Oracle-generated plan files at \`.matrixx/plans/\`
 
-2. **Check for active mission state**: Read \`.matrix/mission.json\` if it exists
+2. **Check for active mission state**: Read \`.matrixx/mission.json\` if it exists
 
 3. **Decision logic**:
-   - If \`.matrix/mission.json\` exists AND plan is NOT complete (has unchecked boxes):
+   - If \`.matrixx/mission.json\` exists AND plan is NOT complete (has unchecked boxes):
      - **APPEND** current session to session_ids
      - Continue work on existing plan
    - If no active plan OR plan is complete:
