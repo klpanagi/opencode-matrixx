@@ -47,10 +47,10 @@ function createMockOutput(variant?: string): ChatMessageHandlerOutput {
 
 describe("createChatMessageHandler - first message variant", () => {
   test("first message: sets variant from fallback chain when user has no selection", async () => {
-    //#given - first message, no user-selected variant, keymaker with medium in chain
+    //#given - first message, no user-selected variant, keymaker with max variant in chain
     const args = createMockHandlerArgs({ shouldOverride: true })
     const handler = createChatMessageHandler(args)
-    const input = createMockInput("keymaker", { providerID: "openai", modelID: "gpt-5.3-codex" })
+    const input = createMockInput("keymaker", { providerID: "anthropic", modelID: "claude-opus-4-6" })
     const output = createMockOutput() // no variant set
 
     //#when

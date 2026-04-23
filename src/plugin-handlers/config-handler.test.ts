@@ -407,8 +407,8 @@ describe("Oracle category config resolution", () => {
 
     // then
     expect(config).toBeDefined()
-    expect(config?.model).toBe("openai/gpt-5.3-codex")
-    expect(config?.variant).toBe("xhigh")
+    expect(config?.model).toBe("anthropic/claude-opus-4-6")
+    expect(config?.variant).toBe("max")
   })
 
   test("resolves construct category config", () => {
@@ -420,7 +420,7 @@ describe("Oracle category config resolution", () => {
 
     // then
     expect(config).toBeDefined()
-    expect(config?.model).toBe("google/gemini-3-pro")
+    expect(config?.model).toBe("anthropic/claude-sonnet-4-6")
   })
 
   test("user categories override default categories", () => {
@@ -467,8 +467,8 @@ describe("Oracle category config resolution", () => {
 
     // then - falls back to DEFAULT_CATEGORIES
     expect(config).toBeDefined()
-    expect(config?.model).toBe("openai/gpt-5.3-codex")
-    expect(config?.variant).toBe("xhigh")
+    expect(config?.model).toBe("anthropic/claude-opus-4-6")
+    expect(config?.variant).toBe("max")
   })
 
   test("preserves all category properties (temperature, top_p, tools, etc.)", () => {
