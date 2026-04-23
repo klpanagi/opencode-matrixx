@@ -12,9 +12,11 @@ export async function executeBackgroundContinuation(
 ): Promise<string> {
   const { manager } = executorCtx
 
+  const taskID = args.execute?.task_id ?? args.session_id
+
   try {
     const task = await manager.resume({
-      sessionId: args.session_id!,
+      sessionId: taskID!,
       prompt: args.prompt,
       parentSessionID: parentContext.sessionID,
       parentMessageID: parentContext.messageID,
@@ -24,13 +26,15 @@ export async function executeBackgroundContinuation(
     })
 
     const bgContMeta = {
-      title: `Continue: ${task.description}`,
+      title: `Continue: ${args.description}`,
       metadata: {
         prompt: args.prompt,
         agent: task.agent,
+        ...(task.category !== undefined ? { category: task.category } : {}),
         load_skills: args.load_skills,
         description: args.description,
         run_in_background: args.run_in_background,
+        taskId: task.sessionID,
         sessionId: task.sessionID,
         command: args.command,
       },
@@ -57,7 +61,7 @@ ${task.agent ? `subagent: ${task.agent}\n` : ""}</task_metadata>`
     return formatDetailedError(error, {
       operation: "Continue background task",
       args,
-      sessionID: args.session_id,
+      sessionID: taskID,
     })
   }
 }

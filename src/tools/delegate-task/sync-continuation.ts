@@ -20,7 +20,8 @@ export async function executeSyncContinuation(
 ): Promise<string> {
   const { client } = executorCtx
   const toastManager = getTaskToastManager()
-  const taskId = `resume_sync_${args.session_id!.slice(0, 8)}`
+  const continuationID = args.execute?.task_id ?? args.session_id
+  const taskId = `resume_sync_${continuationID!.slice(0, 8)}`
   const startTime = new Date()
 
   if (toastManager) {
@@ -32,23 +33,6 @@ export async function executeSyncContinuation(
     })
   }
 
-  const syncContMeta = {
-    title: `Continue: ${args.description}`,
-    metadata: {
-      prompt: args.prompt,
-      load_skills: args.load_skills,
-      description: args.description,
-      run_in_background: args.run_in_background,
-      sessionId: args.session_id,
-      sync: true,
-      command: args.command,
-    },
-  }
-  await ctx.metadata?.(syncContMeta)
-  if (ctx.callID) {
-    storeToolMetadata(ctx.sessionID, ctx.callID, syncContMeta)
-  }
-
   let resumeAgent: string | undefined
   let resumeModel: { providerID: string; modelID: string } | undefined
   let resumeVariant: string | undefined
@@ -56,7 +40,7 @@ export async function executeSyncContinuation(
 
   try {
     try {
-      const messagesResp = await client.session.messages({ path: { id: args.session_id! } })
+      const messagesResp = await client.session.messages({ path: { id: continuationID! } })
       const messages = normalizeSDKResponse(messagesResp, [] as SessionMessage[])
       anchorMessageCount = messages.length
       for (let i = messages.length - 1; i >= 0; i--) {
@@ -69,13 +53,33 @@ export async function executeSyncContinuation(
         }
       }
     } catch {
-      const resumeMessageDir = getMessageDir(args.session_id!)
+      const resumeMessageDir = getMessageDir(continuationID!)
       const resumeMessage = resumeMessageDir ? findNearestMessageWithFields(resumeMessageDir) : null
       resumeAgent = resumeMessage?.agent
       resumeModel = resumeMessage?.model?.providerID && resumeMessage?.model?.modelID
         ? { providerID: resumeMessage.model.providerID, modelID: resumeMessage.model.modelID }
         : undefined
       resumeVariant = resumeMessage?.model?.variant
+    }
+
+    const syncContMeta = {
+      title: `Continue: ${args.description}`,
+      metadata: {
+        prompt: args.prompt,
+        ...(resumeAgent !== undefined ? { agent: resumeAgent } : {}),
+        ...(args.category !== undefined ? { category: args.category } : {}),
+        load_skills: args.load_skills,
+        description: args.description,
+        run_in_background: args.run_in_background,
+        taskId: continuationID,
+        sessionId: continuationID,
+        sync: true,
+        command: args.command,
+      },
+    }
+    await ctx.metadata?.(syncContMeta)
+    if (ctx.callID) {
+      storeToolMetadata(ctx.sessionID, ctx.callID, syncContMeta)
     }
 
     const allowTask = isPlanFamily(resumeAgent)
@@ -85,10 +89,10 @@ export async function executeSyncContinuation(
       call_omo_agent: true,
       question: false,
     }
-    setSessionTools(args.session_id!, tools)
+    setSessionTools(continuationID!, tools)
 
     await promptWithModelSuggestionRetry(client, {
-      path: { id: args.session_id! },
+      path: { id: continuationID! },
       body: {
         ...(resumeAgent !== undefined ? { agent: resumeAgent } : {}),
         ...(resumeModel !== undefined ? { model: resumeModel } : {}),
@@ -102,12 +106,12 @@ export async function executeSyncContinuation(
        toastManager.removeTask(taskId)
      }
      const errorMessage = promptError instanceof Error ? promptError.message : String(promptError)
-     return `Failed to send continuation prompt: ${errorMessage}\n\nSession ID: ${args.session_id}`
+     return `Failed to send continuation prompt: ${errorMessage}\n\nSession ID: ${continuationID}`
    }
 
     try {
       const pollError = await deps.pollSyncSession(ctx, client, {
-        sessionID: args.session_id!,
+        sessionID: continuationID!,
         agentToUse: resumeAgent ?? "continue",
         toastManager,
         taskId,
@@ -117,7 +121,7 @@ export async function executeSyncContinuation(
         return pollError
       }
 
-      const result = await deps.fetchSyncResult(client, args.session_id!, anchorMessageCount)
+      const result = await deps.fetchSyncResult(client, continuationID!, anchorMessageCount)
       if (!result.ok) {
         return result.error
       }
@@ -131,7 +135,7 @@ export async function executeSyncContinuation(
 ${result.textContent || "(No text output)"}
 
 <task_metadata>
-session_id: ${args.session_id}
+session_id: ${continuationID}
 ${resumeAgent ? `subagent: ${resumeAgent}\n` : ""}</task_metadata>`
    } finally {
      if (toastManager) {
