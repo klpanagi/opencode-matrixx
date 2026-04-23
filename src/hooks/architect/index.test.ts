@@ -33,16 +33,26 @@ mock.module("../../shared/opencode-storage-detection", () => ({
   resetSqliteBackendCache: () => {},
 }))
 
-mock.module("../../shared/session-utils", () => ({
-  isCallerOrchestrator: async (sessionID: string) => {
-    const { existsSync } = await import("node:fs")
-    const { join } = await import("node:path")
-    const { findNearestMessageWithFields } = await import("../../features/hook-message-injector")
-    const { getAgentConfigKey } = await import("../../shared/agent-display-names")
-    const messageDir = join(TEST_MESSAGE_STORAGE, sessionID)
-    if (!existsSync(messageDir)) return false
-    const nearest = findNearestMessageWithFields(messageDir)
-    return getAgentConfigKey(nearest?.agent ?? "") === "architect"
+mock.module("/home/klpanagi/matrixx/src/shared/session-utils.ts", () => ({
+  isCallerOrchestrator: async (sessionID: string | undefined) => {
+    if (!sessionID) return false
+    const { existsSync: fsExists, readdirSync, readFileSync } = require("node:fs")
+    const { join: pathJoin } = require("node:path")
+    const messageDir = pathJoin(TEST_MESSAGE_STORAGE, sessionID)
+    if (!fsExists(messageDir)) return false
+    try {
+      const files = readdirSync(messageDir).filter((f: string) => f.endsWith(".json")).sort().reverse()
+      for (const file of files) {
+        try {
+          const msg = JSON.parse(readFileSync(pathJoin(messageDir, file), "utf-8"))
+          if (msg.agent) {
+            const agent = msg.agent.toLowerCase()
+            return agent === "architect" || agent === "atlas"
+          }
+        } catch { continue }
+      }
+    } catch { return false }
+    return false
   },
 }))
 
@@ -55,12 +65,30 @@ describe("architect hook", () => {
 
   function createMockPluginInput(overrides?: { promptMock?: ReturnType<typeof mock> }) {
     const promptMock = overrides?.promptMock ?? mock(() => Promise.resolve())
+    const messagesMock = mock(({ path }: { path: { id: string } }) => {
+      const sessionID = path.id
+      const messageDir = join(TEST_MESSAGE_STORAGE, sessionID)
+      if (!existsSync(messageDir)) return Promise.resolve({ data: [] })
+      const { readdirSync, readFileSync } = require("node:fs")
+      try {
+        const files = readdirSync(messageDir).filter((f: string) => f.endsWith(".json"))
+        const messages = files.map((f: string) => {
+          try { return JSON.parse(readFileSync(join(messageDir, f), "utf-8")) } catch { return null }
+        }).filter(Boolean)
+        return Promise.resolve({ data: messages.map((m: Record<string, unknown>) => ({
+          info: { ...m, agent: m.agent === "architect" ? "atlas" : m.agent }
+        })) })
+      } catch {
+        return Promise.resolve({ data: [] })
+      }
+    })
     return {
       directory: TEST_DIR,
       client: {
         session: {
           prompt: promptMock,
           promptAsync: promptMock,
+          messages: messagesMock,
         },
       },
       _promptMock: promptMock,
