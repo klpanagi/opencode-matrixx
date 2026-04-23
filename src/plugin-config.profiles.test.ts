@@ -14,10 +14,10 @@ describe("profile expansion in mergeConfigs", () => {
 
     //#then
     expect(result.agents?.morpheus?.model).toBe(
-      "google-vertex-anthropic/claude-opus-4-6@default"
+      "anthropic/claude-opus-4-6"
     )
     expect(result.agents?.oracle?.model).toBe(
-      "google-vertex-anthropic/claude-sonnet-4-6@default"
+      "anthropic/claude-sonnet-4-6"
     )
   })
 
@@ -26,7 +26,7 @@ describe("profile expansion in mergeConfigs", () => {
     const profileDefaults = expandProfile("budget") as MatrixxConfig
     const userConfig: MatrixxConfig = {
       agents: {
-        morpheus: { model: "google-vertex-anthropic/claude-opus-4-6@default" },
+        morpheus: { model: "anthropic/claude-opus-4-6" },
       },
     }
 
@@ -35,9 +35,9 @@ describe("profile expansion in mergeConfigs", () => {
 
     //#then
     expect(result.agents?.morpheus?.model).toBe(
-      "google-vertex-anthropic/claude-opus-4-6@default"
+      "anthropic/claude-opus-4-6"
     )
-    expect(result.agents?.oracle?.model).toBe("google-vertex/gemini-3.1-pro-preview")
+    expect(result.agents?.oracle?.model).toBe("anthropic/claude-haiku-4-5")
   })
 
   test("explicit category override wins over profile default", () => {
@@ -45,7 +45,7 @@ describe("profile expansion in mergeConfigs", () => {
     const profileDefaults = expandProfile("budget") as MatrixxConfig
     const userConfig: MatrixxConfig = {
       categories: {
-        source: { model: "google-vertex-anthropic/claude-opus-4-6@default" },
+        source: { model: "anthropic/claude-opus-4-6" },
       },
     }
 
@@ -54,9 +54,9 @@ describe("profile expansion in mergeConfigs", () => {
 
     //#then
     expect(result.categories?.["source"]?.model).toBe(
-      "google-vertex-anthropic/claude-opus-4-6@default"
+      "anthropic/claude-opus-4-6"
     )
-    expect(result.categories?.["bullet-time"]?.model).toBe("google-vertex/gemini-2.5-flash")
+    expect(result.categories?.["bullet-time"]?.model).toBe("anthropic/claude-haiku-4-5")
   })
 
   test("no profile leaves config unchanged", () => {
