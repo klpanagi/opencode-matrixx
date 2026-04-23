@@ -1,23 +1,34 @@
-import { describe, it, expect, mock, beforeEach } from "bun:test"
+import { afterAll, describe, it, expect, mock, beforeEach } from "bun:test"
 import type { ClaudeHooksConfig } from "./types"
 import type { StopContext } from "./stop"
+
+// eslint-disable-next-line @typescript-eslint/no-require-imports
+const realCommandExecutor = require("../../shared/command-executor")
+// eslint-disable-next-line @typescript-eslint/no-require-imports
+const realLogger = require("../../shared/logger")
 
 const mockExecuteHookCommand = mock(() =>
   Promise.resolve({ exitCode: 0, stdout: "", stderr: "" })
 )
 
 mock.module("../../shared/command-executor", () => ({
+  ...realCommandExecutor,
   executeHookCommand: mockExecuteHookCommand,
-  executeCommand: mock(),
-  resolveCommandsInText: mock(),
+  executeCommand: mock(() => Promise.resolve({ exitCode: 0, stdout: "", stderr: "" })),
 }))
 
 mock.module("../../shared/logger", () => ({
+  ...realLogger,
   log: () => {},
   getLogFilePath: () => "/tmp/test.log",
 }))
 
 const { executeStopHooks } = await import("./stop")
+
+afterAll(() => {
+  mock.module("../../shared/command-executor", () => realCommandExecutor)
+  mock.module("../../shared/logger", () => realLogger)
+})
 
 function createStopContext(overrides?: Partial<StopContext>): StopContext {
   return {

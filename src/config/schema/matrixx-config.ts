@@ -21,6 +21,7 @@ import { MorpheusConfigSchema } from "./morpheus"
 import { MorpheusAgentConfigSchema } from "./morpheus-agent"
 import { TmuxConfigSchema } from "./tmux"
 import { WebsearchConfigSchema } from "./websearch"
+import { RuntimeFallbackConfigSchema } from "./runtime-fallback"
 
 export const MatrixxConfigSchema = z.object({
   $schema: z.string().optional(),
@@ -57,6 +58,7 @@ export const MatrixxConfigSchema = z.object({
   morpheus: MorpheusConfigSchema.optional(),
   /** Security scanning, secret detection, and sensitive file guards */
   security: SecurityConfigSchema.optional(),
+  runtime_fallback: RuntimeFallbackConfigSchema.optional(),
   /** Migration history to prevent re-applying migrations (e.g., model version upgrades) */
   _migrations: z.array(z.string()).optional(),
 })

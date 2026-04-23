@@ -16,6 +16,9 @@ import {
   createJsonErrorRecoveryHook,
   createBashFileReadGuardHook,
   createTodoDescriptionOverrideHook,
+  createReadImageResizerHook,
+  createWebFetchRedirectGuardHook,
+  createHashlineEditDiffEnhancerHook,
 } from "../../hooks"
 import {
   getOpenCodeVersion,
@@ -40,6 +43,9 @@ export type ToolGuardHooks = {
   jsonErrorRecovery: ReturnType<typeof createJsonErrorRecoveryHook> | null
   bashFileReadGuard: ReturnType<typeof createBashFileReadGuardHook> | null
   todoDescriptionOverride: ReturnType<typeof createTodoDescriptionOverrideHook> | null
+  readImageResizer: ReturnType<typeof createReadImageResizerHook> | null
+  webfetchRedirectGuard: ReturnType<typeof createWebFetchRedirectGuardHook> | null
+  hashlineEditDiffEnhancer: ReturnType<typeof createHashlineEditDiffEnhancerHook> | null
 }
 
 export function createToolGuardHooks(args: {
@@ -121,6 +127,19 @@ export function createToolGuardHooks(args: {
     ? safeHook("todo-description-override", () => createTodoDescriptionOverrideHook())
     : null
 
+  const readImageResizer = isHookEnabled("read-image-resizer")
+    ? safeHook("read-image-resizer", () => createReadImageResizerHook(ctx))
+    : null
+
+  const webfetchRedirectGuard = isHookEnabled("webfetch-redirect-guard")
+    ? safeHook("webfetch-redirect-guard", () => createWebFetchRedirectGuardHook(ctx))
+    : null
+
+  const hashlineEditDiffEnhancer = isHookEnabled("hashline-edit-diff-enhancer")
+    ? safeHook("hashline-edit-diff-enhancer", () =>
+        createHashlineEditDiffEnhancerHook({ hashline_edit: { enabled: pluginConfig.experimental?.hashline_edit ?? false } }))
+    : null
+
   return {
     commentChecker,
     toolOutputTruncator,
@@ -136,5 +155,8 @@ export function createToolGuardHooks(args: {
     jsonErrorRecovery,
     bashFileReadGuard,
     todoDescriptionOverride,
+    readImageResizer,
+    webfetchRedirectGuard,
+    hashlineEditDiffEnhancer,
   }
 }

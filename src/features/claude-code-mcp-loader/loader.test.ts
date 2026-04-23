@@ -3,6 +3,11 @@ import { mkdirSync, writeFileSync, rmSync } from "fs"
 import { join } from "path"
 import { tmpdir } from "os"
 
+// eslint-disable-next-line @typescript-eslint/no-require-imports
+const realShared = require("../../shared")
+// eslint-disable-next-line @typescript-eslint/no-require-imports
+const realOs = require("os")
+
 const TEST_DIR = join(tmpdir(), "mcp-loader-test-" + Date.now())
 const TEST_HOME = join(TEST_DIR, "home")
 
@@ -11,16 +16,19 @@ describe("getSystemMcpServerNames", () => {
     mkdirSync(TEST_DIR, { recursive: true })
     mkdirSync(TEST_HOME, { recursive: true })
     mock.module("os", () => ({
+      ...realOs,
       homedir: () => TEST_HOME,
       tmpdir,
     }))
     mock.module("../../shared", () => ({
+      ...realShared,
       getClaudeConfigDir: () => join(TEST_HOME, ".claude"),
     }))
   })
 
   afterEach(() => {
-    mock.restore()
+    mock.module("os", () => realOs)
+    mock.module("../../shared", () => realShared)
     rmSync(TEST_DIR, { recursive: true, force: true })
   })
 
@@ -237,10 +245,12 @@ describe("loadMcpConfigs", () => {
     mkdirSync(TEST_DIR, { recursive: true })
     mkdirSync(TEST_HOME, { recursive: true })
     mock.module("os", () => ({
+      ...realOs,
       homedir: () => TEST_HOME,
       tmpdir,
     }))
     mock.module("../../shared", () => ({
+      ...realShared,
       getClaudeConfigDir: () => join(TEST_HOME, ".claude"),
     }))
     mock.module("../../shared/logger", () => ({
@@ -249,7 +259,8 @@ describe("loadMcpConfigs", () => {
   })
 
   afterEach(() => {
-    mock.restore()
+    mock.module("os", () => realOs)
+    mock.module("../../shared", () => realShared)
     rmSync(TEST_DIR, { recursive: true, force: true })
   })
 

@@ -51,6 +51,11 @@ export const HookNameSchema = z.enum([
   "json-error-recovery",
   "bash-file-read-guard",
   "todo-description-override",
+  "runtime-fallback",
+  "read-image-resizer",
+  "webfetch-redirect-guard",
+  "hashline-edit-diff-enhancer",
+  "tool-pair-validator",
 ])
 
 export type HookName = z.infer<typeof HookNameSchema>

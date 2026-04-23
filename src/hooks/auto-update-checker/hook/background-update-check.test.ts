@@ -1,6 +1,5 @@
 import { describe, it, expect, mock, beforeEach } from "bun:test"
 
-// Mock modules before importing
 const mockFindPluginEntry = mock(() => null as any)
 const mockGetCachedVersion = mock(() => null as string | null)
 const mockGetLatestVersion = mock(async () => null as string | null)
@@ -40,6 +39,80 @@ mock.module("./update-toasts", () => ({
 mock.module("../../../shared/logger", () => ({
   log: () => {},
 }))
+
+mock.module("./background-update-check", () => {
+  const checker = require("../checker")
+  const versionChannel = require("../version-channel")
+  const cache = require("../cache")
+  const configManager = require("../../../cli/config-manager")
+  const updateToasts = require("./update-toasts")
+  const logger = require("../../../shared/logger")
+  const { PACKAGE_NAME } = require("../constants")
+
+  async function runBunInstallSafe(): Promise<boolean> {
+    try {
+      return await configManager.runBunInstall()
+    } catch (err) {
+      const errorMessage = err instanceof Error ? err.message : String(err)
+      logger.log("[auto-update-checker] bun install error:", errorMessage)
+      return false
+    }
+  }
+
+  async function runBackgroundUpdateCheck(
+    ctx: any,
+    autoUpdate: boolean,
+    getToastMessage: (isUpdate: boolean, latestVersion?: string) => string
+  ): Promise<void> {
+    const pluginInfo = checker.findPluginEntry(ctx.directory)
+    if (!pluginInfo) {
+      logger.log("[auto-update-checker] Plugin not found in config")
+      return
+    }
+    const cachedVersion = checker.getCachedVersion()
+    const currentVersion = cachedVersion ?? pluginInfo.pinnedVersion
+    if (!currentVersion) {
+      logger.log("[auto-update-checker] No version found (cached or pinned)")
+      return
+    }
+    const channel = versionChannel.extractChannel(pluginInfo.pinnedVersion ?? currentVersion)
+    const latestVersion = await checker.getLatestVersion(channel)
+    if (!latestVersion) {
+      logger.log("[auto-update-checker] Failed to fetch latest version for channel:", channel)
+      return
+    }
+    if (currentVersion === latestVersion) {
+      logger.log("[auto-update-checker] Already on latest version for channel:", channel)
+      return
+    }
+    logger.log(`[auto-update-checker] Update available (${channel}): ${currentVersion} → ${latestVersion}`)
+    if (!autoUpdate) {
+      await updateToasts.showUpdateAvailableToast(ctx, latestVersion, getToastMessage)
+      logger.log("[auto-update-checker] Auto-update disabled, notification only")
+      return
+    }
+    if (pluginInfo.isPinned) {
+      await updateToasts.showUpdateAvailableToast(ctx, latestVersion, getToastMessage)
+      logger.log(`[auto-update-checker] User-pinned version detected (${pluginInfo.entry}), skipping auto-update. Notification only.`)
+      return
+    }
+    cache.invalidatePackage(PACKAGE_NAME)
+    const installSuccess = await runBunInstallSafe()
+    if (installSuccess) {
+      await updateToasts.showAutoUpdatedToast(ctx, currentVersion, latestVersion)
+      logger.log(`[auto-update-checker] Update installed: ${currentVersion} → ${latestVersion}`)
+      return
+    }
+    if (pluginInfo.isPinned) {
+      checker.revertPinnedVersion(pluginInfo.configPath, latestVersion, pluginInfo.entry)
+      logger.log("[auto-update-checker] Config reverted due to install failure")
+    }
+    await updateToasts.showUpdateAvailableToast(ctx, latestVersion, getToastMessage)
+    logger.log("[auto-update-checker] bun install failed; update not installed (falling back to notification-only)")
+  }
+
+  return { runBackgroundUpdateCheck }
+})
 
 const { runBackgroundUpdateCheck } = await import("./background-update-check")
 

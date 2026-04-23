@@ -1,91 +1,56 @@
-import { log } from "../shared/logger"
+import type { MatrixxConfig } from "../config"
+import type { ContextLimitModelCacheState } from "../shared/context-limit-resolver"
+import { runPreemptiveCompactionIfNeeded } from "./preemptive-compaction-trigger"
+import {
+  createPostCompactionDegradationMonitor,
+  type AssistantCompactionMessageInfo,
+} from "./preemptive-compaction-degradation-monitor"
+import type {
+  CachedCompactionState,
+  PreemptiveCompactionContext,
+  TokenInfo,
+} from "./preemptive-compaction-types"
 
-const DEFAULT_ACTUAL_LIMIT = 200_000
+type PluginInput = PreemptiveCompactionContext
 
-const ANTHROPIC_ACTUAL_LIMIT =
-  process.env.ANTHROPIC_1M_CONTEXT === "true" ||
-  process.env.VERTEX_ANTHROPIC_1M_CONTEXT === "true"
-    ? 1_000_000
-    : DEFAULT_ACTUAL_LIMIT
-
-const PREEMPTIVE_COMPACTION_THRESHOLD = 0.78
-
-interface TokenInfo {
-  input: number
-  output: number
-  reasoning: number
-  cache: { read: number; write: number }
-}
-
-interface CachedCompactionState {
-  providerID: string
-  modelID: string
-  tokens: TokenInfo
-}
-
-function isAnthropicProvider(providerID: string): boolean {
-  return providerID === "anthropic" || providerID === "google-vertex-anthropic"
-}
-
-type PluginInput = {
-  client: {
-    session: {
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      messages: (...args: any[]) => any
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      summarize: (...args: any[]) => any
-    }
-    tui: {
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      showToast: (...args: any[]) => any
-    }
-  }
-  directory: string
-}
-
-export function createPreemptiveCompactionHook(ctx: PluginInput) {
+export function createPreemptiveCompactionHook(
+  ctx: PluginInput,
+  pluginConfig: MatrixxConfig = {},
+  modelCacheState?: ContextLimitModelCacheState,
+) {
   const compactionInProgress = new Set<string>()
   const compactedSessions = new Set<string>()
   const tokenCache = new Map<string, CachedCompactionState>()
+  const lastCompactionTime = new Map<string, number>()
+
+  const degradationMonitor = createPostCompactionDegradationMonitor({
+    client: ctx.client,
+    directory: ctx.directory,
+    pluginConfig,
+    tokenCache,
+    compactionInProgress,
+  })
 
   const toolExecuteAfter = async (
     input: { tool: string; sessionID: string; callID: string },
-    _output: { title: string; output: string; metadata: unknown }
+    _output: { title: string; output: string; metadata: unknown },
   ) => {
     const { sessionID } = input
-    if (compactedSessions.has(sessionID) || compactionInProgress.has(sessionID)) return
+    const wasCompacted = compactedSessions.has(sessionID)
 
-    const cached = tokenCache.get(sessionID)
-    if (!cached) return
+    await runPreemptiveCompactionIfNeeded({
+      ctx,
+      pluginConfig,
+      modelCacheState,
+      sessionID,
+      tokenCache,
+      compactionInProgress,
+      compactedSessions,
+      lastCompactionTime,
+    })
 
-    const actualLimit =
-      isAnthropicProvider(cached.providerID)
-        ? ANTHROPIC_ACTUAL_LIMIT
-        : DEFAULT_ACTUAL_LIMIT
-
-    const lastTokens = cached.tokens
-    const totalInputTokens = (lastTokens?.input ?? 0) + (lastTokens?.cache?.read ?? 0)
-    const usageRatio = totalInputTokens / actualLimit
-
-    if (usageRatio < PREEMPTIVE_COMPACTION_THRESHOLD) return
-
-    const modelID = cached.modelID
-    if (!modelID) return
-
-    compactionInProgress.add(sessionID)
-
-    try {
-      await ctx.client.session.summarize({
-        path: { id: sessionID },
-        body: { providerID: cached.providerID, modelID, auto: true } as never,
-        query: { directory: ctx.directory },
-      })
-
-      compactedSessions.add(sessionID)
-    } catch (error) {
-      log("[preemptive-compaction] Compaction failed", { sessionID, error: String(error) })
-    } finally {
-      compactionInProgress.delete(sessionID)
+    if (!wasCompacted && compactedSessions.has(sessionID)) {
+      degradationMonitor.onSessionCompacted(sessionID)
     }
   }
 
@@ -95,9 +60,12 @@ export function createPreemptiveCompactionHook(ctx: PluginInput) {
     if (event.type === "session.deleted") {
       const sessionInfo = props?.info as { id?: string } | undefined
       if (sessionInfo?.id) {
-        compactionInProgress.delete(sessionInfo.id)
-        compactedSessions.delete(sessionInfo.id)
-        tokenCache.delete(sessionInfo.id)
+        const id = sessionInfo.id
+        compactionInProgress.delete(id)
+        compactedSessions.delete(id)
+        tokenCache.delete(id)
+        lastCompactionTime.delete(id)
+        degradationMonitor.clear(id)
       }
       return
     }
@@ -110,6 +78,7 @@ export function createPreemptiveCompactionHook(ctx: PluginInput) {
         modelID?: string
         finish?: boolean
         tokens?: TokenInfo
+        id?: string
       } | undefined
 
       if (!info || info.role !== "assistant" || !info.finish) return
@@ -120,6 +89,12 @@ export function createPreemptiveCompactionHook(ctx: PluginInput) {
         modelID: info.modelID ?? "",
         tokens: info.tokens,
       })
+
+      const messageInfo: AssistantCompactionMessageInfo = {
+        sessionID: info.sessionID,
+        id: info.id,
+      }
+      await degradationMonitor.onAssistantMessageUpdated(messageInfo)
     }
   }
 

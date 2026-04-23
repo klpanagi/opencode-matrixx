@@ -1,4 +1,4 @@
-import { describe, it, expect, beforeEach, afterEach, mock, spyOn } from "bun:test"
+import { describe, it, expect, beforeEach, afterEach, mock, spyOn, afterAll } from "bun:test"
 import { SkillMcpManager } from "./manager"
 import type { SkillMcpClientInfo, SkillMcpServerContext } from "./types"
 import type { ClaudeCodeMcpServer } from "../claude-code-mcp-loader/types"
@@ -25,6 +25,8 @@ mock.module("@modelcontextprotocol/sdk/client/streamableHttp.js", () => ({
 const mockTokens = mock(() => null as { accessToken: string; refreshToken?: string; expiresAt?: number } | null)
 const mockLogin = mock(() => Promise.resolve({ accessToken: "new-token" }))
 
+const realMcpOAuthProvider = require("../mcp-oauth/provider")
+
 mock.module("../mcp-oauth/provider", () => ({
   McpOAuthProvider: class MockMcpOAuthProvider {
     constructor(public options: { serverUrl: string; clientId?: string; scopes?: string[] }) {}
@@ -36,6 +38,10 @@ mock.module("../mcp-oauth/provider", () => ({
     }
   },
 }))
+
+afterAll(() => {
+  mock.module("../mcp-oauth/provider", () => realMcpOAuthProvider)
+})
 
 
 

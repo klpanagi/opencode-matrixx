@@ -1,12 +1,21 @@
 import { afterAll, beforeEach, describe, expect, it, mock } from "bun:test"
+import * as realFs from "node:fs"
 
-const readFileSyncMock = mock((_: string, __: string) => "# AGENTS")
+// Capture real readFileSync via require before mock.module replaces it
+// eslint-disable-next-line @typescript-eslint/no-require-imports
+const realReadFileSync: typeof realFs.readFileSync = require("node:fs").readFileSync
+
+const readFileSyncMock = mock((path: string, encoding: string) => {
+  if (typeof path === "string" && path.endsWith("AGENTS.md")) return "# AGENTS"
+  return realReadFileSync(path, encoding as BufferEncoding)
+})
 const findAgentsMdUpMock = mock((_: { startDir: string; rootDir: string }) => [] as string[])
 const resolveFilePathMock = mock((_: string, path: string) => path)
 const loadInjectedPathsMock = mock((_: string) => new Set<string>())
 const saveInjectedPathsMock = mock((_: string, __: Set<string>) => {})
 
 mock.module("node:fs", () => ({
+  ...realFs,
   readFileSync: readFileSyncMock,
 }))
 
@@ -23,7 +32,7 @@ mock.module("./storage", () => ({
 const { processFilePathForAgentsInjection } = await import("./injector")
 
 afterAll(() => {
-  mock.restore()
+  mock.module("node:fs", () => realFs)
 })
 
 describe("processFilePathForAgentsInjection", () => {

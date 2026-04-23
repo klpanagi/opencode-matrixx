@@ -1,6 +1,6 @@
 /// <reference types="bun-types" />
 
-import { describe, test, expect, spyOn, beforeEach, afterEach } from "bun:test"
+import { describe, test, expect, spyOn, beforeEach, afterEach, afterAll, mock } from "bun:test"
 import { resolveCategoryConfig, createConfigHandler } from "./config-handler"
 import type { CategoryConfig } from "../config/schema"
 import type { MatrixxConfig } from "../config"
@@ -19,6 +19,24 @@ import * as shared from "../shared"
 import * as configDir from "../shared/opencode-config-dir"
 import * as permissionCompat from "../shared/permission-compat"
 import * as modelResolver from "../shared/model-resolver"
+
+const realResolveModelWithFallback = require("../shared/model-resolver").resolveModelWithFallback
+const realResolveModelPipeline = require("../shared/model-resolution-pipeline").resolveModelPipeline
+
+afterAll(() => {
+  mock.module("../shared/model-resolver", () => ({
+    ...require("../shared/model-resolver"),
+    resolveModelWithFallback: realResolveModelWithFallback,
+  }))
+  mock.module("../shared/model-resolution-pipeline", () => ({
+    ...require("../shared/model-resolution-pipeline"),
+    resolveModelPipeline: realResolveModelPipeline,
+  }))
+  mock.module("../shared", () => ({
+    ...require("../shared"),
+    resolveModelPipeline: realResolveModelPipeline,
+  }))
+})
 
 beforeEach(() => {
   spyOn(agents, "createBuiltinAgents" as any).mockResolvedValue({

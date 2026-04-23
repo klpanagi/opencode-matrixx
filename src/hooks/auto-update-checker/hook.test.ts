@@ -1,4 +1,4 @@
-import { describe, it, expect, mock } from "bun:test"
+import { describe, it, expect, mock, afterAll } from "bun:test"
 
 const mockShowConfigErrorsIfAny = mock(async () => {})
 const mockShowModelCacheWarningIfNeeded = mock(async () => {})
@@ -8,6 +8,9 @@ const mockShowVersionToast = mock(async () => {})
 const mockRunBackgroundUpdateCheck = mock(async () => {})
 const mockGetCachedVersion = mock(() => "3.6.0")
 const mockGetLocalDevVersion = mock(() => "3.6.0")
+
+const realBackgroundUpdateCheckModule = require("./hook/background-update-check")
+const realCheckerModule = require("./checker")
 
 mock.module("./hook/config-errors-toast", () => ({
   showConfigErrorsIfAny: mockShowConfigErrorsIfAny,
@@ -42,6 +45,11 @@ mock.module("../../shared/logger", () => ({
 
 const { createAutoUpdateCheckerHook } = await import("./hook")
 
+afterAll(() => {
+  mock.module("./hook/background-update-check", () => realBackgroundUpdateCheckModule)
+  mock.module("./checker", () => realCheckerModule)
+})
+
 describe("createAutoUpdateCheckerHook", () => {
   it("skips startup toasts and checks in CLI run mode", async () => {
     //#given - CLI run mode enabled
@@ -58,7 +66,7 @@ describe("createAutoUpdateCheckerHook", () => {
         directory: "/test",
         client: {} as never,
       } as never,
-      { showStartupToast: true, isSisyphusEnabled: true, autoUpdate: true }
+      { showStartupToast: true, isMorpheusEnabled: true, autoUpdate: true }
     )
 
     //#when - session.created event arrives

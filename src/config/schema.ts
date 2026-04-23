@@ -21,5 +21,6 @@ export * from "./schema/morpheus-agent"
 export * from "./schema/tmux"
 export * from "./schema/security"
 export * from "./schema/websearch"
+export * from "./schema/runtime-fallback"
 
 export { AnyMcpNameSchema, type AnyMcpName, McpNameSchema, type McpName } from "../mcp/types"

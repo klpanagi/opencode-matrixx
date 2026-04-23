@@ -15,6 +15,7 @@ export {
   SecurityConfigSchema,
   TmuxConfigSchema,
   TmuxLayoutSchema,
+  RuntimeFallbackConfigSchema,
 } from "./schema"
 
 export type {
@@ -37,4 +38,5 @@ export type {
   TmuxLayout,
   MorpheusConfig,
   MorpheusTasksConfig,
+  RuntimeFallbackConfig,
 } from "./schema"

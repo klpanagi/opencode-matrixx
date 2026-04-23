@@ -235,6 +235,8 @@ describe("preemptive-compaction", () => {
     //#then
     expect(logMock).toHaveBeenCalledWith("[preemptive-compaction] Compaction failed", {
       sessionID,
+      providerID: "anthropic",
+      modelID: "claude-sonnet-4-5",
       error: String(summarizeError),
     })
   })

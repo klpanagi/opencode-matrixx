@@ -6,7 +6,7 @@ import { tmpdir } from "node:os"
 import { randomUUID } from "node:crypto"
 import { SYSTEM_DIRECTIVE_PREFIX } from "../../shared/system-directive"
 import { clearSessionAgent, setSessionAgent } from "../../features/claude-code-session-state"
-// Force stable (JSON) mode for tests that rely on message file storage
+
 mock.module("../../shared/opencode-storage-detection", () => ({
   isSqliteBackend: () => false,
   resetSqliteBackendCache: () => {},
@@ -357,7 +357,7 @@ describe("oracle-md-only", () => {
       await hook["tool.execute.before"](input, output)
 
       // then
-      expect(output.args.prompt).toContain(SYSTEM_DIRECTIVE_PREFIX)
+      expect(output.args.prompt).toContain("READ-ONLY")
       expect(output.args.prompt).toContain("DO NOT modify any files")
     })
 
@@ -377,7 +377,7 @@ describe("oracle-md-only", () => {
       await hook["tool.execute.before"](input, output)
 
       // then
-      expect(output.args.prompt).toContain(SYSTEM_DIRECTIVE_PREFIX)
+      expect(output.args.prompt).toContain("READ-ONLY")
     })
 
     test("should inject read-only warning when Oracle calls call_omo_agent", async () => {
@@ -396,7 +396,7 @@ describe("oracle-md-only", () => {
       await hook["tool.execute.before"](input, output)
 
       // then
-      expect(output.args.prompt).toContain(SYSTEM_DIRECTIVE_PREFIX)
+      expect(output.args.prompt).toContain("READ-ONLY")
     })
 
     test("should not double-inject warning if already present", async () => {
