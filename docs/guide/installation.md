@@ -13,8 +13,8 @@ https://raw.githubusercontent.com/klpanagi/matrixx/refs/heads/master/docs/guide/
 Run the interactive installer:
 
 ```bash
-bunx matrixx install # recommended
-npx matrixx install # alternative
+bunx opencode-matrixx install # recommended
+npx opencode-matrixx install # alternative
 ```
 
 > **Note**: The CLI ships with standalone binaries for all major platforms. No runtime (Bun/Node.js) is required for CLI execution after installation.
@@ -89,17 +89,17 @@ Spawn a subagent to handle installation and report back - to save context.
 Based on user's answers, run the CLI installer with appropriate flags:
 
 ```bash
-bunx matrixx install --no-tui --claude=<yes|no|max20> --gemini=<yes|no> --copilot=<yes|no> [--openai=<yes|no>] [--opencode-zen=<yes|no>] [--zai-coding-plan=<yes|no>]
+bunx opencode-matrixx install --no-tui --claude=<yes|no|max20> --gemini=<yes|no> --copilot=<yes|no> [--openai=<yes|no>] [--opencode-zen=<yes|no>] [--zai-coding-plan=<yes|no>]
 ```
 
 **Examples:**
-- User has all native subscriptions: `bunx matrixx install --no-tui --claude=max20 --openai=yes --gemini=yes --copilot=no`
-- User has only Claude: `bunx matrixx install --no-tui --claude=yes --gemini=no --copilot=no`
-- User has Claude + OpenAI: `bunx matrixx install --no-tui --claude=yes --openai=yes --gemini=no --copilot=no`
-- User has only GitHub Copilot: `bunx matrixx install --no-tui --claude=no --gemini=no --copilot=yes`
-- User has Z.ai for Librarian: `bunx matrixx install --no-tui --claude=yes --gemini=no --copilot=no --zai-coding-plan=yes`
-- User has only OpenCode Zen: `bunx matrixx install --no-tui --claude=no --gemini=no --copilot=no --opencode-zen=yes`
-- User has no subscriptions: `bunx matrixx install --no-tui --claude=no --gemini=no --copilot=no`
+- User has all native subscriptions: `bunx opencode-matrixx install --no-tui --claude=max20 --openai=yes --gemini=yes --copilot=no`
+- User has only Claude: `bunx opencode-matrixx install --no-tui --claude=yes --gemini=no --copilot=no`
+- User has Claude + OpenAI: `bunx opencode-matrixx install --no-tui --claude=yes --openai=yes --gemini=no --copilot=no`
+- User has only GitHub Copilot: `bunx opencode-matrixx install --no-tui --claude=no --gemini=no --copilot=yes`
+- User has Z.ai for Librarian: `bunx opencode-matrixx install --no-tui --claude=yes --gemini=no --copilot=no --zai-coding-plan=yes`
+- User has only OpenCode Zen: `bunx opencode-matrixx install --no-tui --claude=no --gemini=no --copilot=no --opencode-zen=yes`
+- User has no subscriptions: `bunx opencode-matrixx install --no-tui --claude=no --gemini=no --copilot=no`
 
 The CLI will:
 - Register the plugin in `opencode.json`
@@ -110,7 +110,7 @@ The CLI will:
 
 ```bash
 opencode --version  # Should be 1.0.150 or higher
-cat ~/.config/opencode/opencode.json  # Should contain "matrixx" in plugin array
+cat ~/.config/opencode/opencode.json  # Should contain "opencode-matrixx" in plugin array
 ```
 
 ### Step 4: Configure Authentication
@@ -136,7 +136,7 @@ First, add the opencode-antigravity-auth plugin:
 ```json
 {
   "plugin": [
-    "matrixx",
+    "opencode-matrixx",
     "opencode-antigravity-auth@latest"
   ]
 }
@@ -234,7 +234,7 @@ When OpenCode Zen is the best available provider (no native or Copilot), these m
 Run the installer and select "Yes" for GitHub Copilot:
 
 ```bash
-bunx matrixx install
+bunx opencode-matrixx install
 # Select your subscriptions (Claude, ChatGPT, Gemini)
 # When prompted: "Do you have a GitHub Copilot subscription?" → Select "Yes"
 ```
@@ -242,7 +242,7 @@ bunx matrixx install
 Or use non-interactive mode:
 
 ```bash
-bunx matrixx install --no-tui --claude=no --openai=no --gemini=no --copilot=yes
+bunx opencode-matrixx install --no-tui --claude=no --openai=no --gemini=no --copilot=yes
 ```
 
 Then authenticate with GitHub:

@@ -4,7 +4,7 @@ import { join } from "node:path"
 
 import { getLatestVersion } from "../../../hooks/auto-update-checker/checker"
 import { extractChannel } from "../../../hooks/auto-update-checker"
-import { PACKAGE_NAME } from "../constants"
+import { NPM_PACKAGE_NAME } from "../constants"
 import { getOpenCodeCacheDir, parseJsonc } from "../../../shared"
 
 interface PackageJsonShape {
@@ -56,12 +56,12 @@ function normalizeVersion(value: string | undefined): string | null {
 export function getLoadedPluginVersion(): LoadedVersionInfo {
   const cacheDir = resolveOpenCodeCacheDir()
   const cachePackagePath = join(cacheDir, "package.json")
-  const installedPackagePath = join(cacheDir, "node_modules", PACKAGE_NAME, "package.json")
+  const installedPackagePath = join(cacheDir, "node_modules", NPM_PACKAGE_NAME, "package.json")
 
   const cachePackage = readPackageJson(cachePackagePath)
   const installedPackage = readPackageJson(installedPackagePath)
 
-  const expectedVersion = normalizeVersion(cachePackage?.dependencies?.[PACKAGE_NAME])
+  const expectedVersion = normalizeVersion(cachePackage?.dependencies?.[NPM_PACKAGE_NAME])
   const loadedVersion = normalizeVersion(installedPackage?.version)
 
   return {

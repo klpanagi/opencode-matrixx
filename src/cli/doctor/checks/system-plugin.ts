@@ -1,6 +1,6 @@
 import { existsSync, readFileSync } from "node:fs"
 
-import { PACKAGE_NAME } from "../constants"
+import { LEGACY_NPM_PACKAGE_NAME, NPM_PACKAGE_NAME } from "../constants"
 import { getOpenCodeConfigPaths, parseJsonc } from "../../../shared"
 
 export interface PluginInfo {
@@ -24,18 +24,26 @@ function detectConfigPath(): string | null {
 }
 
 function parsePluginVersion(entry: string): string | null {
-  if (!entry.startsWith(`${PACKAGE_NAME}@`)) return null
-  const value = entry.slice(PACKAGE_NAME.length + 1)
-  if (!value || value === "latest") return null
-  return value
+  for (const name of [NPM_PACKAGE_NAME, LEGACY_NPM_PACKAGE_NAME]) {
+    if (entry.startsWith(`${name}@`)) {
+      const value = entry.slice(name.length + 1)
+      if (!value || value === "latest") return null
+      return value
+    }
+  }
+  return null
+}
+
+function matchesPluginName(entry: string, name: string): boolean {
+  return entry === name || entry.startsWith(`${name}@`)
 }
 
 function findPluginEntry(entries: string[]): { entry: string; isLocalDev: boolean } | null {
   for (const entry of entries) {
-    if (entry === PACKAGE_NAME || entry.startsWith(`${PACKAGE_NAME}@`)) {
+    if (matchesPluginName(entry, NPM_PACKAGE_NAME) || matchesPluginName(entry, LEGACY_NPM_PACKAGE_NAME)) {
       return { entry, isLocalDev: false }
     }
-    if (entry.startsWith("file://") && entry.includes(PACKAGE_NAME)) {
+    if (entry.startsWith("file://") && entry.includes(NPM_PACKAGE_NAME)) {
       return { entry, isLocalDev: true }
     }
   }

@@ -4,14 +4,14 @@ This document provides a comprehensive guide to using the Matrixx CLI tools.
 
 ## 1. Overview
 
-Matrixx provides CLI tools accessible via the `bunx matrixx` command. The CLI supports various features including plugin installation, environment diagnostics, and session execution.
+Matrixx provides CLI tools accessible via the `bunx opencode-matrixx` command (or `bunx matrixx` once installed locally — the binary is named `matrixx`, but the npm package is `opencode-matrixx`). The CLI supports various features including plugin installation, environment diagnostics, and session execution.
 
 ```bash
 # Basic execution (displays help)
-bunx matrixx
+bunx opencode-matrixx
 
 # Or run with npx
-npx matrixx
+npx opencode-matrixx
 ```
 
 ---
@@ -35,7 +35,7 @@ An interactive installation tool for initial Matrixx setup. Provides a beautiful
 ### Usage
 
 ```bash
-bunx matrixx install
+bunx opencode-matrixx install
 ```
 
 ### Installation Process
@@ -61,7 +61,7 @@ Diagnoses your environment to ensure Matrixx is functioning correctly. Performs 
 ### Usage
 
 ```bash
-bunx matrixx doctor
+bunx opencode-matrixx doctor
 ```
 
 ### Diagnostic Categories
@@ -122,7 +122,7 @@ Executes OpenCode sessions and monitors task completion.
 ### Usage
 
 ```bash
-bunx matrixx run [prompt]
+bunx opencode-matrixx run [prompt]
 ```
 
 ### Options
@@ -142,16 +142,16 @@ Manages OAuth 2.1 authentication for remote MCP servers.
 
 ```bash
 # Login to an OAuth-protected MCP server
-bunx matrixx mcp oauth login <server-name> --server-url https://api.example.com
+bunx opencode-matrixx mcp oauth login <server-name> --server-url https://api.example.com
 
 # Login with explicit client ID and scopes
-bunx matrixx mcp oauth login my-api --server-url https://api.example.com --client-id my-client --scopes "read,write"
+bunx opencode-matrixx mcp oauth login my-api --server-url https://api.example.com --client-id my-client --scopes "read,write"
 
 # Remove stored OAuth tokens
-bunx matrixx mcp oauth logout <server-name>
+bunx opencode-matrixx mcp oauth logout <server-name>
 
 # Check OAuth token status
-bunx matrixx mcp oauth status [server-name]
+bunx opencode-matrixx mcp oauth status [server-name]
 ```
 
 ### Options
@@ -176,13 +176,13 @@ Manages Google Antigravity OAuth authentication. Required for using Gemini model
 
 ```bash
 # Login
-bunx matrixx auth login
+bunx opencode-matrixx auth login
 
 # Logout
-bunx matrixx auth logout
+bunx opencode-matrixx auth logout
 
 # Check current status
-bunx matrixx auth status
+bunx opencode-matrixx auth status
 ```
 
 ---
@@ -232,17 +232,17 @@ bun install -g opencode@latest
 
 ```bash
 # Reinstall plugin
-bunx matrixx install
+bunx opencode-matrixx install
 ```
 
 ### Doctor Check Failures
 
 ```bash
 # Diagnose with detailed information
-bunx matrixx doctor --verbose
+bunx opencode-matrixx doctor --verbose
 
 # Check specific category only
-bunx matrixx doctor --category authentication
+bunx opencode-matrixx doctor --category authentication
 ```
 
 ---
@@ -253,10 +253,10 @@ Use the `--no-tui` option for CI/CD environments.
 
 ```bash
 # Run doctor in CI environment
-bunx matrixx doctor --no-tui --json
+bunx opencode-matrixx doctor --no-tui --json
 
 # Save results to file
-bunx matrixx doctor --json > doctor-report.json
+bunx opencode-matrixx doctor --json > doctor-report.json
 ```
 
 ---

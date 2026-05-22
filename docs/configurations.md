@@ -7,7 +7,7 @@ Highly opinionated, but adjustable to taste.
 **Most users don't need to configure anything manually.** Run the interactive installer:
 
 ```bash
-bunx matrixx install
+bunx opencode-matrixx install
 ```
 
 It asks about your providers (Claude, OpenAI, Gemini, etc.) and generates optimal config automatically.
@@ -928,7 +928,7 @@ Categories follow the same resolution logic:
 Use the `doctor` command to see how models resolve with your current configuration:
 
 ```bash
-bunx matrixx doctor --verbose
+bunx opencode-matrixx doctor --verbose
 ```
 
 The "Model Resolution" check shows:

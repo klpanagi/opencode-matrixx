@@ -1,6 +1,6 @@
 import { fetchNpmDistTags } from "./npm-dist-tags"
 
-const PACKAGE_NAME = "matrixx"
+const PACKAGE_NAME = "opencode-matrixx"
 const PRIORITIZED_TAGS = ["latest", "beta", "next"] as const
 
 export async function getPluginNameWithVersion(currentVersion: string): Promise<string> {

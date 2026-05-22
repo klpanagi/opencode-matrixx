@@ -23,7 +23,7 @@ describe("getPluginNameWithVersion", () => {
     const result = await getPluginNameWithVersion("2.14.0")
 
     // #then should use @latest tag
-    expect(result).toBe("matrixx@latest")
+    expect(result).toBe("opencode-matrixx@latest")
   })
 
   test("returns @beta when current version matches beta tag", async () => {
@@ -39,7 +39,7 @@ describe("getPluginNameWithVersion", () => {
     const result = await getPluginNameWithVersion("3.0.0-beta.3")
 
     // #then should use @beta tag
-    expect(result).toBe("matrixx@beta")
+    expect(result).toBe("opencode-matrixx@beta")
   })
 
   test("returns @next when current version matches next tag", async () => {
@@ -55,7 +55,7 @@ describe("getPluginNameWithVersion", () => {
     const result = await getPluginNameWithVersion("3.1.0-next.1")
 
     // #then should use @next tag
-    expect(result).toBe("matrixx@next")
+    expect(result).toBe("opencode-matrixx@next")
   })
 
   test("returns pinned version when no tag matches", async () => {
@@ -71,7 +71,7 @@ describe("getPluginNameWithVersion", () => {
     const result = await getPluginNameWithVersion("3.0.0-beta.2")
 
     // #then should pin to specific version
-    expect(result).toBe("matrixx@3.0.0-beta.2")
+    expect(result).toBe("opencode-matrixx@3.0.0-beta.2")
   })
 
   test("returns pinned version when fetch fails", async () => {
@@ -82,7 +82,7 @@ describe("getPluginNameWithVersion", () => {
     const result = await getPluginNameWithVersion("3.0.0-beta.3")
 
     // #then should fall back to pinned version
-    expect(result).toBe("matrixx@3.0.0-beta.3")
+    expect(result).toBe("opencode-matrixx@3.0.0-beta.3")
   })
 
   test("returns pinned version when npm returns non-ok response", async () => {
@@ -98,7 +98,7 @@ describe("getPluginNameWithVersion", () => {
     const result = await getPluginNameWithVersion("2.14.0")
 
     // #then should fall back to pinned version
-    expect(result).toBe("matrixx@2.14.0")
+    expect(result).toBe("opencode-matrixx@2.14.0")
   })
 
   test("prioritizes latest over other tags when version matches multiple", async () => {
@@ -114,7 +114,7 @@ describe("getPluginNameWithVersion", () => {
     const result = await getPluginNameWithVersion("3.0.0")
 
     // #then should prioritize @latest
-    expect(result).toBe("matrixx@latest")
+    expect(result).toBe("opencode-matrixx@latest")
   })
 })
 
@@ -135,7 +135,7 @@ describe("fetchNpmDistTags", () => {
     ) as unknown as typeof fetch
 
     // #when fetching dist-tags
-    const result = await fetchNpmDistTags("matrixx")
+    const result = await fetchNpmDistTags("opencode-matrixx")
 
     // #then should return the tags
     expect(result).toEqual({ latest: "2.14.0", beta: "3.0.0-beta.3" })
@@ -146,7 +146,7 @@ describe("fetchNpmDistTags", () => {
     globalThis.fetch = mock(() => Promise.reject(new Error("Network error"))) as unknown as typeof fetch
 
     // #when fetching dist-tags
-    const result = await fetchNpmDistTags("matrixx")
+    const result = await fetchNpmDistTags("opencode-matrixx")
 
     // #then should return null
     expect(result).toBeNull()
@@ -162,7 +162,7 @@ describe("fetchNpmDistTags", () => {
     ) as unknown as typeof fetch
 
     // #when fetching dist-tags
-    const result = await fetchNpmDistTags("matrixx")
+    const result = await fetchNpmDistTags("opencode-matrixx")
 
     // #then should return null
     expect(result).toBeNull()

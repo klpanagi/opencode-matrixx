@@ -7,7 +7,21 @@ import { detectConfigFormat } from "./opencode-config-format"
 import { parseOpenCodeConfigFileWithError, type OpenCodeConfig } from "./parse-opencode-config-file"
 import { getPluginNameWithVersion } from "./plugin-name-with-version"
 
-const PACKAGE_NAME = "matrixx"
+const PACKAGE_NAME = "opencode-matrixx"
+// Legacy plugin name written by older matrixx installers — kept for detection so we
+// can replace stale entries on re-install. The actual npm package is `opencode-matrixx`,
+// so any `matrixx`/`matrixx@<x>` entry in opencode.json points at an unrelated package
+// and prevents this plugin from loading.
+const LEGACY_PACKAGE_NAME = "matrixx"
+
+function isManagedPluginEntry(entry: string): boolean {
+  return (
+    entry === PACKAGE_NAME ||
+    entry.startsWith(`${PACKAGE_NAME}@`) ||
+    entry === LEGACY_PACKAGE_NAME ||
+    entry.startsWith(`${LEGACY_PACKAGE_NAME}@`)
+  )
+}
 
 export async function addPluginToOpenCodeConfig(currentVersion: string): Promise<ConfigMergeResult> {
   try {
@@ -41,7 +55,7 @@ export async function addPluginToOpenCodeConfig(currentVersion: string): Promise
 
     const config = parseResult.config
     const plugins = config.plugin ?? []
-    const existingIndex = plugins.findIndex((p) => p === PACKAGE_NAME || p.startsWith(`${PACKAGE_NAME}@`))
+    const existingIndex = plugins.findIndex((p) => isManagedPluginEntry(p))
 
     if (existingIndex !== -1) {
       if (plugins[existingIndex] === pluginEntry) {

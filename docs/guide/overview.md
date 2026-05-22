@@ -96,7 +96,7 @@ Matrixx automatically configures models based on your available providers. You d
 
 **1. At Installation Time (Interactive Installer)**
 
-When you run `bunx matrixx install`, the installer asks which providers you have:
+When you run `bunx opencode-matrixx install`, the installer asks which providers you have:
 - Claude Pro/Max subscription?
 - OpenAI/ChatGPT Plus?
 - Google Gemini?

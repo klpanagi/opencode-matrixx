@@ -548,7 +548,7 @@ When a skill MCP has `oauth` configured:
 Pre-authenticate via CLI:
 
 ```bash
-bunx matrixx mcp oauth login <server-name> --server-url https://api.example.com
+bunx opencode-matrixx mcp oauth login <server-name> --server-url https://api.example.com
 ```
 
 ---
