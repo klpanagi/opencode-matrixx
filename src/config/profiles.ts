@@ -10,13 +10,13 @@ const HAIKU = "anthropic/claude-haiku-4-5"
 const KIMI_FREE = "opencode/kimi-k2.5-free"
 const GROK_FREE = "xai/grok-code-fast-1"
 const GLM_CHEAP = "zai-coding-plan/glm-4.7"
-const GEMINI_PRO = "gemini-3.1-pro"
+
 const MINIMAX_FREE = "minimax-m2.5-free"
 
 const PROFILES: Record<ProfileName, Partial<MatrixxConfig>> = {
   /* Use only free/zero-cost models. Best for experimentation, quick prototyping,
    * or when API credits are depleted. Agents use Kimi K2.5 Free, Grok (free tier),
-   * Gemini, GLM, and MiniMax — no Claude or paid OpenAI models. */
+   * GLM, and MiniMax — no Claude, GPT, or Gemini paid models. */
   free: {
     agents: {
       morpheus: { model: KIMI_FREE },
@@ -27,8 +27,8 @@ const PROFILES: Record<ProfileName, Partial<MatrixxConfig>> = {
       niobe: { model: KIMI_FREE },
       sentinel: { model: KIMI_FREE },
       architect: { model: KIMI_FREE },
-      smith: { model: GEMINI_PRO },
-      merovingian: { model: GEMINI_PRO },
+      smith: { model: KIMI_FREE },
+      merovingian: { model: KIMI_FREE },
       operator: { model: GLM_CHEAP },
       trinity: { model: GROK_FREE },
       construct: { model: KIMI_FREE },
@@ -42,7 +42,7 @@ const PROFILES: Record<ProfileName, Partial<MatrixxConfig>> = {
       "red-pill": { model: KIMI_FREE },
       construct: { model: KIMI_FREE },
       "blue-pill": { model: MINIMAX_FREE },
-      broadcast: { model: GEMINI_PRO },
+      broadcast: { model: MINIMAX_FREE },
       "bullet-time": { model: MINIMAX_FREE },
     },
   },
