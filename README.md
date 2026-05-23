@@ -153,6 +153,45 @@ Every agent, model, temperature, and permission is fully customizable. [**Meet t
 
 ---
 
+## Profiles & Usage
+
+A profile assigns a model to every agent and task category — one setting, full model lineup. Set it in `matrixx.jsonc`:
+
+```jsonc
+{
+  "$schema": "https://raw.githubusercontent.com/klpanagi/matrixx/refs/heads/dev/dist/matrixx.schema.json",
+  "profile": "balanced"
+}
+```
+
+Six profiles, from zero-cost to maximum performance:
+
+| Profile | Best For | Model Strategy | Daily Cost |
+|---------|----------|---------------|------------|
+| **free** | Experimentation, prototyping, depleted credits | Zero-cost models only — Kimi K2.5 Free, Grok Free, GLM 4.7, MiniMax | $0 |
+| **budget** | Personal projects, light daily use | Claude Haiku 4.5 everywhere, Sonnet 4.6 for `source`/`red-pill` tasks | ~$1–3 |
+| **economy** | Active development with cost control | Claude Sonnet 4.6 for core agents, Haiku 4.5 for utility | ~$3–8 |
+| **balanced** | Professional development | Claude Opus 4.6 for orchestrators (`source`/`red-pill`), Sonnet 4.6 for rest, Haiku 4.5 for utilities | ~$8–20 |
+| **performance** | Maximum capability | Claude Opus 4.6 for all critical agents, Sonnet 4.6 for support roles | ~$20–50 |
+| **go** | OpenCode Go subscription | Tiered: GLM-5.1 (orchestrators) → Kimi K2.6 (deep work) → DeepSeek V4 Pro (QA) → DeepSeek V4 Flash (automation) | Go quota |
+
+Profile defaults are merged first; any `agents` or `categories` override in `matrixx.jsonc` takes precedence. This lets you start from a profile and fine-tune individual agents.
+
+### Tiered Go Profile
+
+The `go` profile divides 14 agents into four cost tiers, stretching the 5-hour rolling quota furthest:
+
+| Tier | Agents | Model | Purpose |
+|------|--------|-------|---------|
+| **Orchestrators** | morpheus, oracle, seraph, niobe, architect | GLM-5.1 | Long-horizon reasoning, planning, architecture |
+| **Deep Workers** | keymaker, cipher | Kimi K2.6 | Complex multi-file coding, DSL engineering |
+| **QA / Review** | sentinel, smith, merovingian | DeepSeek V4 Pro | Structured logic, test suites, debugging |
+| **Automation** | operator, trinity, construct, mouse, zion | DeepSeek V4 Flash | Lightweight tasks, search, utilities (~31k req/5h) |
+
+Categories map to the same tiers: `source` / `deep-jack` → Kimi K2.6, `matrix-bend` / `red-pill` → DeepSeek V4 Pro, `construct` / `blue-pill` / `broadcast` / `bullet-time` → DeepSeek V4 Flash.
+
+---
+
 ## Security
 
 Matrixx includes a three-tier security layer: reactive hooks, configurable policies, and a dedicated security auditing agent.
