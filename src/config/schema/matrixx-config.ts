@@ -10,7 +10,7 @@ import { ClaudeCodeConfigSchema } from "./claude-code"
 import { CommentCheckerConfigSchema } from "./comment-checker"
 import { BuiltinCommandNameSchema } from "./commands"
 import { ExperimentalConfigSchema } from "./experimental"
-import { GitMasterConfigSchema } from "./git-master"
+
 import { TddEnforcerConfigSchema } from "./tdd-enforcer"
 import { HookNameSchema } from "./hooks"
 import { SecurityConfigSchema } from "./security"
@@ -52,7 +52,7 @@ export const MatrixxConfigSchema = z.object({
   background_task: BackgroundTaskConfigSchema.optional(),
   notification: NotificationConfigSchema.optional(),
   babysitting: BabysittingConfigSchema.optional(),
-  git_master: GitMasterConfigSchema.optional(),
+
   tdd_enforcer: TddEnforcerConfigSchema.optional(),
   browser_automation_engine: BrowserAutomationConfigSchema.optional(),
   websearch: WebsearchConfigSchema.optional(),
