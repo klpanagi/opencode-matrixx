@@ -125,7 +125,6 @@ Prompts MUST be in English.`
       const runInBackground = args.run_in_background === true
 
       const { content: skillContent, error: skillError } = await resolveSkillContent(args.load_skills, {
-        gitMasterConfig: options.gitMasterConfig,
         browserProvider: options.browserProvider,
         disabledSkills: options.disabledSkills,
       })
