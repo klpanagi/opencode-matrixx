@@ -1,5 +1,4 @@
 import type { BuiltinSkill } from "../types"
-import { ALL_RUBRICS, formatRubricForPrompt } from "./academic-review-rubrics"
 
 export const ACADEMIC_PAPER_REVIEW_SKILL_NAME = "academic-paper-review"
 
