@@ -4,7 +4,6 @@ import { TOOL_DESCRIPTION_NO_SKILLS, TOOL_DESCRIPTION_PREFIX } from "./constants
 import type { SkillArgs, SkillInfo, SkillLoadOptions } from "./types"
 import type { LoadedSkill } from "../../features/opencode-skill-loader"
 import { getAllSkills, extractSkillTemplate } from "../../features/opencode-skill-loader/skill-content"
-import { injectGitMasterConfig } from "../../features/opencode-skill-loader/skill-content"
 import type { SkillMcpManager, SkillMcpClientInfo, SkillMcpServerContext } from "../../features/skill-mcp-manager"
 import type { Tool, Resource, Prompt } from "@modelcontextprotocol/sdk/types.js"
 
@@ -176,11 +175,7 @@ export function createSkillTool(options: SkillLoadOptions = {}): ToolDefinition 
         throw new Error(`Skill "${args.name}" is restricted to agent "${skill.definition.agent}"`)
       }
 
-      let body = await extractSkillBody(skill)
-
-      if (args.name === "git-master") {
-        body = injectGitMasterConfig(body, options.gitMasterConfig)
-      }
+      const body = await extractSkillBody(skill)
 
       const dir = skill.path ? dirname(skill.path) : skill.resolvedPath || process.cwd()
 
