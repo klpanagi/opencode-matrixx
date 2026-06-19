@@ -32,9 +32,6 @@ import {
   dslValidationSkill,
   dslCompositionSkill,
   documentReaderSkill,
-  cryptoMarketAnalysisSkill,
-  cryptoTradingSkill,
-  cryptoOnchainSkill,
   securityCoreSkill,
   securitySecretsSkill,
   securitySastSkill,
@@ -65,7 +62,7 @@ export function createBuiltinSkills(options: CreateBuiltinSkillsOptions = {}): B
     browserSkill = playwrightSkill
   }
 
-  const skills = [browserSkill, frontendUiUxSkill, gitMasterSkill, devBrowserSkill, dslCoreSkill, dslGrammarSkill, dslCodegenSkill, dslMetamodelSkill, dslToolingSkill, dslTextxEcosystemSkill, dslPyecoreAdvancedSkill, dslModelTransformationSkill, dslTestingSkill, dslValidationSkill, dslCompositionSkill, euHorizonSkill, academicPaperReviewSkill, deliverableWritingSkill, projectManagementSkill, technicalLeadSkill, academicWritingSkill, researchMethodologySkill, literatureReviewSkill, grantWritingSkill, scientificPresentationSkill, dataManagementPlanSkill, ipExploitationSkill, documentReaderSkill, cryptoMarketAnalysisSkill, cryptoTradingSkill, cryptoOnchainSkill, securityCoreSkill, securitySecretsSkill, securitySastSkill, securityDastSkill, securityDependenciesSkill, securityApiSkill, securityCryptoSkill, securityInfraSkill, securityReviewSkill, tddEnforcerSkill, reviewWorkSkill]
+  const skills = [browserSkill, frontendUiUxSkill, gitMasterSkill, devBrowserSkill, dslCoreSkill, dslGrammarSkill, dslCodegenSkill, dslMetamodelSkill, dslToolingSkill, dslTextxEcosystemSkill, dslPyecoreAdvancedSkill, dslModelTransformationSkill, dslTestingSkill, dslValidationSkill, dslCompositionSkill, euHorizonSkill, academicPaperReviewSkill, deliverableWritingSkill, projectManagementSkill, technicalLeadSkill, academicWritingSkill, researchMethodologySkill, literatureReviewSkill, grantWritingSkill, scientificPresentationSkill, dataManagementPlanSkill, ipExploitationSkill, documentReaderSkill, securityCoreSkill, securitySecretsSkill, securitySastSkill, securityDastSkill, securityDependenciesSkill, securityApiSkill, securityCryptoSkill, securityInfraSkill, securityReviewSkill, tddEnforcerSkill, reviewWorkSkill]
 
   if (!disabledSkills) {
     return skills

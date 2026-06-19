@@ -287,7 +287,6 @@ bun run build:schema   # Regenerate JSON schema
 |------|-------|-------------|
 | `src/features/background-agent/manager.ts` | 1646 | Task lifecycle, concurrency |
 | `src/hooks/anthropic-context-window-limit-recovery/` | 2232 | Multi-strategy context recovery |
-| `src/hooks/claude-code-hooks/` | 2110 | Claude Code settings.json compat |
 | `src/hooks/todo-continuation-enforcer/` | 2061 | Core mission mechanism |
 | `src/hooks/architect/` | 1976 | Session orchestration |
 | `src/hooks/matrix-loop/` | 1687 | Self-referential dev loop |

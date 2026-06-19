@@ -157,18 +157,6 @@ Scans for vulnerabilities but never touches code. OWASP Top 10, SAST, DAST, depe
 
 </td>
 </tr>
-<tr>
-<td colspan="2">
-
-### Zion — *The Crypto Specialist*
-<img src=".github/assets/zion.png" width="120" align="right"/>
-
-**Claude Opus 4.6** · Crypto market analyst & trader
-
-Technical analysis, on-chain analytics, DeFi protocol research, tokenomics modeling, and trading strategy with defined risk management.
-
-</td>
-</tr>
 </table>
 
 | Agent | Role | Model |
@@ -190,10 +178,10 @@ Every agent, model, temperature, and permission is fully customizable. [**Meet t
 
 | | |
 |---|---|
-| **Agent Orchestration** | 14 agents, parallel background execution, category-based routing, session continuity |
+| **Agent Orchestration** | 13 agents, parallel background execution, category-based routing, session continuity |
 | **Developer Tools** | LSP (goto def, rename, diagnostics), AST-Grep (search & replace), Tmux terminal |
 | **41 Lifecycle Hooks** | Context injection, think mode, comment checking, todo enforcement, error recovery |
-| **27+ Built-in Skills** | DSL engineering (11), security (9), crypto (3), browser, git, frontend |
+| **27+ Built-in Skills** | DSL engineering (11), security (9), browser, git, frontend |
 | **Curated MCPs** | Exa (web search), Context7 (official docs), Grep.app (GitHub code search), Document Reader |
 | **Claude Code Compat** | Full compatibility — commands, agents, skills, MCPs, hooks from `settings.json` |
 

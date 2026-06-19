@@ -11,7 +11,6 @@ export { createMultimodalLookerAgent, MULTIMODAL_LOOKER_PROMPT_METADATA } from "
 export { createSeraphAgent, SERAPH_SYSTEM_PROMPT, seraphPromptMetadata } from "./seraph"
 export { createSmithAgent, SMITH_SYSTEM_PROMPT, smithPromptMetadata } from "./smith"
 export { createAtlasAgent, atlasPromptMetadata } from "./architect"
-export { createZionAgent, ZION_PROMPT_METADATA } from "./zion"
 export {
   ORACLE_SYSTEM_PROMPT,
   ORACLE_PERMISSION,

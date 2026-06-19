@@ -378,7 +378,6 @@ Hooks intercept and modify behavior at key points in the agent lifecycle.
 
 | Hook | Event | Description |
 |------|-------|-------------|
-| **claude-code-hooks** | All | Executes hooks from Claude Code's settings.json. |
 | **architect** | All | Main orchestration logic (771 lines). |
 | **interactive-bash-session** | PreToolUse | Manages tmux sessions for interactive CLI. |
 | **non-interactive-env** | PreToolUse | Handles non-interactive environment constraints. |

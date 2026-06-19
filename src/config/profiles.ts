@@ -43,7 +43,6 @@ const PROFILES: Record<ProfileName, Partial<MatrixxConfig>> = {
       trinity: { model: GROK_FREE },
       construct: { model: KIMI_FREE },
       mouse: { model: MINIMAX_FREE },
-      zion: { model: MINIMAX_FREE },
     },
     categories: {
       source: { model: KIMI_FREE },
@@ -80,7 +79,6 @@ const PROFILES: Record<ProfileName, Partial<MatrixxConfig>> = {
       trinity: { model: DEEPSEEK_FLASH },
       construct: { model: DEEPSEEK_FLASH },
       mouse: { model: DEEPSEEK_FLASH },
-      zion: { model: DEEPSEEK_FLASH },
     },
     categories: {
       source: { model: KIMI_K26 },
@@ -219,7 +217,6 @@ const PROFILES: Record<ProfileName, Partial<MatrixxConfig>> = {
       trinity: { model: XIAOMI_MIMO_V25 },
       construct: { model: XIAOMI_MIMO_V25 },
       mouse: { model: XIAOMI_MIMO_V25 },
-      zion: { model: XIAOMI_MIMO_V25 },
     },
     categories: {
       source: { model: XIAOMI_MIMO_V25_PRO },
@@ -252,7 +249,6 @@ const PROFILES: Record<ProfileName, Partial<MatrixxConfig>> = {
       trinity: { model: DEEPSEEK_PRO },
       construct: { model: DEEPSEEK_PRO },
       mouse: { model: DEEPSEEK_PRO },
-      zion: { model: DEEPSEEK_PRO },
     },
     categories: {
       source: { model: KIMI_K26 },
@@ -288,7 +284,6 @@ const PROFILES: Record<ProfileName, Partial<MatrixxConfig>> = {
       trinity: { model: DEEPSEEK_FLASH },
       construct: { model: DEEPSEEK_FLASH },
       mouse: { model: DEEPSEEK_FLASH },
-      zion: { model: DEEPSEEK_FLASH },
     },
     categories: {
       source: { model: MINIMAX_M3 },
