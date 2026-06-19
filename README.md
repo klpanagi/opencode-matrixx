@@ -13,7 +13,7 @@
 [![License: SUL-1.0](https://img.shields.io/badge/license-SUL--1.0-blue.svg)](https://github.com/klpanagi/matrixx/blob/master/LICENSE)
 
 **Multi-model agent orchestration for [OpenCode](https://github.com/sst/opencode).**<br/>
-**14 specialized agents. 41 lifecycle hooks. 25+ tools. One plugin.**
+**13 specialized agents. 40 lifecycle hooks. 28+ tools. One plugin.**
 
 </div>
 
@@ -42,7 +42,7 @@ Morpheus (Claude Opus)     → Plans the implementation
 
 | Problem | Matrixx Solution |
 |---------|------------------|
-| One model does everything poorly | **14 specialists** — right model for the right job |
+| One model does everything poorly | **13 specialists** — right model for the right job |
 | Agent forgets what it was doing | **Todo Continuation** — forces completion, no exceptions |
 | Slow sequential tool calls | **Parallel background agents** — 5+ running simultaneously |
 | AI-generated code looks like AI | **Comment Checker** — code indistinguishable from human-written |
@@ -180,12 +180,51 @@ Every agent, model, temperature, and permission is fully customizable. [**Meet t
 |---|---|
 | **Agent Orchestration** | 13 agents, parallel background execution, category-based routing, session continuity |
 | **Developer Tools** | LSP (goto def, rename, diagnostics), AST-Grep (search & replace), Tmux terminal |
-| **41 Lifecycle Hooks** | Context injection, think mode, comment checking, todo enforcement, error recovery |
-| **27+ Built-in Skills** | DSL engineering (11), security (9), browser, git, frontend |
+| **40 Lifecycle Hooks** | Context injection, think mode, comment checking, todo enforcement, error recovery, quality gate |
+| **29 Built-in Skills** | DSL engineering (11), security (9), browser, git, frontend, software dev pipeline |
 | **Curated MCPs** | Exa (web search), Context7 (official docs), Grep.app (GitHub code search), Document Reader |
 | **Claude Code Compat** | Full compatibility — commands, agents, skills, MCPs, hooks from `settings.json` |
+| **Software Dev Pipeline** | 6-phase TDD workflow (PLAN→BUILD→VERIFY→REVIEW→SECURE→SHIP), 5 team roles, adaptive phases |
 
 [**Full feature list →**](docs/features.md) · [**Configuration guide →**](docs/configurations.md) · [**Architecture diagram →**](docs/agent-architecture.md)
+
+---
+
+## Software Development Pipeline
+
+Matrixx includes a structured **6-phase development pipeline** that coordinates specialized roles through PLAN → BUILD → VERIFY → REVIEW → SECURE → SHIP. Each phase has clear entry/exit criteria and is enforced by dedicated agents.
+
+### Team Roles
+
+| Role | Agent | Skills | Purpose |
+|------|-------|--------|---------|
+| **Architect** | Oracle (Claude Opus) | — | System design, architecture decisions, task breakdown |
+| **Developer** | Source category | `git-master`, `tdd-enforcer` | Implementation code with TDD |
+| **Tester** | Source category | `tdd-enforcer`, `quality-gate` | Test authoring, coverage, verification |
+| **Quality Evaluator** | Red-pill category | `quality-gate`, `review-work` | Lint, typecheck, 5-agent code review |
+| **Security Expert** | Sentinel (Claude Opus) | `security-core`, `security-sast`, `security-api`, `security-dependencies` | Vulnerability scanning, CVE checks |
+
+### Pipeline Phases
+
+| Phase | Skip? | Role | Exit Criteria |
+|-------|-------|------|---------------|
+| **PLAN** | Small tasks | Architect | Approach defined, files listed, edge cases documented |
+| **BUILD** | Never | Developer | TDD (RED→GREEN→REFACTOR), `bun test` passes |
+| **VERIFY** | Never | Quality | `lint` + `typecheck` + `test` + `build` — all pass |
+| **REVIEW** | Small tasks | Quality (5-agent) | All reviewers PASS, no CRITICAL/MAJOR issues |
+| **SECURE** | Small + non-security | Security | No CRITICAL/HIGH findings, dependencies checked |
+| **SHIP** | Never | Developer | Atomic commits, PR to dev, CI passes |
+
+### Task Size Adaptivity
+
+| Size | Files | Phases Used |
+|------|-------|-------------|
+| **Small** | 1-2 | BUILD → VERIFY → SHIP |
+| **Medium** | 3-10 | PLAN → BUILD → VERIFY → REVIEW → SHIP |
+| **Large** | 10+ | ALL 6 PHASES |
+| **Security-related** | Any | Always includes SECURE |
+
+Load the `software-dev` skill to activate the pipeline. The orchestrator automatically selects the right roles and phases based on task scope.
 
 ---
 
