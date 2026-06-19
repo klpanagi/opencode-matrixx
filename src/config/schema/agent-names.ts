@@ -44,6 +44,7 @@ export const BuiltinSkillNameSchema = z.enum([
   "tdd-enforcer",
   "review-work",
   "quality-gate",
+  "software-dev",
 ])
 
 export const OverridableAgentNameSchema = z.enum([
