@@ -1,5 +1,5 @@
 >
-> [![Welcome to the Matrix!](./.github/assets/orchestrator-architect.png?v=3)](https://github.com/klpanagi/matrixx)
+> [![Matrixx](./.github/assets/orchestrator-architect.png?v=3)](https://github.com/klpanagi/matrixx)
 >
 > Matrixx is **highly inspired by** [oh-my-opencode](https://github.com/code-yeongyu/oh-my-opencode) — the project that pioneered the "oh-my-zsh for OpenCode" concept.
 > Full credit to [code-yeongyu](https://github.com/code-yeongyu) for the original vision.
@@ -10,25 +10,35 @@
 <h1>Matrixx</h1>
 
 [![npm](https://img.shields.io/npm/v/opencode-matrixx.svg)](https://www.npmjs.com/package/opencode-matrixx)
+[![License: SUL-1.0](https://img.shields.io/badge/license-SUL--1.0-blue.svg)](https://github.com/klpanagi/matrixx/blob/master/LICENSE)
 
 **Multi-model agent orchestration for [OpenCode](https://github.com/sst/opencode).**<br/>
 **14 specialized agents. 41 lifecycle hooks. 25+ tools. One plugin.**
-
-*Use your existing ChatGPT, Claude, and Gemini subscriptions. OpenCode covers them all.*
 
 </div>
 
 ---
 
-> *This is coding on steroids. Run background agents, delegate to specialists, refactor with LSP precision, and search the entire open-source ecosystem — all from your terminal.*
+## What is Matrixx?
+
+OpenCode is a powerful open-source AI coding agent. Matrixx makes it **smarter**.
+
+Instead of one model doing everything, Matrixx coordinates a **team of specialists** — each model doing what it does best, in parallel, with full context awareness. The right model for the right job, automatically.
+
+```
+You: "Add OAuth2 with PKCE to the API"
+     ↓
+Morpheus (Claude Opus)     → Plans the implementation
+  ├─ Keymaker (GPT 5.3)    → Builds auth middleware + routes
+  ├─ Oracle (Claude Opus)  → Reviews architecture in parallel
+  └─ Sentinel (Sonnet 4.6) → Audits for security vulnerabilities
+     ↓
+     Done. Tested. Secure.
+```
 
 ---
 
 ## Why Matrixx?
-
-[OpenCode](https://github.com/sst/opencode) is the most powerful open-source AI coding agent — endlessly extensible, zero screen flicker, mix-and-match models. But raw power needs direction.
-
-Matrixx turns a single agent into a **coordinated team** — each model doing what it does best, in parallel, with full context awareness. No more one-model-does-everything. No more context window bloat. No more agents that quit halfway.
 
 | Problem | Matrixx Solution |
 |---------|------------------|
@@ -49,6 +59,57 @@ That's it. Parallel agents, background tasks, deep exploration, relentless execu
 
 ---
 
+## Quick Start
+
+### Install
+
+```bash
+npm install -g opencode-matrixx
+```
+
+### Configure
+
+Create `matrixx.jsonc` in your project root:
+
+```jsonc
+{
+  "$schema": "https://raw.githubusercontent.com/klpanagi/matrixx/refs/heads/dev/dist/matrixx.schema.json",
+  "profile": "balanced"
+}
+```
+
+### Use
+
+Open OpenCode and start coding. Matrixx activates automatically.
+
+**For LLM agents** — paste this into Claude Code, AmpCode, Cursor, or any LLM agent:
+
+```
+Install and configure matrixx by following the instructions here:
+https://raw.githubusercontent.com/klpanagi/matrixx/refs/heads/dev/docs/guide/installation.md
+```
+
+[Manual installation guide →](docs/guide/installation.md) · [Uninstall →](docs/guide/uninstallation.md)
+
+---
+
+## Profiles
+
+Profiles assign models to every agent — one setting, full model lineup.
+
+| Profile | Best For | Daily Cost |
+|---------|----------|------------|
+| **free** | Experimentation, prototyping | $0 |
+| **budget** | Personal projects, light use | ~$1–3 |
+| **economy** | Active development with cost control | ~$3–8 |
+| **balanced** | Professional development | ~$8–20 |
+| **performance** | Maximum capability | ~$20–50 |
+| **go** | OpenCode Go subscription | Go quota |
+
+Profile defaults merge first; any `agents` or `categories` override takes precedence.
+
+---
+
 ## The Agent Team
 
 <table>
@@ -58,7 +119,7 @@ That's it. Parallel agents, background tasks, deep exploration, relentless execu
 ### Morpheus — *The Orchestrator*
 <img src=".github/assets/morpheus.png" width="120" align="right"/>
 
-**Claude Opus 4.6** &middot; Primary agent
+**Claude Opus 4.6** · Primary agent
 
 Plans, delegates, and executes. Fires background agents in parallel, leverages LSP for surgical refactoring, and never stops until the TODO list is empty.
 
@@ -68,9 +129,9 @@ Plans, delegates, and executes. Fires background agents in parallel, leverages L
 ### Keymaker — *The Craftsman*
 <img src=".github/assets/keymaker.png" width="120" align="right"/>
 
-**GPT 5.3 Codex** &middot; Autonomous deep worker
+**GPT 5.3 Codex** · Autonomous deep worker
 
-Give him a goal, not a recipe. Explores the codebase, matches your patterns, and delivers end-to-end. Inspired by [AmpCode's deep mode](https://ampcode.com).
+Give him a goal, not a recipe. Explores the codebase, matches your patterns, and delivers end-to-end.
 
 </td>
 </tr>
@@ -80,24 +141,19 @@ Give him a goal, not a recipe. Explores the codebase, matches your patterns, and
 ### Cipher — *The Language Architect*
 <img src=".github/assets/cipher.png" width="120" align="right"/>
 
-**Claude Sonnet 4.6** &middot; DSL specialist
+**Claude Opus 4.6** · DSL specialist
 
 Grammars, parsers, type systems, code generators, metamodels. 11 composable skills covering textX, ANTLR4, tree-sitter, PyEcore, and more.
 
 </td>
 <td>
 
-</td>
-</tr>
-<tr>
-<td colspan="2">
-
 ### Sentinel — *The Security Auditor*
 <img src=".github/assets/sentinel.png" width="120" align="right"/>
 
-**Claude Sonnet 4.6** &middot; Read-only security specialist
+**Claude Opus 4.6** · Read-only security specialist
 
-Scans for vulnerabilities but never touches code. OWASP Top 10, SAST, DAST, dependency CVEs, secret detection, crypto audit, infrastructure hardening. 9 composable skills any agent can load.
+Scans for vulnerabilities but never touches code. OWASP Top 10, SAST, DAST, dependency CVEs, secret detection, crypto audit, infrastructure hardening.
 
 </td>
 </tr>
@@ -107,9 +163,9 @@ Scans for vulnerabilities but never touches code. OWASP Top 10, SAST, DAST, depe
 ### Zion — *The Crypto Specialist*
 <img src=".github/assets/zion.png" width="120" align="right"/>
 
-**Claude Sonnet 4.6** &middot; Crypto market analyst & trader
+**Claude Opus 4.6** · Crypto market analyst & trader
 
-Technical analysis (RSI, MACD, Bollinger Bands, market structure, Fibonacci), on-chain analytics (MVRV, SOPR, exchange flows, whale tracking), DeFi protocol research, tokenomics modeling, and trading strategy with defined risk management. 3 composable skills covering the full crypto analysis stack.
+Technical analysis, on-chain analytics, DeFi protocol research, tokenomics modeling, and trading strategy with defined risk management.
 
 </td>
 </tr>
@@ -125,63 +181,23 @@ Technical analysis (RSI, MACD, Bollinger Bands, market structure, Fibonacci), on
 | **Operator** | Documentation & OSS search | GLM 4.7 |
 | **Trinity** | Blazing fast codebase grep | Grok Code Fast |
 | **Construct** | PDF, image & diagram analysis | Gemini 3 Flash |
-| **Zion** | Crypto market analysis, trading & DeFi | Claude Sonnet 4.6 |
 
-Every agent, model, temperature, and permission is fully customizable. [**Meet the full team &rarr;**](docs/agents.md)
+Every agent, model, temperature, and permission is fully customizable. [**Meet the full team →**](docs/agents.md)
 
 ---
 
-## Features at a Glance
+## Features
 
 | | |
 |---|---|
-| **Agent Orchestration** | 13 agents, parallel background execution, category-based routing, session continuity |
+| **Agent Orchestration** | 14 agents, parallel background execution, category-based routing, session continuity |
 | **Developer Tools** | LSP (goto def, rename, diagnostics), AST-Grep (search & replace), Tmux terminal |
 | **41 Lifecycle Hooks** | Context injection, think mode, comment checking, todo enforcement, error recovery |
-| **27 Built-in Skills** | DSL engineering (11), security (9), crypto (3), browser, git, frontend |
-| **Curated MCPs** | Exa (web search), Context7 (official docs), Grep.app (GitHub code search), Document Reader (office docs) |
+| **27+ Built-in Skills** | DSL engineering (11), security (9), crypto (3), browser, git, frontend |
+| **Curated MCPs** | Exa (web search), Context7 (official docs), Grep.app (GitHub code search), Document Reader |
 | **Claude Code Compat** | Full compatibility — commands, agents, skills, MCPs, hooks from `settings.json` |
 
-[**Full feature list &rarr;**](docs/features.md) &nbsp;&middot;&nbsp; [**Configuration guide &rarr;**](docs/configurations.md) &nbsp;&middot;&nbsp; [**Architecture diagram &rarr;**](docs/agent-architecture.md)
-
----
-
-## Profiles & Usage
-
-A profile assigns a model to every agent and task category — one setting, full model lineup. Set it in `matrixx.jsonc`:
-
-```jsonc
-{
-  "$schema": "https://raw.githubusercontent.com/klpanagi/matrixx/refs/heads/dev/dist/matrixx.schema.json",
-  "profile": "balanced"
-}
-```
-
-Six profiles, from zero-cost to maximum performance:
-
-| Profile | Best For | Model Strategy | Daily Cost |
-|---------|----------|---------------|------------|
-| **free** | Experimentation, prototyping, depleted credits | Zero-cost models only — Kimi K2.5 Free, Grok Free, GLM 4.7, MiniMax | $0 |
-| **budget** | Personal projects, light daily use | Claude Haiku 4.5 everywhere, Sonnet 4.6 for `source`/`red-pill` tasks | ~$1–3 |
-| **economy** | Active development with cost control | Claude Sonnet 4.6 for core agents, Haiku 4.5 for utility | ~$3–8 |
-| **balanced** | Professional development | Claude Opus 4.6 for orchestrators (`source`/`red-pill`), Sonnet 4.6 for rest, Haiku 4.5 for utilities | ~$8–20 |
-| **performance** | Maximum capability | Claude Opus 4.6 for all critical agents, Sonnet 4.6 for support roles | ~$20–50 |
-| **go** | OpenCode Go subscription | Tiered: GLM-5.1 (orchestrators) → Kimi K2.6 (deep work) → DeepSeek V4 Pro (QA) → DeepSeek V4 Flash (automation) | Go quota |
-
-Profile defaults are merged first; any `agents` or `categories` override in `matrixx.jsonc` takes precedence. This lets you start from a profile and fine-tune individual agents.
-
-### Tiered Go Profile
-
-The `go` profile divides 14 agents into four cost tiers, stretching the 5-hour rolling quota furthest:
-
-| Tier | Agents | Model | Purpose |
-|------|--------|-------|---------|
-| **Orchestrators** | morpheus, oracle, seraph, architect | GLM-5.1 | Long-horizon reasoning, planning, architecture |
-| **Deep Workers** | keymaker, cipher | Kimi K2.6 | Complex multi-file coding, DSL engineering |
-| **QA / Review** | sentinel, smith, merovingian | DeepSeek V4 Pro | Structured logic, test suites, debugging |
-| **Automation** | operator, trinity, construct, mouse, zion | DeepSeek V4 Flash | Lightweight tasks, search, utilities (~31k req/5h) |
-
-Categories map to the same tiers: `source` / `deep-jack` → Kimi K2.6, `matrix-bend` / `red-pill` → DeepSeek V4 Pro, `construct` / `blue-pill` / `broadcast` / `bullet-time` → DeepSeek V4 Flash.
+[**Full feature list →**](docs/features.md) · [**Configuration guide →**](docs/configurations.md) · [**Architecture diagram →**](docs/agent-architecture.md)
 
 ---
 
@@ -198,7 +214,7 @@ Built-in hooks protect against accidental secret exposure — no setup required.
 | **Secret Leak Guard** | Intercepts `git commit` and `git push`, runs [gitleaks](https://github.com/gitleaks/gitleaks) on staged changes, and **blocks the operation** if secrets are detected. |
 | **Env File Write Guard** | Blocks agents from writing to sensitive files (`.env`, `*.pem`, `*.key`, `credentials.json`, `id_rsa`, and 16 other patterns). |
 
-Both hooks are **enabled by default** and run before all other hooks in the execution pipeline. Configure via `matrixx.json`:
+Both hooks are **enabled by default** and run before all other hooks in the execution pipeline. Configure via `matrixx.jsonc`:
 
 ```jsonc
 {
@@ -228,62 +244,6 @@ Both hooks are **enabled by default** and run before all other hooks in the exec
 | `security-review` | Structured audit reports, severity classification, remediation guidance |
 
 Sentinel never modifies code — it reports findings with CWE IDs, exact locations, and actionable remediation. Any agent can load individual security skills via `load_skills`.
-
----
-
-## Get Started
-
-### Install
-
-```bash
-npm install -g opencode-matrixx
-```
-
-### Via LLM agent
-
-Paste this into Claude Code, AmpCode, Cursor, or any LLM agent:
-
-```
-Install and configure matrixx by following the instructions here:
-https://raw.githubusercontent.com/klpanagi/matrixx/refs/heads/dev/docs/guide/installation.md
-```
-
-**For LLM agents** — fetch and follow directly:
-
-```bash
-curl -s https://raw.githubusercontent.com/klpanagi/matrixx/refs/heads/dev/docs/guide/installation.md
-```
-
-We strongly recommend letting an agent handle installation. [Manual guide &rarr;](docs/guide/installation.md) &nbsp;&middot;&nbsp; [Uninstall &rarr;](docs/guide/uninstallation.md)
-
-### OpenCode Compatibility
-
-> **Recommended:** Matrixx works on **OpenCode 1.14.33 or newer**. Earlier 1.14.x releases also work, with one specific exception: **OpenCode 1.14.32** ships a regression that breaks plugin agent and MCP registration. Upgrade to **1.14.33+** to restore full functionality.
-
-To install a recommended version:
-
-```bash
-curl -fsSL https://opencode.ai/install | bash
-# or pin explicitly
-curl -fsSL https://opencode.ai/install | bash -s -- --version 1.14.33
-# or via npm
-npm install -g opencode-ai@1.14.33
-```
-
-<details>
-<summary><strong>Compatibility Matrix</strong></summary>
-
-| OpenCode Version | Matrixx Status | Notes |
-|-----------------|----------------|-------|
-| 1.1.1 &ndash; 1.4.17 | **Supported** | Full agent registration, all hooks functional |
-| 1.14.17 &ndash; 1.14.31 | **Supported** | Full agent registration, all hooks functional |
-| **1.14.32** | **Broken** | Upstream regression: ALS context lost during `InstanceStore.boot` refactor; plugin async callbacks lose `Instance.current`, so agents and MCP servers fail to register. See [anomalyco/opencode#25457](https://github.com/anomalyco/opencode/issues/25457). |
-| **1.14.33+** | **Recommended** | Upstream fix shipped via [anomalyco/opencode#25449](https://github.com/anomalyco/opencode/pull/25449); restored `InstanceBootstrap` init parameter for non-Effect contexts. |
-
-**Minimum OpenCode version:** 1.1.1 (permission system required)
-**Avoid:** 1.14.32 only.
-
-</details>
 
 ---
 
