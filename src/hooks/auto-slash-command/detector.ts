@@ -4,7 +4,7 @@ import {
 } from "./constants"
 import type { ParsedSlashCommand } from "./types"
 
-const CODE_BLOCK_PATTERN = /```[\s\S]*?```/g
+import { CODE_BLOCK_PATTERN } from "../../shared"
 
 export function removeCodeBlocks(text: string): string {
   return text.replace(CODE_BLOCK_PATTERN, "")
