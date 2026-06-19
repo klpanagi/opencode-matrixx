@@ -51,6 +51,10 @@ export function createToolExecuteAfterHandler(args: {
       await hooks.readImageResizer?.["tool.execute.after"]?.(input, output)
     }
 
-    await Promise.all([hooks.preemptiveCompaction?.["tool.execute.after"]?.(input, output), remainingHooks()])
+    await Promise.all([
+      hooks.preemptiveCompaction?.["tool.execute.after"]?.(input, output),
+      hooks.qualityGate?.["tool.execute.after"]?.(input, output),
+      remainingHooks(),
+    ])
   }
 }

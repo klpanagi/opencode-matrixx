@@ -53,3 +53,4 @@ export { createRuntimeFallbackHook, type RuntimeFallbackHook, type RuntimeFallba
 export { createWebFetchRedirectGuardHook } from "./webfetch-redirect-guard"
 export { createHashlineEditDiffEnhancerHook } from "./hashline-edit-diff-enhancer"
 export { createToolPairValidatorHook } from "./tool-pair-validator"
+export { createQualityGateHook } from "./quality-gate/hook"

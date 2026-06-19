@@ -19,6 +19,7 @@ import {
   createReadImageResizerHook,
   createWebFetchRedirectGuardHook,
   createHashlineEditDiffEnhancerHook,
+  createQualityGateHook,
 } from "../../hooks"
 import {
   getOpenCodeVersion,
@@ -46,6 +47,7 @@ export type ToolGuardHooks = {
   readImageResizer: ReturnType<typeof createReadImageResizerHook> | null
   webfetchRedirectGuard: ReturnType<typeof createWebFetchRedirectGuardHook> | null
   hashlineEditDiffEnhancer: ReturnType<typeof createHashlineEditDiffEnhancerHook> | null
+  qualityGate: ReturnType<typeof createQualityGateHook> | null
 }
 
 export function createToolGuardHooks(args: {
@@ -140,6 +142,10 @@ export function createToolGuardHooks(args: {
         createHashlineEditDiffEnhancerHook({ hashline_edit: { enabled: pluginConfig.experimental?.hashline_edit ?? false } }))
     : null
 
+  const qualityGate = isHookEnabled("quality-gate")
+    ? safeHook("quality-gate", () => createQualityGateHook())
+    : null
+
   return {
     commentChecker,
     toolOutputTruncator,
@@ -158,5 +164,6 @@ export function createToolGuardHooks(args: {
     readImageResizer,
     webfetchRedirectGuard,
     hashlineEditDiffEnhancer,
+    qualityGate,
   }
 }
