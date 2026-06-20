@@ -2,6 +2,7 @@ import type { MatrixxConfig } from "../../config"
 import type { PluginContext } from "../types"
 
 import {
+  createDesignIntentPreserverHook,
   createKeywordDetectorHook,
   createThinkingBlockValidatorHook,
   createToolPairValidatorHook,
@@ -17,6 +18,7 @@ export type TransformHooks = {
   contextInjectorMessagesTransform: ReturnType<typeof createContextInjectorMessagesTransformHook>
   thinkingBlockValidator: ReturnType<typeof createThinkingBlockValidatorHook> | null
   toolPairValidator: ReturnType<typeof createToolPairValidatorHook> | null
+  designIntentPreserver: ReturnType<typeof createDesignIntentPreserverHook> | null
 }
 
 export function createTransformHooks(args: {
@@ -55,10 +57,19 @@ export function createTransformHooks(args: {
       )
     : null
 
+  const designIntentPreserver = isHookEnabled("design-intent-preserver")
+    ? safeCreateHook(
+        "design-intent-preserver",
+        () => createDesignIntentPreserverHook(ctx),
+        { enabled: safeHookEnabled },
+      )
+    : null
+
   return {
     keywordDetector,
     contextInjectorMessagesTransform,
     thinkingBlockValidator,
     toolPairValidator,
+    designIntentPreserver,
   }
 }

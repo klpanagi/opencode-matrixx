@@ -20,6 +20,7 @@ import {
   createWebFetchRedirectGuardHook,
   createHashlineEditDiffEnhancerHook,
   createQualityGateHook,
+  createTaskNotepadHook,
 } from "../../hooks"
 import {
   getOpenCodeVersion,
@@ -48,6 +49,7 @@ export type ToolGuardHooks = {
   webfetchRedirectGuard: ReturnType<typeof createWebFetchRedirectGuardHook> | null
   hashlineEditDiffEnhancer: ReturnType<typeof createHashlineEditDiffEnhancerHook> | null
   qualityGate: ReturnType<typeof createQualityGateHook> | null
+  taskNotepad: ReturnType<typeof createTaskNotepadHook> | null
 }
 
 export function createToolGuardHooks(args: {
@@ -146,6 +148,10 @@ export function createToolGuardHooks(args: {
     ? safeHook("quality-gate", () => createQualityGateHook())
     : null
 
+  const taskNotepad = isHookEnabled("task-notepad")
+    ? safeHook("task-notepad", () => createTaskNotepadHook(ctx))
+    : null
+
   return {
     commentChecker,
     toolOutputTruncator,
@@ -165,5 +171,6 @@ export function createToolGuardHooks(args: {
     webfetchRedirectGuard,
     hashlineEditDiffEnhancer,
     qualityGate,
+    taskNotepad,
   }
 }
