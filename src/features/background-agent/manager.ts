@@ -1839,32 +1839,33 @@ function findNearestMessageExcludingCompaction(messageDir: string): StoredMessag
       .sort()
       .reverse()
 
+    // Single-pass: read+parse each file exactly once. The Map caches parsed
+    // data so the "full" and "partial" classification passes don't each
+    // re-read the same file (was 2× per file, see B2 in
+    // .matrixx/plans/matrixx-performance-optimization.md).
+    const parsedByFile = new Map<string, StoredMessage>()
+
     for (const file of files) {
       try {
         const content = readFileSync(join(messageDir, file), "utf-8")
         const parsed = JSON.parse(content) as StoredMessage
+        parsedByFile.set(file, parsed)
         if (hasFullAgentAndModel(parsed)) {
           return parsed
         }
       } catch {
-        continue
+        // unreadable / unparseable file: skip and let later files decide
       }
     }
 
-    for (const file of files) {
-      try {
-        const content = readFileSync(join(messageDir, file), "utf-8")
-        const parsed = JSON.parse(content) as StoredMessage
-        if (hasPartialAgentOrModel(parsed)) {
-          return parsed
-        }
-      } catch {
-        continue
+    for (const parsed of parsedByFile.values()) {
+      if (hasPartialAgentOrModel(parsed)) {
+        return parsed
       }
     }
+
+    return null
   } catch {
     return null
   }
-
-  return null
 }

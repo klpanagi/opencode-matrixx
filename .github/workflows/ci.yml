@@ -69,6 +69,7 @@ jobs:
           bun test src/hooks/auto-update-checker/hook/background-update-check.test.ts
           bun test src/hooks/auto-update-checker/hook.test.ts
           bun test src/features/skill-mcp-manager/manager.test.ts
+          bun test src/features/background-agent/manager.test.ts
           bun test src/hooks/comment-checker/cli.test.ts
           bun test src/hooks/comment-checker/hook.apply-patch.test.ts
           bun test src/hooks/directory-agents-injector/injector.test.ts
@@ -114,6 +115,7 @@ jobs:
               -e 'src/hooks/auto-update-checker/hook/background-update-check.test.ts' \
               -e 'src/hooks/auto-update-checker/hook.test.ts' \
               -e 'src/features/skill-mcp-manager/manager.test.ts' \
+              -e 'src/features/background-agent/manager.test.ts' \
               -e 'src/hooks/comment-checker/cli.test.ts' \
               -e 'src/hooks/comment-checker/hook.apply-patch.test.ts' \
               -e 'src/hooks/directory-agents-injector/injector.test.ts' \

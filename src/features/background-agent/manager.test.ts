@@ -1,6 +1,10 @@
 declare const require: (name: string) => any
 const { describe, test, expect, beforeEach, afterEach } = require("bun:test")
+const { mock } = require("bun:test")
 import { tmpdir } from "node:os"
+import { randomUUID } from "node:crypto"
+import { mkdirSync, rmSync, writeFileSync } from "node:fs"
+import { join } from "node:path"
 import type { PluginInput } from "@opencode-ai/plugin"
 import type { BackgroundTask, ResumeInput } from "./types"
 import { MIN_IDLE_TIME_MS } from "./constants"
@@ -3775,6 +3779,133 @@ describe("BackgroundManager regression fixes - resume and aborted notification",
 
     //#then
     expect(getCompletionTimers(manager).has(task.id)).toBe(true)
+
+    manager.shutdown()
+  })
+})
+
+// ----- B2 regression: findNearestMessageExcludingCompaction must read each file once -----
+//
+// The previous two-pass implementation called readFileSync on the same .json file
+// twice (once in the "full" pass, once in the "partial" pass). This test asserts
+// the single-pass contract: exactly one readFileSync call per unique file.
+//
+// Uses mock.module for 'node:fs' and '../../shared/opencode-storage-paths' so
+// this file MUST be added to the mock-heavy lists in .github/workflows/ci.yml
+// AND .github/workflows/publish.yml.
+
+const B2_TEST_STORAGE = join(tmpdir(), `b2-mgr-test-${randomUUID()}`)
+const B2_TEST_MESSAGE_STORAGE = join(B2_TEST_STORAGE, "message")
+const B2_SESSION_ID = `ses_b2_${randomUUID()}`
+const B2_SESSION_DIR = join(B2_TEST_MESSAGE_STORAGE, B2_SESSION_ID)
+const B2_N_FILES = 3
+
+describe("findNearestMessageExcludingCompaction reads each file once", () => {
+  beforeEach(() => {
+    mkdirSync(B2_SESSION_DIR, { recursive: true })
+    for (let i = 0; i < B2_N_FILES; i++) {
+      writeFileSync(
+        join(B2_SESSION_DIR, `msg_${String(i).padStart(3, "0")}.json`),
+        JSON.stringify({ info: { role: "user" } }),
+      )
+    }
+  })
+
+  afterEach(() => {
+    try {
+      rmSync(B2_TEST_STORAGE, { recursive: true, force: true })
+    } catch {
+      // best-effort cleanup
+    }
+  })
+
+  test("findNearestMessageExcludingCompaction reads each file once", async () => {
+    //#given
+    // Capture real fs functions BEFORE mock so wrappers don't recurse.
+    const realFsNs = require("node:fs") as typeof import("node:fs")
+    const realExistsSync = realFsNs.existsSync
+    const realReadFileSync = realFsNs.readFileSync
+    const realReaddirSync = realFsNs.readdirSync
+
+    mock.module("../../shared/opencode-storage-paths", () => ({
+      OPENCODE_STORAGE: B2_TEST_STORAGE,
+      MESSAGE_STORAGE: B2_TEST_MESSAGE_STORAGE,
+      PART_STORAGE: join(B2_TEST_STORAGE, "part"),
+      SESSION_STORAGE: join(B2_TEST_STORAGE, "session"),
+    }))
+
+    let readFileSyncCalls = 0
+    const readFileSyncCallsByPath = new Map<string, number>()
+    mock.module("node:fs", () => {
+      const wrapped = {
+        ...realFsNs,
+        existsSync: (path: string) => realExistsSync(path),
+        readFileSync: (...args: unknown[]) => {
+          readFileSyncCalls++
+          const first = args[0]
+          if (typeof first === "string") {
+            readFileSyncCallsByPath.set(first, (readFileSyncCallsByPath.get(first) ?? 0) + 1)
+          }
+          return realReadFileSync(...(args as Parameters<typeof realReadFileSync>))
+        },
+        readdirSync: (path: string) => realReaddirSync(path),
+      }
+      return wrapped as unknown as typeof realFsNs
+    })
+
+    // Re-import manager with cache buster so it picks up the mocked modules.
+    const { BackgroundManager: IsolatedManager } = await import(
+      `./manager?bust=${randomUUID()}`
+    )
+
+    // client.session.messages throws → triggers fallback in notifyParentSession
+    // which calls getMessageDir → findNearestMessageExcludingCompaction.
+    const client = {
+      session: {
+        status: async () => ({ data: {} as Record<string, { type: string }> }),
+        messages: async () => {
+          throw new Error("simulated failure to trigger file-fallback path")
+        },
+        prompt: async () => ({}),
+        promptAsync: async () => ({}),
+        abort: async () => ({}),
+        todo: async () => ({ data: [] }),
+      },
+    }
+    const manager = new IsolatedManager({
+      client,
+      directory: tmpdir(),
+    } as unknown as PluginInput)
+
+    const task: BackgroundTask = {
+      id: "task_b2_regression",
+      sessionID: "ses_b2_child",
+      parentSessionID: B2_SESSION_ID,
+      parentMessageID: "msg_parent",
+      description: "b2 regression",
+      prompt: "b2",
+      agent: "b2",
+      status: "completed",
+      startedAt: new Date(),
+      completedAt: new Date(),
+    }
+
+    //#when
+    await (
+      manager as unknown as { notifyParentSession: (t: BackgroundTask) => Promise<void> }
+    ).notifyParentSession(task)
+
+    //#then
+    // Single-pass contract: readFileSync must be called exactly once per file.
+    // Pre-fix bug: 2 calls per file (3 files × 2 = 6 total).
+    // Post-fix: 1 call per file (3 files × 1 = 3 total).
+    expect(readFileSyncCalls).toBe(B2_N_FILES)
+    expect(readFileSyncCallsByPath.size).toBe(B2_N_FILES)
+    for (const [path, count] of readFileSyncCallsByPath) {
+      expect(count).toBe(1)
+      // sanity: every read path lives inside B2_SESSION_DIR
+      expect(path.startsWith(B2_SESSION_DIR)).toBe(true)
+    }
 
     manager.shutdown()
   })
