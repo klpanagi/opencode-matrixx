@@ -45,6 +45,7 @@ export const BuiltinSkillNameSchema = z.enum([
   "review-work",
   "quality-gate",
   "software-dev",
+  "matrixx-self-config",
 ])
 
 export const OverridableAgentNameSchema = z.enum([
