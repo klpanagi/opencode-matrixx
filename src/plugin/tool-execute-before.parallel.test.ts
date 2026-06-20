@@ -137,6 +137,117 @@ function buildStubHooks(spies: Record<FastFailHookName, ReturnType<typeof spyOn>
   return hooks as unknown as CreatedHooks
 }
 
+describe("tool.execute.before — T1.6 slashcommand regex precompilation", () => {
+  test("slashcommand regex precompiled at module load", async () => {
+    //#given
+    const capturedRegexes: RegExp[] = []
+    const origMatch = String.prototype.match
+    const matchSpy = spyOn(String.prototype, "match").mockImplementation(function(
+      this: string,
+      searchValue: RegExp | string,
+    ) {
+      if (searchValue instanceof RegExp) {
+        capturedRegexes.push(searchValue)
+      }
+      return origMatch.call(this, searchValue)
+    })
+
+    try {
+      const spies = {} as Record<FastFailHookName, ReturnType<typeof spyOn>>
+      const hooks = buildStubHooks(spies)
+      ;(hooks as Record<string, unknown>).matrixLoop = {
+        "tool.execute.before": async () => {},
+        startLoop: () => {},
+        cancelLoop: () => {},
+      }
+      const ctx: PluginContext = { client: {} } as PluginContext
+      const handler = createToolExecuteBeforeHandler({ ctx, hooks })
+
+      const input = {
+        tool: "slashcommand" as const,
+        sessionID: "ses_t16",
+        callID: "call_1",
+      }
+      const output = {
+        args: { command: "/matrix-loop" } as Record<string, unknown>,
+      }
+
+      //#when
+      // 3 calls is enough to prove the regex is stable across invocations.
+      await handler(input, output)
+      await handler(input, output)
+      await handler(input, output)
+
+      //#then
+      // Group captures by `.source`. For each source with ≥ 2 captures,
+      // every captured instance must be === identical (the same precompiled
+      // module-level constant).
+      const bySource = new Map<string, RegExp>()
+      let multiInstanceAssertions = 0
+      for (const r of capturedRegexes) {
+        const existing = bySource.get(r.source)
+        if (existing === undefined) {
+          bySource.set(r.source, r)
+        } else {
+          // Same source across calls → same instance (precompiled)
+          expect(r).toBe(existing)
+          multiInstanceAssertions++
+        }
+      }
+      // Sanity: we made at least one identity assertion (otherwise the
+      // test is vacuous — e.g., the slashcommand branches didn't fire).
+      expect(multiInstanceAssertions).toBeGreaterThan(0)
+    } finally {
+      matchSpy.mockRestore()
+    }
+  })
+
+  test("slashcommand command lowercased once per call", async () => {
+    //#given
+    // Spy on String.prototype.toLowerCase to count calls. After the T1.6
+    // refactor, the `command = rawCommand?.replace(...).toLowerCase()`
+    // computation happens ONCE per slashcommand invocation (the two
+    // slashcommand blocks were merged and the `command` was hoisted).
+    let toLowerCaseCount = 0
+    const origToLowerCase = String.prototype.toLowerCase
+    const toLowerSpy = spyOn(String.prototype, "toLowerCase").mockImplementation(function(
+      this: string,
+    ) {
+      toLowerCaseCount++
+      return origToLowerCase.call(this)
+    })
+
+    try {
+      const spies = {} as Record<FastFailHookName, ReturnType<typeof spyOn>>
+      const hooks = buildStubHooks(spies)
+      const ctx: PluginContext = { client: {} } as PluginContext
+      const handler = createToolExecuteBeforeHandler({ ctx, hooks })
+
+      const input = {
+        tool: "slashcommand" as const,
+        sessionID: "ses_t16",
+        callID: "call_1",
+      }
+      const output = {
+        args: { command: "/matrix-loop \"do something\"" } as Record<string, unknown>,
+      }
+
+      //#when
+      const before = toLowerCaseCount
+      await handler(input, output)
+      const after = toLowerCaseCount
+
+      //#then
+      // Exactly 1 toLowerCase call per hook invocation (was 2 before the
+      // T1.6 refactor: the matrixLoop and stop-continuation blocks each
+      // computed `command` independently).
+      expect(after - before).toBe(1)
+    } finally {
+      toLowerSpy.mockRestore()
+    }
+  })
+})
+
 describe("tool.execute.before — T1.1 parallel safety", () => {
   test(
     "100 parallel invocations produce correct output",

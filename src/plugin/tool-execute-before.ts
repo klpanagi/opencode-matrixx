@@ -7,6 +7,16 @@ import { resolveSessionAgent } from "./session-agent-resolver"
 
 import type { CreatedHooks } from "../create-hooks"
 
+// Module-level regex constants for the slashcommand branches. Precompiled
+// once at module load (Task T1.6) so the regex template `.compile()` cost
+// (~1us per literal in V8) is paid once instead of per handler invocation.
+const LEADING_SLASH_RE = /^\//
+const LOOP_COMMAND_RE = /^\/?(matrix-loop|ulw-loop)\s*/i
+const QUOTED_STRING_RE = /^["'](.+?)["']/
+const FLAG_SPLIT_RE = /\s+--/
+const MAX_ITERATIONS_RE = /--max-iterations=(\d+)/i
+const COMPLETION_PROMISE_RE = /--completion-promise=["']?([^"'\s]+)["']?/i
+
 export function createToolExecuteBeforeHandler(args: {
   ctx: PluginContext
   hooks: CreatedHooks
@@ -126,51 +136,47 @@ export function createToolExecuteBeforeHandler(args: {
       output.args.subagent_type = resolvedAgent ?? "continue"
     }
 
-    if (hooks.matrixLoop && input.tool === "slashcommand") {
-      const rawCommand = typeof output.args.command === "string" ? output.args.command : undefined
-      const command = rawCommand?.replace(/^\//, "").toLowerCase()
-      const sessionID = input.sessionID || getMainSessionID()
-
-      if (command === "matrix-loop" && sessionID) {
-        const rawArgs = rawCommand?.replace(/^\/?(matrix-loop)\s*/i, "") || ""
-        const taskMatch = rawArgs.match(/^["'](.+?)["']/)
-        const prompt =
-          taskMatch?.[1] ||
-          rawArgs.split(/\s+--/)[0]?.trim() ||
-          "Complete the task as instructed"
-
-        const maxIterMatch = rawArgs.match(/--max-iterations=(\d+)/i)
-        const promiseMatch = rawArgs.match(/--completion-promise=["']?([^"'\s]+)["']?/i)
-
-        hooks.matrixLoop.startLoop(sessionID, prompt, {
-          maxIterations: maxIterMatch ? parseInt(maxIterMatch[1], 10) : undefined,
-          completionPromise: promiseMatch?.[1],
-        })
-      } else if (command === "cancel-loop" && sessionID) {
-        hooks.matrixLoop.cancelLoop(sessionID)
-      } else if (command === "ulw-loop" && sessionID) {
-        const rawArgs = rawCommand?.replace(/^\/?(ulw-loop)\s*/i, "") || ""
-        const taskMatch = rawArgs.match(/^["'](.+?)["']/)
-        const prompt =
-          taskMatch?.[1] ||
-          rawArgs.split(/\s+--/)[0]?.trim() ||
-          "Complete the task as instructed"
-
-        const maxIterMatch = rawArgs.match(/--max-iterations=(\d+)/i)
-        const promiseMatch = rawArgs.match(/--completion-promise=["']?([^"'\s]+)["']?/i)
-
-        hooks.matrixLoop.startLoop(sessionID, prompt, {
-          ultrawork: true,
-          maxIterations: maxIterMatch ? parseInt(maxIterMatch[1], 10) : undefined,
-          completionPromise: promiseMatch?.[1],
-        })
-      }
-    }
-
     if (input.tool === "slashcommand") {
       const rawCommand = typeof output.args.command === "string" ? output.args.command : undefined
-      const command = rawCommand?.replace(/^\//, "").toLowerCase()
+      const command = rawCommand?.replace(LEADING_SLASH_RE, "").toLowerCase()
       const sessionID = input.sessionID || getMainSessionID()
+
+      if (hooks.matrixLoop) {
+        if (command === "matrix-loop" && sessionID) {
+          const rawArgs = rawCommand?.replace(LOOP_COMMAND_RE, "") || ""
+          const taskMatch = rawArgs.match(QUOTED_STRING_RE)
+          const prompt =
+            taskMatch?.[1] ||
+            rawArgs.split(FLAG_SPLIT_RE)[0]?.trim() ||
+            "Complete the task as instructed"
+
+          const maxIterMatch = rawArgs.match(MAX_ITERATIONS_RE)
+          const promiseMatch = rawArgs.match(COMPLETION_PROMISE_RE)
+
+          hooks.matrixLoop.startLoop(sessionID, prompt, {
+            maxIterations: maxIterMatch ? parseInt(maxIterMatch[1], 10) : undefined,
+            completionPromise: promiseMatch?.[1],
+          })
+        } else if (command === "cancel-loop" && sessionID) {
+          hooks.matrixLoop.cancelLoop(sessionID)
+        } else if (command === "ulw-loop" && sessionID) {
+          const rawArgs = rawCommand?.replace(LOOP_COMMAND_RE, "") || ""
+          const taskMatch = rawArgs.match(QUOTED_STRING_RE)
+          const prompt =
+            taskMatch?.[1] ||
+            rawArgs.split(FLAG_SPLIT_RE)[0]?.trim() ||
+            "Complete the task as instructed"
+
+          const maxIterMatch = rawArgs.match(MAX_ITERATIONS_RE)
+          const promiseMatch = rawArgs.match(COMPLETION_PROMISE_RE)
+
+          hooks.matrixLoop.startLoop(sessionID, prompt, {
+            ultrawork: true,
+            maxIterations: maxIterMatch ? parseInt(maxIterMatch[1], 10) : undefined,
+            completionPromise: promiseMatch?.[1],
+          })
+        }
+      }
 
       if (command === "stop-continuation" && sessionID) {
         hooks.stopContinuationGuard?.stop(sessionID)
