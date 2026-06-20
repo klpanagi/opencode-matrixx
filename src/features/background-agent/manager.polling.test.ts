@@ -1,4 +1,4 @@
-import { describe, test, expect } from "bun:test"
+import { describe, expect, mock, test } from "bun:test"
 import { tmpdir } from "node:os"
 import type { PluginInput } from "@opencode-ai/plugin"
 import { BackgroundManager } from "./manager"
@@ -49,5 +49,23 @@ describe("BackgroundManager polling overlap", () => {
     //#then
     expect(maxActiveCalls).toBe(1)
     expect(statusCallCount).toBe(1)
+  })
+
+  test("checkAndInterruptStaleTasks called once per poll", async () => {
+    //#given
+    const manager = createManagerWithStatus(async () => ({ data: {} }))
+
+    const spy = mock(async (_statuses: unknown) => {})
+    ;(manager as unknown as { checkAndInterruptStaleTasks: (s: unknown) => Promise<void> }).checkAndInterruptStaleTasks =
+      spy
+    ;(manager as unknown as { pruneStaleTasksAndNotifications: () => void }).pruneStaleTasksAndNotifications = () => {}
+
+    //#when
+    await (manager as unknown as { pollRunningTasks: () => Promise<void> }).pollRunningTasks()
+
+    //#then
+    expect(spy.mock.calls.length).toBe(1)
+
+    manager.shutdown()
   })
 })

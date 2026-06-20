@@ -1646,8 +1646,6 @@ Use \`background_output(task_id="${task.id}")\` to retrieve this result when rea
 
     await this.checkAndInterruptStaleTasks(allStatuses)
 
-    await this.checkAndInterruptStaleTasks(allStatuses)
-
     for (const task of this.tasks.values()) {
       if (task.status !== "running") continue
       
