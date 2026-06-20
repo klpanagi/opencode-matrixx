@@ -93,13 +93,14 @@ export function createToolExecuteBeforeHandler(args: {
     //     the outermost (closest to the model), prometheusMdOnly's
     //     prepended PLANNING_CONSULT_WARNING the innermost (closest to the
     //     user prompt). Reversing the order would change semantics.
-    await nonInteractiveEnvHook?.(input, output)
-    await bashFileReadGuardHook?.(input, output)
-    await questionLabelTruncatorHook?.(input, output)
-    await prometheusMdOnlyHook?.(input, output)
-    await sisyphusJuniorNotepadHook?.(input, output)
-    await atlasHookHook?.(input, output)
-
+    // ---------------------------------------------------------------------
+    // Task-tool agent resolution: start the network call NOW (before Wave 3)
+    // so it runs in parallel with the mutator chain. The result is awaited
+    // after Wave 3 completes, preserving the contract that the task tool
+    // still receives a resolved `subagent_type` before the handler returns.
+    // This is the T1.4 optimization: removes the 5s-timeout network call
+    // from the synchronous wait chain.
+    let resolvePromise: Promise<string | undefined> | undefined
     if (input.tool === "task") {
       const argsObject = output.args
       const category = typeof argsObject.category === "string" ? argsObject.category : undefined
@@ -109,9 +110,20 @@ export function createToolExecuteBeforeHandler(args: {
       if (category) {
         argsObject.subagent_type = "mouse"
       } else if (!subagentType && sessionId) {
-        const resolvedAgent = await resolveSessionAgent(ctx.client, sessionId)
-        argsObject.subagent_type = resolvedAgent ?? "continue"
+        resolvePromise = resolveSessionAgent(ctx.client, sessionId)
       }
+    }
+
+    await nonInteractiveEnvHook?.(input, output)
+    await bashFileReadGuardHook?.(input, output)
+    await questionLabelTruncatorHook?.(input, output)
+    await prometheusMdOnlyHook?.(input, output)
+    await sisyphusJuniorNotepadHook?.(input, output)
+    await atlasHookHook?.(input, output)
+
+    if (resolvePromise) {
+      const resolvedAgent = await resolvePromise
+      output.args.subagent_type = resolvedAgent ?? "continue"
     }
 
     if (hooks.matrixLoop && input.tool === "slashcommand") {

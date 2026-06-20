@@ -16,10 +16,18 @@
  *      Wave 2 (BLOCKING) and Wave 3 (MUTATOR), it must be called exactly
  *      TWICE per invocation (200 total across 100 invocations).
  *
+ * Task T1.4: `resolveSessionAgent` overlap test for the task tool.
+ *
+ * Validates that the network call for task-tool agent resolution runs in
+ * PARALLEL with Wave 3 mutators (started before the mutator chain, awaited
+ * after). Total elapsed time must be ~max(atlasHook, resolve) instead of
+ * atlasHook + resolve.
+ *
  * Uses spyOn (not `mock.module()`) to keep the test isolated from
  * CI's mock-heavy test list (see AGENTS.md "Tests that MUST be isolated").
  */
 import { describe, expect, spyOn, test } from "bun:test"
+import * as sessionAgentResolver from "./session-agent-resolver"
 import { createToolExecuteBeforeHandler } from "./tool-execute-before"
 
 type CreatedHooks = Parameters<typeof createToolExecuteBeforeHandler>[0]["hooks"]
@@ -191,5 +199,61 @@ describe("tool.execute.before — T1.1 parallel safety", () => {
       expect(spies.prometheusMdOnly?.mock.calls.length).toBe(N * 2)
     },
     10_000,
+  )
+})
+
+describe("tool.execute.before — T1.4 resolveSessionAgent overlap", () => {
+  test(
+    "resolveSessionAgent runs in parallel with Wave 3 mutators",
+    async () => {
+      //#given
+      const spies = {} as Record<FastFailHookName, ReturnType<typeof spyOn>>
+      const hooks = buildStubHooks(spies)
+
+      // Make atlasHook (last Wave-3 MUTATOR) take 100ms. This is the dominant
+      // sequential cost in the mutator chain. With T1.4 the resolve network
+      // call must run concurrently, so total time stays ~100ms.
+      spies.atlasHook.mockImplementation(async () => {
+        await new Promise((resolve) => setTimeout(resolve, 100))
+      })
+
+      // Mock resolveSessionAgent to take 100ms and return a fixed agent.
+      // The handler imports it via live binding; spyOn on the namespace
+      // intercepts the call (same pattern as `keyword-detector/index.test.ts`).
+      const resolveSpy = spyOn(
+        sessionAgentResolver,
+        "resolveSessionAgent",
+      ).mockImplementation(async () => {
+        await new Promise((resolve) => setTimeout(resolve, 100))
+        return "resolved-agent"
+      })
+
+      const ctx: PluginContext = { client: {} } as PluginContext
+      const handler = createToolExecuteBeforeHandler({ ctx, hooks })
+
+      const input = { tool: "task", sessionID: "ses_x", callID: "call_x" }
+      const output = { args: { session_id: "ses_target" } as Record<string, unknown> }
+
+      //#when
+      const start = performance.now()
+      await handler(input, output)
+      const elapsed = performance.now() - start
+
+      //#then — 1: resolveSessionAgent was called with the right session_id
+      expect(resolveSpy).toHaveBeenCalled()
+      expect(resolveSpy.mock.calls[0]?.[1]).toBe("ses_target")
+
+      //#then — 2: the resolved agent was applied to output.args.subagent_type
+      // (proves the contract: the task tool still receives a resolved agent)
+      expect(output.args.subagent_type).toBe("resolved-agent")
+
+      //#then — 3: total elapsed time proves parallelism
+      // Sequential (old): 100ms (atlasHook) + 100ms (resolve) ≈ 200ms
+      // Parallel   (new): max(100ms, 100ms) ≈ 100ms
+      // Threshold 150ms gives ~50ms headroom for timer inaccuracy + microtask
+      // scheduling overhead. A sequential run would fail by ~50ms.
+      expect(elapsed).toBeLessThan(150)
+    },
+    5_000,
   )
 })
