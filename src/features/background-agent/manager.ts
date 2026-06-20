@@ -202,6 +202,7 @@ export class BackgroundManager {
     }
 
     this.processingKeys.add(key)
+    let acquired = false
 
     try {
       const queue = this.queuesByKey.get(key)
@@ -209,27 +210,37 @@ export class BackgroundManager {
         const item = queue[0]
 
         await this.concurrencyManager.acquire(key)
+        acquired = true
 
         if (item.task.status === "cancelled" || item.task.status === "error") {
           this.concurrencyManager.release(key)
+          acquired = false
           queue.shift()
           continue
         }
 
         try {
           await this.startTask(item)
+          // startTask is responsible for releasing the slot (via task.concurrencyKey lifecycle)
+          acquired = false
         } catch (error) {
           log("[background-agent] Error starting task:", error)
           // Release concurrency slot if startTask failed and didn't release it itself
           // This prevents slot leaks when errors occur after acquire but before task.concurrencyKey is set
-          if (!item.task.concurrencyKey) {
+          if (!item.task.concurrencyKey && acquired) {
             this.concurrencyManager.release(key)
+            acquired = false
           }
         }
 
         queue.shift()
       }
     } finally {
+      // Defense-in-depth: if some unexpected path left the slot held, release it here
+      // to prevent slot leaks. Skipped when acquired=false (responsibility handed off).
+      if (acquired) {
+        this.concurrencyManager.release(key)
+      }
       this.processingKeys.delete(key)
     }
   }

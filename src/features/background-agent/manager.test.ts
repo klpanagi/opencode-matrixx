@@ -3112,6 +3112,126 @@ describe("BackgroundManager queue processing - error tasks are skipped", () => {
   })
 })
 
+// ----- B7 regression: processKey must release its concurrency slot on every error path -----
+//
+// processKey acquires a slot via concurrencyManager.acquire(key) at the top of each
+// loop iteration. The new implementation tracks ownership via an `acquired` flag
+// and the outer finally releases if the flag is still set, so getCount(key) always
+// returns to its baseline after processKey resolves.
+
+describe("BackgroundManager processKey - concurrency slot release", () => {
+  test("processKey releases slot on startTask throw", async () => {
+    //#given
+    const client = {
+      session: {
+        prompt: async () => ({}),
+        promptAsync: async () => ({}),
+        abort: async () => ({}),
+      },
+    }
+    const manager = new BackgroundManager(
+      { client, directory: tmpdir() } as unknown as PluginInput,
+      { defaultConcurrency: 1 }
+    )
+
+    const key = "test-key"
+    const task: BackgroundTask = {
+      id: "task-throws",
+      parentSessionID: "parent-session",
+      parentMessageID: "msg-1",
+      description: "throwing task",
+      prompt: "test",
+      agent: "test-agent",
+      status: "pending",
+      queuedAt: new Date(),
+    }
+
+    const input: import("./types").LaunchInput = {
+      description: task.description,
+      prompt: task.prompt,
+      agent: task.agent,
+      parentSessionID: task.parentSessionID,
+      parentMessageID: task.parentMessageID,
+    }
+
+    // Throwing BEFORE setting task.concurrencyKey exercises the "no handoff" path.
+    ;(manager as unknown as { startTask: (item: unknown) => Promise<void> }).startTask = async () => {
+      throw new Error("simulated startTask failure")
+    }
+
+    getTaskMap(manager).set(task.id, task)
+    getQueuesByKey(manager).set(key, [{ task, input }])
+    const concurrencyManager = getConcurrencyManager(manager)
+    expect(concurrencyManager.getCount(key)).toBe(0)
+
+    //#when
+    await processKeyForTest(manager, key)
+
+    //#then
+    expect(concurrencyManager.getCount(key)).toBe(0)
+    expect(concurrencyManager.getQueueLength(key)).toBe(0)
+    expect(getQueuesByKey(manager).get(key)?.length ?? 0).toBe(0)
+
+    manager.shutdown()
+  })
+
+  test("processKey releases slot on cancel after acquire", async () => {
+    //#given
+    const client = {
+      session: {
+        prompt: async () => ({}),
+        promptAsync: async () => ({}),
+        abort: async () => ({}),
+      },
+    }
+    const manager = new BackgroundManager(
+      { client, directory: tmpdir() } as unknown as PluginInput,
+      { defaultConcurrency: 1 }
+    )
+
+    const key = "test-key"
+    const task: BackgroundTask = {
+      id: "task-cancelled",
+      parentSessionID: "parent-session",
+      parentMessageID: "msg-1",
+      description: "cancelled task",
+      prompt: "test",
+      agent: "test-agent",
+      status: "cancelled",
+      queuedAt: new Date(),
+    }
+
+    const input: import("./types").LaunchInput = {
+      description: task.description,
+      prompt: task.prompt,
+      agent: task.agent,
+      parentSessionID: task.parentSessionID,
+      parentMessageID: task.parentMessageID,
+    }
+
+    let startCalled = false
+    ;(manager as unknown as { startTask: (item: unknown) => Promise<void> }).startTask = async () => {
+      startCalled = true
+    }
+
+    getTaskMap(manager).set(task.id, task)
+    getQueuesByKey(manager).set(key, [{ task, input }])
+    const concurrencyManager = getConcurrencyManager(manager)
+    expect(concurrencyManager.getCount(key)).toBe(0)
+
+    //#when
+    await processKeyForTest(manager, key)
+
+    //#then
+    // The outer finally must NOT double-release (acquired flag is reset to false).
+    expect(startCalled).toBe(false)
+    expect(concurrencyManager.getCount(key)).toBe(0)
+    expect(concurrencyManager.getQueueLength(key)).toBe(0)
+
+    manager.shutdown()
+  })
+})
+
 describe("BackgroundManager.pruneStaleTasksAndNotifications - removes pruned tasks from queuesByKey", () => {
   test("removes stale pending task from queue", () => {
     //#given
