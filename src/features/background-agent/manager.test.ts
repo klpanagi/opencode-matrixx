@@ -1,16 +1,22 @@
 declare const require: (name: string) => any
 const { describe, test, expect, beforeEach, afterEach } = require("bun:test")
-const { mock } = require("bun:test")
-import { tmpdir } from "node:os"
+const { mock, spyOn } = require("bun:test")
+
 import { randomUUID } from "node:crypto"
+import * as fs from "node:fs"
 import { mkdirSync, rmSync, writeFileSync } from "node:fs"
+import { tmpdir } from "node:os"
 import { join } from "node:path"
 import type { PluginInput } from "@opencode-ai/plugin"
-import type { BackgroundTask, ResumeInput } from "./types"
+import { _resetTaskToastManagerForTesting, initTaskToastManager } from "../task-toast-manager/manager"
+import type { ConcurrencyManager } from "./concurrency"
 import { MIN_IDLE_TIME_MS } from "./constants"
-import { BackgroundManager } from "./manager"
-import { ConcurrencyManager } from "./concurrency"
-import { initTaskToastManager, _resetTaskToastManagerForTesting } from "../task-toast-manager/manager"
+import {
+  _resetMessageDirCacheForTesting,
+  BackgroundManager,
+  getMessageDir,
+} from "./manager"
+import type { BackgroundTask, ResumeInput } from "./types"
 
 
 const TASK_TTL_MS = 30 * 60 * 1000
@@ -3781,6 +3787,52 @@ describe("BackgroundManager regression fixes - resume and aborted notification",
     expect(getCompletionTimers(manager).has(task.id)).toBe(true)
 
     manager.shutdown()
+  })
+})
+
+// ----- B4 regression: getMessageDir must cache results across calls -----
+//
+// The pre-fix getMessageDir did 3 + N sync IO ops per call (existsSync + readdirSync
+// + N × existsSync for subdir scan). With many sessions, the readdirSync + N
+// existsSync scan is expensive. B4 wraps the original body in a module-level
+// LRU cache so the 2nd call for the same sessionID makes 0 sync IO ops.
+//
+// Uses spyOn (NOT mock.module) on `fs.existsSync` and `fs.readdirSync`. This
+// works in bun because destructured `import { existsSync, readdirSync }` from
+// "node:fs" goes through a live property lookup at call time, so spyOn on
+// the namespace intercepts the call. This is bun-specific CJS interop behavior
+// also exploited in src/shared/git-worktree/collect-git-diff-stats.test.ts.
+//
+// MUST run BEFORE the B2 describe block below: B2 uses mock.module("node:fs", ...)
+// which is a global, process-wide mock that persists for the rest of the run. The
+// spy-based assertions in this test would see 0 readdirSync calls (the mock wrapper
+// is replaced by the spy in a way that confuses the live-binding chain).
+
+describe("getMessageDir cached after first call", () => {
+  test("getMessageDir cached after first call", () => {
+    //#given
+    _resetMessageDirCacheForTesting()
+    const sessionID = `ses_b4_nonexistent_${randomUUID()}`
+    const existsSpy = spyOn(fs, "existsSync")
+    const readdirSpy = spyOn(fs, "readdirSync")
+
+    //#when
+    const result1 = getMessageDir(sessionID)
+
+    //#then
+    expect(result1).toBeNull()
+    const existsAfter1 = existsSpy.mock.calls.length
+    const readdirAfter1 = readdirSpy.mock.calls.length
+    expect(existsAfter1).toBeGreaterThan(0)
+    expect(readdirAfter1).toBeGreaterThan(0)
+
+    //#when
+    const result2 = getMessageDir(sessionID)
+
+    //#then
+    expect(result2).toBeNull()
+    expect(existsSpy.mock.calls.length).toBe(existsAfter1)
+    expect(readdirSpy.mock.calls.length).toBe(readdirAfter1)
   })
 })
 

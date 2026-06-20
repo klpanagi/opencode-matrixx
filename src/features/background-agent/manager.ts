@@ -1802,7 +1802,7 @@ function registerProcessSignal(
 }
 
 
-function getMessageDir(sessionID: string): string | null {
+function computeMessageDir(sessionID: string): string | null {
   if (!existsSync(MESSAGE_STORAGE)) return null
 
   const directPath = join(MESSAGE_STORAGE, sessionID)
@@ -1813,6 +1813,29 @@ function getMessageDir(sessionID: string): string | null {
     if (existsSync(sessionPath)) return sessionPath
   }
   return null
+}
+
+const MESSAGE_DIR_CACHE_CAP = 1000
+const messageDirCache = new Map<string, string | null>()
+
+export function getMessageDir(sessionID: string): string | null {
+  const cached = messageDirCache.get(sessionID)
+  if (cached !== undefined) {
+    messageDirCache.delete(sessionID)
+    messageDirCache.set(sessionID, cached)
+    return cached
+  }
+  const result = computeMessageDir(sessionID)
+  if (messageDirCache.size >= MESSAGE_DIR_CACHE_CAP) {
+    const oldest = messageDirCache.keys().next().value
+    if (oldest !== undefined) messageDirCache.delete(oldest)
+  }
+  messageDirCache.set(sessionID, result)
+  return result
+}
+
+export function _resetMessageDirCacheForTesting(): void {
+  messageDirCache.clear()
 }
 
 function isCompactionAgent(agent: string | undefined): boolean {
