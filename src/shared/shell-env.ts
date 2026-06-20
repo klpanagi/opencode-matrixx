@@ -1,4 +1,4 @@
-export type ShellType = "unix" | "powershell" | "cmd"
+type ShellType = "unix" | "powershell" | "cmd"
 
 /**
  * Detect the current shell type based on environment variables.
@@ -8,7 +8,7 @@ export type ShellType = "unix" | "powershell" | "cmd"
  * 2. SHELL env var → Unix shell
  * 3. Platform fallback → win32: cmd, others: unix
  */
-export function detectShellType(): ShellType {
+function detectShellType(): ShellType {
   if (process.env.PSModulePath) {
     return "powershell"
   }
@@ -27,7 +27,7 @@ export function detectShellType(): ShellType {
  * @param shellType - The target shell type
  * @returns Escaped value appropriate for the shell
  */
-export function shellEscape(value: string, shellType: ShellType): string {
+function shellEscape(value: string, shellType: ShellType): string {
   if (value === "") {
     return shellType === "cmd" ? '""' : "''"
   }
