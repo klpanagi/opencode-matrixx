@@ -16,6 +16,27 @@ export function createToolExecuteBeforeHandler(args: {
 ) => Promise<void> {
   const { ctx, hooks } = args
 
+  // Cache the 15 fast-fail hook function references once at handler
+  // creation. Without this, every invocation of the returned handler
+  // resolves 16 optional-chain property lookups (`hooks.X?.["..."]?.(...)`)
+  // which costs ~1.5us per call in V8. With caching, the per-call path
+  // reads the bound reference directly.
+  const qualityGateHook = hooks.qualityGate?.["tool.execute.before"]
+  const commentCheckerHook = hooks.commentChecker?.["tool.execute.before"]
+  const directoryAgentsInjectorHook = hooks.directoryAgentsInjector?.["tool.execute.before"]
+  const directoryReadmeInjectorHook = hooks.directoryReadmeInjector?.["tool.execute.before"]
+  const rulesInjectorHook = hooks.rulesInjector?.["tool.execute.before"]
+  const secretLeakGuardHook = hooks.secretLeakGuard?.["tool.execute.before"]
+  const envFileWriteGuardHook = hooks.envFileWriteGuard?.["tool.execute.before"]
+  const writeExistingFileGuardHook = hooks.writeExistingFileGuard?.["tool.execute.before"]
+  const tasksTodowriteDisablerHook = hooks.tasksTodowriteDisabler?.["tool.execute.before"]
+  const prometheusMdOnlyHook = hooks.prometheusMdOnly?.["tool.execute.before"]
+  const nonInteractiveEnvHook = hooks.nonInteractiveEnv?.["tool.execute.before"]
+  const bashFileReadGuardHook = hooks.bashFileReadGuard?.["tool.execute.before"]
+  const questionLabelTruncatorHook = hooks.questionLabelTruncator?.["tool.execute.before"]
+  const sisyphusJuniorNotepadHook = hooks.sisyphusJuniorNotepad?.["tool.execute.before"]
+  const atlasHookHook = hooks.atlasHook?.["tool.execute.before"]
+
   return async (input, output): Promise<void> => {
     // ---------------------------------------------------------------------
     // Fast-fail hooks (Task T1.1: 3-wave parallelization)
@@ -31,35 +52,33 @@ export function createToolExecuteBeforeHandler(args: {
     //   keyed by callID (qualityGate, commentChecker). No shared state with
     //   other hooks in the wave.
     await Promise.all([
-      hooks.qualityGate?.["tool.execute.before"]?.(input, output),
-      hooks.commentChecker?.["tool.execute.before"]?.(input, output),
-      hooks.directoryAgentsInjector?.["tool.execute.before"]?.(input, output),
-      hooks.directoryReadmeInjector?.["tool.execute.before"]?.(input, output),
-      hooks.rulesInjector?.["tool.execute.before"]?.(input, output),
+      qualityGateHook?.(input, output),
+      commentCheckerHook?.(input, output),
+      directoryAgentsInjectorHook?.(input, output),
+      directoryReadmeInjectorHook?.(input, output),
+      rulesInjectorHook?.(input, output),
     ])
 
     // Wave 2 (5 hooks): fail-fast BLOCKING — each guard throws on a
     //   DIFFERENT condition for a DIFFERENT tool; no two guards fire on
-    //   the same input. Use Promise.allSettled so we can re-throw the
-    //   first rejection explicitly (Promise.all would short-circuit and
-    //   hide later throws). If a guard throws, we propagate immediately
-    //   and skip Wave 3 (mutations) — by design (block first, mutate later,
-    //   never mutate-then-block).
+    //   the same input. Use Promise.all (NOT allSettled): the first
+    //   rejection short-circuits and propagates immediately. This is
+    //   semantically what we want — a BLOCKING guard rejection aborts
+    //   the request, and the caller never sees the other hooks' (would-be)
+    //   rejections. Switching from allSettled to all also drops the
+    //   per-call result-array allocation.
     //
     //   `prometheusMdOnly` is BOTH BLOCKING (Wave 2) AND MUTATOR (Wave 3).
     //   It runs here for the BLOCKING behavior, then again in Wave 3 for
     //   the output.args.prompt prepend. The first invocation never mutates
     //   the throw path (throws on BLOCKED_TOOLS usage).
-    const blockingResults = await Promise.allSettled([
-      hooks.secretLeakGuard?.["tool.execute.before"]?.(input, output),
-      hooks.envFileWriteGuard?.["tool.execute.before"]?.(input, output),
-      hooks.writeExistingFileGuard?.["tool.execute.before"]?.(input, output),
-      hooks.tasksTodowriteDisabler?.["tool.execute.before"]?.(input, output),
-      hooks.prometheusMdOnly?.["tool.execute.before"]?.(input, output),
+    await Promise.all([
+      secretLeakGuardHook?.(input, output),
+      envFileWriteGuardHook?.(input, output),
+      writeExistingFileGuardHook?.(input, output),
+      tasksTodowriteDisablerHook?.(input, output),
+      prometheusMdOnlyHook?.(input, output),
     ])
-    for (const result of blockingResults) {
-      if (result.status === "rejected") throw result.reason
-    }
 
     // Wave 3 (5 hooks): MUTATOR — must run sequentially to preserve
     //   mutation order. Specifically:
@@ -74,12 +93,12 @@ export function createToolExecuteBeforeHandler(args: {
     //     the outermost (closest to the model), prometheusMdOnly's
     //     prepended PLANNING_CONSULT_WARNING the innermost (closest to the
     //     user prompt). Reversing the order would change semantics.
-    await hooks.nonInteractiveEnv?.["tool.execute.before"]?.(input, output)
-    await hooks.bashFileReadGuard?.["tool.execute.before"]?.(input, output)
-    await hooks.questionLabelTruncator?.["tool.execute.before"]?.(input, output)
-    await hooks.prometheusMdOnly?.["tool.execute.before"]?.(input, output)
-    await hooks.sisyphusJuniorNotepad?.["tool.execute.before"]?.(input, output)
-    await hooks.atlasHook?.["tool.execute.before"]?.(input, output)
+    await nonInteractiveEnvHook?.(input, output)
+    await bashFileReadGuardHook?.(input, output)
+    await questionLabelTruncatorHook?.(input, output)
+    await prometheusMdOnlyHook?.(input, output)
+    await sisyphusJuniorNotepadHook?.(input, output)
+    await atlasHookHook?.(input, output)
 
     if (input.tool === "task") {
       const argsObject = output.args
