@@ -3,7 +3,7 @@ import { describe, expect, test } from "bun:test"
 import { resolveOrCreateSessionId } from "./subagent-session-creator"
 import { _resetForTesting, subagentSessions } from "../../features/claude-code-session-state"
 
-describe("call-omo-agent resolveOrCreateSessionId", () => {
+describe("delegate-agent resolveOrCreateSessionId", () => {
   const originalPlatform = process.platform
 
   function buildInput(options: {

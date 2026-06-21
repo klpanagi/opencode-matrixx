@@ -1,4 +1,4 @@
-import type { CallOmoAgentArgs } from "./types"
+import type { DelegateAgentArgs } from "./types"
 import type { BackgroundManager } from "../../features/background-agent"
 import type { PluginInput } from "@opencode-ai/plugin"
 import { log } from "../../shared"
@@ -8,7 +8,7 @@ import { getMessageDir } from "./message-dir"
 import { getSessionTools } from "../../shared/session-tools-store"
 
 export async function executeBackground(
-  args: CallOmoAgentArgs,
+  args: DelegateAgentArgs,
   toolContext: {
     sessionID: string
     messageID: string

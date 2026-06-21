@@ -1,9 +1,9 @@
 import { describe, test, expect, mock } from "bun:test"
 import type { PluginInput } from "@opencode-ai/plugin"
 import type { BackgroundManager } from "../../features/background-agent"
-import { createCallOmoAgent } from "./tools"
+import { createDelegateAgent } from "./tools"
 
-describe("createCallOmoAgent", () => {
+describe("createDelegateAgent", () => {
   const mockCtx = {
     client: {},
     directory: "/test",
@@ -21,7 +21,7 @@ describe("createCallOmoAgent", () => {
 
   test("should reject agent in disabled_agents list", async () => {
     //#given
-    const toolDef = createCallOmoAgent(mockCtx, mockBackgroundManager, ["trinity"])
+    const toolDef = createDelegateAgent(mockCtx, mockBackgroundManager, ["trinity"])
     const executeFunc = toolDef.execute as Function
 
     //#when
@@ -41,7 +41,7 @@ describe("createCallOmoAgent", () => {
 
   test("should reject agent in disabled_agents list with case-insensitive matching", async () => {
     //#given
-    const toolDef = createCallOmoAgent(mockCtx, mockBackgroundManager, ["Trinity"])
+    const toolDef = createDelegateAgent(mockCtx, mockBackgroundManager, ["Trinity"])
     const executeFunc = toolDef.execute as Function
 
     //#when
@@ -61,7 +61,7 @@ describe("createCallOmoAgent", () => {
 
   test("should allow agent not in disabled_agents list", async () => {
     //#given
-    const toolDef = createCallOmoAgent(mockCtx, mockBackgroundManager, ["operator"])
+    const toolDef = createDelegateAgent(mockCtx, mockBackgroundManager, ["operator"])
     const executeFunc = toolDef.execute as Function
 
     //#when
@@ -82,7 +82,7 @@ describe("createCallOmoAgent", () => {
 
   test("should allow all agents when disabled_agents is empty", async () => {
     //#given
-    const toolDef = createCallOmoAgent(mockCtx, mockBackgroundManager, [])
+    const toolDef = createDelegateAgent(mockCtx, mockBackgroundManager, [])
     const executeFunc = toolDef.execute as Function
 
     //#when

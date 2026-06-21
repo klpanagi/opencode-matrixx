@@ -1,4 +1,4 @@
-import type { CallOmoAgentArgs } from "./types"
+import type { DelegateAgentArgs } from "./types"
 import type { PluginInput } from "@opencode-ai/plugin"
 import { log } from "../../shared"
 import { getAgentToolRestrictions } from "../../shared"
@@ -19,7 +19,7 @@ const defaultDeps: ExecuteSyncDeps = {
 }
 
 export async function executeSync(
-  args: CallOmoAgentArgs,
+  args: DelegateAgentArgs,
   toolContext: {
     sessionID: string
     messageID: string

@@ -3,13 +3,13 @@ import type { PluginInput } from "@opencode-ai/plugin"
 import { resolveMessageContext } from "../../features/hook-message-injector"
 import { getSessionAgent } from "../../features/claude-code-session-state"
 import { log } from "../../shared"
-import type { CallOmoAgentArgs } from "./types"
+import type { DelegateAgentArgs } from "./types"
 import type { ToolContextWithMetadata } from "./tool-context-with-metadata"
 import { getMessageDir } from "./message-storage-directory"
 import { getSessionTools } from "../../shared/session-tools-store"
 
 export async function executeBackgroundAgent(
-	args: CallOmoAgentArgs,
+	args: DelegateAgentArgs,
 	toolContext: ToolContextWithMetadata,
 	manager: BackgroundManager,
 	client: PluginInput["client"],

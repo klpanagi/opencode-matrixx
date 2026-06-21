@@ -1,3 +1,3 @@
 export * from "./types"
 export * from "./constants"
-export { createCallOmoAgent } from "./tools"
+export { createDelegateAgent } from "./tools"

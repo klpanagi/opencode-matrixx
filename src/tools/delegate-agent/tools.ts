@@ -1,12 +1,12 @@
 import { tool, type PluginInput, type ToolDefinition } from "@opencode-ai/plugin"
-import { ALLOWED_AGENTS, CALL_OMO_AGENT_DESCRIPTION } from "./constants"
-import type { AllowedAgentType, CallOmoAgentArgs, ToolContextWithMetadata } from "./types"
+import { ALLOWED_AGENTS, CALL_DELEGATE_AGENT_DESCRIPTION } from "./constants"
+import type { AllowedAgentType, DelegateAgentArgs, ToolContextWithMetadata } from "./types"
 import type { BackgroundManager } from "../../features/background-agent"
 import { log } from "../../shared"
 import { executeBackground } from "./background-executor"
 import { executeSync } from "./sync-executor"
 
-export function createCallOmoAgent(
+export function createDelegateAgent(
   ctx: PluginInput,
   backgroundManager: BackgroundManager,
   disabledAgents: string[] = []
@@ -14,7 +14,7 @@ export function createCallOmoAgent(
   const agentDescriptions = ALLOWED_AGENTS.map(
     (name) => `- ${name}: Specialized agent for ${name} tasks`
   ).join("\n")
-  const description = CALL_OMO_AGENT_DESCRIPTION.replace("{agents}", agentDescriptions)
+  const description = CALL_DELEGATE_AGENT_DESCRIPTION.replace("{agents}", agentDescriptions)
 
   return tool({
     description,
@@ -29,7 +29,7 @@ export function createCallOmoAgent(
         .describe("REQUIRED. true: run asynchronously (use background_output to get results), false: run synchronously and wait for completion"),
       session_id: tool.schema.string().describe("Existing Task session to continue").optional(),
     },
-    async execute(args: CallOmoAgentArgs, toolContext) {
+    async execute(args: DelegateAgentArgs, toolContext) {
       const toolCtx = toolContext as ToolContextWithMetadata
       log(`[call_omo_agent] Starting with agent: ${args.subagent_type}, background: ${args.run_in_background}`)
 
