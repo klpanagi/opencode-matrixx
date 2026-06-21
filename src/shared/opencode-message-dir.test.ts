@@ -4,7 +4,7 @@ import { join } from "node:path"
 import { tmpdir } from "node:os"
 import { randomUUID } from "node:crypto"
 
-const TEST_STORAGE = join(tmpdir(), `omo-msgdir-test-${randomUUID()}`)
+const TEST_STORAGE = join(tmpdir(), `matrixx-msgdir-test-${randomUUID()}`)
 const TEST_MESSAGE_STORAGE = join(TEST_STORAGE, "message")
 
 mock.module("./opencode-storage-paths", () => ({

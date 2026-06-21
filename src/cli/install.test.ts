@@ -18,7 +18,7 @@ describe("install CLI - binary check behavior", () => {
 
   beforeEach(() => {
     // given temporary config directory
-    tempDir = join(tmpdir(), `omo-test-${Date.now()}-${Math.random().toString(36).slice(2)}`)
+    tempDir = join(tmpdir(), `matrixx-test-${Date.now()}-${Math.random().toString(36).slice(2)}`)
     mkdirSync(tempDir, { recursive: true })
 
     originalEnv = process.env.OPENCODE_CONFIG_DIR

@@ -39,7 +39,7 @@ describe("loadJsonFile", () => {
 
   it("discovers JSONC-only user config (matrixx.jsonc)", () => {
     const originalEnv = process.env.OPENCODE_CONFIG_DIR
-    const tempBase = join(tmpdir(), `omo-test-user-jsonc-${Date.now()}-${Math.random().toString(36).slice(2)}`)
+    const tempBase = join(tmpdir(), `matrixx-test-user-jsonc-${Date.now()}-${Math.random().toString(36).slice(2)}`)
     try {
       mkdirSync(tempBase, { recursive: true })
       process.env.OPENCODE_CONFIG_DIR = tempBase
@@ -68,7 +68,7 @@ describe("loadJsonFile", () => {
 
   it("discovers JSONC-only opencode config (opencode.jsonc)", () => {
     const originalEnv = process.env.OPENCODE_CONFIG_DIR
-    const tempBase = join(tmpdir(), `omo-test-oc-jsonc-${Date.now()}-${Math.random().toString(36).slice(2)}`)
+    const tempBase = join(tmpdir(), `matrixx-test-oc-jsonc-${Date.now()}-${Math.random().toString(36).slice(2)}`)
     try {
       mkdirSync(tempBase, { recursive: true })
       process.env.OPENCODE_CONFIG_DIR = tempBase
@@ -97,7 +97,7 @@ describe("loadJsonFile", () => {
 
   it("discovers JSONC-only project config (.opencode/matrixx.jsonc)", () => {
     const originalCwd = process.cwd()
-    const tempProject = join(tmpdir(), `omo-test-project-jsonc-${Date.now()}-${Math.random().toString(36).slice(2)}`)
+    const tempProject = join(tmpdir(), `matrixx-test-project-jsonc-${Date.now()}-${Math.random().toString(36).slice(2)}`)
     try {
       mkdirSync(join(tempProject, ".opencode"), { recursive: true })
       const projectJsonc = `{
@@ -124,7 +124,7 @@ describe("loadJsonFile", () => {
 
   it("prefers .jsonc over .json when both exist for same config id", () => {
     const originalEnv = process.env.OPENCODE_CONFIG_DIR
-    const tempBase = join(tmpdir(), `omo-test-precedence-${Date.now()}-${Math.random().toString(36).slice(2)}`)
+    const tempBase = join(tmpdir(), `matrixx-test-precedence-${Date.now()}-${Math.random().toString(36).slice(2)}`)
     try {
       mkdirSync(tempBase, { recursive: true })
       process.env.OPENCODE_CONFIG_DIR = tempBase

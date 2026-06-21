@@ -4,7 +4,7 @@ import { join } from "node:path"
 import { tmpdir } from "node:os"
 import { randomUUID } from "node:crypto"
 
-const TEST_DATA_DIR = join(tmpdir(), `omo-sqlite-detect-${randomUUID()}`)
+const TEST_DATA_DIR = join(tmpdir(), `matrixx-sqlite-detect-${randomUUID()}`)
 const DB_PATH = join(TEST_DATA_DIR, "opencode", "opencode.db")
 
 let versionCheckCalls: string[] = []

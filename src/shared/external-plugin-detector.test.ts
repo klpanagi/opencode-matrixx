@@ -8,7 +8,7 @@ describe("external-plugin-detector", () => {
   let tempDir: string
 
   beforeEach(() => {
-    tempDir = fs.mkdtempSync(path.join(os.tmpdir(), "omo-test-"))
+    tempDir = fs.mkdtempSync(path.join(os.tmpdir(), "matrixx-test-"))
   })
 
   afterEach(() => {
