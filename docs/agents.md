@@ -91,7 +91,7 @@ Cipher is the agent you call when you need to design, build, or extend domain-sp
 | **Thinking** | Extended thinking enabled (32k budget) |
 | **Max Tokens** | 64,000 — DSL tasks produce large outputs (grammars + parsers + code generators) |
 | **Temperature** | 0.1 — precision-critical language engineering |
-| **Denied Tools** | `call_omo_agent` — Cipher uses direct tools (grep, LSP, AST-grep) for exploration |
+| **Denied Tools** | `delegate_agent` — Cipher uses direct tools (grep, LSP, AST-grep) for exploration |
 
 ### Five Sub-Specializations
 

@@ -450,7 +450,7 @@ Disable specific hooks in config:
 
 | Tool | Description |
 |------|-------------|
-| **call_omo_agent** | Spawn trinity/operator agents. Supports `run_in_background`. |
+| **delegate_agent** | Spawn trinity/operator agents. Supports `run_in_background`. |
 | **task** | Category-based task delegation. Supports categories (visual, business-logic) or direct agent targeting. |
 | **background_output** | Retrieve background task results |
 | **background_cancel** | Cancel running background tasks |
