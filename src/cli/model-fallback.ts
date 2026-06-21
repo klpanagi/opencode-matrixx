@@ -4,7 +4,7 @@ import {
 } from "../shared/model-requirements"
 import type { InstallConfig } from "./types"
 
-import type { AgentConfig, CategoryConfig, GeneratedOmoConfig } from "./model-fallback-types"
+import type { AgentConfig, CategoryConfig, GeneratedMatrixxConfig } from "./model-fallback-types"
 import { toProviderAvailability } from "./provider-availability"
 import {
 	getMorpheusFallbackChain,
@@ -14,7 +14,7 @@ import {
 	resolveModelFromChain,
 } from "./fallback-chain-resolution"
 
-export type { GeneratedOmoConfig } from "./model-fallback-types"
+export type { GeneratedMatrixxConfig } from "./model-fallback-types"
 
 const ZAI_MODEL = "zai-coding-plan/glm-4.7"
 
@@ -23,7 +23,7 @@ const SCHEMA_URL = "https://raw.githubusercontent.com/klpanagi/matrixx/dev/asset
 
 
 
-export function generateModelConfig(config: InstallConfig): GeneratedOmoConfig {
+export function generateModelConfig(config: InstallConfig): GeneratedMatrixxConfig {
   const avail = toProviderAvailability(config)
   const hasAnyProvider =
     avail.native.claude ||
