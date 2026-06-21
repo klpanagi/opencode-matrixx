@@ -45,5 +45,5 @@ export function getConfigJsonc(): string {
 }
 
 export function getOmoConfigPath(): string {
-  return getConfigContext().paths.omoConfig
+  return getConfigContext().paths.matrixxConfig
 }
