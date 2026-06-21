@@ -8,7 +8,7 @@ import {
   detectCurrentConfig,
   getOpenCodeVersion,
   isOpenCodeInstalled,
-  writeOmoConfig,
+  writeMatrixxConfig,
 } from "./config-manager"
 import { detectedToInitialValues, formatConfigSummary, SYMBOLS } from "./install-validators"
 import { promptInstallConfig } from "./tui-install-prompts"
@@ -75,7 +75,7 @@ export async function runTuiInstaller(args: InstallArgs, version: string): Promi
   }
 
   spinner.start("Writing matrixx configuration")
-  const omoResult = writeOmoConfig(config)
+  const omoResult = writeMatrixxConfig(config)
   if (!omoResult.success) {
     spinner.stop(`Failed to write config: ${omoResult.error}`)
     p.outro(color.red("Installation failed."))

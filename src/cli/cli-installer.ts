@@ -7,7 +7,7 @@ import {
   detectCurrentConfig,
   getOpenCodeVersion,
   isOpenCodeInstalled,
-  writeOmoConfig,
+  writeMatrixxConfig,
 } from "./config-manager"
 import {
   SYMBOLS,
@@ -100,7 +100,7 @@ export async function runCliInstaller(args: InstallArgs, version: string): Promi
   }
 
   printStep(step++, totalSteps, "Writing matrixx configuration...")
-  const omoResult = writeOmoConfig(config)
+  const omoResult = writeMatrixxConfig(config)
   if (!omoResult.success) {
     printError(`Failed: ${omoResult.error}`)
     return 1

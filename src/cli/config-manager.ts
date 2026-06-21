@@ -9,8 +9,8 @@ export { fetchNpmDistTags } from "./config-manager/npm-dist-tags"
 export { getPluginNameWithVersion } from "./config-manager/plugin-name-with-version"
 export { addPluginToOpenCodeConfig } from "./config-manager/add-plugin-to-opencode-config"
 
-export { generateOmoConfig } from "./config-manager/generate-omo-config"
-export { writeOmoConfig } from "./config-manager/write-omo-config"
+export { generateMatrixxConfig } from "./config-manager/generate-matrixx-config"
+export { writeMatrixxConfig } from "./config-manager/write-matrixx-config"
 
 export { isOpenCodeInstalled, getOpenCodeVersion } from "./config-manager/opencode-binary"
 

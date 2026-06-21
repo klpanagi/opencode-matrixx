@@ -51,7 +51,7 @@ describe("runCliInstaller", () => {
         success: true,
         configPath: "/tmp/opencode.jsonc",
       }),
-      spyOn(configManager, "writeOmoConfig").mockReturnValue({
+      spyOn(configManager, "writeMatrixxConfig").mockReturnValue({
         success: true,
         configPath: "/tmp/matrixx.jsonc",
       }),

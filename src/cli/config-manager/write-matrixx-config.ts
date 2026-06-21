@@ -1,17 +1,17 @@
 import { existsSync, readFileSync, statSync, writeFileSync } from "node:fs"
 import { parseJsonc } from "../../shared"
 import type { ConfigMergeResult, InstallConfig } from "../types"
-import { getConfigDir, getOmoConfigPath } from "./config-context"
+import { getConfigDir, getMatrixxConfigPath } from "./config-context"
 import { deepMergeRecord } from "./deep-merge-record"
 import { ensureConfigDirectoryExists } from "./ensure-config-directory-exists"
 import { formatErrorWithSuggestion } from "./format-error-with-suggestion"
-import { generateOmoConfig } from "./generate-omo-config"
+import { generateMatrixxConfig } from "./generate-matrixx-config"
 
 function isEmptyOrWhitespace(content: string): boolean {
   return content.trim().length === 0
 }
 
-export function writeOmoConfig(installConfig: InstallConfig): ConfigMergeResult {
+export function writeMatrixxConfig(installConfig: InstallConfig): ConfigMergeResult {
   try {
     ensureConfigDirectoryExists()
   } catch (err) {
@@ -22,45 +22,45 @@ export function writeOmoConfig(installConfig: InstallConfig): ConfigMergeResult 
     }
   }
 
-  const omoConfigPath = getOmoConfigPath()
+  const matrixxConfigPath = getMatrixxConfigPath()
 
   try {
-    const newConfig = generateOmoConfig(installConfig)
+    const newConfig = generateMatrixxConfig(installConfig)
 
-    if (existsSync(omoConfigPath)) {
+    if (existsSync(matrixxConfigPath)) {
       try {
-        const stat = statSync(omoConfigPath)
-        const content = readFileSync(omoConfigPath, "utf-8")
+        const stat = statSync(matrixxConfigPath)
+        const content = readFileSync(matrixxConfigPath, "utf-8")
 
         if (stat.size === 0 || isEmptyOrWhitespace(content)) {
-          writeFileSync(omoConfigPath, JSON.stringify(newConfig, null, 2) + "\n")
-          return { success: true, configPath: omoConfigPath }
+          writeFileSync(matrixxConfigPath, JSON.stringify(newConfig, null, 2) + "\n")
+          return { success: true, configPath: matrixxConfigPath }
         }
 
         const existing = parseJsonc<Record<string, unknown>>(content)
         if (!existing || typeof existing !== "object" || Array.isArray(existing)) {
-          writeFileSync(omoConfigPath, JSON.stringify(newConfig, null, 2) + "\n")
-          return { success: true, configPath: omoConfigPath }
+          writeFileSync(matrixxConfigPath, JSON.stringify(newConfig, null, 2) + "\n")
+          return { success: true, configPath: matrixxConfigPath }
         }
 
         const merged = deepMergeRecord(newConfig, existing)
-        writeFileSync(omoConfigPath, JSON.stringify(merged, null, 2) + "\n")
+        writeFileSync(matrixxConfigPath, JSON.stringify(merged, null, 2) + "\n")
       } catch (parseErr) {
         if (parseErr instanceof SyntaxError) {
-          writeFileSync(omoConfigPath, JSON.stringify(newConfig, null, 2) + "\n")
-          return { success: true, configPath: omoConfigPath }
+          writeFileSync(matrixxConfigPath, JSON.stringify(newConfig, null, 2) + "\n")
+          return { success: true, configPath: matrixxConfigPath }
         }
         throw parseErr
       }
     } else {
-      writeFileSync(omoConfigPath, JSON.stringify(newConfig, null, 2) + "\n")
+      writeFileSync(matrixxConfigPath, JSON.stringify(newConfig, null, 2) + "\n")
     }
 
-    return { success: true, configPath: omoConfigPath }
+    return { success: true, configPath: matrixxConfigPath }
   } catch (err) {
     return {
       success: false,
-      configPath: omoConfigPath,
+      configPath: matrixxConfigPath,
       error: formatErrorWithSuggestion(err, "write matrixx config"),
     }
   }

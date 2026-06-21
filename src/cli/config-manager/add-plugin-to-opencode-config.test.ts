@@ -18,7 +18,7 @@ mock.module("./config-context", () => ({
   resetConfigContext: () => {},
   getConfigJson: () => join(tempConfigDir, "opencode.json"),
   getConfigJsonc: () => join(tempConfigDir, "opencode.jsonc"),
-  getOmoConfigPath: () => join(tempConfigDir, "matrixx", "config.jsonc"),
+  getMatrixxConfigPath: () => join(tempConfigDir, "matrixx", "config.jsonc"),
 }))
 
 // `opencode-config-format` calls `getConfigJson()` / `getConfigJsonc()` via
