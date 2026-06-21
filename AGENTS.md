@@ -320,7 +320,6 @@ For full model/temp/fallback details see the per-agent file or `src/agents/AGENT
 - **Trusted deps**: `@ast-grep/cli`, `@ast-grep/napi`, `@code-yeongyu/comment-checker` (in `package.json::trustedDependencies`)
 - **Optional platform packages**: 7 main + 4 `*-baseline` variants (glibc x86_64 baseline builds)
 - **Logger**: `src/shared/logger.ts` writes to `/tmp/matrixx.log` (62 importers)
-- **CLA**: `signatures/cla.json` tracked by `contributor-assistant/github-action` (workflow `cla.yml`). PRs blocked until signed.
 - **Local dev state**: `.matrixx/` (handoff, notepads, drafts), `sisyphus-prompt.md`, `UNIQUE_BRANCH_MARKER.md` — dev-only, gitignored
 - **Flaky tests**: `matrix-loop` (CI timeout), `session-state` (parallel pollution)
 - **User-installed skills (project)**: `github-issue-triage`, `github-pr-triage` — use when triaging issues/PRs

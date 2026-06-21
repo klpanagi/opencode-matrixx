@@ -1,5 +1,5 @@
 name: Question or Discussion
-description: Ask a question or start a discussion about oh-my-opencode
+description: Ask a question or start a discussion about matrixx
 title: "[Question]: "
 labels: ["question", "needs-triage"]
 body:
