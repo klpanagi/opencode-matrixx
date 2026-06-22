@@ -56,8 +56,8 @@ jobs:
           bun test src/features/tmux-subagent
           bun test src/cli/doctor/formatter.test.ts
           bun test src/cli/doctor/format-default.test.ts
-          bun test src/tools/call-omo-agent/sync-executor.test.ts
-          bun test src/tools/call-omo-agent/session-creator.test.ts
+          bun test src/tools/delegate-agent/sync-executor.test.ts
+          bun test src/tools/delegate-agent/session-creator.test.ts
           bun test src/features/opencode-skill-loader/loader.test.ts
 
           # --- Hook directories that use mock.module() ---
@@ -165,9 +165,9 @@ jobs:
             src/tools/session-manager/tools.test.ts \
             src/tools/session-manager/utils.test.ts \
             src/tools/skill-mcp src/tools/slashcommand src/tools/task \
-            src/tools/call-omo-agent/background-agent-executor.test.ts \
-            src/tools/call-omo-agent/background-executor.test.ts \
-            src/tools/call-omo-agent/subagent-session-creator.test.ts \
+            src/tools/delegate-agent/background-agent-executor.test.ts \
+            src/tools/delegate-agent/background-executor.test.ts \
+            src/tools/delegate-agent/subagent-session-creator.test.ts \
             src/hooks/anthropic-effort \
             src/hooks/auto-slash-command \
             src/hooks/category-skill-reminder \

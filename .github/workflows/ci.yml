@@ -57,8 +57,8 @@ jobs:
           # Individual files that use mock.module and cause cross-file pollution
           bun test src/cli/doctor/formatter.test.ts
           bun test src/cli/doctor/format-default.test.ts
-          bun test src/tools/call-omo-agent/sync-executor.test.ts
-          bun test src/tools/call-omo-agent/session-creator.test.ts
+          bun test src/tools/delegate-agent/sync-executor.test.ts
+          bun test src/tools/delegate-agent/session-creator.test.ts
           bun test src/features/opencode-skill-loader/loader.test.ts
           bun test src/features/opencode-skill-loader/agents-skills-global.test.ts
           bun test src/tools/session-manager/storage.test.ts
@@ -103,8 +103,8 @@ jobs:
               -e 'src/features/tmux-subagent/' \
               -e 'src/cli/doctor/formatter.test.ts' \
               -e 'src/cli/doctor/format-default.test.ts' \
-              -e 'src/tools/call-omo-agent/sync-executor.test.ts' \
-              -e 'src/tools/call-omo-agent/session-creator.test.ts' \
+              -e 'src/tools/delegate-agent/sync-executor.test.ts' \
+              -e 'src/tools/delegate-agent/session-creator.test.ts' \
               -e 'src/features/opencode-skill-loader/loader.test.ts' \
               -e 'src/features/opencode-skill-loader/agents-skills-global.test.ts' \
               -e 'src/tools/session-manager/storage.test.ts' \
