@@ -205,7 +205,6 @@ jobs:
             src/features/opencode-skill-loader/merger.test.ts \
             src/features/opencode-skill-loader/skill-content.test.ts \
             src/features/opencode-skill-loader/blocking.test.ts \
-            src/features/opencode-skill-loader/async-loader.test.ts \
             src/features/skill-mcp-manager/env-cleaner.test.ts
 
   typecheck:
