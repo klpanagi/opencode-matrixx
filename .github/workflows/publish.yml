@@ -62,7 +62,6 @@ jobs:
 
           # --- Hook directories that use mock.module() ---
           bun test src/hooks/architect
-          bun test src/hooks/claude-code-hooks
           bun test src/hooks/comment-checker
           bun test src/hooks/compaction-todo-preserver
           bun test src/hooks/directory-agents-injector

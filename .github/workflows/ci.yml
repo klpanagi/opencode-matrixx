@@ -77,7 +77,6 @@ jobs:
           bun test src/hooks/rules-injector/injector.test.ts
           bun test src/hooks/compaction-todo-preserver/index.test.ts
           bun test src/hooks/preemptive-compaction.test.ts
-          bun test src/hooks/claude-code-hooks/stop.test.ts
           bun test src/tools/lsp/client.test.ts
           bun test src/tools/skill/tools.test.ts
           bun test src/features/claude-code-mcp-loader/loader.test.ts
@@ -123,7 +122,6 @@ jobs:
               -e 'src/hooks/rules-injector/injector.test.ts' \
               -e 'src/hooks/compaction-todo-preserver/index.test.ts' \
               -e 'src/hooks/preemptive-compaction.test.ts' \
-              -e 'src/hooks/claude-code-hooks/stop.test.ts' \
               -e 'src/tools/lsp/client.test.ts' \
               -e 'src/tools/skill/tools.test.ts' \
               -e 'src/features/claude-code-mcp-loader/loader.test.ts' \
