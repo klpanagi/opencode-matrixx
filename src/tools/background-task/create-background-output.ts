@@ -2,6 +2,7 @@ import { type ToolDefinition, tool } from "@opencode-ai/plugin"
 import type { BackgroundTask } from "../../features/background-agent"
 import { storeToolMetadata } from "../../features/tool-metadata-store"
 import { getAgentDisplayName } from "../../shared/agent-display-names"
+import { formatDetailedError } from "../../shared/error-formatting"
 import type { BackgroundOutputClient, BackgroundOutputManager } from "./clients"
 import { BACKGROUND_OUTPUT_DESCRIPTION } from "./constants"
 import { delay } from "./delay"
@@ -67,6 +68,17 @@ export function createBackgroundOutput(manager: BackgroundOutputManager, client:
           return `Task not found: ${args.task_id}`
         }
 
+        if (!task.sessionID) {
+          return formatDetailedError(
+            new Error(`Task has no session ID yet. Task ID: ${task.id}, Status: ${task.status}`),
+            {
+              operation: "Get background task output",
+              agent: task.agent,
+              category: task.category,
+            }
+          )
+        }
+
         const meta = {
           title: formatResolvedTitle(task),
           metadata: {
@@ -74,7 +86,7 @@ export function createBackgroundOutput(manager: BackgroundOutputManager, client:
             agent: task.agent,
             category: task.category,
             description: task.description,
-            sessionId: task.sessionID ?? "pending",
+            sessionId: task.sessionID,
           } as Record<string, unknown>,
         }
         ctx.metadata?.(meta)
