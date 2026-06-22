@@ -14,12 +14,18 @@ import {
   dslTextxEcosystemSkill,
   dslToolingSkill,
   dslValidationSkill,
+  frontendA11ySkill,
+  frontendBuildToolingSkill,
+  frontendPerfSkill,
+  frontendStateDataSkill,
+  frontendTestingSkill,
   frontendUiUxSkill,
   gitMasterSkill,
   matrixxSelfConfigSkill,
   playwrightCliSkill,
   playwrightSkill,
   qualityGateSkill,
+  reactNextjsPatternsSkill,
   reviewWorkSkill,
   securityApiSkill,
   securityCoreSkill,
@@ -31,6 +37,7 @@ import {
   securitySastSkill,
   securitySecretsSkill,
   softwareDevSkill,
+  svelteSveltekitPatternsSkill,
   tddEnforcerSkill,
 } from "./skills/index"
 import type { BuiltinSkill } from "./types"
@@ -52,7 +59,7 @@ export function createBuiltinSkills(options: CreateBuiltinSkillsOptions = {}): B
     browserSkill = playwrightSkill
   }
 
-  const skills = [browserSkill, frontendUiUxSkill, gitMasterSkill, devBrowserSkill, dslCoreSkill, dslGrammarSkill, dslCodegenSkill, dslMetamodelSkill, dslToolingSkill, dslTextxEcosystemSkill, dslPyecoreAdvancedSkill, dslModelTransformationSkill, dslTestingSkill, dslValidationSkill, dslCompositionSkill, documentReaderSkill, securityCoreSkill, securitySecretsSkill, securitySastSkill, securityDastSkill, securityDependenciesSkill, securityApiSkill, securityCryptoSkill, securityInfraSkill, securityReviewSkill, tddEnforcerSkill, reviewWorkSkill, qualityGateSkill, softwareDevSkill, matrixxSelfConfigSkill]
+  const skills = [browserSkill, frontendUiUxSkill, gitMasterSkill, devBrowserSkill, dslCoreSkill, dslGrammarSkill, dslCodegenSkill, dslMetamodelSkill, dslToolingSkill, dslTextxEcosystemSkill, dslPyecoreAdvancedSkill, dslModelTransformationSkill, dslTestingSkill, dslValidationSkill, dslCompositionSkill, frontendA11ySkill, frontendBuildToolingSkill, frontendPerfSkill, frontendStateDataSkill, frontendTestingSkill, reactNextjsPatternsSkill, svelteSveltekitPatternsSkill, documentReaderSkill, securityCoreSkill, securitySecretsSkill, securitySastSkill, securityDastSkill, securityDependenciesSkill, securityApiSkill, securityCryptoSkill, securityInfraSkill, securityReviewSkill, tddEnforcerSkill, reviewWorkSkill, qualityGateSkill, softwareDevSkill, matrixxSelfConfigSkill]
 
   if (!disabledSkills) {
     return skills

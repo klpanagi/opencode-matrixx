@@ -176,6 +176,6 @@ export default tseslint.config(...tseslint.configs.strictTypeChecked,
 - Mixing Biome and ESLint for the same rules — duplicate errors, confusion
 - \`eslintConfig\` in \`package.json\` (legacy) — ESLint 9 requires flat \`eslint.config.js\`
 - Using \`tailwind.config.js\` in v4 — use \`@theme\` in CSS (CSS-first config)
-- Storing secrets in \`import.meta.env\` — \`VITE_\*\` vars are inlined at build time, visible in source |`,
+- Storing secrets in \`import.meta.env\` — \`VITE_*\` vars are inlined at build time, visible in source |`,
 }
 
