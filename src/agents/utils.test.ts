@@ -242,7 +242,7 @@ describe("createBuiltinAgents with model overrides", () => {
     const disabledSkills = new Set(["playwright"])
 
     // #when
-    const agents = await createBuiltinAgents([], {}, undefined, TEST_DEFAULT_MODEL, undefined, undefined, [], undefined, undefined, undefined, disabledSkills)
+    const agents = await createBuiltinAgents([], {}, undefined, TEST_DEFAULT_MODEL, undefined, undefined, [], undefined, undefined, disabledSkills)
 
     // #then
     expect(agents.morpheus.prompt).not.toContain("playwright")
@@ -979,7 +979,7 @@ describe("buildAgent with category and skills", () => {
     }
 
     // #when - browserProvider is "agent-browser"
-    const agent = buildAgent(source["test-agent"], TEST_MODEL, undefined, undefined, "agent-browser")
+    const agent = buildAgent(source["test-agent"], TEST_MODEL, undefined, "agent-browser")
 
     // #then - agent-browser skill content should be in prompt
     expect(agent.prompt).toContain("agent-browser")
