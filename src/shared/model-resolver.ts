@@ -1,4 +1,5 @@
 import type { FallbackEntry } from "./model-requirements"
+import { resolveModelPipeline } from "./model-resolution-pipeline"
 
 export type ModelResolutionInput = {
 	userModel?: string
@@ -40,3 +41,23 @@ export function resolveModel(input: ModelResolutionInput): string | undefined {
 	)
 }
 
+export function resolveModelWithFallback(
+	input: ExtendedModelResolutionInput,
+): ModelResolutionResult | undefined {
+	const { uiSelectedModel, userModel, categoryDefaultModel, fallbackChain, availableModels, systemDefaultModel } = input
+	const resolved = resolveModelPipeline({
+		intent: { uiSelectedModel, userModel, categoryDefaultModel },
+		constraints: { availableModels },
+		policy: { fallbackChain, systemDefaultModel },
+	})
+
+	if (!resolved) {
+		return undefined
+	}
+
+	return {
+		model: resolved.model,
+		source: resolved.provenance,
+		variant: resolved.variant,
+	}
+}
