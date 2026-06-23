@@ -1,14 +1,3 @@
-type CommentType = "line" | "block" | "docstring"
-
-interface CommentInfo {
-  text: string
-  lineNumber: number
-  filePath: string
-  commentType: CommentType
-  isDocstring: boolean
-  metadata?: Record<string, string>
-}
-
 export interface PendingCall {
   filePath: string
   content?: string
@@ -18,10 +7,5 @@ export interface PendingCall {
   tool: "write" | "edit" | "multiedit"
   sessionID: string
   timestamp: number
-}
-
-interface FilterResult {
-  shouldSkip: boolean
-  reason?: string
 }
 

@@ -7,15 +7,6 @@ export const LEGACY_PACKAGE_NAME = "matrixx"
 export const NPM_REGISTRY_URL = `https://registry.npmjs.org/-/package/${PACKAGE_NAME}/dist-tags`
 export const NPM_FETCH_TIMEOUT = 5000
 
-function getCacheDir(): string {
-  if (process.platform === "win32") {
-    return path.join(process.env.LOCALAPPDATA ?? os.homedir(), "opencode")
-  }
-  return path.join(os.homedir(), ".cache", "opencode")
-}
-
-const CACHE_DIR = getCacheDir()
-
 export function getWindowsAppdataDir(): string | null {
   if (process.platform !== "win32") return null
   return process.env.APPDATA ?? path.join(os.homedir(), "AppData", "Roaming")
