@@ -294,7 +294,7 @@ For full model/temp/fallback details see the per-agent file or `src/agents/AGENT
 
 ## MCP ARCHITECTURE (3 tiers)
 
-1. **Built-in** (`src/mcp/`): websearch (Exa/Tavily), context7, grep_app, document-reader, semantic-scholar
+1. **Built-in** (`src/mcp/`): websearch (Exa/Tavily), context7, grep_app, document-reader
 2. **Claude Code compat** (`features/claude-code-mcp-loader/`): `.mcp.json` with `${VAR}` expansion
 3. **Skill-embedded** (`features/opencode-skill-loader/`): YAML frontmatter in `SKILL.md`
 
