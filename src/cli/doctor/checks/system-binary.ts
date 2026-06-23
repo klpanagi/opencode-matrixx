@@ -4,8 +4,6 @@ import { join } from "node:path"
 
 import { OPENCODE_BINARIES } from "../constants"
 
-const WINDOWS_EXECUTABLE_EXTS = [".exe", ".cmd", ".bat", ".ps1"]
-
 interface OpenCodeBinaryInfo {
   binary: string
   path: string

@@ -84,8 +84,6 @@ export interface PluginInfo {
   pinnedVersion: string | null
 }
 
-type AuthProviderId = "anthropic" | "openai" | "google"
-
 export interface DependencyInfo {
   name: string
   required: boolean
