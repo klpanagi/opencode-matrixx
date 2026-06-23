@@ -26,7 +26,7 @@ export interface CheckResult {
   duration?: number
 }
 
-export type CheckFunction = () => Promise<CheckResult>
+type CheckFunction = () => Promise<CheckResult>
 
 export interface CheckDefinition {
   id: string
@@ -76,21 +76,6 @@ export interface DoctorResult {
 
 // ===== Legacy types (used by existing checks until migration) =====
 
-export type CheckCategory =
-  | "installation"
-  | "configuration"
-  | "authentication"
-  | "dependencies"
-  | "tools"
-  | "updates"
-
-export interface OpenCodeInfo {
-  installed: boolean
-  version: string | null
-  path: string | null
-  binary: "opencode" | "opencode-desktop" | null
-}
-
 export interface PluginInfo {
   registered: boolean
   configPath: string | null
@@ -99,23 +84,7 @@ export interface PluginInfo {
   pinnedVersion: string | null
 }
 
-export interface ConfigInfo {
-  exists: boolean
-  path: string | null
-  format: "json" | "jsonc" | null
-  valid: boolean
-  errors: string[]
-}
-
-export type AuthProviderId = "anthropic" | "openai" | "google"
-
-export interface AuthProviderInfo {
-  id: AuthProviderId
-  name: string
-  pluginInstalled: boolean
-  configured: boolean
-  error?: string
-}
+type AuthProviderId = "anthropic" | "openai" | "google"
 
 export interface DependencyInfo {
   name: string
@@ -141,10 +110,3 @@ export interface McpServerInfo {
   error?: string
 }
 
-export interface VersionCheckInfo {
-  currentVersion: string | null
-  latestVersion: string | null
-  isUpToDate: boolean
-  isLocalDev: boolean
-  isPinned: boolean
-}

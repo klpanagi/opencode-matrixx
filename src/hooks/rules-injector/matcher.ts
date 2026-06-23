@@ -3,7 +3,7 @@ import { relative } from "node:path"
 import picomatch from "picomatch"
 import type { RuleMetadata } from "./types"
 
-export interface MatchResult {
+interface MatchResult {
   applies: boolean
   reason?: string
 }

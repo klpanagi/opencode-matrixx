@@ -1,4 +1,4 @@
-export interface GhCliInfo {
+interface GhCliInfo {
   installed: boolean
   version: string | null
   path: string | null

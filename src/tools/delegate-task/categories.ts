@@ -5,14 +5,14 @@ import { CATEGORY_MODEL_REQUIREMENTS } from "../../shared/model-requirements"
 import { resolveModel } from "../../shared/model-resolver"
 import { CATEGORY_PROMPT_APPENDS, DEFAULT_CATEGORIES } from "./constants"
 
-export interface ResolveCategoryConfigOptions {
+interface ResolveCategoryConfigOptions {
   userCategories?: CategoriesConfig
   inheritedModel?: string
   systemDefaultModel?: string
   availableModels?: Set<string>
 }
 
-export interface ResolveCategoryConfigResult {
+interface ResolveCategoryConfigResult {
   config: CategoryConfig
   promptAppend: string
   model: string | undefined

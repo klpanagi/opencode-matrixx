@@ -3,7 +3,7 @@ import { McpOAuthProvider } from "../mcp-oauth/provider"
 import { isStepUpRequired, mergeScopes } from "../mcp-oauth/step-up"
 import type { OAuthTokenData } from "../mcp-oauth/storage"
 
-export function getOrCreateAuthProvider(
+function getOrCreateAuthProvider(
   authProviders: Map<string, McpOAuthProvider>,
   serverUrl: string,
   oauth: NonNullable<ClaudeCodeMcpServer["oauth"]>

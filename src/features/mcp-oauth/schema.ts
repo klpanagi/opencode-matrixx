@@ -5,4 +5,3 @@ export const McpOauthSchema = z.object({
   scopes: z.array(z.string()).optional(),
 })
 
-export type McpOauth = z.infer<typeof McpOauthSchema>

@@ -1,6 +1,6 @@
 import { log } from "../../shared"
 
-export interface GitleaksResult {
+interface GitleaksResult {
   available: boolean
   findings: GitleaksFinding[]
   error?: string

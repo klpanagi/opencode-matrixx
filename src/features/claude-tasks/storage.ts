@@ -35,7 +35,7 @@ export function resolveTaskListId(config: Partial<MatrixxConfig> = {}): string {
   return sanitizePathSegment(basename(process.cwd()))
 }
 
-export function ensureDir(dirPath: string): void {
+function ensureDir(dirPath: string): void {
   if (!existsSync(dirPath)) {
     mkdirSync(dirPath, { recursive: true })
   }

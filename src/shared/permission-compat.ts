@@ -5,7 +5,7 @@
 
 export type PermissionValue = "ask" | "allow" | "deny"
 
-export interface PermissionFormat {
+interface PermissionFormat {
   permission: Record<string, PermissionValue>
 }
 

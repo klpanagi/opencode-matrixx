@@ -5,7 +5,7 @@ import { isGitCommitOrPush, isGitPush } from "./git-command-detector"
 import { runGitleaksPrePushScan, runGitleaksStagedScan } from "./gitleaks-runner"
 import { extractRemoteBranch, formatFindings } from "./result-formatter"
 
-export interface SecretLeakGuardOptions {
+interface SecretLeakGuardOptions {
   enabled?: boolean
   tool?: "gitleaks"
   block_on_detection?: boolean

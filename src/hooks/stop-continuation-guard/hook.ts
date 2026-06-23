@@ -4,7 +4,7 @@ import { log } from "../../shared/logger"
 
 const HOOK_NAME = "stop-continuation-guard"
 
-export interface StopContinuationGuardOptions {
+interface StopContinuationGuardOptions {
   backgroundManager?: {
     cancelAllForSession: (sessionID: string) => number
   }

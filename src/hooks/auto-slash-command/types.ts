@@ -16,12 +16,6 @@ export interface ParsedSlashCommand {
   raw: string
 }
 
-export interface AutoSlashCommandResult {
-  detected: boolean
-  parsedCommand?: ParsedSlashCommand
-  injectedMessage?: string
-}
-
 export interface CommandExecuteBeforeInput {
   command: string
   sessionID: string

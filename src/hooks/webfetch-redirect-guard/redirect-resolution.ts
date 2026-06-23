@@ -13,7 +13,7 @@ type RedirectResolutionParams = {
   timeoutSeconds?: number
 }
 
-export type RedirectResolutionResult =
+type RedirectResolutionResult =
   | { type: "resolved"; url: string }
   | { type: "exceeded"; url: string; maxRedirects: number }
 

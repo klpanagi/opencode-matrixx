@@ -14,8 +14,7 @@ function getCacheDir(): string {
   return path.join(os.homedir(), ".cache", "opencode")
 }
 
-export const CACHE_DIR = getCacheDir()
-export const VERSION_FILE = path.join(CACHE_DIR, "version")
+const CACHE_DIR = getCacheDir()
 
 export function getWindowsAppdataDir(): string | null {
   if (process.platform !== "win32") return null

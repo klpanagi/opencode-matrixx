@@ -57,4 +57,3 @@ export const SystemDirectiveTypes = {
   PROMETHEUS_READ_ONLY: "PROMETHEUS READ-ONLY",
 } as const
 
-export type SystemDirectiveType = (typeof SystemDirectiveTypes)[keyof typeof SystemDirectiveTypes]

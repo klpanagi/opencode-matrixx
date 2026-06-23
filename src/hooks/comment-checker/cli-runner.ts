@@ -77,7 +77,7 @@ export async function processWithCli(
   }, undefined, debugLog)
 }
 
-export interface ApplyPatchEdit {
+interface ApplyPatchEdit {
   filePath: string
   before: string
   after: string

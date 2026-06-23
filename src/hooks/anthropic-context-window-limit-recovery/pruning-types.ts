@@ -5,28 +5,18 @@ export interface ToolCallSignature {
   turn: number
 }
 
-export interface FileOperation {
+interface FileOperation {
   callID: string
   tool: string
   filePath: string
   turn: number
 }
 
-export interface ErroredToolCall {
+interface ErroredToolCall {
   callID: string
   toolName: string
   turn: number
   errorAge: number
-}
-
-export interface PruningResult {
-  itemsPruned: number
-  totalTokensSaved: number
-  strategies: {
-    deduplication: number
-    supersedeWrites: number
-    purgeErrors: number
-  }
 }
 
 export interface PruningState {
@@ -37,7 +27,7 @@ export interface PruningState {
   erroredTools: Map<string, ErroredToolCall>
 }
 
-export const CHARS_PER_TOKEN = 4
+const CHARS_PER_TOKEN = 4
 
 export function estimateTokens(text: string): number {
   return Math.ceil(text.length / CHARS_PER_TOKEN)

@@ -33,7 +33,7 @@ export async function loadOpencodeProjectSkills(directory?: string): Promise<Rec
   return skillsToCommandDefinitionRecord(skills)
 }
 
-export interface DiscoverSkillsOptions {
+interface DiscoverSkillsOptions {
   includeClaudeCodePaths?: boolean
   directory?: string
 }
@@ -89,11 +89,6 @@ export async function discoverSkills(options: DiscoverSkillsOptions = {}): Promi
     ...userSkills,
     ...agentsGlobalSkills,
   ])
-}
-
-export async function getSkillByName(name: string, options: DiscoverSkillsOptions = {}): Promise<LoadedSkill | undefined> {
-  const skills = await discoverSkills(options)
-  return skills.find(s => s.name === name)
 }
 
 export async function discoverUserClaudeSkills(): Promise<LoadedSkill[]> {

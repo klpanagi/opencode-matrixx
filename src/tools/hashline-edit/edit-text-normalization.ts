@@ -12,7 +12,7 @@ function leadingWhitespace(text: string): string {
   return match ? match[0] : ""
 }
 
-export function stripLinePrefixes(lines: string[]): string[] {
+function stripLinePrefixes(lines: string[]): string[] {
   let hashPrefixCount = 0
   let diffPlusCount = 0
   let nonEmpty = 0
@@ -72,17 +72,6 @@ export function stripInsertBeforeEcho(anchorLine: string, newLines: string[]): s
     return newLines.slice(0, -1)
   }
   return newLines
-}
-
-export function stripInsertBoundaryEcho(afterLine: string, beforeLine: string, newLines: string[]): string[] {
-  let out = newLines
-  if (out.length > 0 && equalsIgnoringWhitespace(out[0], afterLine)) {
-    out = out.slice(1)
-  }
-  if (out.length > 0 && equalsIgnoringWhitespace(out[out.length - 1], beforeLine)) {
-    out = out.slice(0, -1)
-  }
-  return out
 }
 
 export function stripRangeBoundaryEcho(

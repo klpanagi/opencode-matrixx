@@ -9,7 +9,7 @@ type MessageInfo = {
   time?: MessageTime
 }
 
-export type CursorMessage = {
+type CursorMessage = {
   info?: MessageInfo
 }
 

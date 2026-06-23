@@ -4,7 +4,7 @@ import { parseFrontmatter } from "../../shared/frontmatter"
 import { DEFAULT_COMPLETION_PROMISE, DEFAULT_MAX_ITERATIONS, DEFAULT_STATE_FILE } from "./constants"
 import type { MatrixLoopState } from "./types"
 
-export function getStateFilePath(directory: string, customPath?: string): string {
+function getStateFilePath(directory: string, customPath?: string): string {
   return customPath
     ? join(directory, customPath)
     : join(directory, DEFAULT_STATE_FILE)

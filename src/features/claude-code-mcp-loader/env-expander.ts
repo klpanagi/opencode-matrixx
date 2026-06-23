@@ -1,4 +1,4 @@
-export function expandEnvVars(value: string): string {
+function expandEnvVars(value: string): string {
   return value.replace(
     /\$\{([^}:]+)(?::-([^}]*))?\}/g,
     (_, varName: string, defaultValue?: string) => {

@@ -1,6 +1,6 @@
 import { getSessionAgent } from "../../features/claude-code-session-state"
 
-export const AGENT_NAMES = [
+const AGENT_NAMES = [
   "morpheus",
   "keymaker",
   "oracle",
@@ -24,7 +24,7 @@ export const agentPattern = new RegExp(
   "i",
 )
 
-export function detectAgentFromSession(sessionID: string): string | undefined {
+function detectAgentFromSession(sessionID: string): string | undefined {
   const match = sessionID.match(agentPattern)
   if (match) {
     return match[1].toLowerCase()

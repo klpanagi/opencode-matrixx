@@ -17,7 +17,7 @@ export { loadPluginHooksConfigs } from "./hook-loader"
 export { loadPluginMcpServers } from "./mcp-server-loader"
 export { loadPluginSkillsAsCommands } from "./skill-loader"
 
-export interface PluginComponentsResult {
+interface PluginComponentsResult {
   commands: Record<string, CommandDefinition>
   skills: Record<string, CommandDefinition>
   agents: Record<string, AgentConfig>

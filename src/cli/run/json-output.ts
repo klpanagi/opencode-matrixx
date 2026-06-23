@@ -1,6 +1,6 @@
 import type { RunResult } from "./types"
 
-export interface JsonOutputManager {
+interface JsonOutputManager {
   redirectToStderr: () => void
   restore: () => void
   emitResult: (result: RunResult) => void

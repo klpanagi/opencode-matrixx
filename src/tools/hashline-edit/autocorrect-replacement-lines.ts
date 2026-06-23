@@ -6,11 +6,11 @@ function stripAllWhitespace(text: string): string {
   return normalizeTokens(text)
 }
 
-export function stripTrailingContinuationTokens(text: string): string {
+function stripTrailingContinuationTokens(text: string): string {
   return text.replace(/(?:&&|\|\||\?\?|\?|:|=|,|\+|-|\*|\/|\.|\()\s*$/u, "")
 }
 
-export function stripMergeOperatorChars(text: string): string {
+function stripMergeOperatorChars(text: string): string {
   return text.replace(/[|&?]/g, "")
 }
 
@@ -20,7 +20,7 @@ function leadingWhitespace(text: string): string {
   return match ? match[0] : ""
 }
 
-export function restoreOldWrappedLines(originalLines: string[], replacementLines: string[]): string[] {
+function restoreOldWrappedLines(originalLines: string[], replacementLines: string[]): string[] {
   if (originalLines.length === 0 || replacementLines.length < 2) return replacementLines
 
   const canonicalToOriginal = new Map<string, { line: string; count: number }>()
@@ -64,7 +64,7 @@ export function restoreOldWrappedLines(originalLines: string[], replacementLines
   return correctedLines
 }
 
-export function maybeExpandSingleLineMerge(
+function maybeExpandSingleLineMerge(
   originalLines: string[],
   replacementLines: string[]
 ): string[] {
@@ -149,7 +149,7 @@ export function maybeExpandSingleLineMerge(
   return replacementLines
 }
 
-export function restoreIndentForPairedReplacement(
+function restoreIndentForPairedReplacement(
   originalLines: string[],
   replacementLines: string[]
 ): string[] {

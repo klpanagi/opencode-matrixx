@@ -19,7 +19,7 @@ function arraysEqual(a: string[], b: string[]): boolean {
   return true
 }
 
-export interface HashlineApplyReport {
+interface HashlineApplyReport {
   content: string
   noopEdits: number
   deduplicatedEdits: number

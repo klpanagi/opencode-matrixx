@@ -1,6 +1,6 @@
-export type CommentType = "line" | "block" | "docstring"
+type CommentType = "line" | "block" | "docstring"
 
-export interface CommentInfo {
+interface CommentInfo {
   text: string
   lineNumber: number
   filePath: string
@@ -20,14 +20,8 @@ export interface PendingCall {
   timestamp: number
 }
 
-export interface FileComments {
-  filePath: string
-  comments: CommentInfo[]
-}
-
-export interface FilterResult {
+interface FilterResult {
   shouldSkip: boolean
   reason?: string
 }
 
-export type CommentFilter = (comment: CommentInfo) => FilterResult

@@ -3,12 +3,6 @@ import type { AgentMode, AgentPromptMetadata } from "./types"
 import { isGptModel } from "./types"
 
 const MODE: AgentMode = "primary"
-export const MORPHEUS_PROMPT_METADATA: AgentPromptMetadata = {
-  category: "utility",
-  cost: "EXPENSIVE",
-  promptAlias: "Morpheus",
-  triggers: [],
-}
 
 import type { AvailableAgent, AvailableCategory, AvailableSkill, AvailableTool } from "./dynamic-agent-prompt-builder"
 import {

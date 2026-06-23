@@ -53,8 +53,3 @@ export async function ensureCliAvailable(): Promise<boolean> {
 	return path !== null && existsSync(path)
 }
 
-export function getResolvedSgCliPath(): string | null {
-	const path = getSgCliPath()
-	if (path && existsSync(path)) return path
-	return null
-}

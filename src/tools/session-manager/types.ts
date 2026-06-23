@@ -93,7 +93,3 @@ export interface SessionInfoArgs {
   session_id: string
 }
 
-export interface SessionDeleteArgs {
-  session_id: string
-  confirm: boolean
-}

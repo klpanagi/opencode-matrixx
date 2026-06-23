@@ -8,7 +8,7 @@ import { createSkillContext } from "./plugin/skill-context"
 import { createToolRegistry } from "./plugin/tool-registry"
 import type { PluginContext, ToolsRecord } from "./plugin/types"
 
-export type CreateToolsResult = {
+type CreateToolsResult = {
   filteredTools: ToolsRecord
   mergedSkills: LoadedSkill[]
   availableSkills: AvailableSkill[]

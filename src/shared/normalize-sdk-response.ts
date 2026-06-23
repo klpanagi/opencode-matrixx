@@ -1,4 +1,4 @@
-export interface NormalizeSDKResponseOptions {
+interface NormalizeSDKResponseOptions {
   preferResponseOnMissingData?: boolean
 }
 

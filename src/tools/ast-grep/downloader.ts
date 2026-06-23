@@ -63,9 +63,7 @@ export function getCachedBinaryPath(): string | null {
   return getCachedBinaryPathShared(getCacheDir(), getBinaryName())
 }
 
-
-
-export async function downloadAstGrep(version: string = DEFAULT_VERSION): Promise<string | null> {
+ async function downloadAstGrep(version: string = DEFAULT_VERSION): Promise<string | null> {
   const platformKey = `${process.platform}-${process.arch}`
   const platformInfo = PLATFORM_MAP[platformKey]
 

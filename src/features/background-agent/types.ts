@@ -12,7 +12,7 @@ export interface ToolCallWindow {
   threshold: number
 }
 
-export interface TaskProgress {
+interface TaskProgress {
   toolCalls: number
   lastTool?: string
   toolCallWindow?: ToolCallWindow

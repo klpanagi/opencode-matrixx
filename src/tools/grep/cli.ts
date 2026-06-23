@@ -193,37 +193,3 @@ export async function runRg(options: GrepOptions): Promise<GrepResult> {
   }
 }
 
-export async function runRgCount(options: Omit<GrepOptions, "context">): Promise<CountResult[]> {
-  const cli = resolveGrepCli()
-  const args = buildArgs({ ...options, context: 0 }, cli.backend)
-
-  if (cli.backend === "rg") {
-    args.push("--count", "--", options.pattern)
-  } else {
-    args.push("-c", "-e", options.pattern)
-  }
-
-  const paths = options.paths?.length ? options.paths : ["."]
-  args.push(...paths)
-
-  const timeout = Math.min(options.timeout ?? DEFAULT_TIMEOUT_MS, DEFAULT_TIMEOUT_MS)
-  const proc = spawn([cli.path, ...args], {
-    stdout: "pipe",
-    stderr: "pipe",
-  })
-
-  const timeoutPromise = new Promise<never>((_, reject) => {
-    const id = setTimeout(() => {
-      proc.kill()
-      reject(new Error(`Search timeout after ${timeout}ms`))
-    }, timeout)
-    proc.exited.then(() => clearTimeout(id))
-  })
-
-  try {
-    const stdout = await Promise.race([new Response(proc.stdout).text(), timeoutPromise])
-    return parseCountOutput(stdout)
-  } catch (e) {
-    throw new Error(`Count search failed: ${e instanceof Error ? e.message : String(e)}`)
-  }
-}

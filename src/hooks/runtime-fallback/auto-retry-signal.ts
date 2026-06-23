@@ -1,4 +1,4 @@
-export interface AutoRetrySignal {
+interface AutoRetrySignal {
   signal: string
 }
 

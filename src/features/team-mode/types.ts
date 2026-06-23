@@ -1,6 +1,6 @@
 import { z } from "zod"
 
-export const MESSAGE_KINDS = [
+const MESSAGE_KINDS = [
   "message",
   "shutdown_request",
   "shutdown_approved",
@@ -8,11 +8,9 @@ export const MESSAGE_KINDS = [
   "announcement",
 ] as const
 
-export const MEMBER_KINDS = ["category", "subagent_type"] as const
+const TASK_STATUSES = ["pending", "claimed", "in_progress", "completed", "deleted"] as const
 
-export const TASK_STATUSES = ["pending", "claimed", "in_progress", "completed", "deleted"] as const
-
-export const RUNTIME_STATUSES = [
+const RUNTIME_STATUSES = [
   "creating",
   "active",
   "shutdown_requested",
@@ -51,7 +49,7 @@ const TeamReferenceSchema = z.object({
   description: z.string().optional(),
 }).strict()
 
-export const TeamSpecSchema = z.object({
+const TeamSpecSchema = z.object({
   version: z.literal(1),
   name: z.string().min(1).regex(/^[a-z0-9-]+$/),
   description: z.string().optional(),
@@ -62,7 +60,7 @@ export const TeamSpecSchema = z.object({
   members: z.array(MemberSchema).min(1).max(8),
 })
 
-export const MessageSchema = z.object({
+const MessageSchema = z.object({
   version: z.literal(1),
   messageId: z.string().uuid(),
   from: z.string(),
@@ -119,7 +117,7 @@ const ShutdownRequestSchema = z.object({
   rejectedReason: z.string().optional(),
 }).strict()
 
-export const RuntimeStateSchema = z.object({
+const RuntimeStateSchema = z.object({
   version: z.literal(1),
   teamRunId: z.string().uuid(),
   teamName: z.string(),
@@ -177,10 +175,5 @@ export const AGENT_ELIGIBILITY_REGISTRY: Readonly<Record<string, {
   },
 } as const
 
-export type TeamSpec = z.infer<typeof TeamSpecSchema>
-export type Member = z.infer<typeof MemberSchema>
-export type CategoryMember = z.infer<typeof CategoryMemberSchema>
-export type SubagentMember = z.infer<typeof SubagentMemberSchema>
 export type Message = z.infer<typeof MessageSchema>
 export type Task = z.infer<typeof TaskSchema>
-export type RuntimeState = z.infer<typeof RuntimeStateSchema>

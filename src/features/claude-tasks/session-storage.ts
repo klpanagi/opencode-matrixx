@@ -32,7 +32,7 @@ export function listAllSessionDirs(
   })
 }
 
-export interface TaskLocation {
+interface TaskLocation {
   path: string
   sessionID: string
 }

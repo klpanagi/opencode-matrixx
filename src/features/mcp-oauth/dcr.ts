@@ -1,4 +1,4 @@
-export type ClientRegistrationRequest = {
+type ClientRegistrationRequest = {
   redirect_uris: string[]
   client_name: string
   grant_types: ["authorization_code", "refresh_token"]
@@ -19,7 +19,7 @@ export type ClientRegistrationStorage = {
   ) => void
 }
 
-export type DynamicClientRegistrationOptions = {
+type DynamicClientRegistrationOptions = {
   registrationEndpoint?: string | null
   serverIdentifier?: string
   clientName: string

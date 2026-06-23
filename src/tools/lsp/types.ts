@@ -52,11 +52,11 @@ export interface Diagnostic {
   message: string
 }
 
-export interface TextDocumentIdentifier {
+interface TextDocumentIdentifier {
   uri: string
 }
 
-export interface VersionedTextDocumentIdentifier extends TextDocumentIdentifier {
+interface VersionedTextDocumentIdentifier extends TextDocumentIdentifier {
   version: number | null
 }
 
@@ -65,25 +65,25 @@ export interface TextEdit {
   newText: string
 }
 
-export interface TextDocumentEdit {
+interface TextDocumentEdit {
   textDocument: VersionedTextDocumentIdentifier
   edits: TextEdit[]
 }
 
-export interface CreateFile {
+interface CreateFile {
   kind: "create"
   uri: string
   options?: { overwrite?: boolean; ignoreIfExists?: boolean }
 }
 
-export interface RenameFile {
+interface RenameFile {
   kind: "rename"
   oldUri: string
   newUri: string
   options?: { overwrite?: boolean; ignoreIfExists?: boolean }
 }
 
-export interface DeleteFile {
+interface DeleteFile {
   kind: "delete"
   uri: string
   options?: { recursive?: boolean; ignoreIfNotExists?: boolean }
@@ -103,7 +103,7 @@ export interface PrepareRenameDefaultBehavior {
   defaultBehavior: boolean
 }
 
-export interface ServerLookupInfo {
+interface ServerLookupInfo {
   id: string
   command: string[]
   extensions: string[]

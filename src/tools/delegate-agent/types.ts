@@ -10,21 +10,6 @@ export interface DelegateAgentArgs {
   session_id?: string
 }
 
-export interface DelegateAgentSyncResult {
-  title: string
-  metadata: {
-    summary?: Array<{
-      id: string
-      tool: string
-      state: {
-        status: string
-        title?: string
-      }
-    }>
-    sessionId: string
-  }
-  output: string
-}
 export type ToolContextWithMetadata = {
   sessionID: string
   messageID: string

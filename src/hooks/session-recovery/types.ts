@@ -1,6 +1,3 @@
-export type ThinkingPartType = "thinking" | "redacted_thinking" | "reasoning"
-export type MetaPartType = "step-start" | "step-finish"
-export type ContentPartType = "text" | "tool" | "tool_use" | "tool_result"
 
 export interface StoredMessageMeta {
   id: string
@@ -39,7 +36,7 @@ export interface StoredToolPart {
   }
 }
 
-export interface StoredReasoningPart {
+interface StoredReasoningPart {
   id: string
   sessionID: string
   messageID: string
@@ -47,7 +44,7 @@ export interface StoredReasoningPart {
   text: string
 }
 
-export interface StoredStepPart {
+interface StoredStepPart {
   id: string
   sessionID: string
   messageID: string

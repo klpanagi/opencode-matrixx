@@ -117,12 +117,3 @@ export async function loadMcpConfigs(
   return { servers, loadedServers }
 }
 
-export function formatLoadedServersForToast(
-  loadedServers: LoadedMcpServer[]
-): string {
-  if (loadedServers.length === 0) return ""
-
-  return loadedServers
-    .map((server) => `${server.name} (${server.scope})`)
-    .join(", ")
-}

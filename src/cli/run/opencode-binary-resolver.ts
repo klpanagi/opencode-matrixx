@@ -39,7 +39,7 @@ export function collectCandidateBinaryPaths(
   return candidates
 }
 
-export async function canExecuteBinary(binaryPath: string): Promise<boolean> {
+ async function canExecuteBinary(binaryPath: string): Promise<boolean> {
   try {
     const proc = Bun.spawn([binaryPath, "--version"], {
       stdout: "pipe",

@@ -55,7 +55,7 @@ export function pruneStaleTasksAndNotifications(args: {
   }
 }
 
-export type SessionStatusMap = Record<string, { type: string }>
+type SessionStatusMap = Record<string, { type: string }>
 
 export async function checkAndInterruptStaleTasks(args: {
   tasks: Iterable<BackgroundTask>

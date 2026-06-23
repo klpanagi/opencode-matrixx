@@ -1,4 +1,4 @@
-export interface StepUpInfo {
+interface StepUpInfo {
   requiredScopes: string[]
   error?: string
   errorDescription?: string

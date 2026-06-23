@@ -14,14 +14,14 @@ export function createFallbackState(originalModel: string): FallbackState {
   }
 }
 
-export function isModelInCooldown(model: string, state: FallbackState, cooldownSeconds: number): boolean {
+function isModelInCooldown(model: string, state: FallbackState, cooldownSeconds: number): boolean {
   const failedAt = state.failedModels.get(model)
   if (failedAt === undefined) return false
   const cooldownMs = cooldownSeconds * 1000
   return Date.now() - failedAt < cooldownMs
 }
 
-export function findNextAvailableFallback(
+function findNextAvailableFallback(
   state: FallbackState,
   fallbackModels: string[],
   cooldownSeconds: number

@@ -49,18 +49,12 @@ export type BackgroundCancelClient = {
 
 export type BackgroundOutputManager = Pick<import("../../features/background-agent").BackgroundManager, "getTask">
 
-export type FullSessionMessagePart = {
+type FullSessionMessagePart = {
   type?: string
   text?: string
   thinking?: string
   content?: string | Array<{ type?: string; text?: string }>
   output?: string
-}
-
-export type FullSessionMessage = {
-  id?: string
-  info?: { role?: string; time?: string; agent?: string }
-  parts?: FullSessionMessagePart[]
 }
 
 export type ToolContextWithMetadata = {

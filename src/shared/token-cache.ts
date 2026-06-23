@@ -5,7 +5,7 @@ export interface TokenInfo {
   cache: { read: number; write: number }
 }
 
-export interface CachedTokenEntry {
+interface CachedTokenEntry {
   providerID: string
   modelID: string
   tokens: TokenInfo
@@ -37,16 +37,7 @@ export function getCachedTokenUsage(
   return entry
 }
 
-export function getCachedTokenEntry(sessionID: string): CachedTokenEntry | undefined {
-  return cache.get(sessionID)
-}
-
 export function clearTokenCache(sessionID: string): void {
   cache.delete(sessionID)
 }
 
-export function getTotalInputTokens(sessionID: string): number | null {
-  const entry = cache.get(sessionID)
-  if (!entry) return null
-  return (entry.tokens.input ?? 0) + (entry.tokens.cache?.read ?? 0)
-}

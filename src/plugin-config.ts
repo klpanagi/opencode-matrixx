@@ -48,7 +48,7 @@ export function parseConfigPartially(
   return partialConfig as MatrixxConfig;
 }
 
-export function loadConfigFromPath(
+function loadConfigFromPath(
   configPath: string,
   _ctx: unknown
 ): MatrixxConfig | null {
@@ -96,7 +96,7 @@ export function loadConfigFromPath(
  * Returned by {@link getDisabledSets} so callers can do O(1) membership
  * checks without re-constructing a Set on every read.
  */
-export interface DisabledSets {
+interface DisabledSets {
   disabledAgents: Set<string>
   disabledMcps: Set<string>
   disabledHooks: Set<string>

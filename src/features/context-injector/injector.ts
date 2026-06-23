@@ -14,7 +14,7 @@ interface InjectionResult {
   contextLength: number
 }
 
-export function injectPendingContext(
+function injectPendingContext(
   collector: ContextCollector,
   sessionID: string,
   parts: OutputPart[]
@@ -48,23 +48,6 @@ interface ChatMessageInput {
 interface ChatMessageOutput {
   message: Record<string, unknown>
   parts: OutputPart[]
-}
-
-export function createContextInjectorHook(collector: ContextCollector) {
-  return {
-    "chat.message": async (
-      input: ChatMessageInput,
-      output: ChatMessageOutput
-    ): Promise<void> => {
-      const result = injectPendingContext(collector, input.sessionID, output.parts)
-      if (result.injected) {
-        log("[context-injector] Injected pending context via chat.message", {
-          sessionID: input.sessionID,
-          contextLength: result.contextLength,
-        })
-      }
-    },
-  }
 }
 
 interface MessageWithParts {

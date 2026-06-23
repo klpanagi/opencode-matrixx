@@ -5,7 +5,7 @@ export type CommandScope = "user" | "project" | "opencode" | "opencode-project"
  * Based on speckit's handoff pattern for multi-agent orchestration.
  * @see https://github.com/github/spec-kit
  */
-export interface HandoffDefinition {
+interface HandoffDefinition {
   /** Human-readable label for the handoff action */
   label: string
   /** Target agent/command identifier (e.g., "speckit.tasks") */

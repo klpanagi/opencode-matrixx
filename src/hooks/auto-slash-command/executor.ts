@@ -189,7 +189,7 @@ async function formatCommandTemplate(cmd: CommandInfo, args: string): Promise<st
   return sections.join("\n")
 }
 
-export interface ExecuteResult {
+interface ExecuteResult {
   success: boolean
   replacementText?: string
   error?: string

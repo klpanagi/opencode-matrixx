@@ -11,7 +11,7 @@ export interface CachedCompactionState {
   tokens: TokenInfo
 }
 
-export interface PreemptiveCompactionClient {
+interface PreemptiveCompactionClient {
   session: {
     messages: (input: {
       path: { id: string }

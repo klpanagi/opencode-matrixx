@@ -4,7 +4,7 @@ import {
   KEYWORD_DETECTORS,
 } from "./constants"
 
-export interface DetectedKeyword {
+interface DetectedKeyword {
   type: "ultrawork" | "search" | "analyze"
   message: string
 }
@@ -22,13 +22,6 @@ function resolveMessage(
   modelID?: string
 ): string {
   return typeof message === "function" ? message(agentName, modelID) : message
-}
-
-export function detectKeywords(text: string, agentName?: string, modelID?: string): string[] {
-  const textWithoutCode = removeCodeBlocks(text)
-  return KEYWORD_DETECTORS.filter(({ pattern }) =>
-    pattern.test(textWithoutCode)
-  ).map(({ message }) => resolveMessage(message, agentName, modelID))
 }
 
 export function detectKeywordsWithType(text: string, agentName?: string, modelID?: string): DetectedKeyword[] {

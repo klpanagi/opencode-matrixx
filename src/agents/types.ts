@@ -19,17 +19,17 @@ export type AgentFactory = ((model: string) => AgentConfig) & {
 /**
  * Agent category for grouping in Morpheus prompt sections
  */
-export type AgentCategory = "exploration" | "specialist" | "advisor" | "utility"
+type AgentCategory = "exploration" | "specialist" | "advisor" | "utility"
 
 /**
  * Cost classification for Tool Selection table
  */
-export type AgentCost = "FREE" | "CHEAP" | "EXPENSIVE"
+type AgentCost = "FREE" | "CHEAP" | "EXPENSIVE"
 
 /**
  * Delegation trigger for Morpheus prompt's Delegation Table
  */
-export interface DelegationTrigger {
+interface DelegationTrigger {
   /** Domain of work (e.g., "Frontend UI/UX") */
   domain: string
   /** When to delegate (e.g., "Visual changes only...") */
@@ -93,11 +93,6 @@ export function isAnthropicModel(model: string): boolean {
 
 const GEMINI_INDICATORS = ["gemini", "google-vertex/gemini", "google/gemini"]
 
-export function isGeminiModel(model: string): boolean {
-  const lowered = model.toLowerCase()
-  return GEMINI_INDICATORS.some((indicator) => lowered.includes(indicator))
-}
-
 export type BuiltinAgentName =
   | "morpheus"
   | "keymaker"
@@ -112,7 +107,7 @@ export type BuiltinAgentName =
   | "sentinel"
   | "sati"
 
-export type OverridableAgentName =
+type OverridableAgentName =
   | "build"
   | BuiltinAgentName
 

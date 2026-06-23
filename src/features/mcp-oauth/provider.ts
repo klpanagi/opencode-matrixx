@@ -13,7 +13,7 @@ import {
 import type { OAuthTokenData } from "./storage"
 import { loadToken, saveToken } from "./storage"
 
-export type McpOAuthProviderOptions = {
+type McpOAuthProviderOptions = {
   serverUrl: string
   clientId?: string
   scopes?: string[]

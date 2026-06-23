@@ -3,7 +3,7 @@ import { log } from "./logger"
 
 type Client = ReturnType<typeof createOpencodeClient>
 
-export interface ModelSuggestionInfo {
+interface ModelSuggestionInfo {
   providerID: string
   modelID: string
   suggestion: string

@@ -4,7 +4,6 @@ import { HOOK_NAME, NON_INTERACTIVE_ENV, SHELL_COMMAND_PATTERNS } from "./consta
 
 export * from "./constants"
 export * from "./detector"
-export * from "./types"
 
 const BANNED_COMMAND_PATTERNS = SHELL_COMMAND_PATTERNS.banned
   .filter((command) => !command.includes("("))

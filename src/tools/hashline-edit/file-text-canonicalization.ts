@@ -1,4 +1,4 @@
-export interface FileTextEnvelope {
+interface FileTextEnvelope {
   content: string
   hadBom: boolean
   lineEnding: "\n" | "\r\n"

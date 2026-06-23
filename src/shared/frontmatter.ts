@@ -1,6 +1,6 @@
 import yaml from "js-yaml"
 
-export interface FrontmatterResult<T = Record<string, unknown>> {
+interface FrontmatterResult<T = Record<string, unknown>> {
   data: T
   body: string
   hadFrontmatter: boolean

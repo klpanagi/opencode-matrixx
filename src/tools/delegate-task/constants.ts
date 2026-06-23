@@ -5,7 +5,7 @@ import type {
 import type { CategoryConfig } from "../../config/schema"
 import { truncateDescription } from "../../shared/truncate-description"
 
-export const VISUAL_CATEGORY_PROMPT_APPEND = `<Category_Context>
+const VISUAL_CATEGORY_PROMPT_APPEND = `<Category_Context>
 You are working on VISUAL/UI tasks.
 
 Design-first mindset:
@@ -19,7 +19,7 @@ Design-first mindset:
 AVOID: Generic fonts, purple gradients on white, predictable layouts, cookie-cutter patterns.
 </Category_Context>`
 
-export const SOURCE_CATEGORY_PROMPT_APPEND = `<Category_Context>
+const SOURCE_CATEGORY_PROMPT_APPEND = `<Category_Context>
 You are working on DEEP LOGICAL REASONING / COMPLEX ARCHITECTURE tasks.
 
 **CRITICAL - CODE STYLE REQUIREMENTS (NON-NEGOTIABLE)**:
@@ -41,7 +41,7 @@ Response format:
 - Risks and mitigations (if relevant)
 </Category_Context>`
 
-export const MATRIX_BEND_CATEGORY_PROMPT_APPEND = `<Category_Context>
+const MATRIX_BEND_CATEGORY_PROMPT_APPEND = `<Category_Context>
 You are working on HIGHLY CREATIVE / ARTISTIC tasks.
 
 Artistic genius mindset:
@@ -58,7 +58,7 @@ Approach:
 - This is for tasks requiring exceptional creativity
 </Category_Context>`
 
-export const QUICK_CATEGORY_PROMPT_APPEND = `<Category_Context>
+const QUICK_CATEGORY_PROMPT_APPEND = `<Category_Context>
 You are working on SMALL / QUICK tasks.
 
 Efficient execution mindset:
@@ -110,7 +110,7 @@ EXPECTED OUTPUT:
 If your prompt lacks this structure, REWRITE IT before delegating.
 </Caller_Warning>`
 
-export const UNSPECIFIED_LOW_CATEGORY_PROMPT_APPEND = `<Category_Context>
+const UNSPECIFIED_LOW_CATEGORY_PROMPT_APPEND = `<Category_Context>
 You are working on tasks that don't fit specific categories but require moderate effort.
 
 <Selection_Gate>
@@ -133,7 +133,7 @@ THIS CATEGORY USES A MID-TIER MODEL (claude-sonnet-4-6).
 3. EXPECTED OUTPUT: Define concrete success criteria
 </Caller_Warning>`
 
-export const UNSPECIFIED_HIGH_CATEGORY_PROMPT_APPEND = `<Category_Context>
+const UNSPECIFIED_HIGH_CATEGORY_PROMPT_APPEND = `<Category_Context>
 You are working on tasks that don't fit specific categories but require substantial effort.
 
 <Selection_Gate>
@@ -148,7 +148,7 @@ If task is unclassifiable but moderate-effort, use blue-pill instead.
 </Selection_Gate>
 </Category_Context>`
 
-export const WRITING_CATEGORY_PROMPT_APPEND = `<Category_Context>
+const WRITING_CATEGORY_PROMPT_APPEND = `<Category_Context>
 You are working on WRITING / PROSE tasks.
 
 Wordsmith mindset:
@@ -174,7 +174,7 @@ ANTI-AI-SLOP RULES (NON-NEGOTIABLE):
 - Write like a human, not a corporate template.
 </Category_Context>`
 
-export const DEEP_CATEGORY_PROMPT_APPEND = `<Category_Context>
+const DEEP_CATEGORY_PROMPT_APPEND = `<Category_Context>
 You are working on GOAL-ORIENTED AUTONOMOUS tasks.
 
 **CRITICAL - AUTONOMOUS EXECUTION MINDSET (NON-NEGOTIABLE)**:
@@ -204,8 +204,6 @@ You are NOT an interactive assistant. You are an autonomous problem-solver.
 - Focus on results, not play-by-play progress
 - Report completion with summary of changes made
 </Category_Context>`
-
-
 
 export const DEFAULT_CATEGORIES: Record<string, CategoryConfig> = {
   "construct": { model: "anthropic/claude-sonnet-4-6" },
@@ -246,7 +244,7 @@ export const CATEGORY_DESCRIPTIONS: Record<string, string> = {
  * then summarize user requirements and clarify uncertainties before proceeding.
  * Also MANDATES dependency graphs, parallel execution analysis, and category+skill recommendations.
  */
-export const PLAN_AGENT_SYSTEM_PREPEND_STATIC_BEFORE_SKILLS = `<system>
+const PLAN_AGENT_SYSTEM_PREPEND_STATIC_BEFORE_SKILLS = `<system>
 BEFORE you begin planning, you MUST first understand the user's request deeply.
 
 MANDATORY CONTEXT GATHERING PROTOCOL:
@@ -310,7 +308,6 @@ WHY THIS MATTERS:
 - Prevents blocked work from starting prematurely
 - Identifies critical path for project timeline
 
-
 ═══════════════════════════════════════════════════════════════════
 █ SECTION 2: PARALLEL EXECUTION GRAPH (MANDATORY)                 █
 ═══════════════════════════════════════════════════════════════════
@@ -344,7 +341,6 @@ WHY THIS MATTERS:
 - Executors can dispatch multiple agents simultaneously
 - Identifies bottlenecks in the execution plan
 
-
 ═══════════════════════════════════════════════════════════════════
 █ SECTION 3: CATEGORY + SKILLS RECOMMENDATIONS (MANDATORY)        █
 ═══════════════════════════════════════════════════════════════════
@@ -354,7 +350,7 @@ FOR EVERY TASK, YOU MUST RECOMMEND:
 2. Which SKILLS to load for the delegated agent
 `
 
-export const PLAN_AGENT_SYSTEM_PREPEND_STATIC_AFTER_SKILLS = `### REQUIRED OUTPUT FORMAT
+const PLAN_AGENT_SYSTEM_PREPEND_STATIC_AFTER_SKILLS = `### REQUIRED OUTPUT FORMAT
 
 For EACH task, include a recommendation block:
 
@@ -375,7 +371,6 @@ WHY THIS MATTERS:
 - Skills inject SPECIALIZED KNOWLEDGE into the executor
 - Missing a relevant skill = suboptimal execution
 - Wrong category = wrong model = poor results
-
 
 ═══════════════════════════════════════════════════════════════════
 █ RESPONSE FORMAT SPECIFICATION (MANDATORY)                       █
@@ -510,7 +505,7 @@ function renderPlanAgentSkillRows(skills: AvailableSkill[]): string[] {
    })
  }
 
-export function buildPlanAgentSkillsSection(
+function buildPlanAgentSkillsSection(
   categories: AvailableCategory[] = [],
   skills: AvailableSkill[] = []
 ): string {
@@ -570,7 +565,7 @@ export const PLAN_FAMILY_NAMES = ["plan", "oracle"]
  * Used by sync-result-fetcher to select the correct turn when a sync
  * agent produces a structured deliverable alongside intermediate output.
  */
-export const PLAN_DELIVERABLE_TAG = "plan"
+const PLAN_DELIVERABLE_TAG = "plan"
 
 /**
  * Get the deliverable tag for a given agent name.

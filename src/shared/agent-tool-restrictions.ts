@@ -50,8 +50,3 @@ export function getAgentToolRestrictions(agentName: string): Record<string, bool
     ?? {}
 }
 
-export function hasAgentToolRestrictions(agentName: string): boolean {
-  const restrictions = AGENT_RESTRICTIONS[agentName]
-    ?? Object.entries(AGENT_RESTRICTIONS).find(([key]) => key.toLowerCase() === agentName.toLowerCase())?.[1]
-  return restrictions !== undefined && Object.keys(restrictions).length > 0
-}

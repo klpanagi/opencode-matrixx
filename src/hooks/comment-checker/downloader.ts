@@ -88,7 +88,7 @@ function getPackageVersion(): string {
  * Download the comment-checker binary from GitHub Releases.
  * Returns the path to the downloaded binary, or null on failure.
  */
-export async function downloadCommentChecker(): Promise<string | null> {
+ async function downloadCommentChecker(): Promise<string | null> {
   const platformKey = `${process.platform}-${process.arch}`
   const platformInfo = PLATFORM_MAP[platformKey]
   

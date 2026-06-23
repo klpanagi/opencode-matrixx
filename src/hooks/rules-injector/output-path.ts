@@ -1,4 +1,4 @@
-export interface ToolExecuteOutputShape {
+interface ToolExecuteOutputShape {
   title: string;
   metadata: unknown;
 }

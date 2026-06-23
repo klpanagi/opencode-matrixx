@@ -87,7 +87,7 @@ function matchesNotificationPlugin(entry: string): string | null {
   return null
 }
 
-export interface ExternalNotifierResult {
+interface ExternalNotifierResult {
   detected: boolean
   pluginName: string | null
   allPlugins: string[]

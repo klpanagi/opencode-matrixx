@@ -1,4 +1,3 @@
-export const TOOL_NAME = "skill" as const
 
 export const TOOL_DESCRIPTION_NO_SKILLS = "Load a skill to get detailed instructions for a specific task. No skills are currently available."
 

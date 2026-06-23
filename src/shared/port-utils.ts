@@ -28,7 +28,7 @@ export async function findAvailablePort(
   throw new Error(`No available port found in range ${startPort}-${startPort + MAX_PORT_ATTEMPTS - 1}`)
 }
 
-export interface AutoPortResult {
+interface AutoPortResult {
   port: number
   wasAutoSelected: boolean
 }

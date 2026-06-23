@@ -1,7 +1,7 @@
 import { log } from "../../shared"
 import { createSensitiveFileMatcher } from "./sensitive-file-matcher"
 
-export interface EnvFileWriteGuardOptions {
+interface EnvFileWriteGuardOptions {
   enabled?: boolean
   blocked_patterns?: string[]
   allowed_paths?: string[]

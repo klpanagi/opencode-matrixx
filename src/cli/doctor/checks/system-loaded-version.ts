@@ -11,7 +11,7 @@ interface PackageJsonShape {
   dependencies?: Record<string, string>
 }
 
-export interface LoadedVersionInfo {
+interface LoadedVersionInfo {
   cacheDir: string
   cachePackagePath: string
   installedPackagePath: string

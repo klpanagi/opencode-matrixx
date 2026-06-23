@@ -1,6 +1,6 @@
 import { deleteToken } from "../../features/mcp-oauth/storage"
 
-export interface LogoutOptions {
+interface LogoutOptions {
   serverUrl?: string
 }
 

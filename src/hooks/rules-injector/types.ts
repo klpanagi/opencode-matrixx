@@ -11,28 +11,6 @@ export interface RuleMetadata {
 }
 
 /**
- * Rule information with path context and content
- */
-export interface RuleInfo {
-  /** Absolute path to the rule file */
-  path: string;
-  /** Path relative to project root */
-  relativePath: string;
-  /** Directory distance from target file (0 = same dir) */
-  distance: number;
-  /** Rule file content (without frontmatter) */
-  content: string;
-  /** SHA-256 hash of content for deduplication */
-  contentHash: string;
-  /** Parsed frontmatter metadata */
-  metadata: RuleMetadata;
-  /** Why this rule matched (e.g., "alwaysApply", "glob: *.ts", "path match") */
-  matchReason: string;
-  /** Real path after symlink resolution (for duplicate detection) */
-  realPath: string;
-}
-
-/**
  * Rule file candidate with discovery context
  */
 export interface RuleFileCandidate {

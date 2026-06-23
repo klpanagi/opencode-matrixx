@@ -24,13 +24,13 @@ interface MessageWrapper {
 	info: { role: string } & Partial<AssistantMessageInfo>;
 }
 
-export interface TruncationResult {
+interface TruncationResult {
 	result: string;
 	truncated: boolean;
 	removedCount?: number;
 }
 
-export interface TruncationOptions {
+interface TruncationOptions {
 	targetMaxTokens?: number;
 	preserveHeaderLines?: number;
 	contextWindowLimit?: number;
@@ -40,7 +40,7 @@ function estimateTokens(text: string): number {
 	return Math.ceil(text.length / CHARS_PER_TOKEN_ESTIMATE);
 }
 
-export function truncateToTokenLimit(
+function truncateToTokenLimit(
 	output: string,
 	maxTokens: number,
 	preserveHeaderLines = 3,
@@ -108,7 +108,7 @@ export function truncateToTokenLimit(
 	};
 }
 
-export async function getContextWindowUsage(
+ async function getContextWindowUsage(
 	ctx: PluginInput,
 	sessionID: string,
 ): Promise<{
@@ -166,7 +166,7 @@ export async function getContextWindowUsage(
 	}
 }
 
-export async function dynamicTruncate(
+ async function dynamicTruncate(
 	ctx: PluginInput,
 	sessionID: string,
 	output: string,

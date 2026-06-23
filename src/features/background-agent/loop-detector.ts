@@ -12,7 +12,7 @@ export interface CircuitBreakerSettings {
   consecutiveThreshold: number
 }
 
-export interface ToolLoopDetectionResult {
+interface ToolLoopDetectionResult {
   triggered: boolean
   toolName?: string
   repeatedCount?: number
@@ -74,7 +74,7 @@ function sortObject(obj: unknown): unknown {
   return sorted
 }
 
-export function createToolCallSignature(
+function createToolCallSignature(
   toolName: string,
   toolInput?: Record<string, unknown> | null
 ): string {

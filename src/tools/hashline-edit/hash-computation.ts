@@ -30,7 +30,7 @@ export function formatHashLines(content: string): string {
   return lines.map((line, index) => formatHashLine(index + 1, line)).join("\n")
 }
 
-export interface HashlineStreamOptions {
+interface HashlineStreamOptions {
   startLine?: number
   maxChunkLines?: number
   maxChunkBytes?: number

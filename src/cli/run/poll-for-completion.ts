@@ -9,7 +9,7 @@ const DEFAULT_REQUIRED_CONSECUTIVE = 3
 const ERROR_GRACE_CYCLES = 3
 const MIN_STABILIZATION_MS = 10_000
 
-export interface PollOptions {
+interface PollOptions {
   pollIntervalMs?: number
   requiredConsecutive?: number
   minStabilizationMs?: number

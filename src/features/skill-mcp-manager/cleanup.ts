@@ -63,7 +63,7 @@ export function startCleanupTimer(state: SkillMcpManagerState): void {
   state.cleanupInterval.unref()
 }
 
-export function stopCleanupTimer(state: SkillMcpManagerState): void {
+function stopCleanupTimer(state: SkillMcpManagerState): void {
   if (!state.cleanupInterval) return
   clearInterval(state.cleanupInterval)
   state.cleanupInterval = null

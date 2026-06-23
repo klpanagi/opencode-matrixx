@@ -33,7 +33,7 @@ export function uriToPath(uri: string): string {
   return fileURLToPath(uri)
 }
 
-export function formatServerLookupError(result: Exclude<ServerLookupResult, { status: "found" }>): string {
+function formatServerLookupError(result: Exclude<ServerLookupResult, { status: "found" }>): string {
   if (result.status === "not_installed") {
     const { server, installHint } = result
     return [

@@ -24,7 +24,7 @@ export interface PluginInstallation {
  * Installed plugins database v1 (legacy)
  * plugins stored as direct objects
  */
-export interface InstalledPluginsDatabaseV1 {
+interface InstalledPluginsDatabaseV1 {
   version: 1
   plugins: Record<string, PluginInstallation>
 }
@@ -33,7 +33,7 @@ export interface InstalledPluginsDatabaseV1 {
  * Installed plugins database v2 (current)
  * plugins stored as arrays
  */
-export interface InstalledPluginsDatabaseV2 {
+interface InstalledPluginsDatabaseV2 {
   version: 2
   plugins: Record<string, PluginInstallation[]>
 }
@@ -47,7 +47,7 @@ export type InstalledPluginsDatabase = InstalledPluginsDatabaseV1 | InstalledPlu
 /**
  * Plugin author information
  */
-export interface PluginAuthor {
+interface PluginAuthor {
   name?: string
   email?: string
   url?: string
@@ -80,14 +80,14 @@ export interface PluginManifest {
 /**
  * Hooks configuration
  */
-export interface HookEntry {
+interface HookEntry {
   type: "command" | "prompt" | "agent"
   command?: string
   prompt?: string
   agent?: string
 }
 
-export interface HookMatcher {
+interface HookMatcher {
   matcher?: string
   hooks: HookEntry[]
 }
@@ -112,7 +112,7 @@ export interface HooksConfig {
 /**
  * MCP servers configuration in plugin
  */
-export interface PluginMcpServer {
+interface PluginMcpServer {
   command?: string
   args?: string[]
   env?: Record<string, string>
@@ -122,14 +122,14 @@ export interface PluginMcpServer {
   disabled?: boolean
 }
 
-export interface McpServersConfig {
+interface McpServersConfig {
   mcpServers?: Record<string, PluginMcpServer>
 }
 
 /**
  * LSP server configuration
  */
-export interface LspServerConfig {
+interface LspServerConfig {
   command: string
   args?: string[]
   extensionToLanguage: Record<string, string>
@@ -148,7 +148,7 @@ export interface LspServerConfig {
   }
 }
 
-export interface LspServersConfig {
+interface LspServersConfig {
   [language: string]: LspServerConfig
 }
 

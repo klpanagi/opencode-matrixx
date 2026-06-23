@@ -1,4 +1,4 @@
-export interface CommandMatch {
+interface CommandMatch {
 	fullMatch: string
 	command: string
 	start: number

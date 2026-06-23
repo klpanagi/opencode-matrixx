@@ -1,6 +1,6 @@
 import type { RuleMetadata } from "./types";
 
-export interface RuleFrontmatterResult {
+interface RuleFrontmatterResult {
   metadata: RuleMetadata;
   body: string;
 }

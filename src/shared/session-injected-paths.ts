@@ -7,7 +7,7 @@ import {
 } from "node:fs";
 import { join } from "node:path";
 
-export interface InjectedPathsData {
+interface InjectedPathsData {
   sessionID: string;
   injectedPaths: string[];
   updatedAt: number;

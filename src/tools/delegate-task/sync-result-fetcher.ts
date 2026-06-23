@@ -56,7 +56,7 @@ function extractTaggedDeliverable(
   return undefined
 }
 
-export type FetchSyncResultOptions = {
+type FetchSyncResultOptions = {
   deliverableTag?: string
   finalTextOnly?: boolean
 }

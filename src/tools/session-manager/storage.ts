@@ -8,7 +8,7 @@ import { isSqliteBackend } from "../../shared/opencode-storage-detection"
 import { MESSAGE_STORAGE, PART_STORAGE, SESSION_STORAGE, TODO_DIR, TRANSCRIPT_DIR } from "./constants"
 import type { SessionInfo, SessionMessage, SessionMetadata, TodoItem } from "./types"
 
-export interface GetMainSessionsOptions {
+interface GetMainSessionsOptions {
   directory?: string
 }
 
@@ -298,7 +298,7 @@ export async function readSessionTodos(sessionID: string): Promise<TodoItem[]> {
   return []
 }
 
-export async function readSessionTranscript(sessionID: string): Promise<number> {
+ async function readSessionTranscript(sessionID: string): Promise<number> {
   if (!existsSync(TRANSCRIPT_DIR)) return 0
 
   const transcriptFile = join(TRANSCRIPT_DIR, `${sessionID}.jsonl`)

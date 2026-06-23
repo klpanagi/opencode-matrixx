@@ -12,19 +12,6 @@ interface SDKMessage {
   parts: unknown[]
 }
 
-export async function getMessageIdsFromSDK(
-  client: OpencodeClient,
-  sessionID: string
-): Promise<string[]> {
-  try {
-    const response = await client.session.messages({ path: { id: sessionID } })
-    const messages = normalizeSDKResponse(response, [] as SDKMessage[], { preferResponseOnMissingData: true })
-    return messages.map(msg => msg.info.id)
-  } catch {
-    return []
-  }
-}
-
 export function getMessageIds(sessionID: string): string[] {
   const messageDir = getMessageDir(sessionID)
   if (!messageDir || !existsSync(messageDir)) return []

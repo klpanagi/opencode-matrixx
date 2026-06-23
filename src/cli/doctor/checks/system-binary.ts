@@ -6,12 +6,12 @@ import { OPENCODE_BINARIES } from "../constants"
 
 const WINDOWS_EXECUTABLE_EXTS = [".exe", ".cmd", ".bat", ".ps1"]
 
-export interface OpenCodeBinaryInfo {
+interface OpenCodeBinaryInfo {
   binary: string
   path: string
 }
 
-export function getDesktopAppPaths(platform: NodeJS.Platform): string[] {
+function getDesktopAppPaths(platform: NodeJS.Platform): string[] {
   const home = homedir()
 
   switch (platform) {
@@ -46,33 +46,7 @@ export function getDesktopAppPaths(platform: NodeJS.Platform): string[] {
   }
 }
 
-export function getBinaryLookupCommand(platform: NodeJS.Platform): "which" | "where" {
-  return platform === "win32" ? "where" : "which"
-}
-
-export function parseBinaryPaths(output: string): string[] {
-  return output
-    .split(/\r?\n/)
-    .map((line) => line.trim())
-    .filter((line) => line.length > 0)
-}
-
-export function selectBinaryPath(paths: string[], platform: NodeJS.Platform): string | null {
-  if (paths.length === 0) return null
-  if (platform !== "win32") return paths[0] ?? null
-
-  const normalizedPaths = paths.map((path) => path.toLowerCase())
-  for (const extension of WINDOWS_EXECUTABLE_EXTS) {
-    const pathIndex = normalizedPaths.findIndex((path) => path.endsWith(extension))
-    if (pathIndex !== -1) {
-      return paths[pathIndex] ?? null
-    }
-  }
-
-  return paths[0] ?? null
-}
-
-export function buildVersionCommand(binaryPath: string, platform: NodeJS.Platform): string[] {
+function buildVersionCommand(binaryPath: string, platform: NodeJS.Platform): string[] {
   if (platform === "win32" && binaryPath.toLowerCase().endsWith(".ps1")) {
     return ["powershell", "-NoProfile", "-ExecutionPolicy", "Bypass", "-File", binaryPath, "--version"]
   }
@@ -80,7 +54,7 @@ export function buildVersionCommand(binaryPath: string, platform: NodeJS.Platfor
   return [binaryPath, "--version"]
 }
 
-export function findDesktopBinary(
+function findDesktopBinary(
   platform: NodeJS.Platform = process.platform,
   checkExists: (path: string) => boolean = existsSync
 ): OpenCodeBinaryInfo | null {

@@ -1,7 +1,7 @@
 import { existsSync } from "node:fs"
 import { getConfigJson, getConfigJsonc } from "./config-context"
 
-export type ConfigFormat = "json" | "jsonc" | "none"
+type ConfigFormat = "json" | "jsonc" | "none"
 
 export function detectConfigFormat(): { format: ConfigFormat; path: string } {
   const configJsonc = getConfigJsonc()

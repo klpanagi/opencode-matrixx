@@ -1,6 +1,6 @@
 import { McpOAuthProvider } from "../../features/mcp-oauth/provider"
 
-export interface LoginOptions {
+interface LoginOptions {
   serverUrl?: string
   clientId?: string
   scopes?: string[]

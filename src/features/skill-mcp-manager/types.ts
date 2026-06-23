@@ -24,26 +24,26 @@ export interface SkillMcpServerContext {
  */
 export type ConnectionType = "stdio" | "http"
 
-export interface ManagedClientBase {
+interface ManagedClientBase {
   client: Client
   skillName: string
   lastUsedAt: number
   connectionType: ConnectionType
 }
 
-export interface ManagedStdioClient extends ManagedClientBase {
+interface ManagedStdioClient extends ManagedClientBase {
   connectionType: "stdio"
   transport: StdioClientTransport
 }
 
-export interface ManagedHttpClient extends ManagedClientBase {
+interface ManagedHttpClient extends ManagedClientBase {
   connectionType: "http"
   transport: StreamableHTTPClientTransport
 }
 
 export type ManagedClient = ManagedStdioClient | ManagedHttpClient
 
-export interface ProcessCleanupHandler {
+interface ProcessCleanupHandler {
   signal: NodeJS.Signals
   listener: () => void
 }

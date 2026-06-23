@@ -35,19 +35,3 @@ export function formatGrepResult(result: GrepResult): string {
   return lines.join("\n")
 }
 
-export function formatCountResult(results: CountResult[]): string {
-  if (results.length === 0) {
-    return "No matches found"
-  }
-
-  const total = results.reduce((sum, r) => sum + r.count, 0)
-  const lines: string[] = [`Found ${total} match(es) in ${results.length} file(s):`, ""]
-
-  const sorted = [...results].sort((a, b) => b.count - a.count)
-
-  for (const { file, count } of sorted) {
-    lines.push(`  ${count.toString().padStart(6)}: ${file}`)
-  }
-
-  return lines.join("\n")
-}

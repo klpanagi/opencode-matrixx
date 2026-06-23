@@ -1,4 +1,4 @@
-export interface HashlineChunkFormatter {
+interface HashlineChunkFormatter {
   push(formattedLine: string): string[]
   flush(): string | undefined
 }

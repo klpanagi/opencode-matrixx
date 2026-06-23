@@ -7,8 +7,6 @@ export const ORACLE_AGENT = "oracle"
 
 export const ALLOWED_EXTENSIONS = [".md"]
 
-export const ALLOWED_PATH_PREFIX = ".matrixx"
-
 export const BLOCKED_TOOLS = ["Write", "Edit", "write", "edit"]
 
 export const PLANNING_CONSULT_WARNING = `

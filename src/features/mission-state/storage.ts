@@ -9,7 +9,7 @@ import { basename, dirname, join } from "node:path"
 import { MISSION_DIR, MISSION_FILE, ORACLE_PLANS_DIR } from "./constants"
 import type { MissionState, PlanProgress } from "./types"
 
-export function getMissionFilePath(directory: string): string {
+function getMissionFilePath(directory: string): string {
   return join(directory, MISSION_DIR, MISSION_FILE)
 }
 

@@ -1,6 +1,6 @@
 const CLAUDE_PLUGIN_ROOT_VAR = "${CLAUDE_PLUGIN_ROOT}"
 
-export function resolvePluginPath(path: string, pluginRoot: string): string {
+function resolvePluginPath(path: string, pluginRoot: string): string {
   return path.replace(CLAUDE_PLUGIN_ROOT_VAR, pluginRoot)
 }
 

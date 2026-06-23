@@ -39,12 +39,3 @@ export function buildSystemContent(input: BuildSystemContentInput): string | und
   return parts.join("\n\n") || undefined
 }
 
-export function buildTaskPrompt(
-  prompt: string,
-  skillContent?: string,
-): string {
-  if (!skillContent) {
-    return prompt
-  }
-  return `${skillContent}\n\n${prompt}`
-}
