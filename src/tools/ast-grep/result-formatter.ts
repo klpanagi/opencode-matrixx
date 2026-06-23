@@ -1,4 +1,4 @@
-import type { AnalyzeResult, SgResult } from "./types"
+import type { SgResult } from "./types"
 
 export function formatSearchResult(result: SgResult): string {
   if (result.error) {

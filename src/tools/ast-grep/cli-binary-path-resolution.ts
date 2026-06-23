@@ -1,6 +1,6 @@
 import { existsSync } from "node:fs"
 
-import { findSgCliPathSync, getSgCliPath, setSgCliPath } from "./constants"
+import { findSgCliPathSync, setSgCliPath } from "./constants"
 import { ensureAstGrepBinary } from "./downloader"
 
 let resolvedCliPath: string | null = null
