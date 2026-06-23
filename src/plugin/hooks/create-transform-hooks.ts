@@ -27,7 +27,7 @@ export function createTransformHooks(args: {
   isHookEnabled: (hookName: string) => boolean
   safeHookEnabled?: boolean
 }): TransformHooks {
-  const { ctx, pluginConfig, isHookEnabled } = args
+  const { ctx, pluginConfig: _pluginConfig, isHookEnabled } = args
   const safeHookEnabled = args.safeHookEnabled ?? true
 
   const keywordDetector = isHookEnabled("keyword-detector")
