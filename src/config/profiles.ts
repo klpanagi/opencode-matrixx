@@ -43,6 +43,7 @@ const PROFILES: Record<ProfileName, Partial<MatrixxConfig>> = {
       trinity: { model: GROK_FREE },
       construct: { model: KIMI_FREE },
       mouse: { model: MINIMAX_FREE },
+      sati: { model: KIMI_FREE },
     },
     categories: {
       source: { model: KIMI_FREE },
@@ -79,6 +80,7 @@ const PROFILES: Record<ProfileName, Partial<MatrixxConfig>> = {
       trinity: { model: DEEPSEEK_FLASH },
       construct: { model: DEEPSEEK_FLASH },
       mouse: { model: DEEPSEEK_FLASH },
+      sati: { model: KIMI_K26 },
     },
     categories: {
       source: { model: KIMI_K26 },
@@ -105,6 +107,7 @@ const PROFILES: Record<ProfileName, Partial<MatrixxConfig>> = {
       construct: { model: HAIKU },
       trinity: { model: HAIKU },
       operator: { model: HAIKU },
+      sati: { model: HAIKU },
     },
     categories: {
       source: { model: SONNET },
@@ -131,6 +134,7 @@ const PROFILES: Record<ProfileName, Partial<MatrixxConfig>> = {
       construct: { model: HAIKU },
       trinity: { model: HAIKU },
       operator: { model: HAIKU },
+      sati: { model: SONNET },
     },
     categories: {
       source: { model: SONNET },
@@ -157,6 +161,7 @@ const PROFILES: Record<ProfileName, Partial<MatrixxConfig>> = {
       construct: { model: SONNET },
       trinity: { model: HAIKU },
       operator: { model: HAIKU },
+      sati: { model: SONNET },
     },
     categories: {
       source: { model: OPUS },
@@ -183,6 +188,7 @@ const PROFILES: Record<ProfileName, Partial<MatrixxConfig>> = {
       construct: { model: SONNET },
       trinity: { model: HAIKU },
       operator: { model: SONNET },
+      sati: { model: OPUS },
     },
     categories: {
       source: { model: OPUS },
@@ -217,6 +223,7 @@ const PROFILES: Record<ProfileName, Partial<MatrixxConfig>> = {
       trinity: { model: XIAOMI_MIMO_V25 },
       construct: { model: XIAOMI_MIMO_V25 },
       mouse: { model: XIAOMI_MIMO_V25 },
+      sati: { model: XIAOMI_MIMO_V25_PRO },
     },
     categories: {
       source: { model: XIAOMI_MIMO_V25_PRO },
@@ -249,6 +256,7 @@ const PROFILES: Record<ProfileName, Partial<MatrixxConfig>> = {
       trinity: { model: DEEPSEEK_PRO },
       construct: { model: DEEPSEEK_PRO },
       mouse: { model: DEEPSEEK_PRO },
+      sati: { model: KIMI_K26 },
     },
     categories: {
       source: { model: KIMI_K26 },
@@ -284,6 +292,7 @@ const PROFILES: Record<ProfileName, Partial<MatrixxConfig>> = {
       trinity: { model: DEEPSEEK_FLASH },
       construct: { model: DEEPSEEK_FLASH },
       mouse: { model: DEEPSEEK_FLASH },
+      sati: { model: MIMO_V25 },
     },
     categories: {
       source: { model: MINIMAX_M3 },

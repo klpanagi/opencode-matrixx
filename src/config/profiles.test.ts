@@ -40,6 +40,15 @@ describe("expandProfile", () => {
       //#then
       expect(result.categories?.["bullet-time"]?.model).toBe("anthropic/claude-haiku-4-5")
     })
+
+    test("should set sati to anthropic/claude-haiku-4-5 (frontend specialist)", () => {
+      //#given
+      //#when
+      const result = expandProfile("budget")
+
+      //#then
+      expect(result.agents?.sati?.model).toBe("anthropic/claude-haiku-4-5")
+    })
   })
 
   describe("balanced profile", () => {
@@ -92,6 +101,15 @@ describe("expandProfile", () => {
 
       //#then
       expect(result.categories?.["bullet-time"]?.model).toBe("anthropic/claude-haiku-4-5")
+    })
+
+    test("should set sati to anthropic/claude-sonnet-4-6 (frontend specialist)", () => {
+      //#given
+      //#when
+      const result = expandProfile("balanced")
+
+      //#then
+      expect(result.agents?.sati?.model).toBe("anthropic/claude-sonnet-4-6")
     })
   })
 
@@ -155,6 +173,15 @@ describe("expandProfile", () => {
       //#then
       expect(result.categories?.["bullet-time"]?.model).toBe("anthropic/claude-haiku-4-5")
     })
+
+    test("should set sati to anthropic/claude-opus-4-6 (frontend specialist)", () => {
+      //#given
+      //#when
+      const result = expandProfile("performance")
+
+      //#then
+      expect(result.agents?.sati?.model).toBe("anthropic/claude-opus-4-6")
+    })
   })
 
   describe("economy profile", () => {
@@ -207,6 +234,15 @@ describe("expandProfile", () => {
 
       //#then
       expect(result.categories?.["bullet-time"]?.model).toBe("anthropic/claude-haiku-4-5")
+    })
+
+    test("should set sati to anthropic/claude-sonnet-4-6 (frontend specialist)", () => {
+      //#given
+      //#when
+      const result = expandProfile("economy")
+
+      //#then
+      expect(result.agents?.sati?.model).toBe("anthropic/claude-sonnet-4-6")
     })
   })
 
@@ -273,6 +309,15 @@ describe("expandProfile", () => {
       //#then
       expect(result.agents?.mouse?.model).toBe("minimax-m2.5-free")
     })
+
+    test("should set sati to opencode/kimi-k2.5-free (frontend specialist)", () => {
+      //#given
+      //#when
+      const result = expandProfile("free")
+
+      //#then
+      expect(result.agents?.sati?.model).toBe("opencode/kimi-k2.5-free")
+    })
   })
 
   describe("go profile", () => {
@@ -337,6 +382,48 @@ describe("expandProfile", () => {
 
       //#then
       expect(result.categories?.["bullet-time"]?.model).toBe("opencode-go/deepseek-v4-flash")
+    })
+
+    test("should set sati to opencode-go/kimi-k2.6 (deep worker tier)", () => {
+      //#given
+      //#when
+      const result = expandProfile("go")
+
+      //#then
+      expect(result.agents?.sati?.model).toBe("opencode-go/kimi-k2.6")
+    })
+  })
+
+  describe("xiaomi-ultimate profile", () => {
+    test("should set sati to xiaomi-token-plan-ams/mimo-v2.5-pro (deep worker tier)", () => {
+      //#given
+      //#when
+      const result = expandProfile("xiaomi-ultimate")
+
+      //#then
+      expect(result.agents?.sati?.model).toBe("xiaomi-token-plan-ams/mimo-v2.5-pro")
+    })
+  })
+
+  describe("go-ultimate profile", () => {
+    test("should set sati to opencode-go/kimi-k2.6 (deep worker tier)", () => {
+      //#given
+      //#when
+      const result = expandProfile("go-ultimate")
+
+      //#then
+      expect(result.agents?.sati?.model).toBe("opencode-go/kimi-k2.6")
+    })
+  })
+
+  describe("go-trio profile", () => {
+    test("should set sati to opencode-go/mimo-v2.5 (deep worker tier)", () => {
+      //#given
+      //#when
+      const result = expandProfile("go-trio")
+
+      //#then
+      expect(result.agents?.sati?.model).toBe("opencode-go/mimo-v2.5")
     })
   })
 
