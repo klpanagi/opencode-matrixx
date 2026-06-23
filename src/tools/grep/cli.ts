@@ -11,7 +11,7 @@ import {
   RG_SAFETY_FLAGS,
   resolveGrepCli,
 } from "./constants"
-import type { CountResult, GrepMatch, GrepOptions, GrepResult } from "./types"
+import type { GrepMatch, GrepOptions, GrepResult } from "./types"
 
 function buildRgArgs(options: GrepOptions): string[] {
   const args: string[] = [
@@ -106,27 +106,6 @@ function parseOutput(output: string): GrepMatch[] {
   }
 
   return matches
-}
-
-function parseCountOutput(output: string): CountResult[] {
-  if (!output.trim()) return []
-
-  const results: CountResult[] = []
-  const lines = output.split("\n")
-
-  for (const line of lines) {
-    if (!line.trim()) continue
-
-    const match = line.match(/^(.+?):(\d+)$/)
-    if (match) {
-      results.push({
-        file: match[1],
-        count: parseInt(match[2], 10),
-      })
-    }
-  }
-
-  return results
 }
 
 export async function runRg(options: GrepOptions): Promise<GrepResult> {

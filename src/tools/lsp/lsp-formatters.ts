@@ -9,8 +9,6 @@ import type {
   PrepareRenameResult,
   Range,
   SymbolInfo,
-  TextEdit,
-  WorkspaceEdit,
 } from "./types"
 import type { ApplyResult } from "./workspace-edit"
 
@@ -117,18 +115,6 @@ export function formatPrepareRenameResult(
   }
 
   return "Cannot rename at this position"
-}
-
-function formatTextEdit(edit: TextEdit): string {
-  const startLine = edit.range.start.line + 1
-  const startChar = edit.range.start.character
-  const endLine = edit.range.end.line + 1
-  const endChar = edit.range.end.character
-
-  const rangeStr = `${startLine}:${startChar}-${endLine}:${endChar}`
-  const preview = edit.newText.length > 50 ? `${edit.newText.substring(0, 50)}...` : edit.newText
-
-  return `  ${rangeStr}: "${preview}"`
 }
 
 export function formatApplyResult(result: ApplyResult): string {
