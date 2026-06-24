@@ -11,7 +11,7 @@ import type { DelegateTaskArgs } from "./types"
 
 export interface CategoryResolutionResult {
   agentToUse: string
-  categoryModel: { providerID: string; modelID: string; variant?: string } | undefined
+  categoryModel: { providerID: string; modelID: string; variant?: string; temperature?: number } | undefined
   categoryPromptAppend: string | undefined
   modelInfo: ModelFallbackInfo | undefined
   actualModel: string | undefined
@@ -76,7 +76,7 @@ Available categories: ${allCategoryNames}`,
   const requirement = CATEGORY_MODEL_REQUIREMENTS[args.category!]
   let actualModel: string | undefined
   let modelInfo: ModelFallbackInfo | undefined
-  let categoryModel: { providerID: string; modelID: string; variant?: string } | undefined
+  let categoryModel: { providerID: string; modelID: string; variant?: string; temperature?: number } | undefined
 
   const overrideModel = sisyphusJuniorModel
   const explicitCategoryModel = userCategories?.[args.category!]?.model
@@ -135,14 +135,16 @@ Available categories: ${allCategoryNames}`,
       const parsedModel = parseModelString(actualModel)
       const variantToUse = userCategories?.[args.category!]?.variant ?? resolvedVariant ?? resolved.config.variant
       categoryModel = parsedModel
-        ? (variantToUse ? { ...parsedModel, variant: variantToUse } : parsedModel)
+        ? (variantToUse ? { ...parsedModel, variant: variantToUse, temperature: resolved.config.temperature } : { ...parsedModel, temperature: resolved.config.temperature })
         : undefined
     }
   }
 
   if (!categoryModel && actualModel) {
     const parsedModel = parseModelString(actualModel)
-    categoryModel = parsedModel ?? undefined
+    categoryModel = parsedModel
+      ? { ...parsedModel, temperature: resolved.config.temperature }
+      : undefined
   }
   const categoryPromptAppend = resolved.promptAppend || undefined
 
