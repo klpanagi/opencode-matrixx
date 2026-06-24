@@ -5,6 +5,7 @@ import type { PluginInput } from "@opencode-ai/plugin"
 import type { BackgroundTaskConfig, TmuxConfig } from "../../config/schema"
 import { getAgentToolRestrictions, log, normalizeSDKResponse, promptWithModelSuggestionRetry } from "../../shared"
 import { setSessionTools } from "../../shared/session-tools-store"
+import { setSessionTemperature } from "../../shared/session-temperature-store"
 import { isInsideTmux } from "../../shared/tmux"
 import { subagentSessions } from "../claude-code-session-state"
 import { MESSAGE_STORAGE, type StoredMessage } from "../hook-message-injector"
@@ -347,6 +348,11 @@ export class BackgroundManager {
       ? { providerID: input.model.providerID, modelID: input.model.modelID }
       : undefined
     const launchVariant = input.model?.variant
+    const launchTemperature = input.model?.temperature
+
+    if (launchTemperature !== undefined) {
+      setSessionTemperature(sessionID, launchTemperature)
+    }
 
     promptWithModelSuggestionRetry(this.client, {
       path: { id: sessionID },
