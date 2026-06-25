@@ -69,7 +69,7 @@ handoff({
 After the tool call completes, inform the user:
 
 \`\`\`
-Handoff saved to .matrixx/handoff.md. Use /pickup in a new session to load this context.
+Handoff saved to .matrixx/handoff.md. Use /pickup in a new opencode session to load this context.
 \`\`\`
 
 ---
@@ -81,6 +81,8 @@ Handoff saved to .matrixx/handoff.md. Use /pickup in a new session to load this 
 - DO keep goal to a single sentence
 - DO use workspace-relative paths for key_files
 - DO NOT attempt to create new sessions programmatically
-- DO NOT exceed 10 files in key_files
+- DO NOT exceed 10 files in key_files (max 10)
 - DO NOT include sensitive information (API keys, credentials, secrets)
+- DO use first person perspective for work_completed items
+- DO use plain text with bullets for descriptions (no markdown headers)
 `

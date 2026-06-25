@@ -242,8 +242,8 @@ describe("HANDOFF_TEMPLATE", () => {
     //#given - the template string
 
     //#when / #then
-    expect(HANDOFF_TEMPLATE).toContain("USER REQUESTS (AS-IS)")
-    expect(HANDOFF_TEMPLATE).toContain("EXPLICIT CONSTRAINTS")
+    expect(HANDOFF_TEMPLATE).toContain("user_requests")
+    expect(HANDOFF_TEMPLATE).toContain("explicit_constraints")
   })
 
   test("should include programmatic context gathering instructions", () => {
@@ -259,13 +259,13 @@ describe("HANDOFF_TEMPLATE", () => {
     //#given - the template string
 
     //#when / #then
-    expect(HANDOFF_TEMPLATE).toContain("WORK COMPLETED")
-    expect(HANDOFF_TEMPLATE).toContain("CURRENT STATE")
-    expect(HANDOFF_TEMPLATE).toContain("PENDING TASKS")
-    expect(HANDOFF_TEMPLATE).toContain("KEY FILES")
-    expect(HANDOFF_TEMPLATE).toContain("IMPORTANT DECISIONS")
-    expect(HANDOFF_TEMPLATE).toContain("CONTEXT FOR CONTINUATION")
-    expect(HANDOFF_TEMPLATE).toContain("GOAL")
+    expect(HANDOFF_TEMPLATE).toContain("work_completed")
+    expect(HANDOFF_TEMPLATE).toContain("current_state")
+    expect(HANDOFF_TEMPLATE).toContain("pending_tasks")
+    expect(HANDOFF_TEMPLATE).toContain("key_files")
+    expect(HANDOFF_TEMPLATE).toContain("important_decisions")
+    expect(HANDOFF_TEMPLATE).toContain("context_for_continuation")
+    expect(HANDOFF_TEMPLATE).toContain("goal")
   })
 
   test("should enforce first person perspective", () => {
@@ -279,15 +279,15 @@ describe("HANDOFF_TEMPLATE", () => {
     //#given - the template string
 
     //#when / #then
-    expect(HANDOFF_TEMPLATE).toContain("Maximum 10 files")
+    expect(HANDOFF_TEMPLATE).toContain("max 10")
   })
 
   test("should instruct plain text format without markdown", () => {
     //#given - the template string
 
     //#when / #then
-    expect(HANDOFF_TEMPLATE).toContain("Plain text with bullets")
-    expect(HANDOFF_TEMPLATE).toContain("No markdown headers")
+    expect(HANDOFF_TEMPLATE).toContain("plain text with bullets")
+    expect(HANDOFF_TEMPLATE).toContain("no markdown headers")
   })
 
   test("should include user instructions for new session", () => {
