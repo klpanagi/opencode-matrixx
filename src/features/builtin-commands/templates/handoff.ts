@@ -7,7 +7,7 @@ Use /handoff when:
 - You want to start fresh while preserving essential context from this session
 - The context window is approaching capacity
 
-This creates a detailed context summary that can be used to continue work in a new session.
+This creates a detailed context summary written to .matrixx/handoff.md. The next session loads it via /pickup.
 
 ---
 
@@ -30,151 +30,59 @@ Execute these tools to gather concrete data:
 3. Bash({ command: "git diff --stat HEAD~10..HEAD" }) — recent file changes
 4. Bash({ command: "git status --porcelain" }) — uncommitted changes
 
-Suggested execution order:
-
-\`\`\`
-session_read({ session_id: "$SESSION_ID" })
-todoread()
-Bash({ command: "git diff --stat HEAD~10..HEAD" })
-Bash({ command: "git status --porcelain" })
-\`\`\`
-
 Analyze the gathered outputs to understand:
 - What the user asked for (exact wording)
 - What work was completed
-- What tasks remain incomplete (include todo state)
+- What tasks remain incomplete
 - What decisions were made
-- What files were modified or discussed (include git diff/stat + status)
+- What files were modified or discussed
 - What patterns, constraints, or preferences were established
 
 ---
 
-# PHASE 2: EXTRACT CONTEXT
+# PHASE 2: CALL HANDOFF TOOL
 
-Write the context summary from first person perspective ("I did...", "I told you...").
+Call the \`handoff\` tool with \`action="create"\` and the data you gathered. The tool validates the input and writes the handoff file automatically — no manual file writing needed.
 
-Focus on:
-- Capabilities and behavior, not file-by-file implementation details
-- What matters for continuing the work
-- Avoiding excessive implementation details (variable names, storage keys, constants) unless critical
-- USER REQUESTS (AS-IS) must be verbatim (do not paraphrase)
-- EXPLICIT CONSTRAINTS must be verbatim only (do not invent)
+Use these field mappings for the tool arguments:
 
-Questions to consider when extracting:
-- What did I just do or implement?
-- What instructions did I already give which are still relevant (e.g. follow patterns in the codebase)?
-- What files did I tell you are important or that I am working on?
-- Did I provide a plan or spec that should be included?
-- What did I already tell you that is important (libraries, patterns, constraints, preferences)?
-- What important technical details did I discover (APIs, methods, patterns)?
-- What caveats, limitations, or open questions did I find?
+\`\`\`
+handoff({
+  action: "create",
+  topics: ["tag1", "tag2"],              // Min 1 topic tag, from session context
+  user_requests: "verbatim user msg",     // REQUIRED — exact wording from session_read
+  goal: "single sentence",                // REQUIRED — what should be done next
+  work_completed: ["did X", "did Y"],     // REQUIRED — first-person bullet points
+  current_state: "state description",     // REQUIRED — current codebase/task state
+  pending_tasks: ["task1", "task2"],      // Optional — tasks not yet completed
+  key_files: [{path, purpose}],           // Optional — max 10, workspace-relative paths
+  important_decisions: [{decision, rationale}], // Optional — key decisions made
+  explicit_constraints: ["verbatim"],     // Optional — verbatim constraints only
+  context_for_continuation: "..."         // Optional — additional context
+})
+\`\`\`
 
 ---
 
-# PHASE 3: FORMAT OUTPUT
+# PHASE 3: INFORM USER
 
-Generate a handoff summary. WRITE the summary to .matrixx/handoff.md using the Write tool. Use this exact format:
-
-\`\`\`
-HANDOFF CONTEXT
-===============
-
-USER REQUESTS (AS-IS)
----------------------
-- [Exact verbatim user requests - NOT paraphrased]
-
-GOAL
-----
-[One sentence describing what should be done next]
-
-WORK COMPLETED
---------------
-- [First person bullet points of what was done]
-- [Include specific file paths when relevant]
-- [Note key implementation decisions]
-
-CURRENT STATE
--------------
-- [Current state of the codebase or task]
-- [Build/test status if applicable]
-- [Any environment or configuration state]
-
-PENDING TASKS
--------------
-- [Tasks that were planned but not completed]
-- [Next logical steps to take]
-- [Any blockers or issues encountered]
-- [Include current todo state from todoread()]
-
-KEY FILES
----------
-- [path/to/file1] - [brief role description]
-- [path/to/file2] - [brief role description]
-(Maximum 10 files, prioritized by importance)
-- (Include files from git diff/stat and git status)
-
-IMPORTANT DECISIONS
--------------------
-- [Technical decisions that were made and why]
-- [Trade-offs that were considered]
-- [Patterns or conventions established]
-
-EXPLICIT CONSTRAINTS
---------------------
-- [Verbatim constraints only - from user or existing AGENTS.md]
-- If none, write: None
-
-CONTEXT FOR CONTINUATION
-------------------------
-- [What the next session needs to know to continue]
-- [Warnings or gotchas to be aware of]
-- [References to documentation if relevant]
-\`\`\`
-
-Write this content to .matrixx/handoff.md using the Write tool. This file will be automatically loaded when a new session starts.
-
-Rules for the summary:
-- Plain text with bullets
-- No markdown headers with # (use the format above with dashes)
-- No bold, italic, or code fences within content
-- Use workspace-relative paths for files
-- Keep it focused - only include what matters for continuation
-- Pick an appropriate length based on complexity
-- USER REQUESTS (AS-IS) and EXPLICIT CONSTRAINTS must be verbatim only
-
----
-
-# PHASE 4: PROVIDE INSTRUCTIONS
-
-After writing the file, inform the user:
+After the tool call completes, inform the user:
 
 \`\`\`
----
-
-HANDOFF COMPLETE:
-
-Context saved to .matrixx/handoff.md
-
-To continue in a new session:
-1. Press 'n' in OpenCode TUI to open a new session, or run 'opencode' in a new terminal
-2. Your context will be loaded automatically — no copy-paste needed
-3. Start with your next task: "Continue from where I left off. [Your next task]"
+Handoff saved to .matrixx/handoff.md. Use /pickup in a new opencode session to load this context.
 \`\`\`
 
 ---
 
 # IMPORTANT CONSTRAINTS
 
-- DO NOT attempt to programmatically create new sessions (no API available to agents)
-- DO provide a self-contained summary in the .matrixx/handoff.md file
-- DO include workspace-relative file paths
+- DO gather programmatic context before calling the tool (Phase 1 is mandatory)
+- DO extract user_requests verbatim from session_read output (do not paraphrase)
+- DO keep goal to a single sentence
+- DO use workspace-relative paths for key_files
+- DO NOT attempt to create new sessions programmatically
+- DO NOT exceed 10 files in key_files (max 10)
 - DO NOT include sensitive information (API keys, credentials, secrets)
-- DO NOT exceed 10 files in the KEY FILES section
-- DO keep the GOAL section to a single sentence or short paragraph
-
----
-
-# EXECUTE NOW
-
-Begin by gathering programmatic context, then synthesize the handoff summary.
+- DO use first person perspective for work_completed items
+- DO use plain text with bullets for descriptions (no markdown headers)
 `

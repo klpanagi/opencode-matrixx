@@ -1,4 +1,4 @@
-import { existsSync, readFileSync, renameSync } from "node:fs"
+import { existsSync, mkdirSync, readFileSync, renameSync, writeFileSync } from "node:fs"
 import { join } from "node:path"
 import { HANDOFF_CONSUMED_FILE_PATH, HANDOFF_FILE_PATH } from "./constants"
 
@@ -34,6 +34,25 @@ export function archiveHandoffFile(directory: string): boolean {
       getHandoffFilePath(directory),
       getHandoffConsumedFilePath(directory),
     )
+    return true
+  } catch {
+    return false
+  }
+}
+
+export function writeHandoffFile(directory: string, content: string): boolean {
+  try {
+    ensureHandoffDir(directory)
+    writeFileSync(getHandoffFilePath(directory), content, "utf-8")
+    return true
+  } catch {
+    return false
+  }
+}
+
+export function ensureHandoffDir(directory: string): boolean {
+  try {
+    mkdirSync(join(directory, ".matrixx"), { recursive: true })
     return true
   } catch {
     return false
