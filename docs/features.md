@@ -221,6 +221,11 @@ Commands are slash-triggered workflows that execute predefined templates.
 | `/refactor` | Intelligent refactoring with LSP, AST-grep, architecture analysis, and TDD verification |
 | `/start-work` | Start Morpheus work session from Oracle plan |
 
+| `/handoff` | Create a detailed context summary for continuing work in a new session |
+
+| `/pickup` | Load handoff context from a previous session |
+
+
 ### Command: /init-deep
 
 **Purpose**: Generate hierarchical AGENTS.md files throughout your project
@@ -290,6 +295,72 @@ Everything runs at maximum intensity - parallel agents, background tasks, aggres
 ```
 
 Uses Architect agent to execute planned tasks systematically.
+
+
+### Command: /handoff
+
+
+
+**Purpose**: Persist the current session's context so a new session can resume the work.
+
+
+
+**Usage**:
+
+```
+
+/handoff [goal]
+
+```
+
+
+
+**What it does**:
+
+- Gathers session context via `session_read`, `todoread`, and `git` commands
+
+- Calls the `handoff` tool with `action="create"` and the gathered data
+
+- Writes `.matrixx/handoff.md` (YAML frontmatter + markdown body) automatically — no manual file writing
+
+- Returns the file path and a `topics` echo in the success message
+
+
+
+**Important**: The handoff is **NOT auto-loaded** in a new session. Use `/pickup` to load it.
+
+
+
+### Command: /pickup
+
+
+
+**Purpose**: Load handoff context from a previous session.
+
+
+
+**Usage**:
+
+```
+
+/pickup [task to continue with]
+
+```
+
+
+
+**What it does**:
+
+- Calls the `handoff` tool with `action="read"` to load the active handoff
+
+- Summarizes the loaded context (Goal, Work Completed, Pending Tasks)
+
+- Calls the `handoff` tool with `action="archive"` to mark the handoff as consumed
+
+
+
+**Important**: Archiving renames `handoff.md` → `handoff.consumed.md`, so the handoff can only be picked up once. The `consumed` file is preserved for audit but is no longer the active handoff.
+
 
 ### Custom Commands
 
@@ -487,6 +558,126 @@ interactive_bash(tmux_command="capture-pane -p -t dev-app")
 - Commands are tmux subcommands (no `tmux` prefix)
 - Use for interactive apps that need persistent sessions
 - One-shot commands should use regular `Bash` tool with `&`
+
+### Handoff Tool
+
+
+
+**Purpose**: Multi-action tool for persisting and retrieving session context across `/handoff` and `/pickup` commands.
+
+
+
+The `handoff` tool stores context at `${directory}/.matrixx/handoff.md` (YAML frontmatter + markdown body). Schema-validated by Zod (`HandoffSchema`); the previous free-form format is no longer supported.
+
+
+
+#### Actions
+
+
+
+| Action | Args | Returns | Errors |
+
+|--------|------|---------|--------|
+
+| `create` | `topics` (min 1), `user_requests`, `goal`, `work_completed`, `current_state` (required); `pending_tasks`, `key_files`, `important_decisions`, `explicit_constraints`, `context_for_continuation` (optional) | `Handoff written to <path> (session: <id>, topics: <list>)` | `Error: validation failed: ...` (bad schema), `Error: failed to write handoff file at ...` (I/O) |
+
+| `read` | none | Full file content (YAML frontmatter + markdown body) | `Error: No handoff found at ...` (missing file); `Warning: ...` + raw content (malformed frontmatter, forgiving) |
+
+| `list` | none | `Handoff files in <dir>:` + per-file `name (tag, size, mtime)` listing + canonical paths | `No handoffs found in .matrixx/` (empty state) |
+
+| `archive` | none | `Handoff archived: <from> -> <to>` (renames `handoff.md` → `handoff.consumed.md`) | `Error: No handoff found at ...` (nothing to archive) |
+
+
+
+#### YAML Frontmatter Schema
+
+
+
+```yaml
+
+frontmatter:
+
+  session_id: <string>          # OpenCode session id, or "unknown"
+
+  timestamp: <ISO-8601 string>  # captured at create time
+
+  git_head:
+
+    sha: <string>                # commit sha, or "unknown" if not a git repo
+
+    branch: <string>             # optional
+
+    detached: <boolean>          # optional
+
+  topics:
+
+    - <string>                   # min 1
+
+sections:
+
+  user_requests: <string>        # verbatim from session_read
+
+  goal: <string>                 # single sentence
+
+  work_completed:
+
+    - <string>                   # first-person bullet
+
+  current_state: <string>        # free-form description
+
+  pending_tasks:                 # optional
+
+    - <string>
+
+  key_files:                     # optional, max 10
+
+    - path: <string>
+
+      purpose: <string>
+
+  important_decisions:           # optional
+
+    - decision: <string>
+
+      rationale: <string>
+
+  explicit_constraints:          # optional
+
+    - <string>
+
+  context_for_continuation: <string>  # optional
+
+```
+
+
+
+#### File Layout
+
+
+
+```
+
+<directory>/
+
+└── .matrixx/
+
+    ├── handoff.md          # active handoff (written by `create`, read by `read`)
+
+    └── handoff.consumed.md # archived handoff (moved by `archive`)
+
+```
+
+
+
+**Key Points**:
+
+- The `create` action auto-creates the `.matrixx/` directory if it does not exist
+
+- `read` is forgiving: a malformed or schema-invalid handoff is returned with a `Warning:` prefix so the LLM can still recover context
+
+- `archive` is non-idempotent — calling it with no active handoff returns an error (not a silent no-op) so bugs in template flow surface
+
+- The single multi-action `handoff` tool replaces the older `handoff_write` tool; legacy handoff files (no frontmatter) are not supported
 
 ---
 
