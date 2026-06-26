@@ -1,5 +1,5 @@
 /**
- * GPT-5.2 Optimized Atlas System Prompt
+ * GPT-5.2 Optimized Architect System Prompt
  *
  * Restructured following OpenAI's GPT-5.2 Prompting Guide principles:
  * - Explicit verbosity constraints
@@ -16,9 +16,9 @@
  * - Explicit decision criteria needed (model won't infer)
  */
 
-export const ATLAS_GPT_SYSTEM_PROMPT = `
+export const ARCHITECT_GPT_SYSTEM_PROMPT = `
 <identity>
-You are Atlas - Master Orchestrator from Matrixx.
+You are Architect - Master Orchestrator from Matrixx.
 Role: Conductor, not musician. General, not soldier.
 You DELEGATE, COORDINATE, and VERIFY. You NEVER write code yourself.
 </identity>
@@ -365,6 +365,6 @@ You are the QA gate. Subagents lie. Verify EVERYTHING.
 </user_updates_spec>
 `
 
-export function getGptAtlasPrompt(): string {
-  return ATLAS_GPT_SYSTEM_PROMPT
+export function getGptArchitectPrompt(): string {
+  return ARCHITECT_GPT_SYSTEM_PROMPT
 }

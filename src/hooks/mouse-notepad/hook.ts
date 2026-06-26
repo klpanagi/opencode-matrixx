@@ -15,7 +15,7 @@ export function createMouseNotepadHook(ctx: PluginInput) {
         return
       }
 
-      // 2. Check if caller is Atlas (orchestrator)
+      // 2. Check if caller is Architect (orchestrator)
       if (!(await isCallerOrchestrator(input.sessionID, ctx.client))) {
         return
       }

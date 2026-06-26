@@ -1,13 +1,13 @@
 import type { AgentConfig } from "@opencode-ai/sdk"
 import type { CategoriesConfig, CategoryConfig } from "../../config/schema"
 import { AGENT_MODEL_REQUIREMENTS } from "../../shared"
-import { createAtlasAgent } from "../architect"
+import { createArchitectAgent } from "../architect"
 import type { AvailableAgent, AvailableSkill } from "../dynamic-agent-prompt-builder"
 import type { AgentOverrides } from "../types"
 import { applyOverrides } from "./agent-overrides"
 import { applyModelResolution } from "./model-resolution"
 
-export function maybeCreateAtlasConfig(input: {
+export function maybeCreateArchitectConfig(input: {
   disabledAgents: string[]
   agentOverrides: AgentOverrides
   uiSelectedModel?: string
@@ -36,28 +36,28 @@ export function maybeCreateAtlasConfig(input: {
   if (disabledAgents.includes("architect")) return undefined
 
   const orchestratorOverride = agentOverrides.architect
-  const atlasRequirement = AGENT_MODEL_REQUIREMENTS.architect
+  const architectRequirement = AGENT_MODEL_REQUIREMENTS.architect
 
-  const atlasResolution = applyModelResolution({
+  const architectResolution = applyModelResolution({
     uiSelectedModel: orchestratorOverride?.model ? undefined : uiSelectedModel,
     userModel: orchestratorOverride?.model,
-    requirement: atlasRequirement,
+    requirement: architectRequirement,
     availableModels,
     systemDefaultModel,
   })
 
-  if (!atlasResolution) return undefined
-  const { model: atlasModel, variant: atlasResolvedVariant } = atlasResolution
+  if (!architectResolution) return undefined
+  const { model: architectModel, variant: architectResolvedVariant } = architectResolution
 
-  let orchestratorConfig = createAtlasAgent({
-    model: atlasModel,
+  let orchestratorConfig = createArchitectAgent({
+    model: architectModel,
     availableAgents,
     availableSkills,
     userCategories,
   })
 
-  if (atlasResolvedVariant) {
-    orchestratorConfig = { ...orchestratorConfig, variant: atlasResolvedVariant }
+  if (architectResolvedVariant) {
+    orchestratorConfig = { ...orchestratorConfig, variant: architectResolvedVariant }
   }
 
   orchestratorConfig = applyOverrides(orchestratorConfig, orchestratorOverride, mergedCategories, directory)

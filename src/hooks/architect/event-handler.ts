@@ -7,13 +7,13 @@ import { HOOK_NAME } from "./hook-name"
 import { isAbortError } from "./is-abort-error"
 import { injectMissionContinuation } from "./mission-continuation-injector"
 import { getLastAgentFromSession } from "./session-last-agent"
-import type { AtlasHookOptions, SessionState } from "./types"
+import type { ArchitectHookOptions, SessionState } from "./types"
 
 const CONTINUATION_COOLDOWN_MS = 5000
 
-export function createAtlasEventHandler(input: {
+export function createArchitectEventHandler(input: {
   ctx: PluginInput
-  options?: AtlasHookOptions
+  options?: ArchitectHookOptions
   sessions: Map<string, SessionState>
   getState: (sessionID: string) => SessionState
 }): (arg: { event: { type: string; properties?: unknown } }) => Promise<void> {

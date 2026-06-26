@@ -93,7 +93,7 @@ describe("architect hook", () => {
         },
       },
       _promptMock: promptMock,
-    } as unknown as Parameters<typeof createAtlasHook>[0] & { _promptMock: ReturnType<typeof mock> }
+    } as unknown as Parameters<typeof createArchitectHook>[0] & { _promptMock: ReturnType<typeof mock> }
   }
 
   function setupMessageStorage(sessionID: string, agent: string): void {
@@ -137,7 +137,7 @@ describe("architect hook", () => {
   describe("tool.execute.after handler", () => {
     test("should handle undefined output gracefully (issue #1035)", async () => {
       // given - hook and undefined output (e.g., from /review command)
-      const hook = createAtlasHook(createMockPluginInput())
+      const hook = createArchitectHook(createMockPluginInput())
 
       // when - calling with undefined output
       const result = await hook["tool.execute.after"](
@@ -151,7 +151,7 @@ describe("architect hook", () => {
 
     test("should ignore non-task tools", async () => {
       // given - hook and non-task tool
-      const hook = createAtlasHook(createMockPluginInput())
+      const hook = createArchitectHook(createMockPluginInput())
       const output = {
         title: "Test Tool",
         output: "Original output",
@@ -168,8 +168,8 @@ describe("architect hook", () => {
       expect(output.output).toBe("Original output")
     })
 
-     test("should not transform when caller is not Atlas", async () => {
-       // given - mission state exists but caller agent in message storage is not Atlas
+     test("should not transform when caller is not Architect", async () => {
+       // given - mission state exists but caller agent in message storage is not Architect
        const sessionID = "session-non-orchestrator-test"
        setupMessageStorage(sessionID, "other-agent")
       
@@ -184,7 +184,7 @@ describe("architect hook", () => {
       }
       writeMissionState(TEST_DIR, state)
 
-      const hook = createAtlasHook(createMockPluginInput())
+      const hook = createArchitectHook(createMockPluginInput())
       const output = {
         title: "Morpheus Task",
         output: "Task completed successfully",
@@ -203,12 +203,12 @@ describe("architect hook", () => {
       cleanupMessageStorage(sessionID)
     })
 
-     test("should append standalone verification when no mission state but caller is Atlas", async () => {
-       // given - no mission state, but caller is Atlas
+     test("should append standalone verification when no mission state but caller is Architect", async () => {
+       // given - no mission state, but caller is Architect
        const sessionID = "session-no-mission-test"
        setupMessageStorage(sessionID, "architect")
       
-      const hook = createAtlasHook(createMockPluginInput())
+      const hook = createArchitectHook(createMockPluginInput())
       const output = {
         title: "Morpheus Task",
         output: "Task completed successfully",
@@ -229,8 +229,8 @@ describe("architect hook", () => {
       cleanupMessageStorage(sessionID)
     })
 
-     test("should transform output when caller is Atlas with mission state", async () => {
-       // given - Atlas caller with mission state
+     test("should transform output when caller is Architect with mission state", async () => {
+       // given - Architect caller with mission state
        const sessionID = "session-transform-test"
        setupMessageStorage(sessionID, "architect")
       
@@ -245,7 +245,7 @@ describe("architect hook", () => {
       }
       writeMissionState(TEST_DIR, state)
 
-      const hook = createAtlasHook(createMockPluginInput())
+      const hook = createArchitectHook(createMockPluginInput())
       const output = {
         title: "Morpheus Task",
         output: "Task completed successfully",
@@ -269,7 +269,7 @@ describe("architect hook", () => {
     })
 
      test("should still transform when plan is complete (shows progress)", async () => {
-       // given - mission state with complete plan, Atlas caller
+       // given - mission state with complete plan, Architect caller
        const sessionID = "session-complete-plan-test"
        setupMessageStorage(sessionID, "architect")
       
@@ -284,7 +284,7 @@ describe("architect hook", () => {
       }
       writeMissionState(TEST_DIR, state)
 
-      const hook = createAtlasHook(createMockPluginInput())
+      const hook = createArchitectHook(createMockPluginInput())
       const output = {
         title: "Morpheus Task",
         output: "Original output",
@@ -306,7 +306,7 @@ describe("architect hook", () => {
     })
 
      test("should append session ID to mission state if not present", async () => {
-       // given - mission state without session-append-test, Atlas caller
+       // given - mission state without session-append-test, Architect caller
        const sessionID = "session-append-test"
        setupMessageStorage(sessionID, "architect")
       
@@ -321,7 +321,7 @@ describe("architect hook", () => {
       }
       writeMissionState(TEST_DIR, state)
 
-      const hook = createAtlasHook(createMockPluginInput())
+      const hook = createArchitectHook(createMockPluginInput())
       const output = {
         title: "Morpheus Task",
         output: "Task output",
@@ -342,7 +342,7 @@ describe("architect hook", () => {
     })
 
      test("should not duplicate existing session ID", async () => {
-       // given - mission state already has session-dup-test, Atlas caller
+       // given - mission state already has session-dup-test, Architect caller
        const sessionID = "session-dup-test"
        setupMessageStorage(sessionID, "architect")
       
@@ -357,7 +357,7 @@ describe("architect hook", () => {
       }
       writeMissionState(TEST_DIR, state)
 
-      const hook = createAtlasHook(createMockPluginInput())
+      const hook = createArchitectHook(createMockPluginInput())
       const output = {
         title: "Morpheus Task",
         output: "Task output",
@@ -379,7 +379,7 @@ describe("architect hook", () => {
     })
 
      test("should include mission.json path and notepad path in transformed output", async () => {
-       // given - mission state, Atlas caller
+       // given - mission state, Architect caller
        const sessionID = "session-path-test"
        setupMessageStorage(sessionID, "architect")
       
@@ -394,7 +394,7 @@ describe("architect hook", () => {
       }
       writeMissionState(TEST_DIR, state)
 
-      const hook = createAtlasHook(createMockPluginInput())
+      const hook = createArchitectHook(createMockPluginInput())
       const output = {
         title: "Morpheus Task",
         output: "Task completed",
@@ -416,7 +416,7 @@ describe("architect hook", () => {
     })
 
      test("should include session_id and checkbox instructions in reminder", async () => {
-       // given - mission state, Atlas caller
+       // given - mission state, Architect caller
        const sessionID = "session-resume-test"
        setupMessageStorage(sessionID, "architect")
       
@@ -431,7 +431,7 @@ describe("architect hook", () => {
       }
       writeMissionState(TEST_DIR, state)
 
-      const hook = createAtlasHook(createMockPluginInput())
+      const hook = createArchitectHook(createMockPluginInput())
       const output = {
         title: "Morpheus Task",
         output: "Task completed",
@@ -465,7 +465,7 @@ describe("architect hook", () => {
 
       test("should append delegation reminder when orchestrator writes outside .matrixx/", async () => {
         // given
-        const hook = createAtlasHook(createMockPluginInput())
+        const hook = createArchitectHook(createMockPluginInput())
         const output = {
           title: "Write",
           output: "File written successfully",
@@ -486,7 +486,7 @@ describe("architect hook", () => {
 
       test("should append delegation reminder when orchestrator edits outside .matrixx/", async () => {
         // given
-        const hook = createAtlasHook(createMockPluginInput())
+        const hook = createArchitectHook(createMockPluginInput())
         const output = {
           title: "Edit",
           output: "File edited successfully",
@@ -505,7 +505,7 @@ describe("architect hook", () => {
 
       test("should NOT append reminder when orchestrator writes inside .matrixx/", async () => {
         // given
-        const hook = createAtlasHook(createMockPluginInput())
+        const hook = createArchitectHook(createMockPluginInput())
         const originalOutput = "File written successfully"
         const output = {
           title: "Write",
@@ -529,7 +529,7 @@ describe("architect hook", () => {
         const nonOrchestratorSession = "non-orchestrator-session"
         setupMessageStorage(nonOrchestratorSession, "mouse")
         
-        const hook = createAtlasHook(createMockPluginInput())
+        const hook = createArchitectHook(createMockPluginInput())
         const originalOutput = "File written successfully"
         const output = {
           title: "Write",
@@ -552,7 +552,7 @@ describe("architect hook", () => {
 
       test("should NOT append reminder for read-only tools", async () => {
         // given
-        const hook = createAtlasHook(createMockPluginInput())
+        const hook = createArchitectHook(createMockPluginInput())
         const originalOutput = "File content"
         const output = {
           title: "Read",
@@ -572,7 +572,7 @@ describe("architect hook", () => {
 
       test("should handle missing filePath gracefully", async () => {
         // given
-        const hook = createAtlasHook(createMockPluginInput())
+        const hook = createArchitectHook(createMockPluginInput())
         const originalOutput = "File written successfully"
         const output = {
           title: "Write",
@@ -593,7 +593,7 @@ describe("architect hook", () => {
       describe("cross-platform path validation (Windows support)", () => {
         test("should NOT append reminder when orchestrator writes inside .matrixx\\ (Windows backslash)", async () => {
           // given
-          const hook = createAtlasHook(createMockPluginInput())
+          const hook = createArchitectHook(createMockPluginInput())
           const originalOutput = "File written successfully"
           const output = {
             title: "Write",
@@ -614,7 +614,7 @@ describe("architect hook", () => {
 
         test("should NOT append reminder when orchestrator writes inside .matrixx with mixed separators", async () => {
           // given
-          const hook = createAtlasHook(createMockPluginInput())
+          const hook = createArchitectHook(createMockPluginInput())
           const originalOutput = "File written successfully"
           const output = {
             title: "Write",
@@ -635,7 +635,7 @@ describe("architect hook", () => {
 
         test("should NOT append reminder for absolute Windows path inside .matrixx\\", async () => {
           // given
-          const hook = createAtlasHook(createMockPluginInput())
+          const hook = createArchitectHook(createMockPluginInput())
           const originalOutput = "File written successfully"
           const output = {
             title: "Write",
@@ -656,7 +656,7 @@ describe("architect hook", () => {
 
         test("should append reminder for Windows path outside .matrixx\\", async () => {
           // given
-          const hook = createAtlasHook(createMockPluginInput())
+          const hook = createArchitectHook(createMockPluginInput())
           const output = {
             title: "Write",
             output: "File written successfully",
@@ -709,7 +709,7 @@ describe("architect hook", () => {
       writeMissionState(TEST_DIR, state)
 
       const mockInput = createMockPluginInput()
-      const hook = createAtlasHook(mockInput)
+      const hook = createArchitectHook(mockInput)
 
       // when
       await hook.handler({
@@ -730,7 +730,7 @@ describe("architect hook", () => {
     test("should not inject when no mission state exists", async () => {
       // given - no mission state
       const mockInput = createMockPluginInput()
-      const hook = createAtlasHook(mockInput)
+      const hook = createArchitectHook(mockInput)
 
       // when
       await hook.handler({
@@ -758,7 +758,7 @@ describe("architect hook", () => {
       writeMissionState(TEST_DIR, state)
 
       const mockInput = createMockPluginInput()
-      const hook = createAtlasHook(mockInput)
+      const hook = createArchitectHook(mockInput)
 
       // when - main session fires idle but is NOT in mission's session_ids
       await hook.handler({
@@ -786,7 +786,7 @@ describe("architect hook", () => {
       writeMissionState(TEST_DIR, state)
 
       const mockInput = createMockPluginInput()
-      const hook = createAtlasHook(mockInput)
+      const hook = createArchitectHook(mockInput)
 
       // when
       await hook.handler({
@@ -814,7 +814,7 @@ describe("architect hook", () => {
       writeMissionState(TEST_DIR, state)
 
       const mockInput = createMockPluginInput()
-      const hook = createAtlasHook(mockInput)
+      const hook = createArchitectHook(mockInput)
 
       // when - send abort error then idle
       await hook.handler({
@@ -855,7 +855,7 @@ describe("architect hook", () => {
        }
 
        const mockInput = createMockPluginInput()
-       const hook = createAtlasHook(mockInput, {
+       const hook = createArchitectHook(mockInput, {
          directory: TEST_DIR,
          backgroundManager: mockBackgroundManager as unknown as BackgroundManager,
        })
@@ -886,7 +886,7 @@ describe("architect hook", () => {
        writeMissionState(TEST_DIR, state)
 
        const mockInput = createMockPluginInput()
-       const hook = createAtlasHook(mockInput, {
+       const hook = createArchitectHook(mockInput, {
          directory: TEST_DIR,
          isContinuationStopped: (sessionID: string) => sessionID === MAIN_SESSION_ID,
        })
@@ -917,7 +917,7 @@ describe("architect hook", () => {
       writeMissionState(TEST_DIR, state)
 
       const mockInput = createMockPluginInput()
-      const hook = createAtlasHook(mockInput)
+      const hook = createArchitectHook(mockInput)
 
       // when - abort error, then message update, then idle
       await hook.handler({
@@ -960,7 +960,7 @@ describe("architect hook", () => {
       writeMissionState(TEST_DIR, state)
 
       const mockInput = createMockPluginInput()
-      const hook = createAtlasHook(mockInput)
+      const hook = createArchitectHook(mockInput)
 
       // when
       await hook.handler({
@@ -995,7 +995,7 @@ describe("architect hook", () => {
        setupMessageStorage(MAIN_SESSION_ID, "morpheus")
 
        const mockInput = createMockPluginInput()
-       const hook = createAtlasHook(mockInput)
+       const hook = createArchitectHook(mockInput)
 
        // when
        await hook.handler({
@@ -1009,7 +1009,7 @@ describe("architect hook", () => {
        expect(mockInput._promptMock).not.toHaveBeenCalled()
      })
 
-     test("should inject when last agent matches mission agent even if non-Atlas", async () => {
+     test("should inject when last agent matches mission agent even if non-Architect", async () => {
        // given - mission state expects morpheus and last agent is morpheus
        const planPath = join(TEST_DIR, "test-plan.md")
        writeFileSync(planPath, "# Plan\n- [ ] Task 1\n- [ ] Task 2")
@@ -1027,7 +1027,7 @@ describe("architect hook", () => {
        setupMessageStorage(MAIN_SESSION_ID, "morpheus")
 
        const mockInput = createMockPluginInput()
-       const hook = createAtlasHook(mockInput)
+       const hook = createArchitectHook(mockInput)
 
        // when
        await hook.handler({
@@ -1057,7 +1057,7 @@ describe("architect hook", () => {
       writeMissionState(TEST_DIR, state)
 
       const mockInput = createMockPluginInput()
-      const hook = createAtlasHook(mockInput)
+      const hook = createArchitectHook(mockInput)
 
       // when - fire multiple idle events in rapid succession (simulating infinite loop bug)
       await hook.handler({
@@ -1098,7 +1098,7 @@ describe("architect hook", () => {
 
       const promptMock = mock(() => Promise.reject(new Error("Bad Request")))
       const mockInput = createMockPluginInput({ promptMock })
-      const hook = createAtlasHook(mockInput)
+      const hook = createArchitectHook(mockInput)
 
       const originalDateNow = Date.now
       let now = 0
@@ -1144,7 +1144,7 @@ describe("architect hook", () => {
       promptMock.mockImplementationOnce(() => Promise.reject(new Error("Bad Request")))
 
       const mockInput = createMockPluginInput({ promptMock })
-      const hook = createAtlasHook(mockInput)
+      const hook = createArchitectHook(mockInput)
 
       const originalDateNow = Date.now
       let now = 0
@@ -1180,7 +1180,7 @@ describe("architect hook", () => {
 
       const promptMock = mock(() => Promise.reject(new Error("Bad Request")))
       const mockInput = createMockPluginInput({ promptMock })
-      const hook = createAtlasHook(mockInput)
+      const hook = createArchitectHook(mockInput)
 
       const originalDateNow = Date.now
       let now = 0
@@ -1226,7 +1226,7 @@ describe("architect hook", () => {
       writeMissionState(TEST_DIR, state)
 
       const mockInput = createMockPluginInput()
-      const hook = createAtlasHook(mockInput)
+      const hook = createArchitectHook(mockInput)
 
       // when - create abort state then delete
       await hook.handler({

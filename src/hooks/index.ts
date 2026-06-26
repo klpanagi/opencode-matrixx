@@ -1,6 +1,6 @@
 export { createAgentUsageReminderHook } from "./agent-usage-reminder";
 export { type AnthropicContextWindowLimitRecoveryOptions, createAnthropicContextWindowLimitRecoveryHook } from "./anthropic-context-window-limit-recovery";
-export { createAtlasHook } from "./architect";
+export { createArchitectHook } from "./architect";
 export { createAutoSlashCommandHook } from "./auto-slash-command";
 export { createAutoUpdateCheckerHook } from "./auto-update-checker";
 export { createBackgroundNotificationHook } from "./background-notification"

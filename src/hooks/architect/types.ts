@@ -3,7 +3,7 @@ import type { BackgroundManager } from "../../features/background-agent"
 
 export type ModelInfo = { providerID: string; modelID: string }
 
-export interface AtlasHookOptions {
+export interface ArchitectHookOptions {
   directory: string
   backgroundManager?: BackgroundManager
   isContinuationStopped?: (sessionID: string) => boolean

@@ -109,7 +109,7 @@ ${createSystemDirective(SystemDirectiveTypes.DELEGATION_REQUIRED)}
 
 **STOP. YOU ARE VIOLATING ORCHESTRATOR PROTOCOL.**
 
-You (Atlas) are attempting to directly modify a file outside \`.matrixx/\`.
+You (Architect) are attempting to directly modify a file outside \`.matrixx/\`.
 
 **Path attempted:** $FILE_PATH
 

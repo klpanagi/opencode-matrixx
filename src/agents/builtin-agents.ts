@@ -8,8 +8,8 @@ import {
 } from "../shared"
 import { mergeCategories } from "../shared/merge-categories"
 import { CATEGORY_DESCRIPTIONS } from "../tools/delegate-task/constants"
-import { atlasPromptMetadata, createAtlasAgent } from "./architect"
-import { maybeCreateAtlasConfig } from "./builtin-agents/atlas-agent"
+import { architectPromptMetadata, createArchitectAgent } from "./architect"
+import { maybeCreateArchitectConfig } from "./builtin-agents/architect-agent"
 import { buildAvailableSkills } from "./builtin-agents/available-skills"
 import { collectPendingBuiltinAgents } from "./builtin-agents/general-agents"
 import { maybeCreateKeymakerConfig } from "./builtin-agents/hephaestus-agent"
@@ -40,7 +40,7 @@ const agentSources: Record<BuiltinAgentName, AgentSource> = {
   construct: createMultimodalLookerAgent,
   seraph: createSeraphAgent,
   smith: createSmithAgent,
-  architect: createAtlasAgent as AgentFactory,
+  architect: createArchitectAgent as AgentFactory,
   cipher: createCipherAgent,
   sentinel: createSentinelAgent,
   sati: createSatiAgent,
@@ -57,7 +57,7 @@ const agentMetadata: Partial<Record<BuiltinAgentName, AgentPromptMetadata>> = {
   construct: MULTIMODAL_LOOKER_PROMPT_METADATA,
   seraph: seraphPromptMetadata,
   smith: smithPromptMetadata,
-  architect: atlasPromptMetadata,
+  architect: architectPromptMetadata,
   cipher: CIPHER_PROMPT_METADATA,
   sentinel: SENTINEL_PROMPT_METADATA,
   sati: SATI_PROMPT_METADATA,
@@ -176,7 +176,7 @@ export async function createBuiltinAgents(
     result[name] = config
   }
 
-  const atlasConfig = maybeCreateAtlasConfig({
+  const architectConfig = maybeCreateArchitectConfig({
     disabledAgents,
     agentOverrides,
     uiSelectedModel,
@@ -188,8 +188,8 @@ export async function createBuiltinAgents(
     directory,
     userCategories: categories,
   })
-  if (atlasConfig) {
-    result.architect = atlasConfig
+  if (architectConfig) {
+    result.architect = architectConfig
   }
 
   return result
