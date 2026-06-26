@@ -82,18 +82,20 @@ Available categories: ${allCategoryNames}`,
   const explicitCategoryModel = userCategories?.[args.category as string]?.model
 
   if (!requirement) {
-    // Precedence: explicit category model > mouse default > category resolved model
-    // This keeps `mouse.model` useful as a global default while allowing
-    // per-category overrides via `categories[category].model`.
-    actualModel = explicitCategoryModel ?? overrideModel ?? resolved.model
+    // Precedence: explicit category model > category resolved model > mouse default
+    // Category's resolved model (from defaults/system) wins over mouse model.
+    // Mouse model is only used as a last-resort fallback.
+    actualModel = explicitCategoryModel ?? resolved.model ?? overrideModel
     if (actualModel) {
-      modelInfo = explicitCategoryModel || overrideModel
+      modelInfo = explicitCategoryModel
         ? { model: actualModel, type: "user-defined", source: "override" }
-        : { model: actualModel, type: "system-default", source: "system-default" }
+        : resolved.model
+            ? { model: actualModel, type: "system-default", source: "system-default" }
+            : { model: actualModel, type: "user-defined", source: "override" }
     }
   } else {
     const resolution = resolveModelForDelegateTask({
-      userModel: explicitCategoryModel ?? overrideModel,
+      userModel: explicitCategoryModel,
       categoryDefaultModel: resolved.model,
       fallbackChain: requirement.fallbackChain,
       availableModels,
@@ -117,7 +119,7 @@ Available categories: ${allCategoryNames}`,
       }
 
       const type: "user-defined" | "inherited" | "category-default" | "system-default" =
-        (explicitCategoryModel || overrideModel)
+        explicitCategoryModel
           ? "user-defined"
           : (systemDefaultModel && actualModel === systemDefaultModel)
               ? "system-default"
