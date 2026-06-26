@@ -268,42 +268,42 @@ describe("architect hook", () => {
       cleanupMessageStorage(sessionID)
     })
 
-     test("should still transform when plan is complete (shows progress)", async () => {
-       // given - mission state with complete plan, Architect caller
-       const sessionID = "session-complete-plan-test"
-       setupMessageStorage(sessionID, "architect")
-      
-      const planPath = join(TEST_DIR, "complete-plan.md")
-      writeFileSync(planPath, "# Plan\n- [x] Task 1\n- [x] Task 2")
+     test("should skip orchestrator reminder when plan is complete", async () => {
+        // given - mission state with complete plan, Architect caller
+        const sessionID = "session-complete-plan-test"
+        setupMessageStorage(sessionID, "architect")
+       
+       const planPath = join(TEST_DIR, "complete-plan.md")
+       writeFileSync(planPath, "# Plan\n- [x] Task 1\n- [x] Task 2")
 
-      const state: MissionState = {
-        active_plan: planPath,
-        started_at: "2026-01-02T10:00:00Z",
-        session_ids: ["session-1"],
-        plan_name: "complete-plan",
-      }
-      writeMissionState(TEST_DIR, state)
+       const state: MissionState = {
+         active_plan: planPath,
+         started_at: "2026-01-02T10:00:00Z",
+         session_ids: ["session-1"],
+         plan_name: "complete-plan",
+       }
+       writeMissionState(TEST_DIR, state)
 
-      const hook = createArchitectHook(createMockPluginInput())
-      const output = {
-        title: "Morpheus Task",
-        output: "Original output",
-        metadata: {},
-      }
+       const hook = createArchitectHook(createMockPluginInput())
+       const output = {
+         title: "Morpheus Task",
+         output: "Original output",
+         metadata: {},
+       }
 
-      // when
-      await hook["tool.execute.after"](
-        { tool: "task", sessionID },
-        output
-      )
+       // when
+       await hook["tool.execute.after"](
+         { tool: "task", sessionID },
+         output
+       )
 
-      // then - output transformed even when complete (shows 2/2 done)
-      expect(output.output).toContain("SUBAGENT WORK COMPLETED")
-      expect(output.output).toContain("2/2 done")
-      expect(output.output).toContain("0 remaining")
-      
-      cleanupMessageStorage(sessionID)
-    })
+       // then - output should NOT be transformed (no orchestrator reminder)
+       expect(output.output).toBe("Original output")
+       expect(output.output).not.toContain("SUBAGENT WORK COMPLETED")
+       expect(output.output).not.toContain("2/2 done")
+       
+       cleanupMessageStorage(sessionID)
+     })
 
      test("should append session ID to mission state if not present", async () => {
        // given - mission state without session-append-test, Architect caller

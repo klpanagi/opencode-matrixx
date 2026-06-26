@@ -65,6 +65,12 @@ export function createToolExecuteAfterHandler(input: {
       if (missionState) {
         const progress = getPlanProgress(missionState.active_plan)
 
+        if (progress.isComplete) {
+          // Plan is complete — skip mission reminder injection
+          // The session.idle handler will clean up mission state
+          return
+        }
+
         if (toolInput.sessionID && !missionState.session_ids?.includes(toolInput.sessionID)) {
           appendSessionId(ctx.directory, toolInput.sessionID)
           log(`[${HOOK_NAME}] Appended session to mission`, {
