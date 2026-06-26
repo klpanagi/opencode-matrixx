@@ -54,7 +54,7 @@ When `morpheus_agent.planner_enabled === true`:
 
 | Agent | Special Permissions |
 |-------|---------------------|
-| librarian | grep_app_* allowed |
+| operator | grep_app_* allowed |
 | architect | task, task_*, teammate allowed |
 | morpheus | task, task_*, teammate, question allowed |
 | keymaker | task, question allowed |

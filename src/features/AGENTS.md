@@ -2,7 +2,7 @@
 
 ## OVERVIEW
 
-17 feature modules extending plugin capabilities: agent orchestration, skill loading, Claude Code compatibility, MCP management, task storage, and tmux integration.
+20 feature modules extending plugin capabilities: agent orchestration, skill loading, Claude Code compatibility, MCP management, task storage, handoff, and tmux integration.
 
 ## STRUCTURE
 ```
@@ -29,6 +29,7 @@ features/
 │   └── templates/              # refactor, matrix-loop, init-deep, handoff, start-work, stop-continuation
 ├── claude-tasks/               # Task schema + storage (7 files, 1165 LOC)
 ├── context-injector/           # AGENTS.md, README.md, rules injection (6 files, 809 LOC)
+├── handoff/                    # Multi-action handoff: create, read, list, archive
 ├── claude-code-plugin-loader/  # Plugin discovery from .opencode/plugins/ (10 files)
 ├── claude-code-mcp-loader/     # .mcp.json with ${VAR} expansion (6 files)
 ├── claude-code-command-loader/ # Command loading from .opencode/commands/ (3 files)
@@ -37,6 +38,7 @@ features/
 ├── hook-message-injector/      # System message injection (4 files)
 ├── task-toast-manager/         # Task progress notifications (4 files)
 ├── mission-state/              # Persistent state for multi-step ops (5 files)
+├── run-continuation-state/     # Run continuation state tracking
 └── tool-metadata-store/        # Tool execution metadata caching (3 files)
 ```
 

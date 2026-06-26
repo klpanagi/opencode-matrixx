@@ -2,7 +2,7 @@
 
 ## OVERVIEW
 
-24 tools across 14 directories. Two patterns: Direct ToolDefinition (static) and Factory Function (context-dependent).
+28 tools across 16 directories. Two patterns: Direct ToolDefinition (static) and Factory Function (context-dependent).
 
 ## STRUCTURE
 ```
@@ -14,8 +14,10 @@ tools/
 ├── grep/             # Custom grep (60s timeout, 10MB limit)
 ├── glob/             # File search (60s timeout, 100 file limit)
 ├── session-manager/  # 4 tools: list, read, search, info (151 lines)
-├── call-omo-agent/   # Direct agent invocation (57 lines)
+├── delegate-agent/   # Background agent delegation (68 lines)
 ├── background-task/  # background_output, background_cancel
+├── handoff/          # Multi-action handoff: create, read, list, archive
+├── hashline-edit/    # Hash-based line-precise file editing
 ├── interactive-bash/ # Tmux session management (135 lines)
 ├── look-at/          # Multimodal PDF/image analysis (156 lines)
 ├── skill/            # Skill execution with MCP support (211 lines)
@@ -31,7 +33,8 @@ tools/
 | `task_list` | Task | Factory | List active tasks with summary (excludes completed/deleted) |
 | `task_get` | Task | Factory | Retrieve full task object by ID |
 | `task_update` | Task | Factory | Update task fields, supports addBlocks/addBlockedBy for dependencies |
-| `delegate_agent` | Agent | Factory | Direct explore/librarian invocation |
+| `delegate_agent` | Agent | Factory | Direct operator/trinity invocation |
+| `handoff` | Session | Factory | Multi-action: create, read, list, archive |
 | `background_output` | Background | Factory | Retrieve background task result |
 | `background_cancel` | Background | Factory | Cancel running background tasks |
 | `lsp_goto_definition` | LSP | Direct | Jump to symbol definition |
@@ -153,7 +156,7 @@ task_update({
 
 ## DELEGATION SYSTEM (delegate-task)
 
-8 built-in categories: `construct`, `source`, `deep`, `matrix-bend`, `quick`, `blue-pill`, `red-pill`, `writing`
+8 built-in categories: `construct`, `source`, `deep-jack`, `matrix-bend`, `bullet-time`, `blue-pill`, `red-pill`, `broadcast`
 
 Each category defines: model, variant, temperature, max tokens, thinking/reasoning config, prompt append, stability flag.
 
