@@ -128,15 +128,15 @@ Here's a real-world config for a user with **Claude, OpenAI, Gemini, and Z.ai** 
   "$schema": "https://raw.githubusercontent.com/klpanagi/matrixx/master/assets/matrixx.schema.json",
   "agents": {
     // Override specific agents only - rest use fallback chain
-    "architect": { "model": "anthropic/claude-sonnet-4-5", "variant": "max" },
+    "architect": { "model": "anthropic/claude-sonnet-4-6", "variant": "max" },
     "operator": { "model": "zai-coding-plan/glm-4.7" },
     "trinity": { "model": "opencode/gpt-5-nano" },
     "construct": { "model": "zai-coding-plan/glm-4.6v" }
   },
   "categories": {
     // Override categories for cost optimization
-    "quick": { "model": "opencode/gpt-5-nano" },
-    "unspecified-low": { "model": "zai-coding-plan/glm-4.7" }
+    "bullet-time": { "model": "opencode/gpt-5-nano" },
+    "broadcast": { "model": "zai-coding-plan/glm-4.7" }
   },
   "experimental": {
     "aggressive_truncation": true
