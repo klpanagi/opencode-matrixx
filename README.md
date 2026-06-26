@@ -13,7 +13,7 @@
 [![License: SUL-1.0](https://img.shields.io/badge/license-SUL--1.0-blue.svg)](https://github.com/klpanagi/matrixx/blob/master/LICENSE)
 
 **Multi-model agent orchestration for [OpenCode](https://github.com/sst/opencode).**<br/>
-**13 specialized agents. 40 lifecycle hooks. 28+ tools. One plugin.**
+**14 specialized agents. ~52 lifecycle hooks. 28 tools. One plugin.**
 
 </div>
 
@@ -30,7 +30,7 @@ You: "Add OAuth2 with PKCE to the API"
      ↓
 Morpheus (Claude Opus)     → Plans the implementation
   ├─ Keymaker (GPT 5.3)    → Builds auth middleware + routes
-  ├─ Oracle (Claude Opus)  → Reviews architecture in parallel
+  ├─ Oracle (Claude Sonnet 4.6)  → Reviews architecture in parallel
   └─ Sentinel (Sonnet 4.6) → Audits for security vulnerabilities
      ↓
      Done. Tested. Secure.
@@ -105,6 +105,10 @@ Profiles assign models to every agent — one setting, full model lineup.
 | **balanced** | Professional development | ~$8–20 |
 | **performance** | Maximum capability | ~$20–50 |
 | **go** | OpenCode Go subscription | Go quota |
+| **go-duo** | Duo subscription, two users | Go Duo quota |
+| **go-trio** | Trio subscription, three users | Go Trio quota |
+| **go-ultimate** | Unlimited Go access | Go Ultimate quota |
+| **xiaomi-ultimate** | Xiaomi-optimized ultimate | Xiaomi quota |
 
 Profile defaults merge first; any `agents` or `categories` override takes precedence.
 
@@ -148,7 +152,7 @@ Explores the codebase, matches your patterns, and delivers end-to-end. Keymaker 
 
 **Role:** DSL engineering specialist
 
-**Model:** Claude Opus 4.6 · `temperature: 0.1`
+**Model:** Claude Sonnet 4.6 · `temperature: 0.1`
 
 Grammars, parsers, type systems, code generators, metamodels. 11 composable skills covering textX, ANTLR4, tree-sitter, PyEcore, and more. If it involves defining a language or transforming code, Cipher is your specialist.
 
@@ -162,7 +166,7 @@ Grammars, parsers, type systems, code generators, metamodels. 11 composable skil
 
 **Role:** Read-only security specialist
 
-**Model:** Claude Opus 4.6 · `temperature: 0.1`
+**Model:** Claude Sonnet 4.6 · `temperature: 0.1`
 
 Scans for vulnerabilities but never touches code. OWASP Top 10, SAST, DAST, dependency CVEs, secret detection, crypto audit, infrastructure hardening. 9 composable security skills. Sentinel reports findings with CWE IDs, exact locations, and actionable remediation.
 
@@ -176,14 +180,14 @@ Scans for vulnerabilities but never touches code. OWASP Top 10, SAST, DAST, depe
 
 | Agent | Role | Model |
 |-------|------|-------|
-| **Oracle** | Strategic planning, architecture decisions, debugger of last resort | Claude Opus 4.6 |
-| **Merovingian** | High-IQ consultation, hard debugging, architecture design | GPT 5.2 |
+| **Oracle** | Strategic planning, architecture decisions, debugger of last resort | Claude Sonnet 4.6 |
+| **Merovingian** | High-IQ consultation, hard debugging, architecture design | Claude Sonnet 4.6 |
 | **Architect** | Plan execution orchestrator, session coordination | Claude Sonnet 4.6 |
 | **Seraph** | Pre-planning analysis, ambiguity detection, AI failure prevention | Claude Opus 4.6 |
-| **Smith** | Plan validation, completeness review, gap detection | GPT 5.2 |
-| **Operator** | External documentation, OSS search, library research | GLM 4.7 |
-| **Trinity** | Blazing fast codebase grep, pattern discovery | Grok Code Fast |
-| **Construct** | PDF, image & diagram analysis | Gemini 3 Flash |
+| **Smith** | Plan validation, completeness review, gap detection | Claude Sonnet 4.6 |
+| **Operator** | External documentation, OSS search, library research | Claude Haiku 4.5 |
+| **Trinity** | Blazing fast codebase grep, pattern discovery | Claude Haiku 4.5 |
+| **Construct** | PDF, image & diagram analysis | Claude Sonnet 4.6 |
 | **Sati** | Frontend specialist — components, accessibility, performance, testing | Claude Sonnet 4.6 |
 
 Every agent, model, temperature, and permission is fully customizable. [**Meet the full team →**](docs/agents.md)
@@ -196,8 +200,8 @@ Every agent, model, temperature, and permission is fully customizable. [**Meet t
 |---|---|
 | **Agent Orchestration** | 14 agents (incl. **Sati** frontend specialist, **Sentinel** security auditor, **Cipher** DSL expert), parallel background execution, category-based routing, session continuity |
 | **Developer Tools** | LSP (goto def, rename, diagnostics), AST-Grep (search & replace), Tmux terminal |
-| **40 Lifecycle Hooks** | Context injection, think mode, comment checking, todo enforcement, error recovery, quality gate |
-| **37 Built-in Skills** | DSL engineering (11), security (9), browser, git, frontend (7 via **Sati**), software dev pipeline |
+| **~52 Lifecycle Hooks** | Context injection, think mode, comment checking, todo enforcement, error recovery, quality gate |
+| **31 Built-in Skills** | DSL engineering (11), security (9), browser, git, frontend (7 via **Sati**), software dev pipeline |
 | **Curated MCPs** | Exa (web search), Context7 (official docs), Grep.app (GitHub code search), Document Reader |
 | **Claude Code Compat** | Full compatibility — commands, agents, skills, MCPs, hooks from `settings.json` |
 | **Software Dev Pipeline** | 6-phase TDD workflow (PLAN→BUILD→VERIFY→REVIEW→SECURE→SHIP), 5 team roles, adaptive phases |
