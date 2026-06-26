@@ -18,7 +18,7 @@ Meet the main agent: **Morpheus** (Claude Opus 4.6). Everything below is customi
 
 1. **Delegates, doesn't grind** — fires off background tasks to faster, cheaper models in parallel to map the territory. Keeps the main context lean.
 2. **Surgical refactoring** — leverages LSP for deterministic, safe, surgical code changes.
-3. **Specialist delegation** — UI work goes to Gemini 3 Pro. Debugging goes to GPT 5.2. The right model for the right job.
+3. **Specialist delegation** — UI work goes to Sati (Claude Sonnet 4.6). Debugging goes to Merovingian (Claude Sonnet 4.6). The right model for the right job.
 4. **Contextual awareness** — spawns subagents to digest source code and documentation in real-time when working with unfamiliar frameworks.
 5. **Clean code enforcement** — either justifies a comment's existence or nukes it. Code should be indistinguishable from human-written.
 6. **Relentless execution** — bound by the TODO list. If he doesn't finish, the system forces him back. Your task gets done, period.
@@ -29,25 +29,26 @@ Meet the main agent: **Morpheus** (Claude Opus 4.6). Everything below is customi
 | Agent | Role | Model |
 |-------|------|-------|
 | **Keymaker** | Autonomous deep worker | GPT 5.3 Codex |
-| **Merovingian** | Architecture & debugging | GPT 5.2 |
-| **Operator** | Docs, OSS search, codebase exploration | GLM 4.7 |
-| **Trinity** | Fast codebase grep | Grok Code Fast |
-| **Cipher** | DSL engineering | Claude Opus 4.6 |
-| **Niobe** | Research, grants, technical leadership | Claude Opus 4.6 |
-| **Construct** | PDF/image analysis | Kimi K2.5 (free) |
-| **Oracle** | Strategic planning | Claude Opus 4.6 |
+| **Merovingian** | Architecture & debugging | Claude Sonnet 4.6 |
+| **Operator** | Docs, OSS search, codebase exploration | Claude Haiku 4.5 |
+| **Trinity** | Fast codebase grep | Claude Haiku 4.5 |
+| **Cipher** | DSL engineering | Claude Sonnet 4.6 |
+| **Construct** | PDF/image analysis | Claude Sonnet 4.6 |
+| **Oracle** | Strategic planning | Claude Sonnet 4.6 |
 | **Seraph** | Pre-planning analysis | Claude Opus 4.6 |
-| **Smith** | Plan validation | GPT 5.2 |
-| **Architect** | Plan execution orchestrator | Claude Sonnet 4.5 |
+| **Smith** | Plan validation | Claude Sonnet 4.6 |
+| **Architect** | Plan execution orchestrator | Claude Sonnet 4.6 |
 | **Sati** | Frontend specialist (components, a11y, perf, testing) | Claude Sonnet 4.6 |
 
 ### Built-in Capabilities
 
 - Full LSP / AST-Grep support
+- ~52 Lifecycle Hooks — context injection, think mode, comment checking, todo enforcement, error recovery, quality gate
+- 16 Tool Directories — LSP, AST-Grep, search tools, delegation, skills, task management, and more
 - Todo Continuation Enforcer — keeps the agent on mission
 - Comment Checker — prevents AI comment slop
 - Claude Code Compatibility — commands, agents, skills, MCPs, hooks
-- Curated MCPs: Exa (web search), Context7 (official docs), Grep.app (GitHub code search)
+- Curated MCPs: Exa (web search), Context7 (official docs), Grep.app (GitHub code search), Document Reader
 - Interactive terminal via Tmux integration
 - Async background agents
 
@@ -79,7 +80,7 @@ Keymaker is inspired by [AmpCode's deep mode](https://ampcode.com) — autonomou
 
 ![Meet Cipher](../.github/assets/cipher.png)
 
-In The Matrix, ciphers were the encoded signals flowing through the system — the raw language underneath reality itself. **Meet the DSL engineering specialist: Cipher (Claude Opus 4.6). The Language Architect.**
+In The Matrix, ciphers were the encoded signals flowing through the system — the raw language underneath reality itself. **Meet the DSL engineering specialist: Cipher (Claude Sonnet 4.6). The Language Architect.**
 
 Cipher is the agent you call when you need to design, build, or extend domain-specific languages. He doesn't just write parsers — he thinks in grammars, type systems, and metamodels.
 
@@ -87,7 +88,7 @@ Cipher is the agent you call when you need to design, build, or extend domain-sp
 
 | Property | Value |
 |----------|-------|
-| **Model** | Claude Opus 4.6 (fallback: GPT 5.2 → Kimi K2.5 → Gemini 3.1 Pro) |
+| **Model** | Claude Sonnet 4.6 (fallback: Claude Opus 4.6 → GPT 5.2 → Kimi K2.5 → Gemini 3.1 Pro) |
 | **Mode** | `all` — selectable in agent menu AND spawnable as subagent |
 | **Thinking** | Extended thinking enabled (32k budget) |
 | **Max Tokens** | 64,000 — DSL tasks produce large outputs (grammars + parsers + code generators) |
@@ -211,8 +212,6 @@ When Cipher tackles a DSL project, this is the internal workflow:
 - *"Create a tree-sitter grammar for syntax highlighting of my custom language"*
 - *"Build a textX metamodel for a state machine DSL with code generation to Python"*
 - *"Design an internal DSL with fluent API for defining data pipelines in Python"*
-
-See the [opencode-niobe](https://github.com/klpanagi/opencode-niobe) plugin for research & EU proposal capabilities.
 
 ## Sati — The Frontend Specialist
 
