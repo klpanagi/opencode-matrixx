@@ -35,7 +35,7 @@ You have an active work plan with incomplete tasks. Continue working.
 RULES:
 - **FIRST**: Read the plan file NOW to check exact current progress — count remaining \`- [ ]\` tasks
 - Proceed without asking for permission
-- Change \`- [ ]\` to \`- [x]\` in the plan file when done
+- **IMMEDIATELY AFTER COMPLETION**: Mark \`- [ ]\` → \`- [x]\` in the plan file. This is MANDATORY — unmarked checkboxes = lost progress.
 - Use the notepad at .matrixx/notepads/{PLAN_NAME}/ to record learnings
 - Do not stop until all tasks are complete
 - If blocked, document the blocker and move to the next task`
