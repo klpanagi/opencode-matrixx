@@ -800,6 +800,36 @@ describe("architect hook", () => {
       expect(mockInput._promptMock).not.toHaveBeenCalled()
     })
 
+    test("should clear mission state when plan is complete", async () => {
+      // given - mission state with complete plan
+      const planPath = join(TEST_DIR, "clear-mission-plan.md")
+      writeFileSync(planPath, "# Plan\n- [x] Task 1\n- [x] Task 2")
+
+      const state: MissionState = {
+        active_plan: planPath,
+        started_at: "2026-01-02T10:00:00Z",
+        session_ids: [MAIN_SESSION_ID],
+        plan_name: "clear-mission-plan",
+      }
+      writeMissionState(TEST_DIR, state)
+
+      const mockInput = createMockPluginInput()
+      const hook = createArchitectHook(mockInput)
+
+      // when - main session fires idle
+      await hook.handler({
+        event: {
+          type: "session.idle",
+          properties: { sessionID: MAIN_SESSION_ID },
+        },
+      })
+
+      // then - mission state should be cleared
+      expect(readMissionState(TEST_DIR)).toBeNull()
+      // AND prompt should NOT be called (existing behavior preserved)
+      expect(mockInput._promptMock).not.toHaveBeenCalled()
+    })
+
     test("should skip when abort error occurred before idle", async () => {
       // given - mission state with incomplete plan
       const planPath = join(TEST_DIR, "test-plan.md")

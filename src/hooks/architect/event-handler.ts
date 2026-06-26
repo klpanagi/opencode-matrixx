@@ -1,6 +1,6 @@
 import type { PluginInput } from "@opencode-ai/plugin"
 import { subagentSessions } from "../../features/claude-code-session-state"
-import { getPlanProgress, readMissionState } from "../../features/mission-state"
+import { clearMissionState, getPlanProgress, readMissionState } from "../../features/mission-state"
 import { getAgentConfigKey } from "../../shared/agent-display-names"
 import { log } from "../../shared/logger"
 import { HOOK_NAME } from "./hook-name"
@@ -110,6 +110,7 @@ export function createArchitectEventHandler(input: {
       const progress = getPlanProgress(missionState.active_plan)
       if (progress.isComplete) {
         log(`[${HOOK_NAME}] Mission complete`, { sessionID, plan: missionState.plan_name })
+        clearMissionState(ctx.directory)
         return
       }
 
