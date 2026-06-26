@@ -57,7 +57,7 @@ mock.module("/home/klpanagi/matrixx/src/shared/session-utils.ts", () => ({
   },
 }))
 
-const { createAtlasHook } = await import("./index")
+const { createArchitectHook } = await import("./index")
 const { MESSAGE_STORAGE } = await import("../../features/hook-message-injector")
 
 describe("architect hook", () => {
