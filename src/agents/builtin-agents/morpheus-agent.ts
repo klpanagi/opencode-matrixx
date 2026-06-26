@@ -39,33 +39,33 @@ export function maybeCreateMorpheusConfig(input: {
   } = input
 
   const morpheusOverride = agentOverrides.morpheus
-  const sisyphusRequirement = AGENT_MODEL_REQUIREMENTS.morpheus
+  const morpheusRequirement = AGENT_MODEL_REQUIREMENTS.morpheus
   const hasMorpheusExplicitConfig = morpheusOverride !== undefined
   const meetsMorpheusAnyModelRequirement =
-    !sisyphusRequirement?.requiresAnyModel ||
+    !morpheusRequirement?.requiresAnyModel ||
     hasMorpheusExplicitConfig ||
     isFirstRunNoCache ||
-    isAnyFallbackModelAvailable(sisyphusRequirement.fallbackChain, availableModels)
+    isAnyFallbackModelAvailable(morpheusRequirement.fallbackChain, availableModels)
 
   if (disabledAgents.includes("morpheus") || !meetsMorpheusAnyModelRequirement) return undefined
 
-  let sisyphusResolution = applyModelResolution({
+  let morpheusResolution = applyModelResolution({
     uiSelectedModel: morpheusOverride?.model ? undefined : uiSelectedModel,
     userModel: morpheusOverride?.model,
-    requirement: sisyphusRequirement,
+    requirement: morpheusRequirement,
     availableModels,
     systemDefaultModel,
   })
 
   if (isFirstRunNoCache && !morpheusOverride?.model && !uiSelectedModel) {
-    sisyphusResolution = getFirstFallbackModel(sisyphusRequirement)
+    morpheusResolution = getFirstFallbackModel(morpheusRequirement)
   }
 
-  if (!sisyphusResolution) return undefined
-  const { model: sisyphusModel, variant: morpheusResolvedVariant } = sisyphusResolution
+  if (!morpheusResolution) return undefined
+  const { model: morpheusModel, variant: morpheusResolvedVariant } = morpheusResolution
 
   let morpheusConfig = createMorpheusAgent(
-    sisyphusModel,
+    morpheusModel,
     availableAgents,
     undefined,
     availableSkills,
