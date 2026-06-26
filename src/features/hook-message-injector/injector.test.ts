@@ -44,13 +44,13 @@ function createMockClient(messages: Array<{
 describe("findNearestMessageWithFieldsFromSDK", () => {
   it("returns message with all fields when available", async () => {
     const mockClient = createMockClient([
-      { info: { agent: "sisyphus", model: { providerID: "anthropic", modelID: "claude-opus-4" } } },
+      { info: { agent: "morpheus", model: { providerID: "anthropic", modelID: "claude-opus-4" } } },
     ])
 
     const result = await findNearestMessageWithFieldsFromSDK(mockClient as unknown as OpencodeClient, "ses_123")
 
     expect(result).toEqual({
-      agent: "sisyphus",
+      agent: "morpheus",
       model: { providerID: "anthropic", modelID: "claude-opus-4" },
       tools: undefined,
     })
@@ -58,13 +58,13 @@ describe("findNearestMessageWithFieldsFromSDK", () => {
 
   it("returns message with assistant shape (providerID/modelID directly on info)", async () => {
     const mockClient = createMockClient([
-      { info: { agent: "sisyphus", providerID: "openai", modelID: "gpt-5" } },
+      { info: { agent: "morpheus", providerID: "openai", modelID: "gpt-5" } },
     ])
 
     const result = await findNearestMessageWithFieldsFromSDK(mockClient as unknown as OpencodeClient, "ses_123")
 
     expect(result).toEqual({
-      agent: "sisyphus",
+      agent: "morpheus",
       model: { providerID: "openai", modelID: "gpt-5" },
       tools: undefined,
     })
@@ -128,7 +128,7 @@ describe("findNearestMessageWithFieldsFromSDK", () => {
     const mockClient = createMockClient([
       {
         info: {
-          agent: "sisyphus",
+          agent: "morpheus",
           model: { providerID: "anthropic", modelID: "claude-opus-4" },
           tools: { edit: true, write: false },
         },
@@ -203,7 +203,7 @@ describe("injectHookMessage", () => {
     mockIsSqliteBackend.mockReturnValue(true)
 
     const result = injectHookMessage("ses_123", "test content", {
-      agent: "sisyphus",
+      agent: "morpheus",
       model: { providerID: "anthropic", modelID: "claude-opus-4" },
     })
 
@@ -215,7 +215,7 @@ describe("injectHookMessage", () => {
     mockIsSqliteBackend.mockReturnValue(false)
 
     const result = injectHookMessage("ses_123", "", {
-      agent: "sisyphus",
+      agent: "morpheus",
       model: { providerID: "anthropic", modelID: "claude-opus-4" },
     })
 
@@ -226,7 +226,7 @@ describe("injectHookMessage", () => {
     mockIsSqliteBackend.mockReturnValue(false)
 
     const result = injectHookMessage("ses_123", "   \n\t  ", {
-      agent: "sisyphus",
+      agent: "morpheus",
       model: { providerID: "anthropic", modelID: "claude-opus-4" },
     })
 

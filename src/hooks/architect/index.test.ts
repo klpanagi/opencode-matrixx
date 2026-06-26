@@ -48,7 +48,7 @@ mock.module("/home/klpanagi/matrixx/src/shared/session-utils.ts", () => ({
           const msg = JSON.parse(readFileSync(pathJoin(messageDir, file), "utf-8"))
           if (msg.agent) {
             const agent = msg.agent.toLowerCase()
-            return agent === "architect" || agent === "atlas"
+            return agent === "architect"
           }
         } catch { }
       }
@@ -77,7 +77,7 @@ describe("architect hook", () => {
           try { return JSON.parse(readFileSync(join(messageDir, f), "utf-8")) } catch { return null }
         }).filter(Boolean)
         return Promise.resolve({ data: messages.map((m: Record<string, unknown>) => ({
-          info: { ...m, agent: m.agent === "architect" ? "atlas" : m.agent }
+          info: { ...m }
         })) })
       } catch {
         return Promise.resolve({ data: [] })
