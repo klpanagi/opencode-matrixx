@@ -50,7 +50,7 @@ const FAST_FAIL_HOOK_NAMES = [
   "nonInteractiveEnv",
   "bashFileReadGuard",
   "questionLabelTruncator",
-  "sisyphusJuniorNotepad",
+  "mouseNotepad",
   "architectHook",
 ] as const
 
@@ -296,7 +296,7 @@ describe("tool.execute.before — T1.1 parallel safety", () => {
         "nonInteractiveEnv",
         "bashFileReadGuard",
         "questionLabelTruncator",
-        "sisyphusJuniorNotepad",
+        "mouseNotepad",
         "architectHook",
       ]
       for (const name of SINGLE_CALL_HOOKS) {

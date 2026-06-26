@@ -16,7 +16,7 @@
  *                                                     bashFileReadGuard,
  *                                                     questionLabelTruncator,
  *                                                     prometheusMdOnly (MUTATOR),
- *                                                     sisyphusJuniorNotepad,
+ *                                                     mouseNotepad,
  *                                                     architectHook
  *
  * Total: 16 calls per iteration (prometheusMdOnly appears in both Wave 2 and
@@ -74,7 +74,7 @@ const WAVE_3: HookName[] = [
   "bashFileReadGuard",
   "questionLabelTruncator",
   "prometheusMdOnly",
-  "sisyphusJuniorNotepad",
+  "mouseNotepad",
   "architectHook",
 ]
 
