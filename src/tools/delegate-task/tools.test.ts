@@ -314,7 +314,7 @@ describe("morpheus-task", () => {
       const toolContext = {
         sessionID: "parent-session",
         messageID: "parent-message",
-        agent: "sisyphus",
+        agent: "morpheus",
         abort: new AbortController().signal,
       }
 
@@ -348,7 +348,7 @@ describe("morpheus-task", () => {
           id: "task-456",
           status: "pending",
           description: "Parse test",
-          agent: "sisyphus-junior",
+          agent: "mouse",
           sessionID: "test-session",
         }),
       }
@@ -378,7 +378,7 @@ describe("morpheus-task", () => {
       const toolContext = {
         sessionID: "parent-session",
         messageID: "parent-message",
-        agent: "sisyphus",
+        agent: "morpheus",
         abort: new AbortController().signal,
       }
 
@@ -1799,7 +1799,7 @@ describe("morpheus-task", () => {
         id: "task-unstable",
         sessionID: "ses_unstable_custom",
         description: "Unstable custom task",
-        agent: "sisyphus-junior",
+        agent: "mouse",
         status: "running",
       }
       const mockManager = {
@@ -1931,7 +1931,7 @@ describe("morpheus-task", () => {
         id: "task-unstable-minimax",
         sessionID: "ses_unstable_minimax",
         description: "Unstable minimax task",
-        agent: "sisyphus-junior",
+        agent: "mouse",
         status: "running",
       }
       const mockManager = {
@@ -2069,7 +2069,7 @@ describe("morpheus-task", () => {
         id: "task-artistry",
         sessionID: "ses_artistry_custom",
         description: "Artistry custom task",
-        agent: "sisyphus-junior",
+        agent: "mouse",
         status: "running",
       }
       const mockManager = {
@@ -2141,7 +2141,7 @@ describe("morpheus-task", () => {
         id: "task-writing",
         sessionID: "ses_writing_custom",
         description: "Writing custom task",
-        agent: "sisyphus-junior",
+        agent: "mouse",
         status: "running",
       }
       const mockManager = {
@@ -2213,7 +2213,7 @@ describe("morpheus-task", () => {
         id: "task-custom-unstable",
         sessionID: "ses_custom_unstable",
         description: "Custom unstable task",
-        agent: "sisyphus-junior",
+        agent: "mouse",
         status: "running",
       }
       const mockManager = {

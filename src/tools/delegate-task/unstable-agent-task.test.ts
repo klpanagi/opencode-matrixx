@@ -29,7 +29,7 @@ describe("executeUnstableAgentTask - interrupt detection", () => {
       status: "interrupt" as string,
       description: "test interrupted task",
       prompt: "test prompt",
-      agent: "sisyphus-junior",
+      agent: "mouse",
       error: "Agent not found" as string | undefined,
     }
 
@@ -96,7 +96,7 @@ describe("executeUnstableAgentTask - interrupt detection", () => {
       status: "error" as string,
       description: "test error task",
       prompt: "test prompt",
-      agent: "sisyphus-junior",
+      agent: "mouse",
       error: "Rate limit exceeded" as string | undefined,
     }
 
@@ -163,7 +163,7 @@ describe("executeUnstableAgentTask - interrupt detection", () => {
       status: "cancelled" as string,
       description: "test cancelled task",
       prompt: "test prompt",
-      agent: "sisyphus-junior",
+      agent: "mouse",
       error: "Stale timeout" as string | undefined,
     }
 

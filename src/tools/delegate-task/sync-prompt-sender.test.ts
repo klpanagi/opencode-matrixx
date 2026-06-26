@@ -24,7 +24,7 @@ bunDescribe("sendSyncPrompt", () => {
 
     const input = {
       sessionID: "test-session",
-      agentToUse: "sisyphus-junior",
+      agentToUse: "mouse",
       args: {
         description: "test task",
         prompt: "test prompt",
