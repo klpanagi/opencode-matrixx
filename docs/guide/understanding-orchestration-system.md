@@ -23,21 +23,21 @@ The orchestration system solves these problems through **specialization and dele
 flowchart TB
     subgraph Planning["Planning Layer (Human + Oracle)"]
         User[("👤 User")]
-        Oracle["🔥 Oracle<br/>(Planner)<br/>Claude Opus 4.5"]
-        Seraph["🦉 Seraph<br/>(Consultant)<br/>Claude Opus 4.5"]
-        Smith["👁️ Smith<br/>(Reviewer)<br/>GPT-5.2"]
+        Oracle["🔥 Oracle<br/>(Planner)<br/>Claude Opus 4.6"]
+        Seraph["🦉 Seraph<br/>(Consultant)<br/>Claude Opus 4.6"]
+        Smith["👁️ Smith<br/>(Reviewer)<br/>Claude Sonnet 4.6"]
     end
     
     subgraph Execution["Execution Layer (Orchestrator)"]
-        Orchestrator["⚡ Architect<br/>(Conductor)<br/>Claude Opus 4.5"]
+        Orchestrator["⚡ Architect<br/>(Conductor)<br/>Claude Sonnet 4.6"]
     end
     
     subgraph Workers["Worker Layer (Specialized Agents)"]
-        Junior["🪨 Mouse<br/>(Task Executor)<br/>Claude Sonnet 4.5"]
-        Merovingian["🧠 Merovingian<br/>(Architecture)<br/>GPT-5.2"]
-        Trinity["🔍 Trinity<br/>(Codebase Grep)<br/>Grok Code"]
-        Operator["📚 Operator<br/>(Docs/OSS)<br/>GLM-4.7"]
-        Frontend["🎨 Frontend<br/>(UI/UX)<br/>Gemini 3 Pro"]
+        Junior["🪨 Mouse<br/>(Task Executor)<br/>Claude Sonnet 4.6"]
+        Merovingian["🧠 Merovingian<br/>(Architecture)<br/>Claude Sonnet 4.6"]
+        Trinity["🔍 Trinity<br/>(Codebase Grep)<br/>Claude Haiku 4.5"]
+        Operator["📚 Operator<br/>(Docs/OSS)<br/>Claude Haiku 4.5"]
+        Frontend["🎨 Frontend<br/>(UI/UX)<br/>Claude Sonnet 4.6"]
     end
     
     User -->|"Describe work"| Oracle
@@ -220,9 +220,9 @@ Independent tasks run in parallel:
 ```typescript
 // Orchestrator identifies parallelizable groups from plan
 // Group A: Tasks 2, 3, 4 (no file conflicts)
-task(category="ultrabrain", prompt="Task 2...")
-task(category="visual-engineering", prompt="Task 3...")
-task(category="general", prompt="Task 4...")
+task(category="source", prompt="Task 2...")
+task(category="construct", prompt="Task 3...")
+task(category="broadcast", prompt="Task 4...")
 // All run simultaneously
 ```
 
@@ -284,22 +284,23 @@ task(agent="claude-opus-4.6", prompt="...")  // Different self-perception
 
 ```typescript
 // NEW: Category describes INTENT, not implementation
-task(category="ultrabrain", prompt="...")     // "Think strategically"
-task(category="visual-engineering", prompt="...")  // "Design beautifully"
-task(category="quick", prompt="...")          // "Just get it done fast"
+task(category="source", prompt="...")     // "Think strategically"
+task(category="construct", prompt="...")  // "Design beautifully"
+task(category="bullet-time", prompt="...")          // "Just get it done fast"
 ```
 
 ### Built-in Categories
 
 | Category | Model | When to Use |
 |----------|-------|-------------|
-| `visual-engineering` | Gemini 3 Pro | Frontend, UI/UX, design, styling, animation |
-| `ultrabrain` | GPT-5.2 Codex (xhigh) | Deep logical reasoning, complex architecture decisions |
-| `artistry` | Gemini 3 Pro (max) | Highly creative/artistic tasks, novel ideas |
-| `quick` | Claude Haiku 4.5 | Trivial tasks - single file changes, typo fixes |
-| `unspecified-low` | Claude Sonnet 4.5 | Tasks that don't fit other categories, low effort |
-| `unspecified-high` | Claude Opus 4.5 (max) | Tasks that don't fit other categories, high effort |
-| `writing` | Gemini 3 Flash | Documentation, prose, technical writing |
+| `source` | Claude Opus 4.6 | Deep codebase work, complex implementation, architecture decisions |
+| `construct` | Claude Sonnet 4.6 | PDF, image & diagram analysis |
+| `deep-jack` | Claude Sonnet 4.6 | Deep analysis, investigation, debugging |
+| `matrix-bend` | Claude Sonnet 4.6 | Creative problem-solving, unconventional approaches |
+| `blue-pill` | Claude Sonnet 4.6 | Conservative, safe implementations |
+| `red-pill` | Claude Opus 4.6 | Bold, transformative changes |
+| `broadcast` | Claude Sonnet 4.6 | Documentation, prose, technical writing |
+| `bullet-time` | Claude Haiku 4.5 | Trivial tasks - single file changes, typo fixes |
 
 ### Custom Categories
 
@@ -325,13 +326,13 @@ Skills prepend specialized instructions to subagent prompts:
 ```typescript
 // Category + Skill combination
 task(
-  category="visual-engineering", 
+  category="construct", 
   load_skills=["frontend-ui-ux"],  // Adds UI/UX expertise
   prompt="..."
 )
 
 task(
-  category="general",
+  category="bullet-time",
   load_skills=["playwright"],  // Adds browser automation expertise
   prompt="..."
 )
@@ -341,8 +342,8 @@ task(
 
 | Before | After |
 |--------|-------|
-| Hardcoded: `frontend-ui-ux-engineer` (Gemini 3 Pro) | `category="visual-engineering" + load_skills=["frontend-ui-ux"]` |
-| One-size-fits-all | `category="visual-engineering" + load_skills=["unity-master"]` |
+| Hardcoded: `frontend-ui-ux-engineer` (Gemini 3 Pro) | `category="construct" + load_skills=["frontend-ui-ux"]` |
+| One-size-fits-all | `category="construct" + load_skills=["unity-master"]` |
 | Model bias | Category-based: model abstraction eliminates bias |
 
 ---
@@ -416,7 +417,7 @@ The Orchestrator **never trusts subagent claims**:
 
 ### 4. Model Optimization
 
-Expensive models (Opus, GPT-5.2) used only where needed:
+Expensive models (Opus, Sonnet) used only where needed:
 - Planning decisions (once per project)
 - Debugging consultation (rare)
 - Complex architecture (rare)

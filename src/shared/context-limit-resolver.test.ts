@@ -78,10 +78,23 @@ describe("resolveActualContextLimit", () => {
 
   //#given unknown non-anthropic provider without cache
   //#when resolving context limit
-  //#then returns null
-  it("returns null for unknown non-anthropic provider", () => {
+  //#then returns 128_000 fallback
+  it("returns 128_000 fallback for unknown non-anthropic provider", () => {
     const result = resolveActualContextLimit("openai", "gpt-4o")
-    expect(result).toBeNull()
+    expect(result).toBe(128_000)
+  })
+
+  //#given unknown non-anthropic provider with cached limit
+  //#when resolving context limit
+  //#then returns cached limit (not fallback)
+  it("returns cached limit for unknown non-anthropic provider with cache", () => {
+    const cache = new Map<string, number>([["unknown-provider/some-model", 200_000]])
+    const state: ContextLimitModelCacheState = {
+      anthropicContext1MEnabled: false,
+      modelContextLimitsCache: cache,
+    }
+    const result = resolveActualContextLimit("unknown-provider", "some-model", state)
+    expect(result).toBe(200_000)
   })
 
   //#given non-anthropic provider with cached limit

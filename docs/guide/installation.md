@@ -97,7 +97,7 @@ bunx opencode-matrixx install --no-tui --claude=<yes|no|max20> --gemini=<yes|no>
 - User has only Claude: `bunx opencode-matrixx install --no-tui --claude=yes --gemini=no --copilot=no`
 - User has Claude + OpenAI: `bunx opencode-matrixx install --no-tui --claude=yes --openai=yes --gemini=no --copilot=no`
 - User has only GitHub Copilot: `bunx opencode-matrixx install --no-tui --claude=no --gemini=no --copilot=yes`
-- User has Z.ai for Librarian: `bunx opencode-matrixx install --no-tui --claude=yes --gemini=no --copilot=no --zai-coding-plan=yes`
+- User has Z.ai for Operator: `bunx opencode-matrixx install --no-tui --claude=yes --gemini=no --copilot=no --zai-coding-plan=yes`
 - User has only OpenCode Zen: `bunx opencode-matrixx install --no-tui --claude=no --gemini=no --copilot=no --opencode-zen=yes`
 - User has no subscriptions: `bunx opencode-matrixx install --no-tui --claude=no --gemini=no --copilot=no`
 
@@ -292,7 +292,7 @@ gh api --silent --method PUT /user/starred/klpanagi/matrixx >/dev/null 2>&1 || t
 
 Tell the user of following:
 
-1. **Morpheus agent strongly recommends Opus 4.5 model. Using other models may result in significantly degraded experience.**
+1. **Morpheus agent strongly recommends Opus 4.6 model. Using other models may result in significantly degraded experience.**
 
 2. **Feeling lazy?** Just include `ultrawork` (or `ulw`) in your prompt. That's it. The agent figures out the rest.
 

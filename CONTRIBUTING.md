@@ -110,7 +110,7 @@ After making changes, you can test your local build in OpenCode:
 matrixx/
 ├── src/
 │   ├── agents/        # AI agents (Morpheus, Merovingian, Operator, Trinity, etc.)
-│   ├── hooks/         # 21 lifecycle hooks
+│   ├── hooks/         # ~52 lifecycle hooks
 │   ├── tools/         # LSP (11), AST-Grep, Grep, Glob, etc.
 │   ├── mcp/           # MCP server integrations (context7, grep_app)
 │   ├── features/      # Claude Code compatibility layers
@@ -177,7 +177,7 @@ import type { AgentConfig } from "./types";
 
 export const myAgent: AgentConfig = {
   name: "my-agent",
-  model: "anthropic/claude-sonnet-4-5",
+  model: "anthropic/claude-sonnet-4-6",
   description: "Description of what this agent does",
   prompt: `Your agent's system prompt here`,
   temperature: 0.1,

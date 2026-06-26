@@ -2,7 +2,7 @@
 
 ## OVERVIEW
 
-41 lifecycle hooks intercepting/modifying agent behavior across 7 event types. Three-tier registration: Core (32) → Continuation (7) → Skill (2).
+~52 lifecycle hooks intercepting/modifying agent behavior across 7 event types. Three-tier registration: Core (31+) → Continuation (7) → Skill (2).
 
 ## STRUCTURE
 ```
@@ -20,6 +20,7 @@ hooks/
 ├── compaction-todo-preserver/    # Preserves todos during compaction (203 lines)
 ├── context-window-monitor.ts     # Reminds of headroom at 70% (99 lines)
 ├── delegate-task-retry/          # Retries failed delegations (266 lines)
+├── design-intent-preserver/      # Preserves design intent across edits
 ├── directory-agents-injector/    # Auto-injects AGENTS.md (195 lines)
 ├── directory-readme-injector/    # Auto-injects README.md (190 lines)
 ├── edit-error-recovery/          # Recovers from edit failures (188 lines)
@@ -29,6 +30,7 @@ hooks/
 ├── non-interactive-env/          # Non-TTY handling (483 lines)
 ├── preemptive-compaction.ts      # Auto-compact at 78% usage (108 lines)
 ├── oracle-md-only/           # Planner read-only mode (955 lines)
+├── quality-gate/                 # Post-task quality verification
 ├── question-label-truncator/     # Truncates labels to 30 chars (199 lines)
 ├── matrix-loop/                   # Self-referential dev loop (1687 lines)
 ├── rules-injector/               # Conditional .morpheus/rules injection (1604 lines)
@@ -38,6 +40,7 @@ hooks/
 ├── start-work/                   # Morpheus work session starter (648 lines)
 ├── stop-continuation-guard/      # Guards stop continuation (214 lines)
 ├── subagent-question-blocker/    # Blocks subagent questions (112 lines)
+├── task-notepad/                 # Task-scoped notepad persistence
 ├── task-reminder/                # Task progress reminders (210 lines)
 ├── task-resume-info/             # Resume info for cancelled tasks (39 lines)
 ├── tasks-todowrite-disabler/     # Disables TodoWrite when tasks active (202 lines)

@@ -1,4 +1,5 @@
 const DEFAULT_ANTHROPIC_ACTUAL_LIMIT = 200_000
+const DEFAULT_NON_ANTHROPIC_FALLBACK_LIMIT = 128_000
 
 export type ContextLimitModelCacheState = {
   anthropicContext1MEnabled: boolean
@@ -41,5 +42,5 @@ export function resolveActualContextLimit(
     return DEFAULT_ANTHROPIC_ACTUAL_LIMIT
   }
 
-  return modelCacheState?.modelContextLimitsCache?.get(`${providerID}/${modelID}`) ?? null
+  return modelCacheState?.modelContextLimitsCache?.get(`${providerID}/${modelID}`) ?? DEFAULT_NON_ANTHROPIC_FALLBACK_LIMIT
 }

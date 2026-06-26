@@ -20,15 +20,14 @@ It asks about your providers (Claude, OpenAI, Gemini, etc.) and generates optima
   
   // Override specific agent models
   "agents": {
-    "oracle": { "model": "openai/gpt-5.2" },           // Use GPT for debugging
-    "librarian": { "model": "zai-coding-plan/glm-4.7" }, // Cheap model for research
-    "explore": { "model": "opencode/gpt-5-nano" }        // Free model for grep
+    "oracle": { "model": "openai/gpt-5.2" },                // Use GPT for debugging
+    "operator": { "model": "anthropic/claude-haiku-4-5" },   // Cheap & fast for research
+    "trinity": { "model": "anthropic/claude-haiku-4-5" }     // Cheap & fast for grep
   },
   
   // Override category models (used by task)
   "categories": {
-    "quick": { "model": "opencode/gpt-5-nano" },         // Fast/cheap for trivial tasks
-    "visual-engineering": { "model": "google/gemini-3-pro" } // Gemini for UI
+    "bullet-time": { "model": "anthropic/claude-haiku-4-5" } // Fast/cheap for trivial tasks
   }
 }
 ```
@@ -74,12 +73,37 @@ When both `matrixx.jsonc` and `matrixx.json` files exist, `.jsonc` takes priorit
     "oracle": {
       "model": "openai/gpt-5.2"  // GPT for strategic reasoning
     },
-    "explore": {
-      "model": "opencode/gpt-5-nano"  // Free & fast for exploration
+    "trinity": {
+      "model": "anthropic/claude-haiku-4-5"  // Fast for exploration
     },
   },
 }
 ```
+
+## Profiles
+
+Profiles assign models to every agent and category — one setting, full model lineup.
+
+| Profile | Best For | Daily Cost |
+|---------|----------|------------|
+| **free** | Experimentation, prototyping | $0 |
+| **budget** | Personal projects, light use | ~$1–3 |
+| **economy** | Active development with cost control | ~$3–8 |
+| **balanced** | Professional development | ~$8–20 |
+| **performance** | Maximum capability | ~$20–50 |
+| **go** | OpenCode Go subscription | Go quota |
+| **go-duo** | Duo subscription, two users | Go Duo quota |
+| **go-trio** | Trio subscription, three users | Go Trio quota |
+| **go-ultimate** | Unlimited Go access | Go Ultimate quota |
+| **xiaomi-ultimate** | Xiaomi-optimized ultimate | Xiaomi quota |
+
+```json
+{
+  "profile": "balanced"
+}
+```
+
+Profile defaults merge first; any `agents` or `categories` override takes precedence.
 
 ## Google Auth
 
@@ -94,7 +118,7 @@ When both `matrixx.jsonc` and `matrixx.json` files exist, `.jsonc` takes priorit
 ```json
 {
   "agents": {
-    "explore": {
+    "trinity": {
       "model": "ollama/qwen3-coder",
       "stream": false
     }
@@ -152,7 +176,7 @@ Override built-in agent settings:
 ```json
 {
   "agents": {
-    "explore": {
+    "trinity": {
       "model": "anthropic/claude-haiku-4-5",
       "temperature": 0.5
     },
@@ -202,7 +226,7 @@ Use `prompt_append` to add extra instructions without replacing the default syst
 ```json
 {
   "agents": {
-    "librarian": {
+    "operator": {
       "prompt_append": "Always use the elisp-dev-mcp for Emacs Lisp documentation lookups."
     }
   }
@@ -218,7 +242,7 @@ Fine-grained control over what agents can do:
 ```json
 {
   "agents": {
-    "explore": {
+    "trinity": {
       "permission": {
         "edit": "deny",
         "bash": "ask",
@@ -245,7 +269,7 @@ Or disable via `disabled_agents` in `~/.config/opencode/matrixx.json` or `.openc
 }
 ```
 
-Available agents: `morpheus`, `oracle`, `merovingian`, `operator`, `trinity`, `construct`, `seraph`, `smith`, `architect`, `cipher`
+Available agents: `morpheus`, `oracle`, `merovingian`, `operator`, `trinity`, `construct`, `seraph`, `smith`, `architect`, `cipher`, `sati`, `sentinel`, `keymaker`
 
 ## Built-in Skills
 
@@ -665,7 +689,7 @@ You can also customize Morpheus agents like other agents:
       "model": "openai/gpt-5.2"
     },
     "Seraph (Plan Consultant)": {
-      "model": "anthropic/claude-sonnet-4-5"
+      "model": "anthropic/claude-sonnet-4-6"
     }
   }
 }
@@ -694,7 +718,7 @@ Configure concurrency limits for background agent tasks. This controls how many 
     },
     "modelConcurrency": {
       "anthropic/claude-opus-4-6": 2,
-      "google/gemini-3-flash": 10
+      "anthropic/claude-haiku-4-5": 10
     }
   }
 }
@@ -720,18 +744,18 @@ Categories enable domain-specific task delegation via the `task` tool. Each cate
 
 ### Built-in Categories
 
-All 7 categories come with optimal model defaults, but **you must configure them to use those defaults**:
+All 8 categories come with optimal model defaults, but **you must configure them to use those defaults**:
 
 | Category             | Built-in Default Model             | Description                                                          |
 | -------------------- | ---------------------------------- | -------------------------------------------------------------------- |
-| `construct`          | `google/gemini-3.1-pro` (high)     | Frontend, UI/UX, design, styling, animation                          |
-| `source`             | `openai/gpt-5.3-codex` (xhigh)    | Deep logical reasoning, complex architecture decisions               |
-| `deep-jack`          | `openai/gpt-5.3-codex` (medium)   | Goal-oriented autonomous problem-solving, thorough research          |
-| `matrix-bend`        | `google/gemini-3.1-pro` (high)     | Complex problem-solving with creative approaches                     |
+| `construct`          | `anthropic/claude-sonnet-4-6`       | Frontend, UI/UX, design, styling, animation                          |
+| `source`             | `anthropic/claude-opus-4-6`        | Deep logical reasoning, complex architecture decisions               |
+| `deep-jack`          | `anthropic/claude-sonnet-4-6`       | Goal-oriented autonomous problem-solving, thorough research          |
+| `matrix-bend`        | `anthropic/claude-sonnet-4-6`       | Complex problem-solving with creative approaches                     |
 | `bullet-time`        | `anthropic/claude-haiku-4-5`       | Trivial tasks - single file changes, typo fixes, simple modifications|
 | `blue-pill`          | `anthropic/claude-sonnet-4-6`      | Tasks that don't fit other categories, low effort required           |
 | `red-pill`           | `anthropic/claude-opus-4-6` (max)  | Tasks that don't fit other categories, high effort required          |
-| `broadcast`          | `opencode/kimi-k2.5-free`          | Documentation, prose, technical writing                              |
+| `broadcast`          | `anthropic/claude-sonnet-4-6`       | Documentation, prose, technical writing                              |
 
 ### ⚠️ Critical: Model Resolution Priority
 
@@ -747,15 +771,15 @@ All 7 categories come with optimal model defaults, but **you must configure them
 
 ```json
 // opencode.json
-{ "model": "anthropic/claude-sonnet-4-5" }
+{ "model": "anthropic/claude-sonnet-4-6" }
 
 // matrixx.json (empty categories section)
 {}
 
-// Result: ALL categories use claude-sonnet-4-5 (wasteful!)
-// - quick tasks use Sonnet instead of Haiku (expensive)
-// - ultrabrain uses Sonnet instead of GPT-5.2 (inferior reasoning)
-// - visual tasks use Sonnet instead of Gemini (suboptimal for UI)
+// Result: ALL categories use claude-sonnet-4-6 (wasteful!)
+// - bullet-time tasks use Sonnet instead of Haiku (expensive)
+// - source tasks use Sonnet instead of Opus (inferior reasoning)
+// - construct tasks use Sonnet instead of dedicated model (suboptimal)
 ```
 
 ### Recommended Configuration
@@ -765,29 +789,31 @@ All 7 categories come with optimal model defaults, but **you must configure them
 ```json
 {
   "categories": {
-    "visual-engineering": { 
-      "model": "google/gemini-3-pro-preview"
+    "source": { 
+      "model": "anthropic/claude-opus-4-6"     // Deep reasoning & architecture
     },
-    "ultrabrain": { 
-      "model": "openai/gpt-5.3-codex",
-      "variant": "xhigh"
+    "deep-jack": { 
+      "model": "anthropic/claude-sonnet-4-6",  // Goal-oriented problem solving
+      "variant": "medium"
     },
-    "artistry": { 
-      "model": "google/gemini-3-pro-preview",
+    "matrix-bend": { 
+      "model": "anthropic/claude-sonnet-4-6"   // Creative problem solving
+    },
+    "construct": { 
+      "model": "anthropic/claude-sonnet-4-6"   // Frontend, UI/UX, design
+    },
+    "red-pill": { 
+      "model": "anthropic/claude-opus-4-6",    // High effort, complex
       "variant": "max"
     },
-    "quick": { 
-      "model": "anthropic/claude-haiku-4-5"  // Fast + cheap for trivial tasks
+    "blue-pill": { 
+      "model": "anthropic/claude-sonnet-4-6"   // Low effort, general
     },
-    "unspecified-low": { 
-      "model": "anthropic/claude-sonnet-4-5"
+    "broadcast": { 
+      "model": "anthropic/claude-sonnet-4-6"   // Documentation, prose
     },
-    "unspecified-high": { 
-      "model": "anthropic/claude-opus-4-6",
-      "variant": "max"
-    },
-    "writing": { 
-      "model": "google/gemini-3-flash-preview"
+    "bullet-time": { 
+      "model": "anthropic/claude-haiku-4-5"    // Fast + cheap for trivial tasks
     }
   }
 }
@@ -799,8 +825,8 @@ All 7 categories come with optimal model defaults, but **you must configure them
 
 ```javascript
 // Via task tool
-task(category="visual-engineering", prompt="Create a responsive dashboard component")
-task(category="ultrabrain", prompt="Design the payment processing flow")
+task(category="construct", prompt="Create a responsive dashboard component")
+task(category="source", prompt="Design the payment processing flow")
 
 // Or target a specific agent directly (bypasses categories)
 task(agent="oracle", prompt="Review this architecture")
@@ -814,12 +840,12 @@ Add your own categories or override built-in ones:
 {
   "categories": {
     "data-science": {
-      "model": "anthropic/claude-sonnet-4-5",
+      "model": "anthropic/claude-sonnet-4-6",
       "temperature": 0.2,
       "prompt_append": "Focus on data analysis, ML pipelines, and statistical methods."
     },
-    "visual-engineering": {
-      "model": "google/gemini-3-pro-preview",
+    "construct": {
+      "model": "anthropic/claude-sonnet-4-6",
       "prompt_append": "Use shadcn/ui components and Tailwind CSS."
     }
   }
@@ -827,6 +853,25 @@ Add your own categories or override built-in ones:
 ```
 
 Each category supports: `model`, `temperature`, `top_p`, `maxTokens`, `thinking`, `reasoningEffort`, `textVerbosity`, `tools`, `prompt_append`, `variant`, `description`, `is_unstable_agent`.
+
+#### Category Temperature
+
+Each category can define a `temperature` that overrides the agent's default temperature for tasks routed through that category. This allows fine-grained control: use low temperature (0.1) for deterministic code generation, higher temperature (0.7) for creative tasks like documentation or brainstorming.
+
+```json
+{
+  "categories": {
+    "source": {
+      "model": "anthropic/claude-opus-4-6",
+      "temperature": 0.1
+    },
+    "broadcast": {
+      "model": "anthropic/claude-sonnet-4-6",
+      "temperature": 0.5
+    }
+  }
+}
+```
 
 ### Additional Category Options
 
@@ -897,16 +942,15 @@ Each agent has a defined provider priority chain. The system tries providers in 
 |-------|-------------------|-------------------------|
 | **Morpheus** | `claude-opus-4-6` | anthropic → opencode (kimi-k2.5-free) → zai-coding-plan (glm-5) → opencode (big-pickle) |
 | **Keymaker** | `gpt-5.3-codex` | openai/venice → github-copilot (gpt-5.2) |
-| **Merovingian** | `gpt-5.2` | openai → google (gemini-3.1-pro) → anthropic (claude-opus-4-6) |
+| **Merovingian** | `claude-sonnet-4-6` | anthropic → openai (gpt-5.2) → google (gemini-3.1-pro) |
 | **Operator** | `glm-4.7` | zai-coding-plan → opencode (glm-4.7-free) → opencode (minimax-m2.5-free) → anthropic (claude-sonnet-4-6) |
 | **Trinity** | `grok-code-fast-1` | github-copilot → opencode (minimax-m2.5-free) → anthropic (claude-haiku-4-5) → opencode (gpt-5-nano) |
-| **Construct** | `kimi-k2.5-free` | opencode → google (gemini-3-flash) → openai (gpt-5.2) → zai-coding-plan (glm-4.6v) → opencode (gpt-5-nano) |
-| **Oracle (Planner)** | `claude-opus-4-6` | anthropic → openai (gpt-5.2) → opencode (kimi-k2.5-free) → google (gemini-3.1-pro) |
+| **Construct** | `claude-sonnet-4-6` | anthropic → openai (gpt-5.2) → opencode (kimi-k2.5-free) → zai-coding-plan (glm-4.6v) |
+| **Oracle (Planner)** | `claude-sonnet-4-6` | anthropic → openai (gpt-5.2) → opencode (kimi-k2.5-free) → google (gemini-3.1-pro) |
 | **Seraph (Plan Consultant)** | `claude-opus-4-6` | anthropic → opencode (kimi-k2.5-free) → openai (gpt-5.2) → google (gemini-3.1-pro) |
 | **Smith (Plan Reviewer)** | `gpt-5.2` | openai → anthropic (claude-opus-4-6) → google (gemini-3.1-pro) |
-| **Architect** | `kimi-k2.5-free` | opencode → anthropic (claude-sonnet-4-6) → openai (gpt-5.2) |
-| **Cipher** | `claude-opus-4-6` | anthropic → google-vertex-anthropic → openai (gpt-5.2) → opencode (kimi-k2.5-free) → google (gemini-3.1-pro) |
-| **Niobe** | `claude-opus-4-6` | anthropic → google-vertex-anthropic → openai (gpt-5.2) → opencode (kimi-k2.5-free) → google (gemini-3.1-pro) |
+| **Architect** | `claude-sonnet-4-6` | anthropic → openai (gpt-5.2) → opencode (kimi-k2.5-free) |
+| **Cipher** | `claude-sonnet-4-6` | anthropic → google-vertex-anthropic → openai (gpt-5.2) → opencode (kimi-k2.5-free) → google (gemini-3.1-pro) |
 
 ### Category Provider Chains
 
@@ -914,14 +958,14 @@ Categories follow the same resolution logic:
 
 | Category | Model (no prefix) | Provider Priority Chain |
 |----------|-------------------|-------------------------|
-| **construct** | `gemini-3.1-pro` | google → zai-coding-plan (glm-5) → anthropic (claude-opus-4-6) → opencode (kimi-k2.5-free) |
-| **source** | `gpt-5.3-codex` | openai → google (gemini-3.1-pro) → anthropic (claude-opus-4-6) |
-| **deep-jack** | `gpt-5.3-codex` | openai → anthropic (claude-opus-4-6) → google (gemini-3.1-pro) |
-| **matrix-bend** | `gemini-3.1-pro` | google → anthropic (claude-opus-4-6) → openai (gpt-5.2) |
-| **bullet-time** | `claude-haiku-4-5` | anthropic → google (gemini-3-flash) → opencode (gpt-5-nano) |
-| **blue-pill** | `claude-sonnet-4-6` | anthropic → openai (gpt-5.3-codex) → google (gemini-3-flash) |
+| **construct** | `claude-sonnet-4-6` | anthropic → google (gemini-3.1-pro) → openai (gpt-5.2) |
+| **source** | `claude-opus-4-6` | anthropic → openai (gpt-5.3-codex) → google (gemini-3.1-pro) |
+| **deep-jack** | `claude-sonnet-4-6` | anthropic → openai (gpt-5.3-codex) → google (gemini-3.1-pro) |
+| **matrix-bend** | `claude-sonnet-4-6` | anthropic → google (gemini-3.1-pro) → openai (gpt-5.2) |
+| **bullet-time** | `claude-haiku-4-5` | anthropic → opencode (gpt-5-nano) → opencode (minimax-m2.5-free) |
+| **blue-pill** | `claude-sonnet-4-6` | anthropic → openai (gpt-5.3-codex) → google (gemini-3.1-pro) |
 | **red-pill** | `claude-opus-4-6` | anthropic → openai (gpt-5.2) → google (gemini-3.1-pro) |
-| **broadcast** | `kimi-k2.5-free` | opencode → google (gemini-3-flash) → anthropic (claude-sonnet-4-6) |
+| **broadcast** | `claude-sonnet-4-6` | anthropic → opencode (kimi-k2.5-free) → google (gemini-3.1-pro) → openai (gpt-5.2) |
 
 ### Checking Your Configuration
 
@@ -945,14 +989,14 @@ Override any agent or category model in `matrixx.json`:
 {
   "agents": {
     "Morpheus": {
-      "model": "anthropic/claude-sonnet-4-5"
+      "model": "anthropic/claude-sonnet-4-6"
     },
     "oracle": {
       "model": "openai/o3"
     }
   },
   "categories": {
-    "visual-engineering": {
+    "source": {
       "model": "anthropic/claude-opus-4-6"
     }
   }
@@ -971,11 +1015,13 @@ Disable specific built-in hooks via `disabled_hooks` in `~/.config/opencode/matr
 }
 ```
 
-Available hooks: `todo-continuation-enforcer`, `context-window-monitor`, `session-recovery`, `session-notification`, `comment-checker`, `grep-output-truncator`, `tool-output-truncator`, `directory-agents-injector`, `directory-readme-injector`, `empty-task-response-detector`, `think-mode`, `anthropic-context-window-limit-recovery`, `rules-injector`, `background-notification`, `auto-update-checker`, `startup-toast`, `keyword-detector`, `agent-usage-reminder`, `non-interactive-env`, `interactive-bash-session`, `compaction-context-injector`, `thinking-block-validator`, `matrix-loop`, `preemptive-compaction`, `auto-slash-command`, `mouse-notepad`, `start-work`
+Available hooks: `todo-continuation-enforcer`, `context-window-monitor`, `session-recovery`, `session-notification`, `comment-checker`, `grep-output-truncator`, `tool-output-truncator`, `directory-agents-injector`, `directory-readme-injector`, `empty-task-response-detector`, `think-mode`, `anthropic-context-window-limit-recovery`, `rules-injector`, `background-notification`, `auto-update-checker`, `startup-toast`, `keyword-detector`, `agent-usage-reminder`, `non-interactive-env`, `interactive-bash-session`, `compaction-context-injector`, `thinking-block-validator`, `matrix-loop`, `preemptive-compaction`, `auto-slash-command`, `mouse-notepad`, `start-work`, `quality-gate`
 
 **Note on `directory-agents-injector`**: This hook is **automatically disabled** when running on OpenCode 1.1.37+ because OpenCode now has native support for dynamically resolving AGENTS.md files from subdirectories (PR #10678). This prevents duplicate AGENTS.md injection. For older OpenCode versions, the hook remains active to provide the same functionality.
 
 **Note on `auto-update-checker` and `startup-toast`**: The `startup-toast` hook is a sub-feature of `auto-update-checker`. To disable only the startup toast notification while keeping update checking enabled, add `"startup-toast"` to `disabled_hooks`. To disable all update checking features (including the toast), add `"auto-update-checker"` to `disabled_hooks`.
+
+**Note on `quality-gate`**: The quality-gate hook auto-lints `.ts` files after write/edit tool calls using Biome. It runs as a post-tool hook and can be disabled via `disabled_hooks` if you prefer to lint separately.
 
 ## Disabled Commands
 
@@ -1060,6 +1106,17 @@ Don't want them? Disable via `disabled_mcps` in `~/.config/opencode/matrixx.json
   "disabled_mcps": ["websearch", "context7", "grep_app"]
 }
 ```
+
+## Handoff Tool
+
+The built-in **handoff** tool preserves session state across OpenCode sessions by writing structured context to `.matrixx/handoff.md`. It supports four actions:
+
+- **create**: Write a structured handoff with YAML frontmatter (topics, goals, key files, decisions) and a markdown body
+- **read**: Load the current handoff content for context pickup in a new session
+- **archive**: Mark the active handoff as consumed (renames to `handoff.consumed.md`)
+- **list**: Show all handoff files in the `.matrixx/` directory
+
+No configuration is required — the tool is always available. Use the `/handoff` slash command to create a handoff, or `/pickup` to resume from one.
 
 ## LSP
 

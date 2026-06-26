@@ -4,27 +4,27 @@
 
 ## Agents: Your AI Team
 
-Matrixx provides 12 specialized AI agents. Each has distinct expertise, optimized models, and tool permissions.
+Matrixx provides 14 specialized AI agents. Each has distinct expertise, optimized models, and tool permissions.
 
 ### Core Agents
 
 | Agent | Model | Purpose |
 |-------|-------|---------|
-| **Morpheus** | `anthropic/claude-opus-4-6` | **The default orchestrator.** Plans, delegates, and executes complex tasks using specialized subagents with aggressive parallel execution. Todo-driven workflow with extended thinking (32k budget). Fallback: kimi-k2.5-free → glm-5 → big-pickle. |
+| **Morpheus** | `anthropic/claude-opus-4-6` | **The default orchestrator.** Plans, delegates, and executes complex tasks using specialized subagents with aggressive parallel execution. Todo-driven workflow with extended thinking (32k budget). Fallback: claude-sonnet-4-6 → gpt-5.2. |
 | **Keymaker** | `openai/gpt-5.3-codex` | **The Legitimate Craftsman.** Autonomous deep worker inspired by AmpCode's deep mode. Goal-oriented execution with thorough research before action. Explores codebase patterns, completes tasks end-to-end without premature stopping. Fallback: gpt-5.2. Requires openai/github-copilot/venice/opencode provider. |
-| **Merovingian** | `openai/gpt-5.2` | Architecture decisions, code review, debugging. Read-only consultation - stellar logical reasoning and deep analysis. Fallback: gemini-3.1-pro → claude-opus-4-6. |
-| **Operator** | `zai-coding-plan/glm-4.7` | Multi-repo analysis, documentation lookup, OSS implementation examples. Deep codebase understanding with evidence-based answers. Fallback: glm-4.7-free → minimax-m2.5-free → claude-sonnet-4-6. |
-| **Trinity** | `xai/grok-code-fast-1` | Fast codebase exploration and contextual grep. Fallback: minimax-m2.5-free → claude-haiku-4-5 → gpt-5-nano. |
-| **Construct** | `opencode/kimi-k2.5-free` | Visual content specialist. Analyzes PDFs, images, diagrams to extract information. Fallback: gemini-3-flash → gpt-5.2 → glm-4.6v → gpt-5-nano. |
-| **Sati** | `anthropic/claude-sonnet-4-6` | **The frontend specialist.** UI/UX, components, accessibility (WCAG 2.2), performance (Core Web Vitals), testing (Vitest, Playwright, Storybook). Self-contained execution with 8 frontend skills. Fallback: claude-opus-4-6@max. |
+| **Merovingian** | `anthropic/claude-sonnet-4-6` | Architecture decisions, code review, debugging. Read-only consultation — stellar logical reasoning and deep analysis. Fallback: claude-opus-4-6 → gpt-5.2. |
+| **Operator** | `anthropic/claude-haiku-4-5` | Multi-repo analysis, documentation lookup, OSS implementation examples. Deep codebase understanding with evidence-based answers. Fallback: claude-sonnet-4-6 → gpt-5.2. |
+| **Trinity** | `anthropic/claude-haiku-4-5` | Fast codebase exploration and contextual grep. Fallback: claude-sonnet-4-6 → gpt-5.2. |
+| **Construct** | `anthropic/claude-sonnet-4-6` | Visual content specialist. Analyzes PDFs, images, diagrams to extract information. Fallback: claude-opus-4-6 → gpt-5.2. |
+| **Sati** | `anthropic/claude-sonnet-4-6` | **The frontend specialist.** UI/UX, components, accessibility (WCAG 2.2), performance (Core Web Vitals), testing (Vitest, Playwright, Storybook). Self-contained execution with 7 frontend skills. Fallback: claude-opus-4-6@max. |
 
 ### Planning Agents
 
 | Agent | Model | Purpose |
 |-------|-------|---------|
-| **Oracle** | `anthropic/claude-opus-4-6` | Strategic planner with interview mode. Creates detailed work plans through iterative questioning. Fallback: gpt-5.2 → kimi-k2.5-free → gemini-3.1-pro. |
-| **Seraph** | `anthropic/claude-opus-4-6` | Plan consultant - pre-planning analysis. Identifies hidden intentions, ambiguities, and AI failure points. Fallback: kimi-k2.5-free → gpt-5.2 → gemini-3.1-pro. |
-| **Smith** | `openai/gpt-5.2` | Plan reviewer - validates plans against clarity, verifiability, and completeness standards. Fallback: claude-opus-4-6 → gemini-3.1-pro. |
+| **Oracle** | `anthropic/claude-sonnet-4-6` | Strategic planner with interview mode. Creates detailed work plans through iterative questioning. Fallback: claude-opus-4-6 → gpt-5.2. |
+| **Seraph** | `anthropic/claude-opus-4-6` | Plan consultant — pre-planning analysis. Identifies hidden intentions, ambiguities, and AI failure points. Fallback: gpt-5.2 → claude-sonnet-4-6. |
+| **Smith** | `anthropic/claude-sonnet-4-6` | Plan reviewer — validates plans against clarity, verifiability, and completeness standards. Fallback: claude-opus-4-6 → gpt-5.2. |
 
 ### Invoking Agents
 
@@ -86,6 +86,27 @@ When running inside tmux:
 See [Tmux Integration](configurations.md#tmux-integration) for full configuration options.
 
 Customize agent models, prompts, and permissions in `matrixx.json`. See [Configuration](configurations.md#agents).
+
+---
+
+## Profiles
+
+Profiles assign models to every agent — one setting, full model lineup.
+
+| Profile | Best For | Daily Cost |
+|---------|----------|------------|
+| **free** | Experimentation, prototyping | $0 |
+| **budget** | Personal projects, light use | ~$1–3 |
+| **economy** | Active development with cost control | ~$3–8 |
+| **balanced** | Professional development | ~$8–20 |
+| **performance** | Maximum capability | ~$20–50 |
+| **go** | OpenCode Go subscription | Go quota |
+| **go-duo** | Duo subscription, two users | Go Duo quota |
+| **go-trio** | Trio subscription, three users | Go Trio quota |
+| **go-ultimate** | Unlimited Go access | Go Ultimate quota |
+| **xiaomi-ultimate** | Xiaomi-optimized ultimate | Xiaomi quota |
+
+Profile defaults merge first; any `agents` or `categories` override takes precedence.
 
 ---
 
