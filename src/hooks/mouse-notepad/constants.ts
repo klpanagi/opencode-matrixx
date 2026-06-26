@@ -1,4 +1,4 @@
-export const HOOK_NAME = "sisyphus-junior-notepad"
+export const HOOK_NAME = "mouse-notepad"
 
 export const NOTEPAD_DIRECTIVE = `
 <Work_Context>
