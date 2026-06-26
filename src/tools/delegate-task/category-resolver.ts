@@ -6,7 +6,7 @@ import { resolveCategoryConfig } from "./categories"
 import type { ExecutorContext } from "./executor-types"
 import { resolveModelForDelegateTask } from "./model-selection"
 import { parseModelString } from "./model-string-parser"
-import { SISYPHUS_JUNIOR_AGENT } from "./mouse-agent"
+import { MOUSE_AGENT } from "./mouse-agent"
 import type { DelegateTaskArgs } from "./types"
 
 export interface CategoryResolutionResult {
@@ -25,7 +25,7 @@ export async function resolveCategoryExecution(
   inheritedModel: string | undefined,
   systemDefaultModel: string | undefined
 ): Promise<CategoryResolutionResult> {
-  const { client, userCategories, sisyphusJuniorModel } = executorCtx
+  const { client, userCategories, mouseModel } = executorCtx
 
   const availableModels = await getAvailableModelsForDelegateTask(client)
 
@@ -78,12 +78,12 @@ Available categories: ${allCategoryNames}`,
   let modelInfo: ModelFallbackInfo | undefined
   let categoryModel: { providerID: string; modelID: string; variant?: string; temperature?: number } | undefined
 
-  const overrideModel = sisyphusJuniorModel
+  const overrideModel = mouseModel
   const explicitCategoryModel = userCategories?.[args.category as string]?.model
 
   if (!requirement) {
-    // Precedence: explicit category model > sisyphus-junior default > category resolved model
-    // This keeps `sisyphus-junior.model` useful as a global default while allowing
+    // Precedence: explicit category model > mouse default > category resolved model
+    // This keeps `mouse.model` useful as a global default while allowing
     // per-category overrides via `categories[category].model`.
     actualModel = explicitCategoryModel ?? overrideModel ?? resolved.model
     if (actualModel) {
@@ -173,7 +173,7 @@ Available categories: ${categoryNames.join(", ")}`,
   const isUnstableAgent = resolved.config.is_unstable_agent === true || (unstableModel ? unstableModel.includes("gemini") || unstableModel.includes("minimax") : false)
 
   return {
-    agentToUse: SISYPHUS_JUNIOR_AGENT,
+    agentToUse: MOUSE_AGENT,
     categoryModel,
     categoryPromptAppend,
     modelInfo,

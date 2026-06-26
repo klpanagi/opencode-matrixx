@@ -7,7 +7,7 @@ import { isPlanFamily } from "./constants"
 import type { ExecutorContext } from "./executor-types"
 import { resolveModelForDelegateTask } from "./model-selection"
 import { parseModelString } from "./model-string-parser"
-import { SISYPHUS_JUNIOR_AGENT } from "./mouse-agent"
+import { MOUSE_AGENT } from "./mouse-agent"
 import type { DelegateTaskArgs } from "./types"
 
 export async function resolveSubagentExecution(
@@ -24,11 +24,11 @@ export async function resolveSubagentExecution(
 
   const agentName = args.subagent_type.trim()
 
-  if (agentName.toLowerCase() === SISYPHUS_JUNIOR_AGENT.toLowerCase()) {
+  if (agentName.toLowerCase() === MOUSE_AGENT.toLowerCase()) {
     return {
       agentToUse: "",
       categoryModel: undefined,
-      error: `Cannot use subagent_type="${SISYPHUS_JUNIOR_AGENT}" directly. Use category parameter instead (e.g., ${categoryExamples}).
+      error: `Cannot use subagent_type="${MOUSE_AGENT}" directly. Use category parameter instead (e.g., ${categoryExamples}).
 
 Mouse is spawned automatically when you specify a category. Pick the appropriate category for your task domain.`,
     }

@@ -17,7 +17,7 @@ import {
   resolveSkillContent,
   resolveSubagentExecution,
 } from "./executor"
-import { SISYPHUS_JUNIOR_AGENT } from "./mouse-agent"
+import { MOUSE_AGENT } from "./mouse-agent"
 import { buildSystemContent } from "./prompt-builder"
 import type { DelegateTaskArgs, DelegateTaskToolOptions, ToolContextWithMetadata } from "./types"
 
@@ -92,13 +92,13 @@ Prompts MUST be in English.`
       const ctx = toolContext as ToolContextWithMetadata
 
       if (args.category) {
-        if (args.subagent_type && args.subagent_type !== SISYPHUS_JUNIOR_AGENT) {
+        if (args.subagent_type && args.subagent_type !== MOUSE_AGENT) {
           log("[task] category provided - overriding subagent_type to mouse", {
             category: args.category,
             subagent_type: args.subagent_type,
           })
         }
-        args.subagent_type = SISYPHUS_JUNIOR_AGENT
+        args.subagent_type = MOUSE_AGENT
       }
       await ctx.metadata?.({
         title: args.description,
