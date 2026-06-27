@@ -67,9 +67,9 @@ flowchart TB
 
 ## Layer 1: Planning (Oracle + Seraph + Smith)
 
-### Oracle: Your Strategic Consultant
+### Oracle: The Plan Builder
 
-Oracle is **not just a planner** - it's an intelligent interviewer that helps you think through what you actually need.
+Oracle is an **intelligent planning agent** that interviews you to understand your requirements, researches the codebase, and produces a detailed structured work plan.
 
 **The Interview Process:**
 

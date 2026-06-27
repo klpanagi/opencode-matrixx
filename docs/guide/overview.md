@@ -50,7 +50,7 @@ For complex or critical tasks, press **Tab** to switch to Oracle (Planner) mode.
 
 **How it works:**
 
-1. **Oracle interviews you** - Acts as your personal consultant, asking clarifying questions while researching your codebase to understand exactly what you need.
+1. **Oracle interviews you** - Gathers requirements through structured interview, researching your codebase to understand exactly what you need before generating a work plan.
 
 2. **Plan generation** - Based on the interview, Oracle generates a detailed work plan with tasks, acceptance criteria, and guardrails. Optionally reviewed by Smith (plan reviewer) for high-accuracy validation.
 
