@@ -31,7 +31,8 @@ import type { AgentFactory, AgentOverrides, AgentPromptMetadata, BuiltinAgentNam
 
 type AgentSource = AgentFactory | AgentConfig
 
-const agentSources: Record<BuiltinAgentName, AgentSource> = {
+// oracle is excluded intentionally — built dynamically by buildOracleAgentConfig()
+const agentSources: Partial<Record<BuiltinAgentName, AgentSource>> = {
   morpheus: createMorpheusAgent,
   keymaker: createKeymakerAgent,
   merovingian: createOracleAgent,
@@ -52,6 +53,7 @@ const agentSources: Record<BuiltinAgentName, AgentSource> = {
  */
 const agentMetadata: Partial<Record<BuiltinAgentName, AgentPromptMetadata>> = {
   merovingian: ORACLE_PROMPT_METADATA,
+  oracle: ORACLE_PROMPT_METADATA,
   operator: LIBRARIAN_PROMPT_METADATA,
   trinity: EXPLORE_PROMPT_METADATA,
   construct: MULTIMODAL_LOOKER_PROMPT_METADATA,

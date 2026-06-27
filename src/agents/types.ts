@@ -94,6 +94,7 @@ export function isAnthropicModel(model: string): boolean {
 export type BuiltinAgentName =
   | "morpheus"
   | "keymaker"
+  | "oracle"
   | "merovingian"
   | "operator"
   | "trinity"
