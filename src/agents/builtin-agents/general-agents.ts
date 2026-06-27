@@ -104,7 +104,7 @@ export function collectPendingBuiltinAgents(input: {
   }
 
   // Oracle is dynamically built (not in agentSources), so inject manually for Morpheus delegation
-  const oracleMetadata = agentMetadata["oracle"]
+  const oracleMetadata = agentMetadata.oracle
   if (oracleMetadata) {
     availableAgents.push({
       name: "oracle",
