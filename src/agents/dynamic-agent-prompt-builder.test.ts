@@ -195,7 +195,7 @@ describe("formatCustomSkillsBlock", () => {
   })
 
   it("should use bold header when specified", () => {
-    //#given: bold header level (used by Atlas)
+    //#given: bold header level (used by Architect)
     const result = formatCustomSkillsBlock(customRows, customSkills, "**")
 
     //#then: uses bold instead of h4

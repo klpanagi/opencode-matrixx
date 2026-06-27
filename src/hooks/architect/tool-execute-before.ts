@@ -22,7 +22,7 @@ export function createToolExecuteBeforeHandler(input: {
     }
 
     // Check Write/Edit tools for orchestrator - inject strong warning
-    // Warn-only policy: Atlas guides orchestrators toward delegation but doesn't block, allowing flexibility for urgent fixes
+    // Warn-only policy: Architect guides orchestrators toward delegation but doesn't block, allowing flexibility for urgent fixes
     if (isWriteOrEditToolName(toolInput.tool)) {
       const filePath = (toolOutput.args.filePath ?? toolOutput.args.path ?? toolOutput.args.file) as string | undefined
       if (filePath && !isMatrixPath(filePath)) {

@@ -1,3 +1,3 @@
-export { createAtlasHook } from "./atlas-hook"
+export { createArchitectHook } from "./architect-hook"
 export { HOOK_NAME } from "./hook-name"
-export type { AtlasHookOptions } from "./types"
+export type { ArchitectHookOptions } from "./types"

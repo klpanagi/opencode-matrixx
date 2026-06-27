@@ -1,5 +1,5 @@
 /**
- * Atlas Orchestrator - Shared Utilities
+ * Architect Orchestrator - Shared Utilities
  *
  * Common functions for building dynamic prompt sections used by both
  * default (Claude-optimized) and GPT-optimized prompts.

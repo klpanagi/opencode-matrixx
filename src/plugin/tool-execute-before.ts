@@ -43,8 +43,8 @@ export function createToolExecuteBeforeHandler(args: {
   const nonInteractiveEnvHook = hooks.nonInteractiveEnv?.["tool.execute.before"]
   const bashFileReadGuardHook = hooks.bashFileReadGuard?.["tool.execute.before"]
   const questionLabelTruncatorHook = hooks.questionLabelTruncator?.["tool.execute.before"]
-  const sisyphusJuniorNotepadHook = hooks.sisyphusJuniorNotepad?.["tool.execute.before"]
-  const atlasHookHook = hooks.atlasHook?.["tool.execute.before"]
+  const mouseNotepadHook = hooks.mouseNotepad?.["tool.execute.before"]
+  const architectHookHook = hooks.architectHook?.["tool.execute.before"]
 
   return async (input, output): Promise<void> => {
     // ---------------------------------------------------------------------
@@ -91,14 +91,14 @@ export function createToolExecuteBeforeHandler(args: {
 
     // Wave 3 (5 hooks): MUTATOR — must run sequentially to preserve
     //   mutation order. Specifically:
-    //   - 3 hooks CONCAT to output.args.prompt (prometheusMdOnly,
-    //     sisyphusJuniorNotepad, atlasHook). Parallel writes would stomp
+  //   - 3 hooks CONCAT to output.args.prompt (prometheusMdOnly,
+  //     mouseNotepad, architectHook). Parallel writes would stomp
     //     each other (both read prompt from the same starting state).
     //   - nonInteractiveEnv REWRITES output.args.command (line 58) and
     //     REPLACES output.message; running it before other mutators is
     //     required so that downstream hooks see the rewritten command.
-    //   - The order prometheusMdOnly -> sisyphusJuniorNotepad -> atlasHook
-    //     is critical: atlasHook's prepended <system-reminder> must be
+    //   - The order prometheusMdOnly -> mouseNotepad -> architectHook
+    //     is critical: architectHook's prepended <system-reminder> must be
     //     the outermost (closest to the model), prometheusMdOnly's
     //     prepended PLANNING_CONSULT_WARNING the innermost (closest to the
     //     user prompt). Reversing the order would change semantics.
@@ -127,8 +127,8 @@ export function createToolExecuteBeforeHandler(args: {
     await bashFileReadGuardHook?.(input, output)
     await questionLabelTruncatorHook?.(input, output)
     await prometheusMdOnlyHook?.(input, output)
-    await sisyphusJuniorNotepadHook?.(input, output)
-    await atlasHookHook?.(input, output)
+    await mouseNotepadHook?.(input, output)
+    await architectHookHook?.(input, output)
 
     if (resolvePromise) {
       const resolvedAgent = await resolvePromise

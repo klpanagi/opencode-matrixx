@@ -10,7 +10,7 @@ import { applyEnvironmentContext } from "./environment-context"
 import { applyModelResolution, getFirstFallbackModel } from "./model-resolution"
 
 export function collectPendingBuiltinAgents(input: {
-  agentSources: Record<BuiltinAgentName, import("../agent-builder").AgentSource>
+  agentSources: Partial<Record<BuiltinAgentName, import("../agent-builder").AgentSource>>
   agentMetadata: Partial<Record<BuiltinAgentName, AgentPromptMetadata>>
   disabledAgents: string[]
   agentOverrides: AgentOverrides
@@ -43,6 +43,8 @@ export function collectPendingBuiltinAgents(input: {
   for (const [name, source] of Object.entries(agentSources)) {
     const agentName = name as BuiltinAgentName
 
+    // oracle is built dynamically, not in agentSources
+    if (!source) continue
     if (agentName === "morpheus") continue
     if (agentName === "keymaker") continue
     if (agentName === "architect") continue
@@ -99,6 +101,17 @@ export function collectPendingBuiltinAgents(input: {
         metadata,
       })
     }
+  }
+
+  // Oracle is dynamically built (not in agentSources), so inject manually for Morpheus delegation
+  const oracleMetadata = agentMetadata.oracle
+  if (oracleMetadata) {
+    availableAgents.push({
+      name: "oracle",
+      description:
+        "Read-only consultation agent. High-IQ reasoning specialist for debugging hard problems and high-difficulty architecture design. (Oracle - Matrixx)",
+      metadata: oracleMetadata,
+    })
   }
 
   return { pendingAgentConfigs, availableAgents }

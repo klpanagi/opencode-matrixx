@@ -11,7 +11,7 @@ import { formatTaskResult } from "./task-result-format"
 import { formatTaskStatus } from "./task-status-format"
 import type { BackgroundOutputArgs } from "./types"
 
-const SISYPHUS_JUNIOR_AGENT = getAgentDisplayName("mouse")
+const MOUSE_AGENT = getAgentDisplayName("mouse")
 
 type ToolContextWithMetadata = {
   sessionID: string
@@ -29,7 +29,7 @@ function resolveToolCallID(ctx: ToolContextWithMetadata): string | undefined {
 }
 
 function formatResolvedTitle(task: BackgroundTask): string {
-  const label = task.agent === SISYPHUS_JUNIOR_AGENT && task.category ? task.category : task.agent
+  const label = task.agent === MOUSE_AGENT && task.category ? task.category : task.agent
   return `${label} - ${task.description}`
 }
 

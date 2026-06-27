@@ -8,18 +8,18 @@ import {
 } from "../shared"
 import { mergeCategories } from "../shared/merge-categories"
 import { CATEGORY_DESCRIPTIONS } from "../tools/delegate-task/constants"
-import { atlasPromptMetadata, createAtlasAgent } from "./architect"
-import { maybeCreateAtlasConfig } from "./builtin-agents/atlas-agent"
+import { architectPromptMetadata, createArchitectAgent } from "./architect"
+import { maybeCreateArchitectConfig } from "./builtin-agents/architect-agent"
 import { buildAvailableSkills } from "./builtin-agents/available-skills"
 import { collectPendingBuiltinAgents } from "./builtin-agents/general-agents"
 import { maybeCreateKeymakerConfig } from "./builtin-agents/hephaestus-agent"
-import { maybeCreateMorpheusConfig } from "./builtin-agents/sisyphus-agent"
+import { maybeCreateMorpheusConfig } from "./builtin-agents/morpheus-agent"
 import { CIPHER_PROMPT_METADATA, createCipherAgent } from "./cipher"
 import { createMultimodalLookerAgent, MULTIMODAL_LOOKER_PROMPT_METADATA } from "./construct"
 import { buildCustomAgentMetadata, parseRegisteredAgentSummaries } from "./custom-agent-summaries"
 import type { AvailableCategory } from "./dynamic-agent-prompt-builder"
 import { createKeymakerAgent } from "./keymaker"
-import { createOracleAgent, ORACLE_PROMPT_METADATA } from "./merovingian"
+import { createOracleAgent, ORACLE_PLAN_BUILDER_METADATA, ORACLE_PROMPT_METADATA } from "./merovingian"
 import { createMorpheusAgent } from "./morpheus"
 import { createLibrarianAgent, LIBRARIAN_PROMPT_METADATA } from "./operator"
 import { createSatiAgent, SATI_PROMPT_METADATA } from "./sati"
@@ -31,7 +31,8 @@ import type { AgentFactory, AgentOverrides, AgentPromptMetadata, BuiltinAgentNam
 
 type AgentSource = AgentFactory | AgentConfig
 
-const agentSources: Record<BuiltinAgentName, AgentSource> = {
+// oracle is excluded intentionally — built dynamically by buildOracleAgentConfig()
+const agentSources: Partial<Record<BuiltinAgentName, AgentSource>> = {
   morpheus: createMorpheusAgent,
   keymaker: createKeymakerAgent,
   merovingian: createOracleAgent,
@@ -40,7 +41,7 @@ const agentSources: Record<BuiltinAgentName, AgentSource> = {
   construct: createMultimodalLookerAgent,
   seraph: createSeraphAgent,
   smith: createSmithAgent,
-  architect: createAtlasAgent as AgentFactory,
+  architect: createArchitectAgent as AgentFactory,
   cipher: createCipherAgent,
   sentinel: createSentinelAgent,
   sati: createSatiAgent,
@@ -52,12 +53,13 @@ const agentSources: Record<BuiltinAgentName, AgentSource> = {
  */
 const agentMetadata: Partial<Record<BuiltinAgentName, AgentPromptMetadata>> = {
   merovingian: ORACLE_PROMPT_METADATA,
+  oracle: ORACLE_PLAN_BUILDER_METADATA,
   operator: LIBRARIAN_PROMPT_METADATA,
   trinity: EXPLORE_PROMPT_METADATA,
   construct: MULTIMODAL_LOOKER_PROMPT_METADATA,
   seraph: seraphPromptMetadata,
   smith: smithPromptMetadata,
-  architect: atlasPromptMetadata,
+  architect: architectPromptMetadata,
   cipher: CIPHER_PROMPT_METADATA,
   sentinel: SENTINEL_PROMPT_METADATA,
   sati: SATI_PROMPT_METADATA,
@@ -176,7 +178,7 @@ export async function createBuiltinAgents(
     result[name] = config
   }
 
-  const atlasConfig = maybeCreateAtlasConfig({
+  const architectConfig = maybeCreateArchitectConfig({
     disabledAgents,
     agentOverrides,
     uiSelectedModel,
@@ -188,8 +190,8 @@ export async function createBuiltinAgents(
     directory,
     userCategories: categories,
   })
-  if (atlasConfig) {
-    result.architect = atlasConfig
+  if (architectConfig) {
+    result.architect = architectConfig
   }
 
   return result

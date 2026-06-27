@@ -28,7 +28,7 @@ describe("executeSync", () => {
     const toolContext = {
       sessionID: "parent-session",
       messageID: "msg-1",
-      agent: "sisyphus",
+      agent: "morpheus",
       abort: new AbortController().signal,
       metadata: mock(async () => {}),
     }
@@ -72,7 +72,7 @@ describe("executeSync", () => {
     const toolContext = {
       sessionID: "parent-session",
       messageID: "msg-2",
-      agent: "sisyphus",
+      agent: "morpheus",
       abort: new AbortController().signal,
       metadata: mock(async () => {}),
     }

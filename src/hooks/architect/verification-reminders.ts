@@ -51,15 +51,24 @@ Read(".matrixx/plans/${planName}.md")
 Count exactly: how many \`- [ ]\` remain? How many \`- [x]\` completed?
 This is YOUR ground truth. Use it to decide what comes next.
 
-**STEP 7: MARK COMPLETION IN PLAN FILE (IMMEDIATELY)**
+**STEP 7: MARK COMPLETION IN PLAN FILE (IMMEDIATELY — NON-NEGOTIABLE)**
 
-RIGHT NOW - Do not delay. Verification passed → Mark IMMEDIATELY.
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
-Update the plan file \`.matrixx/plans/${planName}.md\`:
-- Change \`- [ ]\` to \`- [x]\` for the completed task
-- Use \`Edit\` tool to modify the checkbox
+**CRITICAL: THIS STEP IS MANDATORY. Skipping it = progress lost.**
 
-**DO THIS BEFORE ANYTHING ELSE. Unmarked = Untracked = Lost progress.**
+RIGHT NOW — Do not delay. Verification passed → Mark IMMEDIATELY.
+
+1. Open plan file: \`.matrixx/plans/${planName}.md\`
+2. Find the \`- [ ]\` checkbox for the completed task
+3. Change \`- [ ]\` → \`- [x]\` using the \`Edit\` tool
+4. Verify the edit was applied
+
+**WARNING**: If you skip this step, the task appears UNDONE.
+The system counts \`- [x]\` checkboxes to track progress.
+No checkbox = No progress = Work wasted.
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
 **STEP 8: COMMIT ATOMIC UNIT**
 

@@ -59,7 +59,7 @@ export interface AgentPromptMetadata {
   /** Optional dedicated prompt section (markdown) - for agents like Oracle that have special sections */
   dedicatedSection?: string
 
-  /** Nickname/alias used in prompt (e.g., "Oracle" instead of "oracle") */
+  /** Nickname/alias used in prompt (e.g., "Consultant" instead of "merovingian") */
   promptAlias?: string
 
   /** Key triggers that should appear in Phase 0 (e.g., "External library mentioned → fire librarian") */
@@ -94,6 +94,7 @@ export function isAnthropicModel(model: string): boolean {
 export type BuiltinAgentName =
   | "morpheus"
   | "keymaker"
+  | "oracle"
   | "merovingian"
   | "operator"
   | "trinity"

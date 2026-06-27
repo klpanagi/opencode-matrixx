@@ -46,7 +46,7 @@ export type SessionHooks = {
   delegateTaskRetry: ReturnType<typeof createDelegateTaskRetryHook> | null
   startWork: ReturnType<typeof createStartWorkHook> | null
   prometheusMdOnly: ReturnType<typeof createOracleMdOnlyHook> | null
-  sisyphusJuniorNotepad: ReturnType<typeof createMouseNotepadHook> | null
+  mouseNotepad: ReturnType<typeof createMouseNotepadHook> | null
   questionLabelTruncator: ReturnType<typeof createQuestionLabelTruncatorHook>
   taskResumeInfo: ReturnType<typeof createTaskResumeInfoHook>
   anthropicEffort: ReturnType<typeof createAnthropicEffortHook> | null
@@ -143,8 +143,8 @@ export function createSessionHooks(args: {
     ? safeHook("prometheus-md-only", () => createOracleMdOnlyHook(ctx))
     : null
 
-  const sisyphusJuniorNotepad = isHookEnabled("sisyphus-junior-notepad")
-    ? safeHook("sisyphus-junior-notepad", () => createMouseNotepadHook(ctx))
+  const mouseNotepad = isHookEnabled("mouse-notepad")
+    ? safeHook("mouse-notepad", () => createMouseNotepadHook(ctx))
     : null
 
   const questionLabelTruncator = createQuestionLabelTruncatorHook()
@@ -178,7 +178,7 @@ export function createSessionHooks(args: {
     delegateTaskRetry,
     startWork,
     prometheusMdOnly,
-    sisyphusJuniorNotepad,
+    mouseNotepad,
     questionLabelTruncator,
     taskResumeInfo,
     anthropicEffort,

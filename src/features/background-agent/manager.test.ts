@@ -829,7 +829,7 @@ describe("BackgroundManager.notifyParentSession - dynamic message lookup", () =>
           data: [
             {
               info: {
-                agent: "sisyphus",
+                agent: "morpheus",
                 model: { providerID: "anthropic", modelID: "claude-opus-4-6" },
               },
             },
@@ -864,7 +864,7 @@ describe("BackgroundManager.notifyParentSession - dynamic message lookup", () =>
       .notifyParentSession(task)
 
     //#then
-    expect(capturedBody?.agent).toBe("sisyphus")
+    expect(capturedBody?.agent).toBe("morpheus")
     expect(capturedBody?.model).toEqual({ providerID: "anthropic", modelID: "claude-opus-4-6" })
 
     manager.shutdown()

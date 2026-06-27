@@ -23,7 +23,7 @@ Matrixx is built on the philosophy that **software development is a team sport, 
 | **Morpheus** | Main orchestrator (user-facing) | Claude Opus 4.6 | normal | Delegates by default, only works directly for trivial tasks |
 | **Keymaker** | Autonomous deep worker | GPT 5.3 Codex | normal | "KEEP GOING" — explores before assuming, never asks permission |
 | **Atlas/Architect** | Master orchestrator (subagent) | Claude Sonnet 4.6 | normal | Pure conductor — denied write tools, delegates ALL work via `task()` |
-| **Merovingian** | Strategic advisor (Oracle) | Claude Sonnet 4.6 | expensive | Read-only, pragmatic minimalism, "one clear path" |
+| **Merovingian** | Strategic advisor (Consultant) | Claude Sonnet 4.6 | expensive | Read-only, pragmatic minimalism, "one clear path" |
 | **Oracle** | Planning agent | dynamic | expensive | Interview mode → plan generation → structured output with RED-GREEN-REFACTOR |
 | **Cipher** | DSL engineering specialist | varies | normal | 11 DSL skills, delegates codegen to language-specific experts |
 | **Sentinel** | Security auditor | varies | normal | Read-only, 9 security skills, phased scanning (SAST/DAST/crypto/infra) |

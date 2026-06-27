@@ -318,9 +318,9 @@ export function buildOracleSection(agents: AvailableAgent[]): string {
   const avoidWhen = oracleAgent.metadata.avoidWhen || []
 
   return `<Oracle_Usage>
-## Oracle — Read-Only High-IQ Consultant
+## Oracle — Plan Builder
 
-Oracle is a read-only, expensive, high-quality reasoning model for debugging and architecture. Consultation only.
+Oracle is the Plan Builder — creates detailed, structured work plans from user requests. Use oracle when you need comprehensive planning before implementation.
 
 ### WHEN to Consult:
 
@@ -333,7 +333,7 @@ ${useWhen.map((w) => `| ${w} | Oracle FIRST, then implement |`).join("\n")}
 ${avoidWhen.map((w) => `- ${w}`).join("\n")}
 
 ### Usage Pattern:
-Briefly announce "Consulting Oracle for [reason]" before invocation.
+Oracle creates plans, not code. Invoke oracle to decompose complex requests into structured work plans with clear steps, then execute the plan yourself or delegate to workers.
 
 **Exception**: This is the ONLY case where you announce before acting. For all other work, start immediately without status updates.
 </Oracle_Usage>`

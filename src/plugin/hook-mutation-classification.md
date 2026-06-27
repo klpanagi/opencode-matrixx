@@ -36,23 +36,23 @@ relevant for parallelization decisions; **Secondary** lists everything else.
 | 11 | rulesInjector | `READ_ONLY` | — | — | NO | None — `tool.execute.before` is a NO-OP (`void input; void output;`, hook.ts:59-60); real work is in `tool.execute.after` | `src/hooks/rules-injector/hook.ts:55-61` |
 | 12 | tasksTodowriteDisabler | `BLOCKING` | — | — | YES (line 29, `throw new Error(REPLACEMENT_MESSAGE)`) | None (pure array `.some()`) | `src/hooks/tasks-todowrite-disabler/hook.ts:15-31` |
 | 13 | prometheusMdOnly | `BLOCKING` | `MUTATOR` + `NETWORK` | `output.args.prompt` (line 30); `output.message` (CONCAT, line 72) | YES (line 56, `throw new Error("[…] Oracle can only write/edit .md files…")`) | `getAgentFromSession()` → SDK HTTP call (`findNearestMessageWithFieldsFromSDK`) or filesystem fallback (`readFileSync`/`readdirSync` in `features/hook-message-injector/injector.ts:147,154,166,198,204`) | `src/hooks/prometheus-md-only/hook.ts:14-81` |
-| 14 | sisyphusJuniorNotepad | `MUTATOR` | `NETWORK` | `output.args.prompt` (CONCAT prefix, line 36) | NO | `isCallerOrchestrator()` → SDK HTTP call (`findNearestMessageWithFieldsFromSDK`) or filesystem fallback (`session-utils.ts:13-24`) | `src/hooks/mouse-notepad/hook.ts:10-43` |
-| 15 | atlasHook | `MUTATOR` | `NETWORK` | `output.message` (CONCAT, line 34); `output.args.prompt` (CONCAT prefix, line 48) | NO | Same `isCallerOrchestrator()` as #14; also writes to `pendingFilePaths` Map (line 31) for `tool.execute.after` | `src/hooks/architect/tool-execute-before.ts:19-54` |
+| 14 | mouseNotepad | `MUTATOR` | `NETWORK` | `output.args.prompt` (CONCAT prefix, line 36) | NO | `isCallerOrchestrator()` → SDK HTTP call (`findNearestMessageWithFieldsFromSDK`) or filesystem fallback (`session-utils.ts:13-24`) | `src/hooks/mouse-notepad/hook.ts:10-43` |
+| 15 | architectHook | `MUTATOR` | `NETWORK` | `output.message` (CONCAT, line 34); `output.args.prompt` (CONCAT prefix, line 48) | NO | Same `isCallerOrchestrator()` as #14; also writes to `pendingFilePaths` Map (line 31) for `tool.execute.after` | `src/hooks/architect/tool-execute-before.ts:19-54` |
 
 ## Summary by Class
 
 | Class | Count | Hooks |
 |-------|-------|-------|
 | `READ_ONLY` | 6 | qualityGate, commentChecker, directoryAgentsInjector, directoryReadmeInjector, rulesInjector (×3 of which are pure no-ops) |
-| `MUTATOR` | 6 | bashFileReadGuard, questionLabelTruncator, nonInteractiveEnv, sisyphusJuniorNotepad, atlasHook (+ prometheusMdOnly when not blocking) |
-| `NETWORK` | 4 | prometheusMdOnly, sisyphusJuniorNotepad, atlasHook (+ secretLeakGuard as subprocess) |
+| `MUTATOR` | 6 | bashFileReadGuard, questionLabelTruncator, nonInteractiveEnv, mouseNotepad, architectHook (+ prometheusMdOnly when not blocking) |
+| `NETWORK` | 4 | prometheusMdOnly, mouseNotepad, architectHook (+ secretLeakGuard as subprocess) |
 | `BLOCKING` | 5 | secretLeakGuard, envFileWriteGuard, writeExistingFileGuard, tasksTodowriteDisabler, prometheusMdOnly |
 
 > The plan's spec asked for "≥ 8 BLOCKING hooks" but the actual code only
 > contains 5 hard-blocking hooks. The plan's count of 8 appears to come from
 > the older `AGENTS.md` "BLOCKING HOOKS (8)" table which over-counts
 > (e.g. `oracle-md-only` is the same hook as `prometheusMdOnly`,
-> `morpheusJuniorNotepad` is the same as `sisyphusJuniorNotepad`).
+> `mouseNotepad` is the same as `mouseNotepad`).
 > The task brief's relaxed threshold of "≥ 4" is the binding contract.
 
 ---
@@ -151,19 +151,19 @@ await hooks.questionLabelTruncator?.["tool.execute.before"]?.(input, output)
 // 3d. prometheusMdOnly — prepends Oracle warning to output.args.prompt
 await hooks.prometheusMdOnly?.["tool.execute.before"]?.(input, output)
 
-// 3e. sisyphusJuniorNotepad — prepends notepad directive to output.args.prompt
-await hooks.sisyphusJuniorNotepad?.["tool.execute.before"]?.(input, output)
+// 3e. mouseNotepad — prepends notepad directive to output.args.prompt
+await hooks.mouseNotepad?.["tool.execute.before"]?.(input, output)
 
-// 3f. atlasHook — prepends single-task directive to output.args.prompt
+// 3f. architectHook — prepends single-task directive to output.args.prompt
 //     and appends delegation warning to output.message
-await hooks.atlasHook?.["tool.execute.before"]?.(input, output)
+await hooks.architectHook?.["tool.execute.before"]?.(input, output)
 ```
 
 > **3d → 3e → 3f** is the critical ordering: they all prepend to
 > `output.args.prompt` and **must** execute last-to-first (or first-to-last
 > consistently) to avoid losing directives. The current source order is
-> `prometheusMdOnly → sisyphusJuniorNotepad → atlasHook`, which means
-> `atlasHook`'s prepended `<system-reminder>` is the *outermost* directive
+> `prometheusMdOnly → mouseNotepad → architectHook`, which means
+> `architectHook`'s prepended `<system-reminder>` is the *outermost* directive
 > (closest to the model) and `prometheusMdOnly`'s prepended
 > `PLANNING_CONSULT_WARNING` is the *innermost* (closest to user prompt).
 > Keep this order when re-serializing.
@@ -205,7 +205,7 @@ await hooks.atlasHook?.["tool.execute.before"]?.(input, output)
    before-handler chain entirely is a zero-risk optimization (just don't
    register a `tool.execute.before` handler, or guard with
    `if (!handler) return undefined` in `tool-execute-before.ts`).
-5. **3 of the 15 hooks (prometheusMdOnly, sisyphusJuniorNotepad, atlasHook)
+5. **3 of the 15 hooks (prometheusMdOnly, mouseNotepad, architectHook)
    all hit the OpenCode SDK** via `isCallerOrchestrator()` /
    `getAgentFromSession()`. When SQLite backend is active, this is
    `findNearestMessageWithFieldsFromSDK()` (local HTTP to the OpenCode
@@ -226,10 +226,10 @@ await hooks.atlasHook?.["tool.execute.before"]?.(input, output)
 
 | Pattern | Affected Hooks | Why Sequential |
 |---------|----------------|----------------|
-| Multiple writers to `output.args.prompt` (prepend) | `prometheusMdOnly` (line 30), `sisyphusJuniorNotepad` (line 36), `atlasHook` (line 48) | Second writer's `prompt = PREFIX + prompt` stomps first writer's prefix. |
-| `REPLACE` writer + `CONCAT` writer on same field (`output.message`) | `bashFileReadGuard` (REPLACE, line 38), `nonInteractiveEnv` (REPLACE, line 39), `prometheusMdOnly` (CONCAT, line 72), `atlasHook` (CONCAT, line 34) | REPLACE loses the concat target; CONCAT after REPLACE can re-introduce lost content. |
+| Multiple writers to `output.args.prompt` (prepend) | `prometheusMdOnly` (line 30), `mouseNotepad` (line 36), `architectHook` (line 48) | Second writer's `prompt = PREFIX + prompt` stomps first writer's prefix. |
+| `REPLACE` writer + `CONCAT` writer on same field (`output.message`) | `bashFileReadGuard` (REPLACE, line 38), `nonInteractiveEnv` (REPLACE, line 39), `prometheusMdOnly` (CONCAT, line 72), `architectHook` (CONCAT, line 34) | REPLACE loses the concat target; CONCAT after REPLACE can re-introduce lost content. |
 | `output.args.command` rewrite | `nonInteractiveEnv` (line 58) | Mutates the only field other hooks (e.g. `bashFileReadGuard` line 29) read. Re-ordering would change semantics. |
-| Shared SDK / filesystem read (e.g. `isCallerOrchestrator`) | `prometheusMdOnly`, `sisyphusJuniorNotepad`, `atlasHook` | Concurrent calls hit the same SDK or same message dir. Not a correctness issue (calls are independent and read-only), but a contention hot-spot — parallelizing them is **safe** but each call still costs I/O. |
+| Shared SDK / filesystem read (e.g. `isCallerOrchestrator`) | `prometheusMdOnly`, `mouseNotepad`, `architectHook` | Concurrent calls hit the same SDK or same message dir. Not a correctness issue (calls are independent and read-only), but a contention hot-spot — parallelizing them is **safe** but each call still costs I/O. |
 | `throw` short-circuit semantics | All 5 `BLOCKING` hooks | If two BLOCKING guards run in parallel and both throw, only the first-rejected throw is propagated. This is **intentional** (first error wins), and `Promise.allSettled` + manual re-throw is the safe pattern. |
 
 ## Safe Promise.all Bundles (for T1.1)
@@ -261,11 +261,11 @@ await hooks.nonInteractiveEnv?.["tool.execute.before"]?.(input, output)
 await hooks.bashFileReadGuard?.["tool.execute.before"]?.(input, output)
 await hooks.questionLabelTruncator?.["tool.execute.before"]?.(input, output)
 await hooks.prometheusMdOnly?.["tool.execute.before"]?.(input, output)
-await hooks.sisyphusJuniorNotepad?.["tool.execute.before"]?.(input, output)
-await hooks.atlasHook?.["tool.execute.before"]?.(input, output)
+await hooks.mouseNotepad?.["tool.execute.before"]?.(input, output)
+await hooks.architectHook?.["tool.execute.before"]?.(input, output)
 ```
 
-> **Note**: `prometheusMdOnly` and `atlasHook` already ran in Bundle B
+> **Note**: `prometheusMdOnly` and `architectHook` already ran in Bundle B
 > (BLOCKING path). They must run a **second time** in Bundle C (MUTATOR
 > path) to apply their `output.args` and `output.message` mutations.
 > The BLOCKING path's `throw` short-circuits Bundle B on reject, so the

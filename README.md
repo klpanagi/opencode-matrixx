@@ -180,7 +180,7 @@ Scans for vulnerabilities but never touches code. OWASP Top 10, SAST, DAST, depe
 
 | Agent | Role | Model |
 |-------|------|-------|
-| **Oracle** | Strategic planning, architecture decisions, debugger of last resort | Claude Sonnet 4.6 |
+| **Oracle** | Strategic planning, architecture decisions, work plan generation | Claude Sonnet 4.6 |
 | **Merovingian** | High-IQ consultation, hard debugging, architecture design | Claude Sonnet 4.6 |
 | **Architect** | Plan execution orchestrator, session coordination | Claude Sonnet 4.6 |
 | **Seraph** | Pre-planning analysis, ambiguity detection, AI failure prevention | Claude Opus 4.6 |

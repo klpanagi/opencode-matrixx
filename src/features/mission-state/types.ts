@@ -14,7 +14,7 @@ export interface MissionState {
   session_ids: string[]
   /** Plan name derived from filename */
   plan_name: string
-  /** Agent type to use when resuming (e.g., 'atlas') */
+  /** Agent type to use when resuming (e.g., 'architect') */
   agent?: string
 }
 

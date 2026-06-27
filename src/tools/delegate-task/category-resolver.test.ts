@@ -25,7 +25,7 @@ describe("resolveCategoryExecution", () => {
 		manager: {} as unknown as ExecutorContext["manager"],
 		directory: "/tmp/test",
 		userCategories: {},
-		sisyphusJuniorModel: undefined,
+		mouseModel: undefined,
 	})
 
 	test("returns clear error when category exists but required model is not available", async () => {

@@ -52,7 +52,7 @@ describe("resolveSubagentExecution", () => {
     })
 
     //#when
-    const result = await resolveSubagentExecution(args, executorCtx, "sisyphus", "deep")
+    const result = await resolveSubagentExecution(args, executorCtx, "morpheus", "deep")
 
     //#then
     expect(result.agentToUse).toBe("")
@@ -68,7 +68,7 @@ describe("resolveSubagentExecution", () => {
     })
 
     //#when
-    await resolveSubagentExecution(args, executorCtx, "sisyphus", "deep")
+    await resolveSubagentExecution(args, executorCtx, "morpheus", "deep")
 
     //#then
     expect(logSpy).toHaveBeenCalledTimes(1)
@@ -76,7 +76,7 @@ describe("resolveSubagentExecution", () => {
     expect(callArgs?.[0]).toBe("[delegate-task] Failed to resolve subagent execution")
     expect(callArgs?.[1]).toEqual({
       requestedAgent: "review",
-      parentAgent: "sisyphus",
+      parentAgent: "morpheus",
       error: "network timeout",
     })
   })

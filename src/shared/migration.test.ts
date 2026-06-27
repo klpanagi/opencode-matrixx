@@ -72,14 +72,14 @@ describe("migrateAgentNames", () => {
     // when: Migrate agent names
     const { migrated, changed } = migrateAgentNames(agents)
 
-    // then: orchestrator-sisyphus should be migrated to atlas
+    // then: orchestrator-sisyphus should be migrated to architect
     expect(changed).toBe(true)
     expect(migrated.architect).toEqual({ model: "anthropic/claude-opus-4-6" })
     expect(migrated["orchestrator-sisyphus"]).toBeUndefined()
   })
 
   test("migrates lowercase atlas to architect", () => {
-    // given: Config with lowercase atlas agent name
+    // given: Config with lowercase atlas agent name (legacy name)
     const agents = {
       atlas: { model: "anthropic/claude-opus-4-6" },
     }
@@ -227,16 +227,16 @@ describe("migrateHookNames", () => {
     expect(migrated).toEqual(["anthropic-context-window-limit-recovery"])
   })
 
-  test("migrates sisyphus-orchestrator to atlas", () => {
+  test("migrates sisyphus-orchestrator to architect", () => {
     // given: Config with legacy sisyphus-orchestrator hook
     const hooks = ["sisyphus-orchestrator", "comment-checker"]
 
     // when: Migrate hook names
     const { migrated, changed, removed } = migrateHookNames(hooks)
 
-    // then: sisyphus-orchestrator should be migrated to atlas
+    // then: sisyphus-orchestrator should be migrated to architect
     expect(changed).toBe(true)
-    expect(migrated).toContain("atlas")
+    expect(migrated).toContain("architect")
     expect(migrated).toContain("comment-checker")
     expect(migrated).not.toContain("sisyphus-orchestrator")
     expect(removed).toEqual([])
@@ -266,7 +266,7 @@ describe("migrateHookNames", () => {
     // then: Legacy should be renamed, removed should be filtered
     expect(changed).toBe(true)
     expect(migrated).toContain("anthropic-context-window-limit-recovery")
-    expect(migrated).toContain("atlas")
+    expect(migrated).toContain("architect")
     expect(migrated).toContain("preemptive-compaction")
     expect(removed).toEqual([])
   })

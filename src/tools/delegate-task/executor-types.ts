@@ -7,7 +7,7 @@ export interface ExecutorContext {
   client: OpencodeClient
   directory: string
   userCategories?: CategoriesConfig
-  sisyphusJuniorModel?: string
+  mouseModel?: string
   browserProvider?: BrowserAutomationProvider
   agentOverrides?: AgentOverrides
   onSyncSessionCreated?: (event: { sessionID: string; parentID: string; title: string }) => Promise<void>

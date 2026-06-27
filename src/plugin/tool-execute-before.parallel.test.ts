@@ -20,8 +20,8 @@
  *
  * Validates that the network call for task-tool agent resolution runs in
  * PARALLEL with Wave 3 mutators (started before the mutator chain, awaited
- * after). Total elapsed time must be ~max(atlasHook, resolve) instead of
- * atlasHook + resolve.
+ * after). Total elapsed time must be ~max(architectHook, resolve) instead of
+ * architectHook + resolve.
  *
  * Uses spyOn (not `mock.module()`) to keep the test isolated from
  * CI's mock-heavy test list (see AGENTS.md "Tests that MUST be isolated").
@@ -50,8 +50,8 @@ const FAST_FAIL_HOOK_NAMES = [
   "nonInteractiveEnv",
   "bashFileReadGuard",
   "questionLabelTruncator",
-  "sisyphusJuniorNotepad",
-  "atlasHook",
+  "mouseNotepad",
+  "architectHook",
 ] as const
 
 type FastFailHookName = (typeof FAST_FAIL_HOOK_NAMES)[number]
@@ -296,8 +296,8 @@ describe("tool.execute.before — T1.1 parallel safety", () => {
         "nonInteractiveEnv",
         "bashFileReadGuard",
         "questionLabelTruncator",
-        "sisyphusJuniorNotepad",
-        "atlasHook",
+        "mouseNotepad",
+        "architectHook",
       ]
       for (const name of SINGLE_CALL_HOOKS) {
         expect(spies[name]).toBeDefined()
@@ -321,10 +321,10 @@ describe("tool.execute.before — T1.4 resolveSessionAgent overlap", () => {
       const spies = {} as Record<FastFailHookName, ReturnType<typeof spyOn>>
       const hooks = buildStubHooks(spies)
 
-      // Make atlasHook (last Wave-3 MUTATOR) take 100ms. This is the dominant
+      // Make architectHook (last Wave-3 MUTATOR) take 100ms. This is the dominant
       // sequential cost in the mutator chain. With T1.4 the resolve network
       // call must run concurrently, so total time stays ~100ms.
-      spies.atlasHook.mockImplementation(async () => {
+      spies.architectHook.mockImplementation(async () => {
         await new Promise((resolve) => setTimeout(resolve, 100))
       })
 
@@ -359,7 +359,7 @@ describe("tool.execute.before — T1.4 resolveSessionAgent overlap", () => {
       expect(output.args.subagent_type).toBe("resolved-agent")
 
       //#then — 3: total elapsed time proves parallelism
-      // Sequential (old): 100ms (atlasHook) + 100ms (resolve) ≈ 200ms
+      // Sequential (old): 100ms (architectHook) + 100ms (resolve) ≈ 200ms
       // Parallel   (new): max(100ms, 100ms) ≈ 100ms
       // Threshold 150ms gives ~50ms headroom for timer inaccuracy + microtask
       // scheduling overhead. A sequential run would fail by ~50ms.

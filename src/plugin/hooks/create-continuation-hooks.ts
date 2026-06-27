@@ -1,7 +1,7 @@
 import type { HookName, MatrixxConfig } from "../../config"
 import type { BackgroundManager } from "../../features/background-agent"
 import {
-  createAtlasHook,
+  createArchitectHook,
   createBackgroundNotificationHook,
   createCompactionContextInjector,
   createCompactionTodoPreserverHook,
@@ -19,7 +19,7 @@ export type ContinuationHooks = {
   todoContinuationEnforcer: ReturnType<typeof createTodoContinuationEnforcer> | null
   unstableAgentBabysitter: ReturnType<typeof createUnstableAgentBabysitter> | null
   backgroundNotificationHook: ReturnType<typeof createBackgroundNotificationHook> | null
-  atlasHook: ReturnType<typeof createAtlasHook> | null
+  architectHook: ReturnType<typeof createArchitectHook> | null
 }
 
 type SessionRecovery = {
@@ -99,9 +99,9 @@ export function createContinuationHooks(args: {
     ? safeHook("background-notification", () => createBackgroundNotificationHook(backgroundManager))
     : null
 
-  const atlasHook = isHookEnabled("architect")
+  const architectHook = isHookEnabled("architect")
     ? safeHook("architect", () =>
-        createAtlasHook(ctx, {
+        createArchitectHook(ctx, {
           directory: ctx.directory,
           backgroundManager,
           isContinuationStopped: (sessionID: string) =>
@@ -117,6 +117,6 @@ export function createContinuationHooks(args: {
     todoContinuationEnforcer,
     unstableAgentBabysitter,
     backgroundNotificationHook,
-    atlasHook,
+    architectHook,
   }
 }

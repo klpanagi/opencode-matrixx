@@ -25,9 +25,9 @@ export function createWriteExistingFileGuardHook(ctx: PluginInput): Hooks {
       )
 
       if (existsSync(resolvedPath)) {
-        const sisyphusRoot = join(ctx.directory, ".matrixx") + sep
+        const matrixxRoot = join(ctx.directory, ".matrixx") + sep
         const isMatrixMarkdown =
-          resolvedPath.startsWith(sisyphusRoot) && resolvedPath.endsWith(".md")
+          resolvedPath.startsWith(matrixxRoot) && resolvedPath.endsWith(".md")
         if (isMatrixMarkdown) {
           log("[write-existing-file-guard] Allowing .matrixx/*.md overwrite", {
             sessionID: input.sessionID,

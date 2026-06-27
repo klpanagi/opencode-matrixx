@@ -1,1 +1,1 @@
-export const SISYPHUS_JUNIOR_AGENT = "mouse"
+export const MOUSE_AGENT = "mouse"

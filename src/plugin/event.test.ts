@@ -48,7 +48,7 @@ type EventInput = { event: { type: string; properties?: Record<string, unknown> 
 			matrixLoop: { event: async () => {} },
 			stopContinuationGuard: { event: async () => {} },
 			compactionTodoPreserver: { event: async () => {} },
-			atlasHook: { handler: async () => {} },
+			architectHook: { handler: async () => {} },
 		} as unknown as CreatedHooks,
 	})
 
@@ -124,7 +124,7 @@ type EventInput = { event: { type: string; properties?: Record<string, unknown> 
 				matrixLoop: { event: async () => {} },
 				stopContinuationGuard: { event: async () => {} },
 				compactionTodoPreserver: { event: async () => {} },
-				atlasHook: { handler: async () => {} },
+				architectHook: { handler: async () => {} },
 			} as unknown as CreatedHooks,
 		})
 
@@ -193,7 +193,7 @@ type EventInput = { event: { type: string; properties?: Record<string, unknown> 
 				matrixLoop: { event: async () => {} },
 				stopContinuationGuard: { event: async () => {} },
 				compactionTodoPreserver: { event: async () => {} },
-				atlasHook: { handler: async () => {} },
+				architectHook: { handler: async () => {} },
 			} as unknown as CreatedHooks,
 		})
 
@@ -285,7 +285,7 @@ type EventInput = { event: { type: string; properties?: Record<string, unknown> 
 				matrixLoop: { event: async () => {} },
 				stopContinuationGuard: { event: async () => {} },
 				compactionTodoPreserver: { event: async () => {} },
-				atlasHook: { handler: async () => {} },
+				architectHook: { handler: async () => {} },
 			},
 		})
 
@@ -342,7 +342,7 @@ type EventInput = { event: { type: string; properties?: Record<string, unknown> 
 				matrixLoop: { event: async () => {} },
 				stopContinuationGuard: { event: async () => {} },
 				compactionTodoPreserver: { event: async () => {} },
-				atlasHook: { handler: async () => {} },
+				architectHook: { handler: async () => {} },
 			} as unknown as CreatedHooks,
 		})
 

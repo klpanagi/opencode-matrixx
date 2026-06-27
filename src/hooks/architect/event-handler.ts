@@ -1,19 +1,19 @@
 import type { PluginInput } from "@opencode-ai/plugin"
 import { subagentSessions } from "../../features/claude-code-session-state"
-import { getPlanProgress, readMissionState } from "../../features/mission-state"
+import { clearMissionState, getPlanProgress, readMissionState } from "../../features/mission-state"
 import { getAgentConfigKey } from "../../shared/agent-display-names"
 import { log } from "../../shared/logger"
 import { HOOK_NAME } from "./hook-name"
 import { isAbortError } from "./is-abort-error"
 import { injectMissionContinuation } from "./mission-continuation-injector"
 import { getLastAgentFromSession } from "./session-last-agent"
-import type { AtlasHookOptions, SessionState } from "./types"
+import type { ArchitectHookOptions, SessionState } from "./types"
 
 const CONTINUATION_COOLDOWN_MS = 5000
 
-export function createAtlasEventHandler(input: {
+export function createArchitectEventHandler(input: {
   ctx: PluginInput
-  options?: AtlasHookOptions
+  options?: ArchitectHookOptions
   sessions: Map<string, SessionState>
   getState: (sessionID: string) => SessionState
 }): (arg: { event: { type: string; properties?: unknown } }) => Promise<void> {
@@ -110,6 +110,7 @@ export function createAtlasEventHandler(input: {
       const progress = getPlanProgress(missionState.active_plan)
       if (progress.isComplete) {
         log(`[${HOOK_NAME}] Mission complete`, { sessionID, plan: missionState.plan_name })
+        clearMissionState(ctx.directory)
         return
       }
 

@@ -10,7 +10,7 @@ agents/
 ├── morpheus.ts                 # Main orchestrator (530 lines)
 ├── keymaker.ts               # Autonomous deep worker (624 lines)
 ├── seraph.ts                    # Pre-planning analysis (347 lines)
-├── oracle/                     # Strategic advisor / Planner
+├── oracle/                     # Plan Builder / Planner
 │   ├── index.ts
 │   ├── system-prompt.ts        # 6-section prompt assembly
 │   ├── plan-template.ts        # Work plan structure (423 lines)
