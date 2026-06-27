@@ -8,7 +8,7 @@ const MODE: AgentMode = "subagent"
 export const ORACLE_PROMPT_METADATA: AgentPromptMetadata = {
   category: "advisor",
   cost: "EXPENSIVE",
-  promptAlias: "Oracle",
+  promptAlias: "Consultant",
   triggers: [
     { domain: "Architecture decisions", trigger: "Multi-system tradeoffs, unfamiliar patterns" },
     { domain: "Self-review", trigger: "After completing significant implementation" },
@@ -27,6 +27,31 @@ export const ORACLE_PROMPT_METADATA: AgentPromptMetadata = {
     "First attempt at any fix (try yourself first)",
     "Questions answerable from code you've read",
     "Trivial decisions (variable names, formatting)",
+    "Things you can infer from existing code patterns",
+  ],
+}
+
+export const ORACLE_PLAN_BUILDER_METADATA: AgentPromptMetadata = {
+  category: "advisor",
+  cost: "EXPENSIVE",
+  triggers: [
+    { domain: "Architecture decisions", trigger: "Multi-system tradeoffs, unfamiliar patterns" },
+    { domain: "Work planning", trigger: "Complex feature implementation, refactoring" },
+    { domain: "Complex task breakdown", trigger: "Large ambiguous requests needing decomposition" },
+    { domain: "Self-review", trigger: "After completing significant implementation" },
+  ],
+  useWhen: [
+    "Complex architecture design",
+    "Work planning and task decomposition",
+    "Large ambiguous requests needing structure",
+    "After completing significant work for review",
+    "Multi-system tradeoffs and integration planning",
+  ],
+  avoidWhen: [
+    "Simple file operations (use direct tools)",
+    "Questions answerable from code you've read",
+    "Trivial decisions (variable names, formatting)",
+    "Quick debugging tasks (try yourself first)",
     "Things you can infer from existing code patterns",
   ],
 }

@@ -19,7 +19,7 @@ import { createMultimodalLookerAgent, MULTIMODAL_LOOKER_PROMPT_METADATA } from "
 import { buildCustomAgentMetadata, parseRegisteredAgentSummaries } from "./custom-agent-summaries"
 import type { AvailableCategory } from "./dynamic-agent-prompt-builder"
 import { createKeymakerAgent } from "./keymaker"
-import { createOracleAgent, ORACLE_PROMPT_METADATA } from "./merovingian"
+import { createOracleAgent, ORACLE_PLAN_BUILDER_METADATA, ORACLE_PROMPT_METADATA } from "./merovingian"
 import { createMorpheusAgent } from "./morpheus"
 import { createLibrarianAgent, LIBRARIAN_PROMPT_METADATA } from "./operator"
 import { createSatiAgent, SATI_PROMPT_METADATA } from "./sati"
@@ -53,7 +53,7 @@ const agentSources: Partial<Record<BuiltinAgentName, AgentSource>> = {
  */
 const agentMetadata: Partial<Record<BuiltinAgentName, AgentPromptMetadata>> = {
   merovingian: ORACLE_PROMPT_METADATA,
-  oracle: ORACLE_PROMPT_METADATA,
+  oracle: ORACLE_PLAN_BUILDER_METADATA,
   operator: LIBRARIAN_PROMPT_METADATA,
   trinity: EXPLORE_PROMPT_METADATA,
   construct: MULTIMODAL_LOOKER_PROMPT_METADATA,
