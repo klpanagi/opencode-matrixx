@@ -118,7 +118,7 @@ Profile defaults merge first; any `agents` or `categories` override takes preced
 
 ### 01. Morpheus — *The Orchestrator*
 
-<img src=".github/assets/morpheus.png" width="140" align="right"/>
+<img src=".github/assets/morpheus.png" width="200" align="right"/>
 
 *The one who sees the code for what it truly is.*
 
@@ -132,7 +132,7 @@ Plans, delegates, and executes. Fires background agents in parallel, leverages L
 
 ### 02. Keymaker — *The Craftsman*
 
-<img src=".github/assets/keymaker.png" width="140" align="right"/>
+<img src=".github/assets/keymaker.png" width="200" align="right"/>
 
 *Give him a goal, not a recipe.*
 
@@ -146,7 +146,7 @@ Explores the codebase, matches your patterns, and delivers end-to-end. Keymaker 
 
 ### 03. Cipher — *The Language Architect*
 
-<img src=".github/assets/cipher.png" width="140" align="right"/>
+<img src=".github/assets/cipher.png" width="200" align="right"/>
 
 *Grammars, parsers, and the art of formal languages.*
 
@@ -160,7 +160,7 @@ Grammars, parsers, type systems, code generators, metamodels. 11 composable skil
 
 ### 04. Sentinel — *The Security Auditor*
 
-<img src=".github/assets/sentinel.png" width="140" align="right"/>
+<img src=".github/assets/sentinel.png" width="200" align="right"/>
 
 *Reads every line. Changes nothing. Reports everything.*
 
@@ -174,7 +174,7 @@ Scans for vulnerabilities but never touches code. OWASP Top 10, SAST, DAST, depe
 
 ### 05. Sati — *The Frontend Specialist*
 
-<img src=".github/assets/sati.png" width="140" align="right"/>
+<img src=".github/assets/sati.png" width="200" align="right"/>
 
 *Crafts stunning UI/UX, even without design mockups.*
 
@@ -188,7 +188,7 @@ React/Next.js, Svelte/SvelteKit, accessibility, performance, design tokens, comp
 
 ### 06. Oracle — *The Plan Builder*
 
-<img src=".github/assets/oracle.png" width="140" align="right"/>
+<img src=".github/assets/oracle.png" width="200" align="right"/>
 
 *Architecture demands precision. Oracle delivers it.*
 
@@ -202,7 +202,7 @@ Creates detailed, structured work plans from complex requests. Decomposes ambigu
 
 ### 07. Merovingian — *The Consultant*
 
-<img src=".github/assets/merovingian.png" width="140" align="right"/>
+<img src=".github/assets/merovingian.png" width="200" align="right"/>
 
 *High-IQ reasoning for problems that refuse to yield.*
 
@@ -216,7 +216,7 @@ Read-only consultation for hard debugging (after 2+ failed attempts), multi-syst
 
 ### 08. Architect — *The Master Orchestrator*
 
-<img src=".github/assets/orchestrator-architect.png" width="140" align="right"/>
+<img src=".github/assets/orchestrator-architect.png" width="200" align="right"/>
 
 *Where plans become reality.*
 
@@ -230,7 +230,7 @@ Executes Oracle's work plans, coordinates session state, manages task dependenci
 
 ### 09. Seraph — *The Pre-Planner*
 
-<img src=".github/assets/seraph.png" width="140" align="right"/>
+<img src=".github/assets/seraph.png" width="200" align="right"/>
 
 *Sees what others miss before work begins.*
 
@@ -244,7 +244,7 @@ Analyzes requests to identify hidden intentions, ambiguities, scope creep, and A
 
 ### 10. Smith — *The Validator*
 
-<img src=".github/assets/smith.png" width="140" align="right"/>
+<img src=".github/assets/smith.png" width="200" align="right"/>
 
 *Every plan meets Smith's standards — or gets rewritten.*
 
@@ -258,7 +258,7 @@ Evaluates work plans against rigorous clarity, verifiability, and completeness s
 
 ### 11. Operator — *The Researcher*
 
-<img src=".github/assets/operator.png" width="140" align="right"/>
+<img src=".github/assets/operator.png" width="200" align="right"/>
 
 *Finds what you need, where it lives.*
 
@@ -272,7 +272,7 @@ Specialized codebase understanding agent for multi-repository analysis, searchin
 
 ### 12. Trinity — *The Search Engine*
 
-<img src=".github/assets/trinity.png" width="140" align="right"/>
+<img src=".github/assets/trinity.png" width="200" align="right"/>
 
 *Finds anything, anywhere, instantly.*
 
@@ -286,7 +286,7 @@ Contextual grep for codebases. Answers "Where is X?", "Which file has Y?", "Find
 
 ### 13. Construct — *The Media Analyst*
 
-<img src=".github/assets/construct.png" width="140" align="right"/>
+<img src=".github/assets/construct.png" width="200" align="right"/>
 
 *Sees what's inside — images, PDFs, diagrams.*
 
