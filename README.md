@@ -174,21 +174,129 @@ Scans for vulnerabilities but never touches code. OWASP Top 10, SAST, DAST, depe
 
 ### 05. Sati — *The Frontend Specialist*
 
-**Sati** is the dedicated frontend specialist. She ships production-grade UI work: React/Next.js, Svelte/SvelteKit, accessibility, performance, browser verification via Playwright. Invoke Sati directly with `@sati/` or `task(subagent_type="sati")` for any non-trivial frontend task.
+<img src=".github/assets/sati.png" width="140" align="right"/>
 
-### The Rest of the Team
+*Crafts stunning UI/UX, even without design mockups.*
 
-| Agent | Role | Model |
-|-------|------|-------|
-| **Oracle** | Strategic planning, architecture decisions, work plan generation | Claude Sonnet 4.6 |
-| **Merovingian** | High-IQ consultation, hard debugging, architecture design | Claude Sonnet 4.6 |
-| **Architect** | Plan execution orchestrator, session coordination | Claude Sonnet 4.6 |
-| **Seraph** | Pre-planning analysis, ambiguity detection, AI failure prevention | Claude Opus 4.6 |
-| **Smith** | Plan validation, completeness review, gap detection | Claude Sonnet 4.6 |
-| **Operator** | External documentation, OSS search, library research | Claude Haiku 4.5 |
-| **Trinity** | Blazing fast codebase grep, pattern discovery | Claude Haiku 4.5 |
-| **Construct** | PDF, image & diagram analysis | Claude Sonnet 4.6 |
-| **Sati** | Frontend specialist — components, accessibility, performance, testing | Claude Sonnet 4.6 |
+**Role:** Frontend specialist
+
+**Model:** Claude Sonnet 4.6 · `temperature: 0.1`
+
+React/Next.js, Svelte/SvelteKit, accessibility, performance, design tokens, component architecture, build tooling. Sati ships production-grade UI work with browser verification via Playwright. Invoke directly with `@sati/` or `task(subagent_type="sati")` for any non-trivial frontend task.
+
+---
+
+### 06. Oracle — *The Plan Builder*
+
+<img src=".github/assets/oracle.png" width="140" align="right"/>
+
+*Architecture demands precision. Oracle delivers it.*
+
+**Role:** Strategic planning, architecture decisions, work plan generation
+
+**Model:** Claude Sonnet 4.6 · `temperature: 0.1`
+
+Creates detailed, structured work plans from complex requests. Decomposes ambiguous requirements into atomic, verifiable steps with clear success criteria. Oracle builds the plan — Morpheus executes it.
+
+---
+
+### 07. Merovingian — *The Consultant*
+
+<img src=".github/assets/merovingian.png" width="140" align="right"/>
+
+*High-IQ reasoning for problems that refuse to yield.*
+
+**Role:** High-IQ consultation, hard debugging, architecture design
+
+**Model:** Claude Sonnet 4.6 · `temperature: 0.1`
+
+Read-only consultation for hard debugging (after 2+ failed attempts), multi-system tradeoffs, and architecture decisions requiring deep reasoning. Merovingian analyzes — never implements.
+
+---
+
+### 08. Architect — *The Master Orchestrator*
+
+<img src=".github/assets/orchestrator-architect.png" width="140" align="right"/>
+
+*Where plans become reality.*
+
+**Role:** Plan execution orchestrator, session coordination
+
+**Model:** Claude Sonnet 4.6 · `temperature: 0.1`
+
+Executes Oracle's work plans, coordinates session state, manages task dependencies, and ensures every phase completes before moving to the next. The Architect is the bridge between planning and shipping.
+
+---
+
+### 09. Seraph — *The Pre-Planner*
+
+<img src=".github/assets/seraph.png" width="140" align="right"/>
+
+*Sees what others miss before work begins.*
+
+**Role:** Pre-planning analysis, ambiguity detection, AI failure prevention
+
+**Model:** Claude Opus 4.6 · `temperature: 0.3`
+
+Analyzes requests to identify hidden intentions, ambiguities, scope creep, and AI failure points. Seraph intervenes before planning starts — preventing costly mistakes downstream.
+
+---
+
+### 10. Smith — *The Validator*
+
+<img src=".github/assets/smith.png" width="140" align="right"/>
+
+*Every plan meets Smith's standards — or gets rewritten.*
+
+**Role:** Plan validation, completeness review, gap detection
+
+**Model:** Claude Sonnet 4.6 · `temperature: 0.1`
+
+Evaluates work plans against rigorous clarity, verifiability, and completeness standards. Catches gaps, ambiguities, and missing context before implementation begins. Smith is the last line of defense.
+
+---
+
+### 11. Operator — *The Researcher*
+
+<img src=".github/assets/operator.png" width="140" align="right"/>
+
+*Finds what you need, where it lives.*
+
+**Role:** External documentation, OSS search, library research
+
+**Model:** Claude Haiku 4.5 · `temperature: 0.1`
+
+Specialized codebase understanding agent for multi-repository analysis, searching remote codebases, retrieving official documentation, and finding implementation examples using GitHub CLI, Context7, and Web Search.
+
+---
+
+### 12. Trinity — *The Search Engine*
+
+<img src=".github/assets/trinity.png" width="140" align="right"/>
+
+*Finds anything, anywhere, instantly.*
+
+**Role:** Blazing fast codebase grep, pattern discovery
+
+**Model:** Claude Haiku 4.5 · `temperature: 0.1`
+
+Contextual grep for codebases. Answers "Where is X?", "Which file has Y?", "Find the code that does Z". Fires multiple in parallel for broad searches. Quick, medium, or very thorough — you choose.
+
+---
+
+### 13. Construct — *The Media Analyst*
+
+<img src=".github/assets/construct.png" width="140" align="right"/>
+
+*Sees what's inside — images, PDFs, diagrams.*
+
+**Role:** PDF, image & diagram analysis
+
+**Model:** Claude Sonnet 4.6 · `temperature: 0.1`
+
+Analyzes media files that require interpretation beyond raw text. Extracts specific information or summaries from documents, describes visual content. Use when you need analyzed/extracted data rather than literal file contents.
+
+---
 
 Every agent, model, temperature, and permission is fully customizable. [**Meet the full team →**](docs/agents.md)
 
