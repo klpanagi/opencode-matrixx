@@ -47,14 +47,14 @@ export function createAutoUpdateCheckerHook(ctx: PluginInput, options: AutoUpdat
 
         if (localDevVersion) {
           if (showStartupToast) {
-            showLocalDevToast(ctx, displayVersion, isMorpheusEnabled).catch(() => {})
+            showLocalDevToast(ctx, displayVersion, isMorpheusEnabled).catch((err) => { log("[auto-update] Startup toast failed:", err) })
           }
           log("[auto-update-checker] Local development mode")
           return
         }
 
         if (showStartupToast) {
-          showVersionToast(ctx, displayVersion, getToastMessage(false)).catch(() => {})
+          showVersionToast(ctx, displayVersion, getToastMessage(false)).catch((err) => { log("[auto-update] Version toast failed:", err) })
         }
 
         runBackgroundUpdateCheck(ctx, autoUpdate, getToastMessage).catch((err) => {
