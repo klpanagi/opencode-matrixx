@@ -131,7 +131,7 @@ function parseAnthropicTokenLimitErrorUnsafe(err: unknown): ParsedTokenLimitErro
       if (isTokenLimitError(jsonStr)) {
         textSources.push(jsonStr)
       }
-    } catch {}
+          } catch { /* JSON parse failed for this pattern — try next */ }
   }
 
   const combinedText = textSources.join(" ")
@@ -162,7 +162,7 @@ function parseAnthropicTokenLimitErrorUnsafe(err: unknown): ParsedTokenLimitErro
                 errorType: jsonData.error?.type || "token_limit_exceeded",
               }
             }
-          } catch {}
+    } catch { /* JSON.stringify failed on error object — continue with other sources */ }
         }
       }
 
@@ -174,7 +174,7 @@ function parseAnthropicTokenLimitErrorUnsafe(err: unknown): ParsedTokenLimitErro
           errorType: "bedrock_input_too_long",
         }
       }
-    } catch {}
+          } catch { /* JSON parse failed for this pattern — try next */ }
   }
 
   for (const text of textSources) {

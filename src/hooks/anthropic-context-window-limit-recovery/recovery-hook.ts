@@ -77,7 +77,7 @@ export function createAnthropicContextWindowLimitRecoveryHook(
               duration: 3000,
             },
           })
-          .catch(() => {})
+          .catch((err) => { log("[auto-compact] Toast failed:", err) })
 
         const timeoutID = setTimeout(() => {
           pendingCompactionTimeoutBySession.delete(sessionID)
@@ -146,7 +146,7 @@ export function createAnthropicContextWindowLimitRecoveryHook(
             duration: 3000,
           },
         })
-        .catch(() => {})
+        .catch((err) => { log("[auto-compact] Toast failed:", err) })
 
       await executeCompact(
         sessionID,
