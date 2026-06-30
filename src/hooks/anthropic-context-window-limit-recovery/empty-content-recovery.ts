@@ -1,3 +1,4 @@
+import { log } from "../../shared/logger"
 import { isSqliteBackend } from "../../shared/opencode-storage-detection"
 import {
   findEmptyMessageByIndex,
@@ -40,7 +41,7 @@ export async function fixEmptyMessages(params: {
             duration: 5000,
           },
         })
-        .catch(() => {})
+        .catch((err) => { log("[auto-compact] Toast failed:", err) })
       return false
     }
 
@@ -54,7 +55,7 @@ export async function fixEmptyMessages(params: {
             duration: 3000,
           },
         })
-        .catch(() => {})
+        .catch((err) => { log("[auto-compact] Toast failed:", err) })
     }
 
     return result.fixed
@@ -89,7 +90,7 @@ export async function fixEmptyMessages(params: {
             duration: 5000,
           },
         })
-        .catch(() => {})
+        .catch((err) => { log("[auto-compact] Toast failed:", err) })
       return false
     }
 
@@ -118,7 +119,7 @@ export async function fixEmptyMessages(params: {
           duration: 3000,
         },
       })
-      .catch(() => {})
+        .catch((err) => { log("[auto-compact] Toast failed:", err) })
   }
 
   return fixed
