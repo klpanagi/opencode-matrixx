@@ -3,7 +3,7 @@
  * Config keys are lowercase (e.g., "morpheus", "architect").
  * Display names include suffixes for UI/logs (e.g., "Morpheus (Ultraworker)").
  */
-export const AGENT_DISPLAY_NAMES: Record<string, string> = {
+const AGENT_DISPLAY_NAMES: Record<string, string> = {
   morpheus: "Morpheus (Ultraworker)",
   keymaker: "Keymaker (Deep Agent)",
   architect: "Architect (Plan Execution Orchestrator)",

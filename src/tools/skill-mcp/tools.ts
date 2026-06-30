@@ -95,7 +95,7 @@ function parseArguments(argsJson: string | Record<string, unknown> | undefined):
   }
 }
 
-export function applyGrepFilter(output: string, pattern: string | undefined): string {
+function applyGrepFilter(output: string, pattern: string | undefined): string {
   if (!pattern) return output
   try {
     const regex = new RegExp(pattern, "i")

@@ -132,7 +132,7 @@ export async function loadOpencodeProjectCommands(directory?: string): Promise<R
   return commandsToRecord(commands)
 }
 
-export async function loadAllCommands(directory?: string): Promise<Record<string, CommandDefinition>> {
+async function loadAllCommands(directory?: string): Promise<Record<string, CommandDefinition>> {
   const [user, project, global, projectOpencode] = await Promise.all([
     loadUserCommands(),
     loadProjectCommands(directory),

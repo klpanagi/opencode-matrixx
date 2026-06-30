@@ -34,7 +34,7 @@ function getFormatterCacheKey(directory: string): string {
   return path.resolve(directory)
 }
 
-export async function resolveFormatters(
+async function resolveFormatters(
   client: FormatterClient,
   directory: string,
 ): Promise<FormatterMap> {
@@ -86,7 +86,7 @@ export async function resolveFormatters(
   return result
 }
 
-export function buildFormatterCommand(command: string[], filePath: string): string[] {
+function buildFormatterCommand(command: string[], filePath: string): string[] {
   return command.map((arg) => arg.replace(/\$FILE/g, filePath))
 }
 
