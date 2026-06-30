@@ -1,3 +1,4 @@
+import { log } from "../../shared/logger"
 import { LSPClient } from "./lsp-client"
 import { registerLspManagerProcessCleanup } from "./lsp-manager-process-cleanup"
 import { cleanupTempDirectoryLspClients } from "./lsp-manager-temp-directory-cleanup"
@@ -174,7 +175,7 @@ class LSPServerManager {
       .catch(() => {
         // Warmup failures must not permanently block future initialization.
         this.clients.delete(key)
-        void client.stop().catch(() => {})
+        void client.stop().catch((err) => { log("[lsp] Warmup client stop failed:", err) })
       })
   }
 
