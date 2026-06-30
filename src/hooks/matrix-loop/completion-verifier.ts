@@ -144,7 +144,7 @@ export async function verifyCompletion(
 		return { verified: true }
 	} finally {
 		if (verifySessionID) {
-			ctx.client.session.delete({ path: { id: verifySessionID } }).catch(() => {})
+			ctx.client.session.delete({ path: { id: verifySessionID } }).catch((err) => { log("[matrix-loop] Verification session cleanup failed:", err) })
 		}
 	}
 }
