@@ -1,0 +1,6 @@
+{
+  "$schema": "https://raw.githubusercontent.com/klpanagi/matrixx/refs/heads/dev/dist/matrixx.schema.json",
+  "experimental": {
+    "hashline_edit": true
+  }
+}
