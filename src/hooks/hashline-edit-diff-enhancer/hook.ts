@@ -1,4 +1,4 @@
-import { log } from "../../shared"
+import { isWriteTool, log } from "../../shared"
 import { countLineDiffs, generateUnifiedDiff } from "../../tools/hashline-edit/diff-utils"
 
 interface HashlineEditDiffEnhancerConfig {
@@ -25,10 +25,6 @@ function cleanupStaleEntries(): void {
       pendingCaptures.delete(key)
     }
   }
-}
-
-function isWriteTool(toolName: string): boolean {
-  return toolName.toLowerCase() === "write"
 }
 
 function extractFilePath(args: Record<string, unknown>): string | undefined {
