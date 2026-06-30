@@ -26,7 +26,7 @@ async function showCountdownToast(
         duration: TOAST_DURATION_MS,
       },
     })
-    .catch(() => {})
+    .catch((err) => { log("[todo-continuation] Countdown toast failed:", err) })
 }
 
 export function startCountdown(args: {
