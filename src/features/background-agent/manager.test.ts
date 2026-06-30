@@ -10,11 +10,8 @@ import type { PluginInput } from "@opencode-ai/plugin"
 import { _resetTaskToastManagerForTesting, initTaskToastManager } from "../task-toast-manager/manager"
 import type { ConcurrencyManager } from "./concurrency"
 import { MIN_IDLE_TIME_MS } from "./constants"
-import {
-  _resetMessageDirCacheForTesting,
-  BackgroundManager,
-  getMessageDir,
-} from "./manager"
+import { BackgroundManager } from "./manager"
+import { _resetMessageDirCacheForTesting, getMessageDir } from "./message-dir"
 import type { BackgroundTask, ResumeInput } from "./types"
 
 

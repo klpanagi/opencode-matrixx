@@ -1,6 +1,5 @@
 
-import { existsSync, readdirSync, readFileSync } from "node:fs"
-import { join } from "node:path"
+
 import type { PluginInput } from "@opencode-ai/plugin"
 import type { BackgroundTaskConfig, TmuxConfig } from "../../config/schema"
 import { getAgentToolRestrictions, log, normalizeSDKResponse, promptWithModelSuggestionRetry } from "../../shared"
@@ -8,7 +7,7 @@ import { setSessionTemperature } from "../../shared/session-temperature-store"
 import { setSessionTools } from "../../shared/session-tools-store"
 import { isInsideTmux } from "../../shared/tmux"
 import { subagentSessions } from "../claude-code-session-state"
-import { MESSAGE_STORAGE, type StoredMessage } from "../hook-message-injector"
+
 import { getTaskToastManager } from "../task-toast-manager"
 import { ConcurrencyManager } from "./concurrency"
 import {
@@ -22,11 +21,17 @@ import {
   TASK_TTL_MS,
 } from "./constants"
 import {
+  formatDuration,
+  getSessionErrorMessage,
+  isAbortedSessionError,
+} from "./error-helpers"
+import {
   type CircuitBreakerSettings,
   detectRepetitiveToolUse,
   recordToolCall,
   resolveCircuitBreakerSettings,
 } from "./loop-detector"
+import { buildCompletionNotification, resolveAgentAndModel } from "./notification-builder"
 import { TaskHistory } from "./task-history"
 import type {
   BackgroundTask,
@@ -47,7 +52,7 @@ interface MessagePartInfo {
   state?: { status?: string; input?: Record<string, unknown> }
 }
 
-interface EventProperties {
+export interface EventProperties {
   sessionID?: string
   info?: { id?: string }
   [key: string]: unknown
@@ -391,9 +396,7 @@ export class BackgroundManager {
         }
 
         // Abort the session to prevent infinite polling hang
-        this.client.session.abort({
-          path: { id: sessionID },
-        }).catch(() => {})
+        this.abortSessionQuietly(sessionID, "error-recovery")
 
         this.markForNotification(existingTask)
         this.cleanupPendingByParent(existingTask)
@@ -661,9 +664,7 @@ export class BackgroundManager {
 
       // Abort the session to prevent infinite polling hang
       if (existingTask.sessionID) {
-        this.client.session.abort({
-          path: { id: existingTask.sessionID },
-        }).catch(() => {})
+        this.abortSessionQuietly(existingTask.sessionID, "resume-error")
       }
 
       this.markForNotification(existingTask)
@@ -847,7 +848,7 @@ export class BackgroundManager {
       const task = this.findBySession(sessionID)
       if (task?.status !== "running") return
 
-      const errorMessage = props ? this.getSessionErrorMessage(props) : undefined
+      const errorMessage = props ? getSessionErrorMessage(props) : undefined
 
       task.status = "error"
       task.error = errorMessage ?? "Session error"
@@ -1044,6 +1045,21 @@ export class BackgroundManager {
     }
   }
 
+  /**
+   * Fire-and-forget session abort. Logs failures at debug level instead of
+   * swallowing errors silently — useful for diagnosing zombie sessions.
+   */
+  private abortSessionQuietly(sessionID: string, context?: string): void {
+    this.client.session
+      .abort({ path: { id: sessionID } })
+      .catch((err) => {
+        log(`[background-agent] Session abort failed${context ? ` (${context})` : ""}:`, {
+          sessionID,
+          error: err,
+        })
+      })
+  }
+
   async cancelTask(
     taskId: string,
     options?: { source?: string; reason?: string; abortSession?: boolean; skipNotification?: boolean }
@@ -1101,9 +1117,7 @@ export class BackgroundManager {
     this.cleanupPendingByParent(task)
 
     if (abortSession && task.sessionID) {
-      this.client.session.abort({
-        path: { id: task.sessionID },
-      }).catch(() => {})
+      this.abortSessionQuietly(task.sessionID, "cancel")
     }
 
     if (options?.skipNotification) {
@@ -1265,9 +1279,7 @@ export class BackgroundManager {
     }
 
     if (task.sessionID) {
-      this.client.session.abort({
-        path: { id: task.sessionID },
-      }).catch(() => {})
+      this.abortSessionQuietly(task.sessionID, "complete")
     }
 
     try {
@@ -1285,7 +1297,7 @@ export class BackgroundManager {
     // Note: Callers must release concurrency before calling this method
     // to ensure slots are freed even if notification fails
 
-    const duration = this.formatDuration(task.startedAt ?? new Date(), task.completedAt)
+    const duration = formatDuration(task.startedAt ?? new Date(), task.completedAt)
 
     log("[background-agent] notifyParentSession called for task:", task.id)
 
@@ -1319,111 +1331,62 @@ export class BackgroundManager {
         .filter(t => t.parentSessionID === task.parentSessionID && t.status !== "running" && t.status !== "pending")
       : []
 
-    const statusText = task.status === "completed" ? "COMPLETED" : task.status === "interrupt" ? "INTERRUPTED" : "CANCELLED"
     const errorInfo = task.error ? `\n**Error:** ${task.error}` : ""
 
-    let notification: string
-    if (allComplete) {
-        const completedTasksText = completedTasks
-          .map(t => `- \`${t.id}\`: ${t.description}`)
-          .join("\n")
+    const notification = buildCompletionNotification(
+      task,
+      allComplete,
+      completedTasks,
+      remainingCount,
+      duration,
+      errorInfo,
+    )
 
-        notification = `<system-reminder>
-[ALL BACKGROUND TASKS COMPLETE]
+    const { agent, model } = await resolveAgentAndModel(
+      this.client,
+      task,
+      this.enableParentSessionNotifications,
+    )
 
-**Completed:**
-${completedTasksText || `- \`${task.id}\`: ${task.description}`}
+    log("[background-agent] notifyParentSession context:", {
+      taskId: task.id,
+      resolvedAgent: agent,
+      resolvedModel: model,
+    })
 
-Use \`background_output(task_id="<id>")\` to retrieve each result.
-</system-reminder>`
-    } else {
-      // Individual completion - silent notification
-      notification = `<system-reminder>
-[BACKGROUND TASK ${statusText}]
-**ID:** \`${task.id}\`
-**Description:** ${task.description}
-**Duration:** ${duration}${errorInfo}
-
-**${remainingCount} task${remainingCount === 1 ? "" : "s"} still in progress.** You WILL be notified when ALL complete.
-Do NOT poll - continue productive work.
-
-Use \`background_output(task_id="${task.id}")\` to retrieve this result when ready.
-</system-reminder>`
-    }
-
-      let agent: string | undefined = task.parentAgent
-      let model: { providerID: string; modelID: string } | undefined
-
-      if (this.enableParentSessionNotifications) {
-        try {
-          const messagesResp = await this.client.session.messages({ path: { id: task.parentSessionID } })
-          const messages = normalizeSDKResponse(messagesResp, [] as Array<{
-            info?: { agent?: string; model?: { providerID: string; modelID: string }; modelID?: string; providerID?: string }
-          }>)
-          for (let i = messages.length - 1; i >= 0; i--) {
-            const info = messages[i].info
-            if (isCompactionAgent(info?.agent)) {
-              continue
-            }
-            if (info?.agent || info?.model || (info?.modelID && info?.providerID)) {
-              agent = info.agent ?? task.parentAgent
-              model = info.model ?? (info.providerID && info.modelID ? { providerID: info.providerID, modelID: info.modelID } : undefined)
-              break
-            }
-          }
-        } catch (error) {
-          if (this.isAbortedSessionError(error)) {
-            log("[background-agent] Parent session aborted while loading messages; using messageDir fallback:", {
-              taskId: task.id,
-              parentSessionID: task.parentSessionID,
-            })
-          }
-          const messageDir = getMessageDir(task.parentSessionID)
-          const currentMessage = messageDir ? findNearestMessageExcludingCompaction(messageDir) : null
-          agent = currentMessage?.agent ?? task.parentAgent
-          model = currentMessage?.model?.providerID && currentMessage?.model?.modelID
-            ? { providerID: currentMessage.model.providerID, modelID: currentMessage.model.modelID }
-            : undefined
-        }
-
-        log("[background-agent] notifyParentSession context:", {
-          taskId: task.id,
-          resolvedAgent: agent,
-          resolvedModel: model,
-        })
-
-        try {
-          await this.client.session.promptAsync({
-            path: { id: task.parentSessionID },
-            body: {
-              noReply: !allComplete,
-              ...(agent !== undefined ? { agent } : {}),
-              ...(model !== undefined ? { model } : {}),
-              ...(task.parentTools ? { tools: task.parentTools } : {}),
-              parts: [{ type: "text", text: notification }],
-            },
-          })
-          log("[background-agent] Sent notification to parent session:", {
-            taskId: task.id,
-            allComplete,
+    if (this.enableParentSessionNotifications) {
+      try {
+        await this.client.session.promptAsync({
+          path: { id: task.parentSessionID },
+          body: {
             noReply: !allComplete,
-          })
-        } catch (error) {
-          if (this.isAbortedSessionError(error)) {
-            log("[background-agent] Parent session aborted while sending notification; continuing cleanup:", {
-              taskId: task.id,
-              parentSessionID: task.parentSessionID,
-            })
-          } else {
-            log("[background-agent] Failed to send notification:", error)
-          }
-        }
-      } else {
-        log("[background-agent] Parent session notifications disabled, skipping prompt injection:", {
-          taskId: task.id,
-          parentSessionID: task.parentSessionID,
+            ...(agent !== undefined ? { agent } : {}),
+            ...(model !== undefined ? { model } : {}),
+            ...(task.parentTools ? { tools: task.parentTools } : {}),
+            parts: [{ type: "text", text: notification }],
+          },
         })
+        log("[background-agent] Sent notification to parent session:", {
+          taskId: task.id,
+          allComplete,
+          noReply: !allComplete,
+        })
+      } catch (error) {
+        if (isAbortedSessionError(error)) {
+          log("[background-agent] Parent session aborted while sending notification; continuing cleanup:", {
+            taskId: task.id,
+            parentSessionID: task.parentSessionID,
+          })
+        } else {
+          log("[background-agent] Failed to send notification:", error)
+        }
       }
+    } else {
+      log("[background-agent] Parent session notifications disabled, skipping prompt injection:", {
+        taskId: task.id,
+        parentSessionID: task.parentSessionID,
+      })
+    }
 
     if (allComplete) {
       for (const completedTask of completedTasks) {
@@ -1444,60 +1407,6 @@ Use \`background_output(task_id="${task.id}")\` to retrieve this result when rea
         this.completionTimers.set(taskId, timer)
       }
     }
-  }
-
-  private formatDuration(start: Date, end?: Date): string {
-    const duration = (end ?? new Date()).getTime() - start.getTime()
-    const seconds = Math.floor(duration / 1000)
-    const minutes = Math.floor(seconds / 60)
-    const hours = Math.floor(minutes / 60)
-
-    if (hours > 0) {
-      return `${hours}h ${minutes % 60}m ${seconds % 60}s`
-    } else if (minutes > 0) {
-      return `${minutes}m ${seconds % 60}s`
-    }
-    return `${seconds}s`
-  }
-
-  private isAbortedSessionError(error: unknown): boolean {
-    const message = this.getErrorText(error)
-    return message.toLowerCase().includes("aborted")
-  }
-
-  private getErrorText(error: unknown): string {
-    if (!error) return ""
-    if (typeof error === "string") return error
-    if (error instanceof Error) {
-      return `${error.name}: ${error.message}`
-    }
-    if (typeof error === "object" && error !== null) {
-      if ("message" in error && typeof error.message === "string") {
-        return error.message
-      }
-      if ("name" in error && typeof error.name === "string") {
-        return error.name
-      }
-    }
-    return ""
-  }
-
-  private isRecord(value: unknown): value is Record<string, unknown> {
-    return typeof value === "object" && value !== null
-  }
-
-  private getSessionErrorMessage(properties: EventProperties): string | undefined {
-    const errorRaw = properties.error
-    if (!this.isRecord(errorRaw)) return undefined
-
-    const dataRaw = errorRaw.data
-    if (this.isRecord(dataRaw)) {
-      const message = dataRaw.message
-      if (typeof message === "string") return message
-    }
-
-    const message = errorRaw.message
-    return typeof message === "string" ? message : undefined
   }
 
   private hasRunningTasks(): boolean {
@@ -1613,7 +1522,7 @@ Use \`background_output(task_id="${task.id}")\` to retrieve this result when rea
           task.concurrencyKey = undefined
         }
 
-        this.client.session.abort({ path: { id: sessionID } }).catch(() => {})
+        this.abortSessionQuietly(sessionID, "stale-no-progress")
         log(`[background-agent] Task ${task.id} interrupted: no progress since start`)
 
         try {
@@ -1642,7 +1551,7 @@ Use \`background_output(task_id="${task.id}")\` to retrieve this result when rea
         task.concurrencyKey = undefined
       }
 
-      this.client.session.abort({ path: { id: sessionID } }).catch(() => {})
+      this.abortSessionQuietly(sessionID, "stale-timeout")
       log(`[background-agent] Task ${task.id} interrupted: stale timeout`)
 
       try {
@@ -1740,9 +1649,7 @@ Use \`background_output(task_id="${task.id}")\` to retrieve this result when rea
     // Abort all running sessions to prevent zombie processes (#1240)
     for (const task of this.tasks.values()) {
       if (task.status === "running" && task.sessionID) {
-        this.client.session.abort({
-          path: { id: task.sessionID },
-        }).catch(() => {})
+        this.abortSessionQuietly(task.sessionID, "shutdown")
       }
     }
 
@@ -1795,7 +1702,9 @@ Use \`background_output(task_id="${task.id}")\` to retrieve this result when rea
 
     const previous = this.notificationQueueByParent.get(parentSessionID) ?? Promise.resolve()
     const current = previous
-      .catch(() => {})
+      .catch((err) => {
+        log("[background-agent] Previous notification failed, continuing queue:", err)
+      })
       .then(operation)
 
     this.notificationQueueByParent.set(parentSessionID, current)
@@ -1804,7 +1713,9 @@ Use \`background_output(task_id="${task.id}")\` to retrieve this result when rea
       if (this.notificationQueueByParent.get(parentSessionID) === current) {
         this.notificationQueueByParent.delete(parentSessionID)
       }
-    }).catch(() => {})
+    }).catch((err) => {
+      log("[background-agent] Notification queue cleanup failed:", err)
+    })
 
     return current
   }
@@ -1829,42 +1740,6 @@ function registerProcessSignal(
 }
 
 
-function computeMessageDir(sessionID: string): string | null {
-  if (!existsSync(MESSAGE_STORAGE)) return null
-
-  const directPath = join(MESSAGE_STORAGE, sessionID)
-  if (existsSync(directPath)) return directPath
-
-  for (const dir of readdirSync(MESSAGE_STORAGE)) {
-    const sessionPath = join(MESSAGE_STORAGE, dir, sessionID)
-    if (existsSync(sessionPath)) return sessionPath
-  }
-  return null
-}
-
-const MESSAGE_DIR_CACHE_CAP = 1000
-const messageDirCache = new Map<string, string | null>()
-
-export function getMessageDir(sessionID: string): string | null {
-  const cached = messageDirCache.get(sessionID)
-  if (cached !== undefined) {
-    messageDirCache.delete(sessionID)
-    messageDirCache.set(sessionID, cached)
-    return cached
-  }
-  const result = computeMessageDir(sessionID)
-  if (messageDirCache.size >= MESSAGE_DIR_CACHE_CAP) {
-    const oldest = messageDirCache.keys().next().value
-    if (oldest !== undefined) messageDirCache.delete(oldest)
-  }
-  messageDirCache.set(sessionID, result)
-  return result
-}
-
-export function _resetMessageDirCacheForTesting(): void {
-  messageDirCache.clear()
-}
-
 export function _resetPruneThrottleForTesting(): void {
   // Access the private static instance set via a typed cast — `private static`
   // is a per-class visibility modifier, so a module-level function in the
@@ -1876,60 +1751,5 @@ export function _resetPruneThrottleForTesting(): void {
   }).cleanupManagers
   for (const m of instances) {
     ;(m as unknown as { lastPruneAt: number }).lastPruneAt = 0
-  }
-}
-
-function isCompactionAgent(agent: string | undefined): boolean {
-  return agent?.trim().toLowerCase() === "compaction"
-}
-
-function hasFullAgentAndModel(message: StoredMessage): boolean {
-  return !!message.agent &&
-    !isCompactionAgent(message.agent) &&
-    !!message.model?.providerID &&
-    !!message.model?.modelID
-}
-
-function hasPartialAgentOrModel(message: StoredMessage): boolean {
-  const hasAgent = !!message.agent && !isCompactionAgent(message.agent)
-  const hasModel = !!message.model?.providerID && !!message.model?.modelID
-  return hasAgent || hasModel
-}
-
-function findNearestMessageExcludingCompaction(messageDir: string): StoredMessage | null {
-  try {
-    const files = readdirSync(messageDir)
-      .filter((name) => name.endsWith(".json"))
-      .sort()
-      .reverse()
-
-    // Single-pass: read+parse each file exactly once. The Map caches parsed
-    // data so the "full" and "partial" classification passes don't each
-    // re-read the same file (was 2× per file, see B2 in
-    // .matrixx/plans/matrixx-performance-optimization.md).
-    const parsedByFile = new Map<string, StoredMessage>()
-
-    for (const file of files) {
-      try {
-        const content = readFileSync(join(messageDir, file), "utf-8")
-        const parsed = JSON.parse(content) as StoredMessage
-        parsedByFile.set(file, parsed)
-        if (hasFullAgentAndModel(parsed)) {
-          return parsed
-        }
-      } catch {
-        // unreadable / unparseable file: skip and let later files decide
-      }
-    }
-
-    for (const parsed of parsedByFile.values()) {
-      if (hasPartialAgentOrModel(parsed)) {
-        return parsed
-      }
-    }
-
-    return null
-  } catch {
-    return null
   }
 }
