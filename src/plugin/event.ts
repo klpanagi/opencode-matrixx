@@ -8,6 +8,7 @@ import {
   updateSessionAgent,
 } from "../features/claude-code-session-state"
 import { resetMessageCursor } from "../shared"
+import { log } from "../shared/logger"
 import { lspManager } from "../tools"
 import { pruneRecentSyntheticIdles } from "./recent-synthetic-idles"
 import { normalizeSessionStatusToIdle } from "./session-status-normalizer"
@@ -163,7 +164,7 @@ export function createEventHandler(args: {
               body: { parts: [{ type: "text", text: "continue" }] },
               query: { directory: ctx.directory },
             })
-            .catch(() => {})
+            .catch((err) => { log("[plugin] Session prompt failed:", err) })
         }
       }
     }
