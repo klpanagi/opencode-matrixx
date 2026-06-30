@@ -56,4 +56,4 @@ export const SecurityConfigSchema = z.object({
 export type SecurityConfig = z.infer<typeof SecurityConfigSchema>
 export type SecretScanningConfig = z.infer<typeof SecretScanningConfigSchema>
 export type EnvFileGuardConfig = z.infer<typeof EnvFileGuardConfigSchema>
-export type DependencyAuditConfig = z.infer<typeof DependencyAuditConfigSchema>
+type DependencyAuditConfig = z.infer<typeof DependencyAuditConfigSchema>

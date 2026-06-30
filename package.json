@@ -78,7 +78,6 @@
     "detect-libc": "^2.0.0",
     "js-yaml": "^4.1.1",
     "jsonc-parser": "^3.3.1",
-    "opencode-matrixx": ".",
     "picocolors": "^1.1.1",
     "picomatch": "^4.0.2",
     "vscode-jsonrpc": "^8.2.0",

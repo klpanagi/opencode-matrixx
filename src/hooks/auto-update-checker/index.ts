@@ -1,4 +1,4 @@
-export { invalidateCache, invalidatePackage } from "./cache"
+export { invalidatePackage } from "./cache"
 export { checkForUpdate } from "./checker"
 export { createAutoUpdateCheckerHook } from "./hook"
 export type { AutoUpdateCheckerOptions, UpdateCheckResult } from "./types"

@@ -54,7 +54,7 @@ function todosMatch(todo1: TodoInfo, todo2: TodoInfo): boolean {
   return todo1.content === todo2.content;
 }
 
-function syncTaskToTodo(task: Task): TodoInfo | null {
+export function syncTaskToTodo(task: Task): TodoInfo | null {
   const todoStatus = mapTaskStatusToTodoStatus(task.status);
 
   if (todoStatus === null) {
@@ -135,7 +135,7 @@ export async function syncTaskTodoUpdate(
   }
 }
 
-async function syncAllTasksToTodos(
+export async function syncAllTasksToTodos(
   ctx: PluginInput,
   tasks: Task[],
   sessionID?: string,

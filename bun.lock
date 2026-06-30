@@ -16,7 +16,6 @@
         "detect-libc": "^2.0.0",
         "js-yaml": "^4.1.1",
         "jsonc-parser": "^3.3.1",
-        "opencode-matrixx": ".",
         "picocolors": "^1.1.1",
         "picomatch": "^4.0.2",
         "vscode-jsonrpc": "^8.2.0",
@@ -30,13 +29,13 @@
         "typescript": "^5.7.3",
       },
       "optionalDependencies": {
-        "opencode-matrixx-darwin-arm64": "1.1.1",
-        "opencode-matrixx-darwin-x64": "1.1.1",
-        "opencode-matrixx-linux-arm64": "1.1.1",
-        "opencode-matrixx-linux-arm64-musl": "1.1.1",
-        "opencode-matrixx-linux-x64": "1.1.1",
-        "opencode-matrixx-linux-x64-musl": "1.1.1",
-        "opencode-matrixx-windows-x64": "1.1.1",
+        "opencode-matrixx-darwin-arm64": "2.1.0",
+        "opencode-matrixx-darwin-x64": "2.1.0",
+        "opencode-matrixx-linux-arm64": "2.1.0",
+        "opencode-matrixx-linux-arm64-musl": "2.1.0",
+        "opencode-matrixx-linux-x64": "2.1.0",
+        "opencode-matrixx-linux-x64-musl": "2.1.0",
+        "opencode-matrixx-windows-x64": "2.1.0",
       },
     },
   },
@@ -252,21 +251,19 @@
 
     "once": ["once@1.4.0", "", { "dependencies": { "wrappy": "1" } }, "sha512-lNaJgI+2Q5URQBkccEKHTQOPaXdUxnZZElQTZY0MFUAuaEqe1E+Nyvgdz/aIyNi6Z9MzO5dv1H8n58/GELp3+w=="],
 
-    "opencode-matrixx": ["opencode-matrixx@root:", { "bin": { "matrixx": "./bin/matrixx.js" } }],
+    "opencode-matrixx-darwin-arm64": ["opencode-matrixx-darwin-arm64@2.1.0", "", { "os": "darwin", "cpu": "arm64", "bin": { "matrixx": "bin/matrixx" } }, "sha512-JxpdCVG3WD2mRDGA4EhJeH9qnz6uZIbdjATqKVrAeBj/8vkp8+WSON+zbnK5rB5pdLuFZXUB1htklpeF2ky7cQ=="],
 
-    "opencode-matrixx-darwin-arm64": ["opencode-matrixx-darwin-arm64@1.1.1", "", { "os": "darwin", "cpu": "arm64", "bin": { "matrixx": "bin/matrixx" } }, "sha512-OnA6yydKseSM4GEofwlJNHp/Hes8bV9i8wHKn4RPHYRRmjgyNwnwPTzNhIv9HYy+dQZ9R41S/8uyeYdwYzt7lA=="],
+    "opencode-matrixx-darwin-x64": ["opencode-matrixx-darwin-x64@2.1.0", "", { "os": "darwin", "cpu": "x64", "bin": { "matrixx": "bin/matrixx" } }, "sha512-jQ4yN9nK9S1NZwz/NnGvE0Np/tOQrVKQqVwzPpHEVK/laurgAOfLTl49zs3hmYEdf1SBMl4AQnFGTqdo+zkmAw=="],
 
-    "opencode-matrixx-darwin-x64": ["opencode-matrixx-darwin-x64@1.1.1", "", { "os": "darwin", "cpu": "x64", "bin": { "matrixx": "bin/matrixx" } }, "sha512-KzLrbAmmgCacz9h0Owpor37cvRkvQVGCHh+6rgTsgW39s77vy6Ub+HvDWrUlBAxhcGSw5u4VntD0nFr0ZMD40Q=="],
+    "opencode-matrixx-linux-arm64": ["opencode-matrixx-linux-arm64@2.1.0", "", { "os": "linux", "cpu": "arm64", "bin": { "matrixx": "bin/matrixx" } }, "sha512-pgUj7nUZvJaUT2x1rP3dNktsxziKg5+kOsKrB9RAnYN2HA+E7toCUVXiG4D7Br/UYnHxDOgOluclEH92ZsOuxQ=="],
 
-    "opencode-matrixx-linux-arm64": ["opencode-matrixx-linux-arm64@1.1.1", "", { "os": "linux", "cpu": "arm64", "bin": { "matrixx": "bin/matrixx" } }, "sha512-34wzL0Oqrf1JNEActdXCAgSoeus0cPPL6vTjTpCHzPQxdhcc4cMRuyf8KRDLBOR+9bI+u7xUd6duOsfGudd0rA=="],
+    "opencode-matrixx-linux-arm64-musl": ["opencode-matrixx-linux-arm64-musl@2.1.0", "", { "os": "linux", "cpu": "arm64", "bin": { "matrixx": "bin/matrixx" } }, "sha512-IEOTfHCVo2PcGk9vgxmANqtQg8zdOSjlC8dEnyyrl1T/ol5Vh3Lh8Ds2UeCxTM6WZu9YJS/dwv58kGUjY984DA=="],
 
-    "opencode-matrixx-linux-arm64-musl": ["opencode-matrixx-linux-arm64-musl@1.1.1", "", { "os": "linux", "cpu": "arm64", "bin": { "matrixx": "bin/matrixx" } }, "sha512-VUoZot41Xg9B36mGjEsuSsoJsnLAlEdCZZDrl4YbD7Pv2J8DNXF6Xuy3p8O/3D74cB5811I/hisNGLok8DW9gw=="],
+    "opencode-matrixx-linux-x64": ["opencode-matrixx-linux-x64@2.1.0", "", { "os": "linux", "cpu": "x64", "bin": { "matrixx": "bin/matrixx" } }, "sha512-QS8KeKYjr+HXeiadpvs/+IjzOBvl35XYbg0gA2aYhIXwvhi6APuoZcylPppv/94SxXDqqhvhOYZoLL8gT/hw9g=="],
 
-    "opencode-matrixx-linux-x64": ["opencode-matrixx-linux-x64@1.1.1", "", { "os": "linux", "cpu": "x64", "bin": { "matrixx": "bin/matrixx" } }, "sha512-uPjb55N3BzBE/qU5YzPw8KDYlX2ecvFEi5BlLT9A6fL/h/0zLbAVLjyKd8+32vi7nRkKbo+OM7MsA+BjdFgesg=="],
+    "opencode-matrixx-linux-x64-musl": ["opencode-matrixx-linux-x64-musl@2.1.0", "", { "os": "linux", "cpu": "x64", "bin": { "matrixx": "bin/matrixx" } }, "sha512-e2HjCQ+Aw+rMEo+rrGaP6MtLFshmixho49zKXMxFuyBXmIGStDKnozyr4z1e3dKlge4bKHE0Pf9CJn389AEPag=="],
 
-    "opencode-matrixx-linux-x64-musl": ["opencode-matrixx-linux-x64-musl@1.1.1", "", { "os": "linux", "cpu": "x64", "bin": { "matrixx": "bin/matrixx" } }, "sha512-F2PPYTMUstj0zhnIVJ54E7wWe5ssU8JHjT7BOn/5QWbFVyN63cgbVykQCkbJeWUleauji6mu4P3ZJlW5hshRag=="],
-
-    "opencode-matrixx-windows-x64": ["opencode-matrixx-windows-x64@1.1.1", "", { "os": "win32", "cpu": "x64", "bin": { "matrixx": "bin/matrixx.exe" } }, "sha512-n47my1A6zjJZxn7UlaeaMH6QTht6rxJnE77DEBHBHEnVr/DimYDaagPFeqhu/xfAoo085jACaaeEVrh6mvdNYQ=="],
+    "opencode-matrixx-windows-x64": ["opencode-matrixx-windows-x64@2.1.0", "", { "os": "win32", "cpu": "x64", "bin": { "matrixx": "bin/matrixx.exe" } }, "sha512-/s3Qpic7MljsYYoaW9uwVG8jOym05xM1nQtQPrJ5U8iq5e3gQx61BVjGz5zApvPj9x9jktut0z8Bf/764fCuKA=="],
 
     "parseurl": ["parseurl@1.3.3", "", {}, "sha512-CiyeOxFT/JZyN5m0z9PfXw4SCBJ6Sygz1Dpl0wqjlhDEGGBP1GnsUVEL0p63hoG1fcj3fHynXi9NYO4nWOL+qQ=="],
 

@@ -18,6 +18,4 @@ export const GIT_COMMAND_TIMEOUT_MS = 5000
 /** Sentinel used when we cannot resolve git metadata for the working dir. */
 export const UNKNOWN_GIT_SHA = "unknown"
 
-/** Canonical list of supported actions (kept in sync with the zod enum). */
-export const HANDOFF_ACTIONS = ["create", "read", "list", "archive"] as const
-export type HandoffAction = (typeof HANDOFF_ACTIONS)[number]
+

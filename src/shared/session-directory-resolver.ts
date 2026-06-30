@@ -11,31 +11,4 @@ export function isWindowsAppDataDirectory(directory: string): boolean {
   })
 }
 
-export function resolveSessionDirectory(options: {
-  parentDirectory: string | null | undefined
-  fallbackDirectory: string
-  platform?: NodeJS.Platform
-  currentWorkingDirectory?: string
-}): string {
-  const {
-    parentDirectory,
-    fallbackDirectory,
-    platform = process.platform,
-    currentWorkingDirectory = process.cwd(),
-  } = options
 
-  const sessionDirectory = parentDirectory ?? fallbackDirectory
-  if (platform !== "win32") {
-    return sessionDirectory
-  }
-
-  if (!isWindowsAppDataDirectory(sessionDirectory)) {
-    return sessionDirectory
-  }
-
-  if (isWindowsAppDataDirectory(currentWorkingDirectory)) {
-    return sessionDirectory
-  }
-
-  return currentWorkingDirectory
-}

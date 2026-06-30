@@ -1,6 +1,6 @@
 import { describe, expect, test } from "bun:test"
 
-import { isWindowsAppDataDirectory, resolveSessionDirectory } from "./session-directory-resolver"
+import { isWindowsAppDataDirectory } from "./session-directory-resolver"
 
 describe("session-directory-resolver", () => {
   describe("isWindowsAppDataDirectory", () => {
@@ -46,56 +46,6 @@ describe("session-directory-resolver", () => {
 
       //#then
       expect(result).toBe(false)
-    })
-  })
-
-  describe("resolveSessionDirectory", () => {
-    test("uses process working directory on Windows when parent directory drifts to AppData", () => {
-      //#given
-      const options = {
-        parentDirectory: "C:\\Users\\test\\AppData\\Local\\ai.opencode.desktop",
-        fallbackDirectory: "C:\\Users\\test\\AppData\\Roaming\\opencode",
-        platform: "win32" as const,
-        currentWorkingDirectory: "D:\\projects\\matrixx",
-      }
-
-      //#when
-      const result = resolveSessionDirectory(options)
-
-      //#then
-      expect(result).toBe("D:\\projects\\matrixx")
-    })
-
-    test("keeps AppData directory when current working directory is also AppData", () => {
-      //#given
-      const options = {
-        parentDirectory: "C:\\Users\\test\\AppData\\Local\\ai.opencode.desktop",
-        fallbackDirectory: "C:\\Users\\test\\AppData\\Roaming\\opencode",
-        platform: "win32" as const,
-        currentWorkingDirectory: "C:\\Users\\test\\AppData\\Local\\Temp",
-      }
-
-      //#when
-      const result = resolveSessionDirectory(options)
-
-      //#then
-      expect(result).toBe("C:\\Users\\test\\AppData\\Local\\ai.opencode.desktop")
-    })
-
-    test("keeps original directory outside Windows", () => {
-      //#given
-      const options = {
-        parentDirectory: "/tmp/opencode",
-        fallbackDirectory: "/workspace/project",
-        platform: "darwin" as const,
-        currentWorkingDirectory: "/workspace/project",
-      }
-
-      //#when
-      const result = resolveSessionDirectory(options)
-
-      //#then
-      expect(result).toBe("/tmp/opencode")
     })
   })
 })

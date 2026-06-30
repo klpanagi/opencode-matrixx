@@ -9,7 +9,7 @@ export function removeCodeBlocks(text: string): string {
   return text.replace(CODE_BLOCK_PATTERN, "")
 }
 
-function parseSlashCommand(text: string): ParsedSlashCommand | null {
+export function parseSlashCommand(text: string): ParsedSlashCommand | null {
   const trimmed = text.trim()
 
   if (!trimmed.startsWith("/")) {
@@ -29,7 +29,7 @@ function parseSlashCommand(text: string): ParsedSlashCommand | null {
   }
 }
 
-function isExcludedCommand(command: string): boolean {
+export function isExcludedCommand(command: string): boolean {
   return EXCLUDED_COMMANDS.has(command.toLowerCase())
 }
 

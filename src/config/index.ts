@@ -6,7 +6,7 @@ export type {
   AgentOverrideConfig,
   AgentOverrides,
   BuiltinCommandName,
-  DependencyAuditConfig,
+
   EnvFileGuardConfig,
   ExperimentalConfig,
   HookName,
@@ -24,7 +24,7 @@ export type {
   TmuxLayout,
 } from "./schema"
 export {
-  AgentNameSchema,
+
   AgentOverrideConfigSchema,
   AgentOverridesSchema,
   BuiltinCommandNameSchema,
