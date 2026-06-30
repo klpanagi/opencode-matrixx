@@ -3,16 +3,16 @@ import type { BuiltinSkill } from "../types"
 const REVIEW_WORK_SKILL_NAME = "review-work"
 
 const REVIEW_WORK_SKILL_DESCRIPTION =
-  "Post-implementation review orchestrator. Launches 5 parallel background sub-agents: Oracle (goal/constraint verification), Oracle (code quality), Oracle (security), unspecified-high (hands-on QA execution), unspecified-high (context mining from GitHub/git/Slack/Notion). All must pass for review to pass. MUST USE after completing any significant implementation work. Triggers: 'review work', 'review my work', 'review changes', 'QA my work', 'verify implementation', 'check my work', 'validate changes', 'post-implementation review'."
+  "Post-implementation review orchestrator. Launches 6 parallel background sub-agents: Oracle (goal/constraint verification), Oracle (code quality), Oracle (security), unspecified-high (hands-on QA execution), unspecified-high (context mining from GitHub/git/Slack/Notion), unspecified-high (AI slop detection). All must pass for review to pass. MUST USE after completing any significant implementation work. Triggers: 'review work', 'review my work', 'review changes', 'QA my work', 'verify implementation', 'check my work', 'validate changes', 'post-implementation review'."
 
 export const reviewWorkSkill: BuiltinSkill = {
   name: REVIEW_WORK_SKILL_NAME,
   description: REVIEW_WORK_SKILL_DESCRIPTION,
   template: `# Review Work - 5-Agent Parallel Review Orchestrator
 
-Launch 5 specialized sub-agents in parallel to review completed implementation work from every angle. All 5 must pass for the review to pass. If even ONE fails, the review fails.
+Launch 6 specialized sub-agents in parallel to review completed implementation work from every angle. All 6 must pass for the review to pass. If even ONE fails, the review fails.
 
-The 5 agents cover complementary concerns - together they form a comprehensive review that no single reviewer could match:
+The 6 agents cover complementary concerns - together they form a comprehensive review that no single reviewer could match:
 
 | # | Agent | Type | Role | Focus Level |
 |---|-------|------|------|-------------|
@@ -21,6 +21,7 @@ The 5 agents cover complementary concerns - together they form a comprehensive r
 | 3 | Code Reviewer | Oracle | Is the code well-written? | MAIN |
 | 4 | Security Auditor | Oracle | Is it secure? | SUB |
 | 5 | Context Miner | unspecified-high | Did we miss any context? | MAIN |
+| 6 | AI Slop Detector | unspecified-high | Remove AI-generated code smells | SUP |
 
 ---
 
@@ -354,9 +355,54 @@ OUTPUT FORMAT:
 
 ---
 
+### Agent 6: AI Slop Detection (unspecified-high) - SUP
+
+\`\`\`
+task(
+  category="unspecified-high",
+  run_in_background=true,
+  load_skills=["remove-ai-slops"],
+  description="Detect AI-generated code smells in changes",
+  prompt="""
+<review_type>AI SLOP DETECTION (supplementary)</review_type>
+
+<original_goal>
+{GOAL}
+</original_goal>
+
+<changed_files>
+{CHANGED_FILES}
+</changed_files>
+
+<background>
+{BACKGROUND}
+</background>
+
+Review the changed files for AI-generated code smells. Load and follow the \`remove-ai-slops\` skill.
+
+Run the scan across all 7 categories:
+1. Verbose Comments — comments that restate the obvious
+2. Redundant Error Handling — catch-and-rethrow, empty catches, redundant null checks
+3. Over-Engineered Patterns — unnecessary abstractions, single-use interfaces
+4. Generic AI Phrasing — "It's worth noting...", "Let's step through..."
+5. Cargo-Cult Boilerplate — repeated identical blocks, TODO stubs
+6. Padding/Verbosity — empty JSDoc, redundant type annotations
+7. Weird Codegen Artifacts — mixed import styles, inconsistent patterns
+
+OUTPUT FORMAT:
+<verdict>PASS or FAIL (FAIL only if HIGH severity issues found)</verdict>
+<severity>NONE / LOW / MEDIUM / HIGH</severity>
+<summary>1-3 sentence overall assessment</summary>
+<findings>- [CATEGORY_N] [HIGH/MEDIUM/LOW] Description - File:path:line - Current / Suggestion</findings>
+<recommendations>Suggested fixes for findings. Empty if PASS.</recommendations>
+""")
+\`\`\`
+
+---
+
 ## Phase 2: Wait & Collect
 
-After launching all 5 agents in one turn, **end your response**. Wait for system notifications as each agent completes.
+After launching all 6 agents in one turn, **end your response**. Wait for system notifications as each agent completes.
 
 Collect via \`background_output(task_id="...")\` as each completes. Track verdicts:
 
@@ -367,14 +413,15 @@ Collect via \`background_output(task_id="...")\` as each completes. Track verdic
 | 3. Code Quality | pending | - |
 | 4. Security | pending | - |
 | 5. Context Mining | pending | - |
+| 6. AI Slop Detection | pending | - |
 
-Do NOT deliver the final report until ALL 5 have completed.
+Do NOT deliver the final report until ALL 6 have completed.
 
 ---
 
 ## Phase 3: Deliver Verdict
 
-ALL 5 returned PASS → **REVIEW PASSED**
+ALL 6 returned PASS → **REVIEW PASSED**
 ANY returned FAIL → **REVIEW FAILED**
 
 Final report format:
@@ -391,6 +438,7 @@ Final report format:
 | 3 | Code Quality | Oracle | PASS/FAIL | HIGH/MED/LOW |
 | 4 | Security (supplementary) | Oracle | PASS/FAIL | Severity |
 | 5 | Context Mining | unspecified-high | PASS/FAIL | HIGH/MED/LOW |
+| 6 | AI Slop Detection (supplementary) | unspecified-high | PASS/FAIL | NONE/LOW/MED/HIGH |
 
 ## Blocking Issues
 [Aggregated from all agents - deduplicated, prioritized]

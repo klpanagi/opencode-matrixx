@@ -47,6 +47,8 @@ export const BuiltinSkillNameSchema = z.enum([
   "quality-gate",
   "software-dev",
   "matrixx-self-config",
+  "ulw-research",
+  "remove-ai-slops",
 ])
 
 export type AgentName = z.infer<typeof BuiltinAgentNameSchema>
