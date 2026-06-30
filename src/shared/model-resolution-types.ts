@@ -8,6 +8,7 @@ export type ModelResolutionRequest = {
   }
   constraints: {
     availableModels: Set<string>
+    connectedProviders?: string[]
   }
   policy?: {
     fallbackChain?: FallbackEntry[]

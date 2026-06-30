@@ -1,5 +1,6 @@
 import type { FallbackEntry } from "./model-requirements"
 import { resolveModelPipeline } from "./model-resolution-pipeline"
+import type { ModelResolutionProvenance } from "./model-resolution-types"
 
 export type ModelResolutionInput = {
 	userModel?: string
@@ -7,15 +8,12 @@ export type ModelResolutionInput = {
 	systemDefault?: string
 }
 
-export type ModelSource =
-	| "override"
-	| "category-default"
-	| "provider-fallback"
-	| "system-default"
+/** @deprecated Use ModelResolutionProvenance from model-resolution-types.ts */
+export type ModelSource = ModelResolutionProvenance
 
 export type ModelResolutionResult = {
 	model: string
-	source: ModelSource
+	source: ModelResolutionProvenance
 	variant?: string
 }
 
