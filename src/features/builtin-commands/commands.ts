@@ -7,6 +7,7 @@ import { PICKUP_TEMPLATE } from "./templates/pickup"
 import { PROFILE_TEMPLATE } from "./templates/profile"
 import { REFACTOR_TEMPLATE } from "./templates/refactor"
 import { REMOVE_DEADCODE_TEMPLATE } from "./templates/remove-deadcode"
+import { RESEARCH_TEMPLATE } from "./templates/research"
 import { START_WORK_TEMPLATE } from "./templates/start-work"
 import { STOP_CONTINUATION_TEMPLATE } from "./templates/stop-continuation"
 import type { BuiltinCommandName, BuiltinCommands } from "./types"
@@ -137,6 +138,18 @@ ${END_ULTRAWORK_TEMPLATE}
 $ARGUMENTS
 </user-request>`,
     argumentHint: "[optional follow-up task]",
+  },
+  research: {
+    description:
+      "(builtin) Saturation research with parallel swarms and convergence — code, docs, web, and OSS repos",
+    template: `<command-instruction>
+${RESEARCH_TEMPLATE}
+</command-instruction>
+
+<user-request>
+$ARGUMENTS
+</user-request>`,
+    argumentHint: "<topic> [--scope=code|docs|web|oss|all] [--max-rounds=N]",
   },
 }
 
