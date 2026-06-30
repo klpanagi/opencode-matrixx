@@ -15,7 +15,7 @@ export async function showModelCacheWarningIfNeeded(ctx: PluginInput): Promise<v
         duration: 10000,
       },
     })
-    .catch(() => {})
+    .catch((err) => { log("[auto-update] Model cache warning toast failed:", err) })
 
   log("[auto-update-checker] Model cache warning shown")
 }

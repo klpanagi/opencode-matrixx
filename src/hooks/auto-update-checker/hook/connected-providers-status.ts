@@ -8,7 +8,7 @@ import { log } from "../../../shared/logger"
 export async function updateAndShowConnectedProvidersCacheStatus(ctx: PluginInput): Promise<void> {
   const hadCache = hasConnectedProvidersCache()
 
-  updateConnectedProvidersCache(ctx.client).catch(() => {})
+  updateConnectedProvidersCache(ctx.client).catch((err) => { log("[auto-update] Provider cache update failed:", err) })
 
   if (!hadCache) {
     await ctx.client.tui
@@ -20,7 +20,7 @@ export async function updateAndShowConnectedProvidersCacheStatus(ctx: PluginInpu
           duration: 8000,
         },
       })
-      .catch(() => {})
+      .catch((err) => { log("[auto-update] Providers toast failed:", err) })
 
     log("[auto-update-checker] Connected providers cache toast shown (first run)")
   } else {

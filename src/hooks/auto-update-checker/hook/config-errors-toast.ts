@@ -16,7 +16,7 @@ export async function showConfigErrorsIfAny(ctx: PluginInput): Promise<void> {
         duration: 10000,
       },
     })
-    .catch(() => {})
+    .catch((err) => { log("[auto-update] Config errors toast failed:", err) })
 
   log(`[auto-update-checker] Config load errors shown: ${errors.length} error(s)`) 
   clearConfigLoadErrors()

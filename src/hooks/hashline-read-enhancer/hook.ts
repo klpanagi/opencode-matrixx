@@ -1,4 +1,5 @@
 import type { PluginInput } from "@opencode-ai/plugin"
+import { isReadTool, isWriteTool } from "../../shared"
 import { computeLineHash } from "../../tools/hashline-edit/hash-computation"
 
 const WRITE_SUCCESS_MARKER = "File written successfully."
@@ -14,14 +15,6 @@ const CONTENT_CLOSE_TAG = "</content>"
 const FILE_OPEN_TAG = "<file>"
 const FILE_CLOSE_TAG = "</file>"
 const OPENCODE_LINE_TRUNCATION_SUFFIX = "... (line truncated to 2000 chars)"
-
-function isReadTool(toolName: string): boolean {
-  return toolName.toLowerCase() === "read"
-}
-
-function isWriteTool(toolName: string): boolean {
-  return toolName.toLowerCase() === "write"
-}
 
 function shouldProcess(config: HashlineReadEnhancerConfig): boolean {
   return config.hashline_edit?.enabled ?? false

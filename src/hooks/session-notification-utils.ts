@@ -1,3 +1,5 @@
+import { log } from "../shared/logger"
+
 type Platform = "darwin" | "linux" | "win32" | "unsupported"
 
 async function findCommand(commandName: string): Promise<string | null> {
@@ -35,13 +37,13 @@ export const getAplayPath = createCommandFinder("aplay")
 
 export function startBackgroundCheck(platform: Platform): void {
   if (platform === "darwin") {
-    getOsascriptPath().catch(() => {})
-    getAfplayPath().catch(() => {})
+    getOsascriptPath().catch((err) => { log("[notification] Background check failed for osascript:", err) })
+    getAfplayPath().catch((err) => { log("[notification] Background check failed for afplay:", err) })
   } else if (platform === "linux") {
-    getNotifySendPath().catch(() => {})
-    getPaplayPath().catch(() => {})
-    getAplayPath().catch(() => {})
+    getNotifySendPath().catch((err) => { log("[notification] Background check failed for notify-send:", err) })
+    getPaplayPath().catch((err) => { log("[notification] Background check failed for paplay:", err) })
+    getAplayPath().catch((err) => { log("[notification] Background check failed for aplay:", err) })
   } else if (platform === "win32") {
-    getPowershellPath().catch(() => {})
+    getPowershellPath().catch((err) => { log("[notification] Background check failed for powershell:", err) })
   }
 }

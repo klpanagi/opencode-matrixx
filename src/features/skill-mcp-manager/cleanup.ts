@@ -1,3 +1,4 @@
+import { log } from "../../shared/logger"
 import type { ManagedClient, SkillMcpManagerState } from "./types"
 
 async function closeManagedClient(managed: ManagedClient): Promise<void> {
@@ -32,7 +33,7 @@ export function registerProcessCleanup(state: SkillMcpManagerState): void {
   // Use void + catch to trigger async cleanup without awaiting it in the signal handler.
 
   const register = (signal: NodeJS.Signals) => {
-    const listener = () => void cleanup().catch(() => {})
+    const listener = () => void cleanup().catch((err) => { log("[skill-mcp] Signal handler cleanup failed:", err) })
     state.cleanupHandlers.push({ signal, listener })
     process.on(signal, listener)
   }
@@ -57,7 +58,7 @@ export function startCleanupTimer(state: SkillMcpManagerState): void {
   if (state.cleanupInterval) return
 
   state.cleanupInterval = setInterval(() => {
-    void cleanupIdleClients(state).catch(() => {})
+    void cleanupIdleClients(state).catch((err) => { log("[skill-mcp] Idle client cleanup failed:", err) })
   }, 60_000)
 
   state.cleanupInterval.unref()

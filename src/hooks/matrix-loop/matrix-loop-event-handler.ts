@@ -130,7 +130,7 @@ export function createMatrixLoopEventHandler(ctx: PluginInput, options: MatrixLo
 
 						if (failedCount >= maxRetries) {
 							options.loopState.clear()
-							await ctx.client.tui.showToast({ body: { title: "Matrix Loop Complete", message: `Force-completed after ${failedCount} failed verification(s)`, variant: "warning", duration: 5000 } }).catch(() => {})
+							await ctx.client.tui.showToast({ body: { title: "Matrix Loop Complete", message: `Force-completed after ${failedCount} failed verification(s)`, variant: "warning", duration: 5000 } }).catch((err) => { log("[matrix-loop] Force complete toast failed:", err) })
 							return
 						}
 
@@ -151,14 +151,14 @@ export function createMatrixLoopEventHandler(ctx: PluginInput, options: MatrixLo
 					options.loopState.clear()
 					const title = state.ultrawork ? "ULTRAWORK LOOP COMPLETE!" : "Matrix Loop Complete!"
 					const message = state.ultrawork ? `JUST ULW ULW! Task completed after ${state.iteration} iteration(s)` : `Task completed after ${state.iteration} iteration(s)`
-					await ctx.client.tui.showToast({ body: { title, message, variant: "success", duration: 5000 } }).catch(() => {})
+					await ctx.client.tui.showToast({ body: { title, message, variant: "success", duration: 5000 } }).catch((err) => { log("[matrix-loop] Loop complete toast failed:", err) })
 					return
 				}
 
 				if (state.iteration >= state.max_iterations) {
 					log(`[${HOOK_NAME}] Max iterations reached`, { sessionID, iteration: state.iteration, max: state.max_iterations })
 					options.loopState.clear()
-					await ctx.client.tui.showToast({ body: { title: "Matrix Loop Stopped", message: `Max iterations (${state.max_iterations}) reached without completion`, variant: "warning", duration: 5000 } }).catch(() => {})
+					await ctx.client.tui.showToast({ body: { title: "Matrix Loop Stopped", message: `Max iterations (${state.max_iterations}) reached without completion`, variant: "warning", duration: 5000 } }).catch((err) => { log("[matrix-loop] Max iterations toast failed:", err) })
 					return
 				}
 
@@ -168,7 +168,7 @@ export function createMatrixLoopEventHandler(ctx: PluginInput, options: MatrixLo
 					return
 				}
 				log(`[${HOOK_NAME}] Continuing loop`, { sessionID, iteration: newState.iteration, max: newState.max_iterations })
-				await ctx.client.tui.showToast({ body: { title: "Matrix Loop", message: `Iteration ${newState.iteration}/${newState.max_iterations}`, variant: "info", duration: 2000 } }).catch(() => {})
+				await ctx.client.tui.showToast({ body: { title: "Matrix Loop", message: `Iteration ${newState.iteration}/${newState.max_iterations}`, variant: "info", duration: 2000 } }).catch((err) => { log("[matrix-loop] Iteration toast failed:", err) })
 
 				try {
 					await injectContinuationPrompt(ctx, { sessionID, prompt: buildContinuationPrompt(newState), directory: options.directory, apiTimeoutMs: options.apiTimeoutMs })

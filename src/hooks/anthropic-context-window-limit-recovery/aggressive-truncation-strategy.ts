@@ -53,7 +53,7 @@ export async function runAggressiveTruncationStrategy(params: {
         duration: 4000,
       },
     })
-    .catch(() => {})
+    .catch((err) => { log("[auto-compact] Toast failed:", err) })
 
   log("[auto-compact] aggressive truncation completed", aggressiveResult)
 
@@ -69,7 +69,9 @@ export async function runAggressiveTruncationStrategy(params: {
           },
           query: { directory: params.directory },
         })
-      } catch {}
+      } catch (err) {
+        log("[auto-compact] Failed to send continue prompt:", err)
+      }
     }, 500)
 
     return { handled: true, nextTruncateAttempt }

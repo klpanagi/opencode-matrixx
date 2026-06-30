@@ -1,5 +1,7 @@
 import { spawn } from "bun"
 
+import { log } from "../../shared/logger"
+
 let tmuxPath: string | null = null
 let initPromise: Promise<string | null> | null = null
 
@@ -66,6 +68,6 @@ export function getCachedTmuxPath(): string | null {
 export function startBackgroundCheck(): void {
   if (!initPromise) {
     initPromise = getTmuxPath()
-    initPromise.catch(() => {})
+    initPromise.catch((err) => { log("[interactive-bash] Background tmux path resolution failed:", err) })
   }
 }

@@ -143,7 +143,7 @@ export function createPostCompactionDegradationMonitor(args: {
             duration: 5000,
           },
         })
-        .catch(() => {})
+        .catch((err) => { log("[preemptive-compaction] Degradation toast failed:", err) })
 
       await withTimeout(
         client.session.summarize({

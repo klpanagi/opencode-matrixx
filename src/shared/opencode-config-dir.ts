@@ -104,33 +104,4 @@ export function getOpenCodeConfigPaths(options: OpenCodeConfigDirOptions): OpenC
   }
 }
 
-export function detectExistingConfigDir(binary: OpenCodeBinaryType, version?: string | null): string | null {
-  const locations: string[] = []
 
-  const envConfigDir = process.env.OPENCODE_CONFIG_DIR?.trim()
-  if (envConfigDir) {
-    locations.push(resolve(envConfigDir))
-  }
-
-  if (binary === "opencode-desktop") {
-    const identifier = isDevBuild(version) ? TAURI_APP_IDENTIFIER_DEV : TAURI_APP_IDENTIFIER
-    locations.push(getTauriConfigDir(identifier))
-
-    if (isDevBuild(version)) {
-      locations.push(getTauriConfigDir(TAURI_APP_IDENTIFIER))
-    }
-  }
-
-  locations.push(getCliConfigDir())
-
-  for (const dir of locations) {
-    const configJson = join(dir, "opencode.json")
-    const configJsonc = join(dir, "opencode.jsonc")
-
-    if (existsSync(configJson) || existsSync(configJsonc)) {
-      return dir
-    }
-  }
-
-  return null
-}

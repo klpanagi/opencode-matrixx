@@ -15,7 +15,7 @@ export async function showUpdateAvailableToast(
         duration: 8000,
       },
     })
-    .catch(() => {})
+    .catch((err) => { log("[auto-update] Update available toast failed:", err) })
   log(`[auto-update-checker] Update available toast shown: v${latestVersion}`)
 }
 
@@ -29,6 +29,6 @@ export async function showAutoUpdatedToast(ctx: PluginInput, oldVersion: string,
         duration: 8000,
       },
     })
-    .catch(() => {})
+    .catch((err) => { log("[auto-update] Auto-updated toast failed:", err) })
   log(`[auto-update-checker] Auto-updated toast shown: v${oldVersion} → v${newVersion}`)
 }

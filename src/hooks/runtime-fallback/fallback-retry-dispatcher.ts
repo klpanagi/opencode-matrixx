@@ -34,7 +34,7 @@ export async function dispatchFallbackRetry(
           duration: 5000,
         },
       })
-      .catch(() => {})
+      .catch((err) => { log("[runtime-fallback] Fallback notification toast failed:", err) })
   }
 
   if (result.success && result.newModel) {

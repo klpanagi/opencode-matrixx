@@ -1,5 +1,5 @@
 import type { PluginInput } from "@opencode-ai/plugin"
-import { log } from "../../shared"
+import { isReadTool, log } from "../../shared"
 import { getSessionModel } from "../../shared/session-model-state"
 import { parseImageDimensions } from "./image-dimensions"
 import { calculateTargetDimensions, resizeImage } from "./image-resizer"
@@ -13,10 +13,6 @@ interface ResizeEntry {
   originalDims: ImageDimensions | null
   resizedDims: ImageDimensions | null
   status: "resized" | "within-limits" | "resize-skipped" | "unknown-dims"
-}
-
-function isReadTool(toolName: string): boolean {
-  return toolName.toLowerCase() === "read"
 }
 
 function asRecord(value: unknown): Record<string, unknown> | null {

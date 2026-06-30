@@ -1,4 +1,5 @@
 import type { PluginInput } from "@opencode-ai/plugin"
+import { log } from "../../../shared/logger"
 
 const SISYPHUS_SPINNER = ["·", "•", "●", "○", "◌", "◦", " "]
 
@@ -18,7 +19,7 @@ export async function showSpinnerToast(ctx: PluginInput, version: string, messag
           duration: frameInterval + 50,
         },
       })
-      .catch(() => {})
+      .catch((err) => { log("[auto-update] Spinner toast failed:", err) })
 
     await new Promise((resolve) => setTimeout(resolve, frameInterval))
   }

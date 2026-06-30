@@ -1,5 +1,6 @@
 import type { PluginInput } from "@opencode-ai/plugin";
 import { subagentSessions } from "../../features/claude-code-session-state";
+import { log } from "../../shared/logger";
 import { buildSessionReminderMessage } from "./constants";
 import { extractSessionNameFromTokens, findSubcommand, tokenizeCommand } from "./parser";
 import { getOrCreateState, isOmoSession, killAllTrackedSessions } from "./state-manager";
@@ -39,7 +40,7 @@ export function createInteractiveBashSessionHook(ctx: PluginInput) {
     await killAllTrackedSessions(state);
     
     for (const sessionId of subagentSessions) {
-      ctx.client.session.abort({ path: { id: sessionId } }).catch(() => {})
+      ctx.client.session.abort({ path: { id: sessionId } }).catch((err) => { log("[interactive-bash] Session abort failed:", err) })
     }
   }
 

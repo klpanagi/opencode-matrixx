@@ -41,7 +41,6 @@ hooks/
 ├── stop-continuation-guard/      # Guards stop continuation (214 lines)
 ├── subagent-question-blocker/    # Blocks subagent questions (112 lines)
 ├── task-notepad/                 # Task-scoped notepad persistence
-├── task-reminder/                # Task progress reminders (210 lines)
 ├── task-resume-info/             # Resume info for cancelled tasks (39 lines)
 ├── tasks-todowrite-disabler/     # Disables TodoWrite when tasks active (202 lines)
 ├── think-mode/                   # Dynamic thinking budget (1365 lines)

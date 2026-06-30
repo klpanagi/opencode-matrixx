@@ -47,11 +47,11 @@ export function tokenizeCommand(cmd: string): string[] {
  * Normalize session name by stripping :window and .pane suffixes
  * e.g., "matrixx-x:1" -> "matrixx-x", "matrixx-x:1.2" -> "matrixx-x"
  */
-export function normalizeSessionName(name: string): string {
+function normalizeSessionName(name: string): string {
   return name.split(":")[0].split(".")[0]
 }
 
-export function findFlagValue(tokens: string[], flag: string): string | null {
+function findFlagValue(tokens: string[], flag: string): string | null {
   for (let i = 0; i < tokens.length - 1; i++) {
     if (tokens[i] === flag) return tokens[i + 1]
   }

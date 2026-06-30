@@ -1,3 +1,5 @@
+import { log } from "../../shared/logger"
+
 type ManagedClientForCleanup = {
   client: {
     stop: () => Promise<void>
@@ -16,7 +18,7 @@ export function registerLspManagerProcessCleanup(options: ProcessCleanupOptions)
     for (const [, managed] of options.getClients()) {
       try {
         // Fire-and-forget during sync exit - process is terminating
-        void managed.client.stop().catch(() => {})
+        void managed.client.stop().catch((err) => { log("[lsp] Sync cleanup failed:", err) })
       } catch {}
     }
     options.clearClients()
@@ -27,7 +29,7 @@ export function registerLspManagerProcessCleanup(options: ProcessCleanupOptions)
   const asyncCleanup = async () => {
     const stopPromises: Promise<void>[] = []
     for (const [, managed] of options.getClients()) {
-      stopPromises.push(managed.client.stop().catch(() => {}))
+      stopPromises.push(managed.client.stop().catch((err) => { log("[lsp] Async cleanup failed:", err); return }))
     }
     await Promise.allSettled(stopPromises)
     options.clearClients()
@@ -37,9 +39,9 @@ export function registerLspManagerProcessCleanup(options: ProcessCleanupOptions)
   process.on("exit", syncCleanup)
 
   // Don't call process.exit() here; other handlers (background-agent manager) handle final exit.
-  process.on("SIGINT", () => void asyncCleanup().catch(() => {}))
-  process.on("SIGTERM", () => void asyncCleanup().catch(() => {}))
+  process.on("SIGINT", () => void asyncCleanup().catch((err) => { log("[lsp] Signal handler cleanup failed:", err) }))
+  process.on("SIGTERM", () => void asyncCleanup().catch((err) => { log("[lsp] Signal handler cleanup failed:", err) }))
   if (process.platform === "win32") {
-    process.on("SIGBREAK", () => void asyncCleanup().catch(() => {}))
+    process.on("SIGBREAK", () => void asyncCleanup().catch((err) => { log("[lsp] Signal handler cleanup failed:", err) }))
   }
 }

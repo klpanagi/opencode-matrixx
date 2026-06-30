@@ -1,5 +1,6 @@
 import { existsSync } from "node:fs"
 
+import { log } from "../../shared/logger"
 import { findSgCliPathSync, setSgCliPath } from "./constants"
 import { ensureAstGrepBinary } from "./downloader"
 
@@ -39,7 +40,7 @@ export async function getAstGrepPath(): Promise<string | null> {
 export function startBackgroundInit(): void {
 	if (!initPromise) {
 		initPromise = getAstGrepPath()
-		initPromise.catch(() => {})
+		initPromise.catch((err) => { log("[ast-grep] Background binary resolution failed:", err) })
 	}
 }
 

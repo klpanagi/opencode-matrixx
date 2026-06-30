@@ -1,3 +1,4 @@
+import { log } from "../../shared/logger"
 import type { Client } from "./client"
 import { fixEmptyMessages } from "./empty-content-recovery"
 import { sanitizeEmptyMessagesBeforeSummarize } from "./message-builder"
@@ -42,7 +43,7 @@ export async function runSummarizeRetryStrategy(params: {
             duration: 10000,
           },
         })
-        .catch(() => {})
+        .catch((err) => { log("[auto-compact] Toast failed:", err) })
       return
     }
   }
@@ -72,7 +73,7 @@ export async function runSummarizeRetryStrategy(params: {
               duration: 3000,
             },
           })
-          .catch(() => {})
+          .catch((err) => { log("[auto-compact] Toast failed:", err) })
 
         const summarizeBody = { providerID, modelID, auto: true }
         await params.client.session.summarize({
@@ -102,7 +103,7 @@ export async function runSummarizeRetryStrategy(params: {
             duration: 3000,
           },
         })
-        .catch(() => {})
+        .catch((err) => { log("[auto-compact] Toast failed:", err) })
     }
   }
 
@@ -116,5 +117,5 @@ export async function runSummarizeRetryStrategy(params: {
         duration: 5000,
       },
     })
-    .catch(() => {})
+    .catch((err) => { log("[auto-compact] Toast failed:", err) })
 }

@@ -158,7 +158,7 @@ session_id: ${sessionID}
       subagentSessions.delete(syncSessionID)
       // Abort the sync session to prevent todo-continuation enforcer
       // from re-awakening a completed sync agent's session.
-      client.session.abort({ path: { id: syncSessionID } }).catch(() => {})
+      client.session.abort({ path: { id: syncSessionID } }).catch((err) => { log("[delegate-task] Sync session abort failed:", err) })
     }
   }
 }

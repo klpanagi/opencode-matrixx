@@ -38,7 +38,6 @@ features/
 ├── hook-message-injector/      # System message injection (4 files)
 ├── task-toast-manager/         # Task progress notifications (4 files)
 ├── mission-state/              # Persistent state for multi-step ops (5 files)
-├── run-continuation-state/     # Run continuation state tracking
 └── tool-metadata-store/        # Tool execution metadata caching (3 files)
 ```
 

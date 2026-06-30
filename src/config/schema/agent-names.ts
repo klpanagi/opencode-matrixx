@@ -49,7 +49,6 @@ export const BuiltinSkillNameSchema = z.enum([
   "matrixx-self-config",
 ])
 
-export const AgentNameSchema = BuiltinAgentNameSchema
-export type AgentName = z.infer<typeof AgentNameSchema>
+export type AgentName = z.infer<typeof BuiltinAgentNameSchema>
 
-export type BuiltinSkillName = z.infer<typeof BuiltinSkillNameSchema>
+type BuiltinSkillName = z.infer<typeof BuiltinSkillNameSchema>

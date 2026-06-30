@@ -1,4 +1,5 @@
 import type { PluginInput } from "@opencode-ai/plugin"
+import { log } from "../../shared/logger"
 import type { ConcurrencyManager } from "../background-agent/concurrency"
 import type { ModelFallbackInfo, TaskStatus, TrackedTask } from "./types"
 
@@ -171,7 +172,7 @@ export class TaskToastManager {
         variant: "info",
         duration: running.length + queued.length > 2 ? 5000 : 3000,
       },
-    }).catch(() => {})
+    }).catch((err) => { log("[task-toast] Toast failed:", err) })
   }
 
   /**
@@ -198,7 +199,7 @@ export class TaskToastManager {
         variant: "success",
         duration: 5000,
       },
-    }).catch(() => {})
+    }).catch((err) => { log("[task-toast] Toast failed:", err) })
   }
 }
 

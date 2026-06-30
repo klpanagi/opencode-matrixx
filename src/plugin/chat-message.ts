@@ -9,6 +9,7 @@ import {
   resolveAgentVariant,
   resolveVariantForModel,
 } from "../shared/agent-variant"
+import { log } from "../shared/logger"
 import type { PluginContext } from "./types"
 
 type FirstMessageVariantGate = {
@@ -93,7 +94,7 @@ export function createChatMessageHandler(args: {
             duration: 6000,
           },
         })
-        .catch(() => {})
+        .catch((err) => { log("[plugin] Provider cache toast failed:", err) })
     }
 
     if (hooks.matrixLoop) {

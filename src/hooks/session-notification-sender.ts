@@ -1,5 +1,6 @@
 import { platform } from "node:os"
 import type { PluginInput } from "@opencode-ai/plugin"
+import { log } from "../shared/logger"
 import { buildWindowsToastScript, escapeAppleScriptText, escapePowerShellSingleQuotedText } from "./session-notification-formatting"
 import {
   getAfplayPath,
@@ -45,7 +46,7 @@ export async function sendSessionNotification(
       const escapedTitle = escapeAppleScriptText(title)
       const escapedMessage = escapeAppleScriptText(message)
       await ctx.$`${osascriptPath} -e ${`display notification "${escapedMessage}" with title "${escapedTitle}"`}`.catch(
-        () => {}
+        (err) => { log("[notification] macOS notification failed:", err) }
       )
       break
     }
@@ -53,7 +54,7 @@ export async function sendSessionNotification(
       const notifySendPath = await getNotifySendPath()
       if (!notifySendPath) return
 
-      await ctx.$`${notifySendPath} ${title} ${message} 2>/dev/null`.catch(() => {})
+      await ctx.$`${notifySendPath} ${title} ${message} 2>/dev/null`.catch((err) => { log("[notification] Linux notification failed:", err) })
       break
     }
     case "win32": {
@@ -61,7 +62,7 @@ export async function sendSessionNotification(
       if (!powershellPath) return
 
       const toastScript = buildWindowsToastScript(title, message)
-      await ctx.$`${powershellPath} -Command ${toastScript}`.catch(() => {})
+      await ctx.$`${powershellPath} -Command ${toastScript}`.catch((err) => { log("[notification] Windows notification failed:", err) })
       break
     }
   }
@@ -76,17 +77,17 @@ export async function playSessionNotificationSound(
     case "darwin": {
       const afplayPath = await getAfplayPath()
       if (!afplayPath) return
-      ctx.$`${afplayPath} ${soundPath}`.catch(() => {})
+      ctx.$`${afplayPath} ${soundPath}`.catch((err) => { log("[notification] macOS sound playback failed:", err) })
       break
     }
     case "linux": {
       const paplayPath = await getPaplayPath()
       if (paplayPath) {
-        ctx.$`${paplayPath} ${soundPath} 2>/dev/null`.catch(() => {})
+        ctx.$`${paplayPath} ${soundPath} 2>/dev/null`.catch((err) => { log("[notification] Linux sound playback (paplay) failed:", err) })
       } else {
         const aplayPath = await getAplayPath()
         if (aplayPath) {
-          ctx.$`${aplayPath} ${soundPath} 2>/dev/null`.catch(() => {})
+          ctx.$`${aplayPath} ${soundPath} 2>/dev/null`.catch((err) => { log("[notification] Linux sound playback (aplay) failed:", err) })
         }
       }
       break
@@ -95,7 +96,7 @@ export async function playSessionNotificationSound(
       const powershellPath = await getPowershellPath()
       if (!powershellPath) return
       const escaped = escapePowerShellSingleQuotedText(soundPath)
-      ctx.$`${powershellPath} -Command ${(`(New-Object Media.SoundPlayer '${escaped}').PlaySync()`)}`.catch(() => {})
+      ctx.$`${powershellPath} -Command ${(`(New-Object Media.SoundPlayer '${escaped}').PlaySync()`)}`.catch((err) => { log("[notification] Windows sound playback failed:", err) })
       break
     }
   }

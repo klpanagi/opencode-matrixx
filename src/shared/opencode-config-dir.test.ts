@@ -2,7 +2,6 @@ import { afterEach, beforeEach, describe, expect, test } from "bun:test"
 import { homedir } from "node:os"
 import { join, resolve } from "node:path"
 import {
-  detectExistingConfigDir,
   getOpenCodeConfigDir,
   getOpenCodeConfigPaths,
   isDevBuild,
@@ -289,35 +288,6 @@ describe("opencode-config-dir", () => {
       expect(paths.configJsonc).toBe(join(expectedDir, "opencode.jsonc"))
       expect(paths.packageJson).toBe(join(expectedDir, "package.json"))
       expect(paths.matrixxConfig).toBe(join(expectedDir, "matrixx.json"))
-    })
-  })
-
-  describe("detectExistingConfigDir", () => {
-    test("returns null when no config exists", () => {
-      // given no config files exist
-      Object.defineProperty(process, "platform", { value: "linux" })
-      delete process.env.XDG_CONFIG_HOME
-      delete process.env.OPENCODE_CONFIG_DIR
-
-      // when detectExistingConfigDir is called
-      const result = detectExistingConfigDir("opencode", "1.0.200")
-
-      // then result is either null or a valid string path
-      expect(result === null || typeof result === "string").toBe(true)
-    })
-
-    test("includes OPENCODE_CONFIG_DIR in search locations when set", () => {
-      // given OPENCODE_CONFIG_DIR is set to a custom path
-      process.env.OPENCODE_CONFIG_DIR = "/custom/opencode/path"
-      Object.defineProperty(process, "platform", { value: "linux" })
-      delete process.env.XDG_CONFIG_HOME
-
-      // when detectExistingConfigDir is called
-      const result = detectExistingConfigDir("opencode", "1.0.200")
-
-      // then result is either null (no config file exists) or a valid string path
-      // The important thing is that the function doesn't throw
-      expect(result === null || typeof result === "string").toBe(true)
     })
   })
 })

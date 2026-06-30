@@ -1,5 +1,6 @@
 import type { PluginInput } from "@opencode-ai/plugin";
 import type { ExperimentalConfig } from "../../config";
+import { log } from "../../shared/logger"
 import type { Client } from "./client";
 import {
   runAggressiveTruncationStrategy,
@@ -32,7 +33,7 @@ export async function executeCompact(
           duration: 5000,
         },
       })
-      .catch(() => {});
+      .catch((err) => { log("[auto-compact] Toast failed:", err) });
     return;
   }
   autoCompactState.compactionInProgress.add(sessionID);
