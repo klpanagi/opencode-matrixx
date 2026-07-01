@@ -63,12 +63,10 @@ let initPromise: Promise<string | null> | null = null
  * Will trigger lazy download if binary not found.
  */
 export async function getCommentCheckerPath(): Promise<string | null> {
-  // Return cached path if already resolved
   if (resolvedCliPath !== null) {
     return resolvedCliPath
   }
 
-  // Return existing promise if initialization is in progress
   if (initPromise) {
     return initPromise
   }
@@ -205,7 +203,6 @@ export async function runCommentChecker(input: HookInput, cliPath?: string, cust
     })
 
     try {
-      // Write JSON to stdin
       proc.stdin.write(jsonInput)
       proc.stdin.end()
 
@@ -235,7 +232,6 @@ export async function runCommentChecker(input: HookInput, cliPath?: string, cust
         return { hasComments: true, message: stderr }
       }
 
-      // Error case
       debugLog("unexpected exit code:", exitCode, "stderr:", stderr)
       return { hasComments: false, message: "" }
     } finally {

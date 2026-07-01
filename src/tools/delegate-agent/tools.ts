@@ -45,7 +45,6 @@ export function createDelegateAgent(
       const normalizedAgent = args.subagent_type.toLowerCase() as AllowedAgentType
       args = { ...args, subagent_type: normalizedAgent }
 
-      // Check if agent is disabled
       if (disabledAgents.some((disabled) => disabled.toLowerCase() === normalizedAgent)) {
         return `Error: Agent "${normalizedAgent}" is disabled via disabled_agents configuration. Remove it from disabled_agents in your matrixx.json to use it.`
       }
