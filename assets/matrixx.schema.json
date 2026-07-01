@@ -173,7 +173,10 @@
           "stop-continuation",
           "profile",
           "end-ultrawork",
-          "research"
+          "handoff",
+          "research",
+          "consensus",
+          "ultrawork"
         ]
       }
     },
@@ -4268,8 +4271,15 @@
           "type": "integer",
           "minimum": 10000,
           "maximum": 300000
+        },
+        "enabled": {
+          "default": true,
+          "type": "boolean"
         }
       },
+      "required": [
+        "enabled"
+      ],
       "additionalProperties": false
     },
     "security": {
