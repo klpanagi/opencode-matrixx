@@ -1,5 +1,5 @@
 import type { CommandDefinition } from "../claude-code-command-loader"
-import { CONSENSUS_TEMPLATE } from "./templates/consensus"
+import { ASSEMBLY_TEMPLATE } from "./templates/assembly"
 import { END_ULTRAWORK_TEMPLATE } from "./templates/end-ultrawork"
 import { HANDOFF_TEMPLATE } from "./templates/handoff"
 import { INIT_DEEP_TEMPLATE } from "./templates/init-deep"
@@ -153,11 +153,11 @@ $ARGUMENTS
 </user-request>`,
     argumentHint: "<topic> [--scope=code|docs|web|oss|all] [--max-rounds=N]",
   },
-  consensus: {
+  assembly: {
     description:
-      "(builtin) Toggle consensus tool enable/disable for the current session",
+      "(builtin) Toggle assembly tool enable/disable for the current session",
     template: `<command-instruction>
-${CONSENSUS_TEMPLATE}
+${ASSEMBLY_TEMPLATE}
 </command-instruction>
 
 <user-request>
