@@ -1,5 +1,5 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from "bun:test"
-import type { OpencodeClient } from "../../cli/run/types"
+import type { OpencodeClient } from "./injector"
 import {
   findFirstMessageWithAgentFromSDK,
   findNearestMessageWithFieldsFromSDK,
