@@ -4273,7 +4273,7 @@
           "maximum": 300000
         },
         "enabled": {
-          "default": true,
+          "default": false,
           "type": "boolean"
         }
       },

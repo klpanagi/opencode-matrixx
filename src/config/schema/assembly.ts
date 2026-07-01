@@ -18,7 +18,7 @@ export const AssemblyConfigSchema = z.object({
   /** Maximum wait time per voter in ms */
   timeout_ms: z.number().int().min(10_000).max(300_000).optional(),
   /** Enable assembly tool (default: true — available in every session) */
-  enabled: z.boolean().default(true),
+  enabled: z.boolean().default(false),
   })
 
 export type AssemblyConfig = z.infer<typeof AssemblyConfigSchema>
