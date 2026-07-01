@@ -1,7 +1,7 @@
 import { z } from "zod"
 
-/** Consensus tool — provider model configuration for multi-model voting */
-export const ConsensusConfigSchema = z.object({
+/** Assembly tool — provider model configuration for multi-model voting */
+export const AssemblyConfigSchema = z.object({
   /** Provider-model pairs for auto-selection */
   providers: z
     .array(
@@ -17,8 +17,8 @@ export const ConsensusConfigSchema = z.object({
   default_rounds: z.number().int().min(1).max(3).optional(),
   /** Maximum wait time per voter in ms */
   timeout_ms: z.number().int().min(10_000).max(300_000).optional(),
-  /** Enable consensus tool (default: true — available in every session) */
+  /** Enable assembly tool (default: true — available in every session) */
   enabled: z.boolean().default(true),
   })
 
-export type ConsensusConfig = z.infer<typeof ConsensusConfigSchema>
+export type AssemblyConfig = z.infer<typeof AssemblyConfigSchema>

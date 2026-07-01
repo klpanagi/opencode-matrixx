@@ -10,7 +10,7 @@ import { CategoriesConfigSchema } from "./categories"
 import { ClaudeCodeConfigSchema } from "./claude-code"
 import { BuiltinCommandNameSchema } from "./commands"
 import { CommentCheckerConfigSchema } from "./comment-checker"
-import { ConsensusConfigSchema } from "./consensus"
+import { AssemblyConfigSchema } from "./assembly"
 import { ExperimentalConfigSchema } from "./experimental"
 import { HookNameSchema } from "./hooks"
 import { MatrixLoopConfigSchema } from "./matrix-loop"
@@ -59,8 +59,8 @@ export const MatrixxConfigSchema = z.object({
   websearch: WebsearchConfigSchema.optional(),
   tmux: TmuxConfigSchema.optional(),
   morpheus: MorpheusConfigSchema.optional(),
-  /** Consensus tool configuration — provider models for multi-model voting */
-  consensus: ConsensusConfigSchema.optional(),
+  /** Assembly tool configuration — provider models for multi-model voting */
+  assembly: AssemblyConfigSchema.optional(),
   /** Security scanning, secret detection, and sensitive file guards */
   security: SecurityConfigSchema.optional(),
   runtime_fallback: RuntimeFallbackConfigSchema.optional(),

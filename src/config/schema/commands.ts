@@ -12,7 +12,7 @@ export const BuiltinCommandNameSchema = z.enum([
   "end-ultrawork",
   "handoff",
   "research",
-  "consensus",
+  "assembly",
   "ultrawork",
 ])
 
