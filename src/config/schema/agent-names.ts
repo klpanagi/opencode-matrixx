@@ -53,4 +53,3 @@ export const BuiltinSkillNameSchema = z.enum([
 
 export type AgentName = z.infer<typeof BuiltinAgentNameSchema>
 
-type BuiltinSkillName = z.infer<typeof BuiltinSkillNameSchema>
