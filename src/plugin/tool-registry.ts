@@ -12,7 +12,7 @@ import {
   builtinTools,
   createAstGrepTools,
   createBackgroundTools,
-  createConsensusTool,
+  createAssemblyTool,
   createDelegateAgent,
   createDelegateTask,
   createGlobTools,
@@ -121,9 +121,9 @@ export function createToolRegistry(args: {
     ? { edit: createHashlineEditTool(ctx) }
     : {}
 
-  const consensusEnabled = pluginConfig.consensus?.enabled !== false
-const consensusTool = consensusEnabled
-  ? createConsensusTool({
+  const assemblyEnabled = pluginConfig.assembly?.enabled !== false
+const assemblyTool = assemblyEnabled
+  ? createAssemblyTool({
     manager: managers.backgroundManager,
     pluginConfig,
   })
@@ -146,7 +146,7 @@ const consensusTool = consensusEnabled
     interactive_bash,
     ...taskToolsRecord,
     ...hashlineToolsRecord,
-    ...(consensusTool ? { consensus: consensusTool } : {}),
+    ...(assemblyTool ? { assembly: assemblyTool } : {}),
   }
 
   const filteredTools = filterDisabledTools(allTools, pluginConfig.disabled_tools)

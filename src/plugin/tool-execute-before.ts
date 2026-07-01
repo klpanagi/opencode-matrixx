@@ -2,10 +2,10 @@ import type { CreatedHooks } from "../create-hooks"
 
 import { getMainSessionID } from "../features/claude-code-session-state"
 import {
-  disableConsensus,
-  enableConsensus,
-  isConsensusDisabled,
-} from "../features/consensus-state"
+  disableAssembly,
+  enableAssembly,
+  isAssemblyDisabled,
+} from "../features/assembly-state"
 import { clearMissionState } from "../features/mission-state"
 import {
   disableUltrawork,
@@ -197,15 +197,15 @@ export function createToolExecuteBeforeHandler(args: {
         })
       }
 
-      if (command === "consensus" && sessionID) {
-        const subcommand = rawCommand?.replace(/^\/?consensus\s*/i, "").trim().toLowerCase()
+      if (command === "assembly" && sessionID) {
+        const subcommand = rawCommand?.replace(/^\/?assembly\s*/i, "").trim().toLowerCase()
         if (subcommand === "disable" || subcommand === "off") {
-          disableConsensus(sessionID)
+          disableAssembly(sessionID)
         } else if (subcommand === "enable" || subcommand === "on") {
-          enableConsensus(sessionID)
+          enableAssembly(sessionID)
         } else {
-          const state = isConsensusDisabled(sessionID) ? "disabled" : "enabled"
-          log("[consensus] Consensus state check", { sessionID, state })
+          const state = isAssemblyDisabled(sessionID) ? "disabled" : "enabled"
+          log("[assembly] Assembly state check", { sessionID, state })
         }
       }
 
