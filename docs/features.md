@@ -623,11 +623,11 @@ Disable specific hooks in config:
 | **task** | Category-based task delegation. Supports categories (visual, business-logic) or direct agent targeting. |
 | **background_output** | Retrieve background task results |
 | **background_cancel** | Cancel running background tasks |
-|| **consensus** | Spawns multiple AI agents (voters) with different model providers to independently analyze a question/decision, then synthesizes their reasoning into a unified consensus. Supports 2-5 voters, 1-3 rounds, and model override. |
+||| **assembly** | Spawns multiple AI agents (voters) with different model providers to independently analyze a question/decision, then synthesizes their reasoning into a unified consensus. Supports 2-5 voters, 1-3 rounds, and model override. |
 
-### Consensus Tool
+### Assembly Tool
 
-The consensus tool spawns 3-5 parallel AI agents (voters) from different model providers to independently analyze a question or decision, then synthesizes their reasoning into a unified result.
+The assembly tool spawns 3-5 parallel AI agents (voters) from different model providers to independently analyze a question or decision, then synthesizes their reasoning into a unified result.
 
 **Arguments**:
 | Arg | Type | Default | Description |
@@ -637,20 +637,20 @@ The consensus tool spawns 3-5 parallel AI agents (voters) from different model p
 | `rounds` | number | 2 | Synthesis rounds (1-3) |
 | `models` | string[] | auto-selected | Override auto-selected models |
 
-**Voter selection**: Auto-selects N models from configured providers in `matrixx.jsonc` (uses `consensus.providers`). User can override with explicit model strings.
+**Voter selection**: Auto-selects N models from configured providers in `matrixx.jsonc` (uses `assembly.providers`). User can override with explicit model strings.
 
 **Output**: Returns unified consensus with confidence level (high/medium/low), key disagreements, and per-voter reasoning traces.
 
 **Examples**:
 ```
-consensus({ question: "Should we use React Server Components or Client Components for the dashboard?", voters: 3, rounds: 2 })
-consensus({ question: "What's the best architecture for the auth module?", models: ["anthropic:claude-sonnet-4-20250514", "openai:gpt-4o"] })
+assembly({ question: "Should we use React Server Components or Client Components for the dashboard?", voters: 3, rounds: 2 })
+assembly({ question: "What's the best architecture for the auth module?", models: ["anthropic:claude-sonnet-4-20250514", "openai:gpt-4o"] })
 ```
 
 Configure providers in `matrixx.jsonc`:
 ```jsonc
 {
-  "consensus": {
+  "assembly": {
     "providers": [
       { "providerID": "anthropic", "modelID": "claude-sonnet-4-20250514" },
       { "providerID": "openai", "modelID": "gpt-4o" },

@@ -175,7 +175,7 @@
           "end-ultrawork",
           "handoff",
           "research",
-          "consensus",
+          "assembly",
           "ultrawork"
         ]
       }
@@ -4235,7 +4235,7 @@
       },
       "additionalProperties": false
     },
-    "consensus": {
+    "assembly": {
       "type": "object",
       "properties": {
         "providers": {

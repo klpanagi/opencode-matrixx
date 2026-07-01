@@ -21,7 +21,7 @@ Matrixx provides 15 built-in slash commands covering orchestration, research, re
 | `/profile` | View or change active profile | — | — |
 | `/end-ultrawork` | Deactivate ultrawork mode | ✅ | — |
 | `/research` | Saturation research (multi-round) | — | — |
-| `/consensus` | Toggle consensus tool at runtime | ✅ | — |
+| `/assembly` | Toggle assembly tool at runtime | ✅ | — |
 | `/ultrawork` | Toggle ultrawork mode at runtime | ✅ | — |
 
 ### Legend
@@ -306,26 +306,26 @@ Execute a systematic multi-round research process. Spawns parallel swarms of exp
 
 ---
 
-## 14. `/consensus`
+## 14. `/assembly`
 
-Enable or disable the multi-model consensus tool for the current session.
+Enable or disable the multi-model assembly tool for the current session.
 
 ```
-/consensus
-/consensus enable
-/consensus disable
-/consensus status
+/assembly
+/assembly enable
+/assembly disable
+/assembly status
 ```
 
 | Argument | Description |
 |----------|-------------|
-| `enable` | Make the consensus tool available to the LLM |
-| `disable` | Hide the consensus tool (LLM won't see or use it) |
+| `enable` | Make the assembly tool available to the LLM |
+| `disable` | Hide the assembly tool (LLM won't see or use it) |
 | `status` | Show current enable/disable state |
 
-This command has an **imperative intercept** — it calls `consensusState.disable(sessionID)` or `consensusState.enable(sessionID)` to persist the state change.
+This command has an **imperative intercept** — it calls `assemblyState.disable(sessionID)` or `assemblyState.enable(sessionID)` to persist the state change.
 
-**Note:** The consensus tool also has a config-level toggle via `consensus.enabled` in `matrixx.jsonc` (default: `true`). The runtime toggle applies only to the current session and resets when the session ends.
+**Note:** The assembly tool also has a config-level toggle via `assembly.enabled` in `matrixx.jsonc` (default: `true`). The runtime toggle applies only to the current session and resets when the session ends.
 
 ---
 
@@ -393,10 +393,10 @@ Commands with intercepts:
 - `/ulw-loop` — starts matrix loop + ultrawork
 - `/cancel-loop` — cancels all loops
 - `/stop-continuation` — sets stop state + cancels background tasks
-- `/consensus` — toggles consensus state
+- `/assembly` — toggles assembly state
 - `/ultrawork` — toggles ultrawork state
 - `/end-ultrawork` — disables ultrawork state
 
 ### State Lifecycle
 
-Per-session state (stop-continuation, consensus, ultrawork) is stored in-memory `Set` or `Map` structures. State is automatically cleaned up on `session.deleted` events. State does not persist across OpenCode restarts.
+Per-session state (stop-continuation, assembly, ultrawork) is stored in-memory `Set` or `Map` structures. State is automatically cleaned up on `session.deleted` events. State does not persist across OpenCode restarts.
