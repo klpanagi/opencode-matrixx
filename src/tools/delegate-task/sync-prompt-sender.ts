@@ -72,19 +72,20 @@ export async function sendSyncPrompt(
   try {
     await deps.promptWithModelSuggestionRetry(client, promptArgs)
   } catch (promptError) {
+    let lastError = promptError
     if (isOracleAgent(input.agentToUse) && isUnexpectedEofError(promptError)) {
       try {
         await deps.promptSyncWithModelSuggestionRetry(client, promptArgs)
         return null
       } catch (oracleRetryError) {
-        promptError = oracleRetryError
+        lastError = oracleRetryError
       }
     }
 
     if (input.toastManager && input.taskId !== undefined) {
       input.toastManager.removeTask(input.taskId)
     }
-    const errorMessage = promptError instanceof Error ? promptError.message : String(promptError)
+    const errorMessage = lastError instanceof Error ? lastError.message : String(lastError)
     if (errorMessage.includes("agent.name") || errorMessage.includes("undefined")) {
       return formatDetailedError(new Error(`Agent "${input.agentToUse}" not found. Make sure the agent is registered in your opencode.json or provided by a plugin.`), {
         operation: "Send prompt to agent",
@@ -94,7 +95,7 @@ export async function sendSyncPrompt(
         category: input.args.category,
       })
     }
-    return formatDetailedError(promptError, {
+    return formatDetailedError(lastError, {
       operation: "Send prompt",
       args: input.args,
       sessionID: input.sessionID,
