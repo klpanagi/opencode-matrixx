@@ -61,7 +61,7 @@ export async function executeAssembly(
     }
 
     if (round < roundCount - 1) {
-      currentVoterResults = currentVoterResults.map((v, i) => ({
+      currentVoterResults = currentVoterResults.map((v, _i) => ({
         ...v,
         reasoning: `${v.reasoning}\n\n--- Round ${round + 1} Synthesis Feedback ---\n${synthesis.consensus}`,
       }))

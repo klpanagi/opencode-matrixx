@@ -10,9 +10,9 @@ import { log } from "../shared"
 import { filterDisabledTools } from "../shared/disabled-tools"
 import {
   builtinTools,
+  createAssemblyTool,
   createAstGrepTools,
   createBackgroundTools,
-  createAssemblyTool,
   createDelegateAgent,
   createDelegateTask,
   createGlobTools,

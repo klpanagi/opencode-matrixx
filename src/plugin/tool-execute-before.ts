@@ -1,11 +1,10 @@
 import type { CreatedHooks } from "../create-hooks"
-
-import { getMainSessionID } from "../features/claude-code-session-state"
 import {
   disableAssembly,
   enableAssembly,
   isAssemblyDisabled,
 } from "../features/assembly-state"
+import { getMainSessionID } from "../features/claude-code-session-state"
 import { clearMissionState } from "../features/mission-state"
 import {
   disableUltrawork,
