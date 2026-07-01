@@ -1,4 +1,4 @@
-/** Consensus tool description for LLM consumption */
+/** Assembly tool description for LLM consumption */
 export const TOOL_DESCRIPTION = `
 Spawns multiple AI agents (voters) with different model providers to independently analyze a question or decision, then synthesizes their reasoning into a unified consensus.
 

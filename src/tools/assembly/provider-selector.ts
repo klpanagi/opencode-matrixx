@@ -1,11 +1,11 @@
-import type { ConsensusConfig } from "../../config/schema/consensus"
+import type { AssemblyConfig } from "../../config/schema/assembly"
 import { DEFAULT_PROVIDERS } from "./constants"
 import type { ProviderModel } from "./types"
 
 export function selectProviders(
   count: number,
   modelsOverride: string[] | undefined,
-  config: ConsensusConfig | undefined,
+  config: AssemblyConfig | undefined,
 ): ProviderModel[] {
   if (modelsOverride && modelsOverride.length > 0) {
     return modelsOverride.slice(0, count).map((m) => {

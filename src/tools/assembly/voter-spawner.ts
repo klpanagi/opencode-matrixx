@@ -11,8 +11,8 @@ export async function spawnVoters(
 ): Promise<VoterResult[]> {
   const tasks = providers.map((provider, index) =>
     manager.launch({
-      description: `Consensus voter ${index + 1}`,
-      prompt: `You are voter #${index + 1} in a multi-model consensus process. Analyze the following question independently and provide your reasoning. Be thorough and consider multiple angles.
+      description: `Assembly voter ${index + 1}`,
+      prompt: `You are voter #${index + 1} in a multi-model assembly process. Analyze the following question independently and provide your reasoning. Be thorough and consider multiple angles.
 
 Question: ${question}
 

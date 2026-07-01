@@ -1,29 +1,29 @@
-import type { ConsensusConfig } from "../../config/schema/consensus"
+import type { AssemblyConfig } from "../../config/schema/assembly"
 import type { BackgroundManager } from "../../features/background-agent/manager"
 import { DEFAULT_ROUNDS, DEFAULT_VOTERS } from "./constants"
 import { selectProviders } from "./provider-selector"
 import { synthesizeResults } from "./synthesizer"
-import type { ConsensusArgs, SynthesisResult, VoterResult } from "./types"
+import type { AssemblyArgs, SynthesisResult, VoterResult } from "./types"
 import { spawnVoters } from "./voter-spawner"
 
-export interface ConsensusExecutorInput {
+export interface AssemblyExecutorInput {
   manager: BackgroundManager
-  args: ConsensusArgs
-  config: ConsensusConfig | undefined
+  args: AssemblyArgs
+  config: AssemblyConfig | undefined
   sessionID: string
   messageID: string
 }
 
-export interface ConsensusOutput {
+export interface AssemblyOutput {
   question: string
   voters: VoterResult[]
   rounds: SynthesisResult[]
   finalConsensus: string
 }
 
-export async function executeConsensus(
-  input: ConsensusExecutorInput,
-): Promise<ConsensusOutput> {
+export async function executeAssembly(
+  input: AssemblyExecutorInput,
+): Promise<AssemblyOutput> {
   const { manager, args, config, sessionID, messageID } = input
 
   const voterCount = args.voters ?? config?.default_voters ?? DEFAULT_VOTERS
@@ -90,7 +90,7 @@ function formatFinalConsensus(
   const completed = voterResults.filter((v) => v.status === "completed")
   const errored = voterResults.filter((v) => v.status !== "completed")
 
-  let output = `# Consensus Result\n\n`
+  let output = `# Assembly Result\n\n`
   output += `**Question**: ${question}\n`
   output += `**Confidence**: ${final.confidence}\n`
   output += `**Voters**: ${completed.length}/${voterResults.length} completed`

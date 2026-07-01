@@ -52,7 +52,7 @@ This is round #${round}.
 `
 
   const synthesisTask = await manager.launch({
-    description: `Consensus synthesis round ${round}`,
+    description: `Assembly synthesis round ${round}`,
     prompt: synthesisPrompt,
     agent: "mouse",
     parentSessionID,

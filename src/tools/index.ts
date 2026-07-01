@@ -34,7 +34,7 @@ import {
 
 type OpencodeClient = PluginInput["client"]
 
-export { createConsensusTool } from "./consensus"
+export { createAssemblyTool } from "./assembly"
 export { createDelegateAgent } from "./delegate-agent"
 export { createDelegateTask } from "./delegate-task"
 export { createHashlineEditTool } from "./hashline-edit"

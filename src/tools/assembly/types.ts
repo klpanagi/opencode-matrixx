@@ -1,6 +1,6 @@
 import { z } from "zod"
 
-export const ConsensusArgsSchema = z.object({
+export const AssemblyArgsSchema = z.object({
   question: z.string().min(1).describe("The question or decision to reach consensus on"),
   voters: z
     .number()
@@ -24,7 +24,7 @@ export const ConsensusArgsSchema = z.object({
     ),
 })
 
-export type ConsensusArgs = z.infer<typeof ConsensusArgsSchema>
+export type AssemblyArgs = z.infer<typeof AssemblyArgsSchema>
 
 export interface VoterResult {
   voterIndex: number

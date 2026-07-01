@@ -1,17 +1,17 @@
 import { type ToolDefinition, tool } from "@opencode-ai/plugin"
-import type { ConsensusConfig } from "../../config/schema/consensus"
+import type { AssemblyConfig } from "../../config/schema/assembly"
 import type { BackgroundManager } from "../../features/background-agent/manager"
-import { executeConsensus } from "./consensus-executor"
+import { executeAssembly } from "./assembly-executor"
 import { TOOL_DESCRIPTION } from "./tool-description"
-import { ConsensusArgsSchema } from "./types"
+import { AssemblyArgsSchema } from "./types"
 
-export interface ConsensusToolOptions {
+export interface AssemblyToolOptions {
   manager: BackgroundManager
-  pluginConfig?: { consensus?: ConsensusConfig }
+  pluginConfig?: { assembly?: AssemblyConfig }
 }
 
-export function createConsensusTool(
-  options: ConsensusToolOptions,
+export function createAssemblyTool(
+  options: AssemblyToolOptions,
 ): ToolDefinition {
   return tool({
     description: TOOL_DESCRIPTION,
@@ -22,12 +22,12 @@ export function createConsensusTool(
       models: tool.schema.array(tool.schema.string()).optional().describe("Override auto-selected models"),
     },
     async execute(args, toolContext) {
-      const parsed = ConsensusArgsSchema.parse(args)
+      const parsed = AssemblyArgsSchema.parse(args)
 
-      const output = await executeConsensus({
+      const output = await executeAssembly({
         manager: options.manager,
         args: parsed,
-        config: options.pluginConfig?.consensus,
+        config: options.pluginConfig?.assembly,
         sessionID: toolContext.sessionID,
         messageID: toolContext.messageID,
       })
