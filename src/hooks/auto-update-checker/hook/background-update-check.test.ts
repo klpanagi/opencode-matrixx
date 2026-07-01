@@ -27,9 +27,6 @@ mock.module("../cache", () => ({
   invalidatePackage: mockInvalidatePackage,
 }))
 
-mock.module("../../../cli/config-manager", () => ({
-  runBunInstall: mockRunBunInstall,
-}))
 
 mock.module("./update-toasts", () => ({
   showUpdateAvailableToast: mockShowUpdateAvailableToast,
@@ -44,14 +41,13 @@ mock.module("./background-update-check", () => {
   const checker = require("../checker")
   const versionChannel = require("../version-channel")
   const cache = require("../cache")
-  const configManager = require("../../../cli/config-manager")
   const updateToasts = require("./update-toasts")
   const logger = require("../../../shared/logger")
   const { PACKAGE_NAME } = require("../constants")
 
   async function runBunInstallSafe(): Promise<boolean> {
     try {
-      return await configManager.runBunInstall()
+      return await mockRunBunInstall()
     } catch (err) {
       const errorMessage = err instanceof Error ? err.message : String(err)
       logger.log("[auto-update-checker] bun install error:", errorMessage)

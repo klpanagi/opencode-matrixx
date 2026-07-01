@@ -1,5 +1,5 @@
 import type { PluginInput } from "@opencode-ai/plugin"
-import { runBunInstall } from "../../../cli/config-manager"
+import { getOpenCodeConfigPaths } from "../../../shared"
 import { log } from "../../../shared/logger"
 import { invalidatePackage } from "../cache"
 import { findPluginEntry, getCachedVersion, getLatestVersion, revertPinnedVersion } from "../checker"
@@ -7,9 +7,31 @@ import { PACKAGE_NAME } from "../constants"
 import { extractChannel } from "../version-channel"
 import { showAutoUpdatedToast, showUpdateAvailableToast } from "./update-toasts"
 
+const BUN_INSTALL_TIMEOUT_SECONDS = 60
+const BUN_INSTALL_TIMEOUT_MS = BUN_INSTALL_TIMEOUT_SECONDS * 1000
+
 async function runBunInstallSafe(): Promise<boolean> {
   try {
-    return await runBunInstall()
+    const configPaths = getOpenCodeConfigPaths({ binary: "opencode", version: null })
+    const proc = Bun.spawn(["bun", "install"], {
+      cwd: configPaths.configDir,
+      stdout: "inherit",
+      stderr: "inherit",
+    })
+
+    let timeoutId: ReturnType<typeof setTimeout> | undefined
+    const timeoutPromise = new Promise<boolean>((resolve) => {
+      timeoutId = setTimeout(() => resolve(false), BUN_INSTALL_TIMEOUT_MS)
+    })
+    const exitPromise = proc.exited.then(() => true)
+    const result = await Promise.race([exitPromise, timeoutPromise])
+    clearTimeout(timeoutId)
+
+    if (!result) {
+      try { proc.kill() } catch {}
+    }
+
+    return result
   } catch (err) {
     const errorMessage = err instanceof Error ? err.message : String(err)
     log("[auto-update-checker] bun install error:", errorMessage)
