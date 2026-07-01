@@ -5,6 +5,7 @@ import {
   subagentSessions,
 } from "../../features/claude-code-session-state"
 import type { ContextCollector } from "../../features/context-injector"
+import { getUltraworkState } from "../../features/ultrawork-state"
 import { log } from "../../shared"
 import {
   isSystemDirective,
@@ -70,8 +71,17 @@ export function createKeywordDetectorHook(ctx: PluginInput, _collector?: Context
         }
       }
 
+      const ultraworkState = getUltraworkState(input.sessionID)
       const hasUltrawork = detectedKeywords.some((k) => k.type === "ultrawork")
-      if (hasUltrawork) {
+      const isUltraworkBlocked = ultraworkState === "disabled"
+      const isUltraworkForced = ultraworkState === "enabled"
+
+      if (isUltraworkBlocked) {
+        log(`[keyword-detector] Ultrawork blocked by runtime state`, { sessionID: input.sessionID })
+        return
+      }
+
+      if (hasUltrawork || isUltraworkForced) {
         log(`[keyword-detector] Ultrawork mode activated`, { sessionID: input.sessionID })
 
         if (output.message.variant === undefined) {
@@ -91,7 +101,7 @@ export function createKeywordDetectorHook(ctx: PluginInput, _collector?: Context
             log(`[keyword-detector] Failed to show toast`, {
               error: err,
               sessionID: input.sessionID,
-            })
+            }),
           )
       }
 

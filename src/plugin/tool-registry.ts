@@ -121,10 +121,13 @@ export function createToolRegistry(args: {
     ? { edit: createHashlineEditTool(ctx) }
     : {}
 
-  const consensusTool = createConsensusTool({
+  const consensusEnabled = pluginConfig.consensus?.enabled !== false
+const consensusTool = consensusEnabled
+  ? createConsensusTool({
     manager: managers.backgroundManager,
     pluginConfig,
   })
+  : null
 
   const allTools: Record<string, ToolDefinition> = {
     ...builtinTools,
@@ -143,7 +146,7 @@ export function createToolRegistry(args: {
     interactive_bash,
     ...taskToolsRecord,
     ...hashlineToolsRecord,
-    consensus: consensusTool,
+    ...(consensusTool ? { consensus: consensusTool } : {}),
   }
 
   const filteredTools = filterDisabledTools(allTools, pluginConfig.disabled_tools)

@@ -1,7 +1,17 @@
 import type { CreatedHooks } from "../create-hooks"
 
 import { getMainSessionID } from "../features/claude-code-session-state"
+import {
+  disableConsensus,
+  enableConsensus,
+  isConsensusDisabled,
+} from "../features/consensus-state"
 import { clearMissionState } from "../features/mission-state"
+import {
+  disableUltrawork,
+  enableUltrawork,
+  getUltraworkState,
+} from "../features/ultrawork-state"
 import { log } from "../shared"
 import { resolveSessionAgent } from "./session-agent-resolver"
 import type { PluginContext } from "./types"
@@ -185,6 +195,35 @@ export function createToolExecuteBeforeHandler(args: {
         log("[stop-continuation] All continuation mechanisms stopped", {
           sessionID,
         })
+      }
+
+      if (command === "consensus" && sessionID) {
+        const subcommand = rawCommand?.replace(/^\/?consensus\s*/i, "").trim().toLowerCase()
+        if (subcommand === "disable" || subcommand === "off") {
+          disableConsensus(sessionID)
+        } else if (subcommand === "enable" || subcommand === "on") {
+          enableConsensus(sessionID)
+        } else {
+          const state = isConsensusDisabled(sessionID) ? "disabled" : "enabled"
+          log("[consensus] Consensus state check", { sessionID, state })
+        }
+      }
+
+      if (command === "ultrawork" && sessionID) {
+        const subcommand = rawCommand?.replace(/^\/?ultrawork\s*/i, "").trim().toLowerCase()
+        if (subcommand === "disable" || subcommand === "off") {
+          disableUltrawork(sessionID)
+        } else if (subcommand === "enable" || subcommand === "on") {
+          enableUltrawork(sessionID)
+        } else {
+          const state = getUltraworkState(sessionID) ?? "default (keyword-triggered)"
+          log("[ultrawork] Ultrawork state check", { sessionID, state })
+        }
+      }
+
+      if (command === "end-ultrawork" && sessionID) {
+        disableUltrawork(sessionID)
+        log("[end-ultrawork] Ultrawork disabled via /end-ultrawork", { sessionID })
       }
     }
   }
