@@ -55,8 +55,6 @@ bun test src/features/tmux-subagent && pass "tmux-subagent" || fail "tmux-subage
 
 step "Mock-heavy tests (isolated) — individual files"
 for test in \
-  src/cli/doctor/formatter.test.ts \
-  src/cli/doctor/format-default.test.ts \
   src/tools/delegate-agent/sync-executor.test.ts \
   src/tools/delegate-agent/session-creator.test.ts \
   src/features/opencode-skill-loader/loader.test.ts \
@@ -83,10 +81,6 @@ for test in \
   src/hooks/anthropic-context-window-limit-recovery/empty-content-recovery-sdk.test.ts \
   src/hooks/anthropic-context-window-limit-recovery/recovery-hook.test.ts \
   src/hooks/anthropic-context-window-limit-recovery/storage.test.ts \
-  src/cli/run/integration.test.ts \
-  src/cli/run/server-connection.test.ts \
-  src/cli/mcp-oauth/login.test.ts \
-  src/cli/config-manager/auth-plugins.test.ts \
   src/agents/utils.test.ts \
   src/hooks/task-notepad/hook.test.ts
 do
@@ -98,13 +92,11 @@ done
 # Remaining tests  (mirrors ci.yml remaining-tests step)
 # ------------------------------------------------------------------
 step "Remaining tests"
-find src bin script -name '*.test.ts' -type f \
+find src script -name '*.test.ts' -type f \
   | grep -v -F \
     -e 'src/plugin-handlers/' \
     -e 'src/hooks/compaction-context-injector/' \
     -e 'src/features/tmux-subagent/' \
-    -e 'src/cli/doctor/formatter.test.ts' \
-    -e 'src/cli/doctor/format-default.test.ts' \
     -e 'src/tools/delegate-agent/sync-executor.test.ts' \
     -e 'src/tools/delegate-agent/session-creator.test.ts' \
     -e 'src/features/opencode-skill-loader/loader.test.ts' \
@@ -131,10 +123,6 @@ find src bin script -name '*.test.ts' -type f \
     -e 'src/hooks/anthropic-context-window-limit-recovery/empty-content-recovery-sdk.test.ts' \
     -e 'src/hooks/anthropic-context-window-limit-recovery/recovery-hook.test.ts' \
     -e 'src/hooks/anthropic-context-window-limit-recovery/storage.test.ts' \
-    -e 'src/cli/run/integration.test.ts' \
-    -e 'src/cli/run/server-connection.test.ts' \
-    -e 'src/cli/mcp-oauth/login.test.ts' \
-    -e 'src/cli/config-manager/auth-plugins.test.ts' \
     -e 'src/agents/utils.test.ts' \
     -e 'src/hooks/task-notepad/hook.test.ts' \
   | xargs bun test && pass "Remaining tests" || fail "Remaining tests"
