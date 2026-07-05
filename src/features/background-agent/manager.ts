@@ -148,7 +148,6 @@ export class BackgroundManager {
       throw new Error("Agent parameter is required")
     }
 
-    // Create task immediately with status="pending"
     const task: BackgroundTask = {
       id: `bg_${crypto.randomUUID().slice(0, 8)}`,
       status: "pending",
@@ -177,7 +176,6 @@ export class BackgroundManager {
       this.pendingByParent.set(input.parentSessionID, pending)
     }
 
-    // Add to queue
     const key = this.getConcurrencyKeyFromInput(input)
     const queue = this.queuesByKey.get(key) ?? []
     queue.push({ task, input })
@@ -316,7 +314,6 @@ export class BackgroundManager {
       log("[background-agent] SKIP tmux callback - conditions not met")
     }
 
-    // Update task to running state
     task.status = "running"
     task.startedAt = new Date()
     task.sessionID = sessionID
@@ -973,7 +970,6 @@ export class BackgroundManager {
 
       const messages = normalizeSDKResponse(response, [] as Array<{ info?: { role?: string } }>, { preferResponseOnMissingData: true })
       
-      // Check for at least one assistant or tool message
       const hasAssistantOrToolMessage = messages.some(
         (m: { info?: { role?: string } }) => 
           m.info?.role === "assistant" || m.info?.role === "tool"

@@ -309,10 +309,13 @@ Every agent, model, temperature, and permission is fully customizable. [**Meet t
 | **Agent Orchestration** | 14 agents (incl. **Sati** frontend specialist, **Sentinel** security auditor, **Cipher** DSL expert), parallel background execution, category-based routing, session continuity |
 | **Developer Tools** | LSP (goto def, rename, diagnostics), AST-Grep (search & replace), Tmux terminal |
 | **~52 Lifecycle Hooks** | Context injection, think mode, comment checking, todo enforcement, error recovery, quality gate |
-| **31 Built-in Skills** | DSL engineering (11), security (9), browser, git, frontend (7 via **Sati**), software dev pipeline |
+|| **33 Built-in Skills** | DSL engineering (11), security (9), browser, git, frontend (7 via **Sati**), saturation research, AI slop detection, software dev pipeline |
 | **Curated MCPs** | Exa (web search), Context7 (official docs), Grep.app (GitHub code search), Document Reader |
 | **Claude Code Compat** | Full compatibility — commands, agents, skills, MCPs, hooks from `settings.json` |
 | **Software Dev Pipeline** | 6-phase TDD workflow (PLAN→BUILD→VERIFY→REVIEW→SECURE→SHIP), 5 team roles, adaptive phases |
+||| **Assembly Tool** | Multi-model debate that spawns 3-5 parallel voters from different providers, collects independent reasoning, and synthesizes unified decisions with confidence scoring |
+|| **Saturation Research** | Multi-round (/research) spawning parallel explore/librarian swarms across code, docs, web, and OSS with adaptive novelty-based convergence (max 5 rounds) |
+|| **AI Slop Detection** | remove-ai-slops skill detects and removes 7 categories of AI-generated code smells — verbose comments, redundant error handling, over-engineered patterns, generic AI phrasing, cargo-cult boilerplate |
 
 [**Full feature list →**](docs/features.md) · [**Configuration guide →**](docs/configurations.md) · [**Architecture diagram →**](docs/agent-architecture.md)
 

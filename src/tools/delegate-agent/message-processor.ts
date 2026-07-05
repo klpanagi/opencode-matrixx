@@ -60,7 +60,6 @@ export async function processMessages(
         if (typeof toolResult.content === "string" && toolResult.content) {
           extractedContent.push(toolResult.content)
         } else if (Array.isArray(toolResult.content)) {
-          // Handle array of content blocks
           for (const block of toolResult.content) {
             if ((block.type === "text" || block.type === "reasoning") && block.text) {
               extractedContent.push(block.text)

@@ -1,7 +1,16 @@
 import type { CreatedHooks } from "../create-hooks"
-
+import {
+  disableAssembly,
+  enableAssembly,
+  isAssemblyDisabled,
+} from "../features/assembly-state"
 import { getMainSessionID } from "../features/claude-code-session-state"
 import { clearMissionState } from "../features/mission-state"
+import {
+  disableUltrawork,
+  enableUltrawork,
+  getUltraworkState,
+} from "../features/ultrawork-state"
 import { log } from "../shared"
 import { resolveSessionAgent } from "./session-agent-resolver"
 import type { PluginContext } from "./types"
@@ -185,6 +194,35 @@ export function createToolExecuteBeforeHandler(args: {
         log("[stop-continuation] All continuation mechanisms stopped", {
           sessionID,
         })
+      }
+
+      if (command === "assembly" && sessionID) {
+        const subcommand = rawCommand?.replace(/^\/?assembly\s*/i, "").trim().toLowerCase()
+        if (subcommand === "disable" || subcommand === "off") {
+          disableAssembly(sessionID)
+        } else if (subcommand === "enable" || subcommand === "on") {
+          enableAssembly(sessionID)
+        } else {
+          const state = isAssemblyDisabled(sessionID) ? "disabled" : "enabled"
+          log("[assembly] Assembly state check", { sessionID, state })
+        }
+      }
+
+      if (command === "ultrawork" && sessionID) {
+        const subcommand = rawCommand?.replace(/^\/?ultrawork\s*/i, "").trim().toLowerCase()
+        if (subcommand === "disable" || subcommand === "off") {
+          disableUltrawork(sessionID)
+        } else if (subcommand === "enable" || subcommand === "on") {
+          enableUltrawork(sessionID)
+        } else {
+          const state = getUltraworkState(sessionID) ?? "default (keyword-triggered)"
+          log("[ultrawork] Ultrawork state check", { sessionID, state })
+        }
+      }
+
+      if (command === "end-ultrawork" && sessionID) {
+        disableUltrawork(sessionID)
+        log("[end-ultrawork] Ultrawork disabled via /end-ultrawork", { sessionID })
       }
     }
   }

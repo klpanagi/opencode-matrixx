@@ -22,7 +22,7 @@ describe("createDelegateAgent", () => {
   test("should reject agent in disabled_agents list", async () => {
     //#given
     const toolDef = createDelegateAgent(mockCtx, mockBackgroundManager, ["trinity"])
-    const executeFunc = toolDef.execute as Function
+    const executeFunc = toolDef.execute
 
     //#when
     const result = await executeFunc(
@@ -42,7 +42,7 @@ describe("createDelegateAgent", () => {
   test("should reject agent in disabled_agents list with case-insensitive matching", async () => {
     //#given
     const toolDef = createDelegateAgent(mockCtx, mockBackgroundManager, ["Trinity"])
-    const executeFunc = toolDef.execute as Function
+    const executeFunc = toolDef.execute
 
     //#when
     const result = await executeFunc(
@@ -62,7 +62,7 @@ describe("createDelegateAgent", () => {
   test("should allow agent not in disabled_agents list", async () => {
     //#given
     const toolDef = createDelegateAgent(mockCtx, mockBackgroundManager, ["operator"])
-    const executeFunc = toolDef.execute as Function
+    const executeFunc = toolDef.execute
 
     //#when
     const result = await executeFunc(
@@ -83,7 +83,7 @@ describe("createDelegateAgent", () => {
   test("should allow all agents when disabled_agents is empty", async () => {
     //#given
     const toolDef = createDelegateAgent(mockCtx, mockBackgroundManager, [])
-    const executeFunc = toolDef.execute as Function
+    const executeFunc = toolDef.execute
 
     //#when
     const result = await executeFunc(

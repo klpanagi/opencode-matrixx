@@ -121,6 +121,8 @@ Skills provide specialized workflows with embedded MCP servers and detailed inst
 | **playwright** | Browser tasks, testing, screenshots | Browser automation via Playwright MCP. MUST USE for any browser-related tasks - verification, browsing, web scraping, testing, screenshots. |
 | **frontend-ui-ux** | UI/UX tasks, styling | Designer-turned-developer persona. Crafts stunning UI/UX even without design mockups. Emphasizes bold aesthetic direction, distinctive typography, cohesive color palettes. |
 | **git-master** | commit, rebase, squash, blame | MUST USE for ANY git operations. Atomic commits with automatic splitting, rebase/squash workflows, history search (blame, bisect, log -S). |
+|| **ulw-research** | research, deep dive, investigate, explore codebase | Saturation research orchestrator. Spawns parallel explore/librarian swarms across code, docs, web, and OSS repos. Recursively follows EXPAND leads until convergence (novelty-based, max 5 rounds). Proves contested claims by running code. Returns cited synthesis to .matrixx/. |
+|| **remove-ai-slops** | cleanup code, remove ai slop, de-ai, code cleanup | Detects and removes 7 categories of AI-generated code smells: verbose comments, redundant error handling, over-engineered patterns, generic AI phrasing, cargo-cult boilerplate, padding/verbosity, weird codegen artifacts. Hybrid analysis + guided fix mode. |
 
 ### Skill: Browser Automation (playwright / agent-browser)
 
@@ -215,6 +217,52 @@ Three specializations in one:
 /git-master who wrote this authentication code?
 ```
 
+### Skill: ulw-research (Saturation Research)
+
+**Trigger**: research, deep dive, investigate, explore codebase, find how, saturation research
+
+A multi-round saturation research orchestrator that explores code, docs, web, and OSS in parallel:
+
+- **Phase 0**: Parse topic, create artifact directory, seed initial queries
+- **Phase 1**: Spawn 4 parallel agents (local-code explore, docs explore, web librarian, OSS librarian)
+- **Phase 2**: Check convergence via novelty detection (stop when <30% novel findings)
+- **Phase 3**: Verify contested claims by running code
+- **Phase 4**: Produce cited synthesis in `.matrixx/research-<topic>-<timestamp>/final-synthesis.md`
+
+**Convergence**: Adaptive (novelty-based), max 5 rounds hard limit
+
+**Usage**:
+```
+/research how does context window management work in this codebase
+/research React 19 server component patterns --scope=web --max-rounds=3
+```
+
+Also accessible via the `ulw-research` built-in skill (load with `load_skills=["ulw-research"]`) or the `/research` slash command.
+
+---
+
+### Skill: remove-ai-slops (AI Code Smell Detection)
+
+**Trigger**: cleanup code, remove ai slop, code cleanup, fix ai code, de-ai
+
+Hybrid mode (analysis + guided fix) for removing AI-generated code smells across 7 categories:
+
+1. **Verbose Comments** — `// This function does X by doing Y`, obvious self-explanatory comments
+2. **Redundant Error Handling** — re-throw with no added value, null checks on already-guarded paths
+3. **Over-engineered Patterns** — FactoryFactory, unnecessary abstractions, excessive indirection
+4. **Generic AI Phrasing** — "It's worth noting that...", "Let's step through this...", padding phrases
+5. **Cargo-cult Boilerplate** — Copy-pasted patterns without understanding, excessive defensive programming
+6. **Padding/Verbosity** — Empty docstrings, redundant type annotations, unnecessary intermediate variables
+7. **Weird Codegen Artifacts** — Language-mismatched conventions, inconsistent style within same file
+
+**Workflow**:
+1. **Scan** — 7 category passes using grep, AST-grep, and heuristics
+2. **Report** — Grouped findings with severity table
+3. **Guided Fix** — Current → Proposed diffs, user approves/rejects per finding
+4. **Verify** — `lsp_diagnostics` + typecheck on modified files
+
+Also integrated into `review-work` as Agent 6 (advisory SUP).
+
 ### Custom Skills
 
 Load custom skills from:
@@ -245,6 +293,7 @@ Commands are slash-triggered workflows that execute predefined templates.
 | `/handoff` | Create a detailed context summary for continuing work in a new session |
 
 | `/pickup` | Load handoff context from a previous session |
+|| `/research` | Saturation research with parallel swarms and convergence — code, docs, web, and OSS repos |
 
 
 ### Command: /init-deep
@@ -382,6 +431,33 @@ Uses Architect agent to execute planned tasks systematically.
 
 **Important**: Archiving renames `handoff.md` → `handoff.consumed.md`, so the handoff can only be picked up once. The `consumed` file is preserved for audit but is no longer the active handoff.
 
+
+### Command: /research
+
+**Purpose**: Systematic multi-round saturation research on any topic
+
+**Usage**:
+```
+/research <topic> [--scope=code|docs|web|oss|all] [--max-rounds=N]
+```
+
+**Behavior**:
+1. Creates artifact directory `.matrixx/research-<topic>-<timestamp>/`
+2. Spawns 4 parallel research agents (code explore, docs explore, web librarian, OSS librarian)
+3. Collects findings, identifies new leads
+4. Recursively follows leads until convergence (novelty-based stop, max 5 rounds)
+5. Verifies contested claims by running code
+6. Produces cited synthesis in `final-synthesis.md`
+
+**Output**: All artifacts written to `.matrixx/research-<topic>-<timestamp>/`
+
+**Examples**:
+```
+/research authentication middleware best practices
+/research React 19 server component patterns --scope=web --max-rounds=3
+```
+
+---
 
 ### Custom Commands
 
@@ -547,6 +623,46 @@ Disable specific hooks in config:
 | **task** | Category-based task delegation. Supports categories (visual, business-logic) or direct agent targeting. |
 | **background_output** | Retrieve background task results |
 | **background_cancel** | Cancel running background tasks |
+||| **assembly** | Spawns multiple AI agents (voters) with different model providers to independently analyze a question/decision, then synthesizes their reasoning into a unified consensus. Supports 2-5 voters, 1-3 rounds, and model override. |
+
+### Assembly Tool
+
+The assembly tool spawns 3-5 parallel AI agents (voters) from different model providers to independently analyze a question or decision, then synthesizes their reasoning into a unified result.
+
+**Arguments**:
+| Arg | Type | Default | Description |
+|-----|------|---------|-------------|
+| `question` | string | required | The question or decision to analyze |
+| `voters` | number | 3 | Number of voters (2-5) |
+| `rounds` | number | 2 | Synthesis rounds (1-3) |
+| `models` | string[] | auto-selected | Override auto-selected models |
+
+**Voter selection**: Auto-selects N models from configured providers in `matrixx.jsonc` (uses `assembly.providers`). User can override with explicit model strings.
+
+**Output**: Returns unified consensus with confidence level (high/medium/low), key disagreements, and per-voter reasoning traces.
+
+**Examples**:
+```
+assembly({ question: "Should we use React Server Components or Client Components for the dashboard?", voters: 3, rounds: 2 })
+assembly({ question: "What's the best architecture for the auth module?", models: ["anthropic:claude-sonnet-4-20250514", "openai:gpt-4o"] })
+```
+
+Configure providers in `matrixx.jsonc`:
+```jsonc
+{
+  "assembly": {
+    "providers": [
+      { "providerID": "anthropic", "modelID": "claude-sonnet-4-20250514" },
+      { "providerID": "openai", "modelID": "gpt-4o" },
+      { "providerID": "google", "modelID": "gemini-2.5-pro" }
+    ],
+    "default_voters": 3,
+    "default_rounds": 2
+  }
+}
+```
+
+---
 
 ### Session Tools
 

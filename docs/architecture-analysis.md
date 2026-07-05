@@ -365,7 +365,7 @@ The cost tiers (free → cheap → normal → expensive) ensure agents are used 
 
 - **Fewer stars** (100 vs 6,089 for oh-my-opencode-slim)
 - **No floating UI companion** (slim has Companion desktop UI)
-- **No multi-LLM consensus** (slim has Council for cross-model verification)
+- **No multi-LLM assembly** (slim has Council for cross-model verification)
 - **No external memory system** (orchestrator has Ebbinghaus memory with fading notes)
 - **Fewer MCP servers** (4 vs 5 in most competitors — missing codegraph, git_bash)
 - **No Team Mode equivalent** (oh-my-openagent has lead + 8 parallel workers)

@@ -23,7 +23,6 @@ export async function waitForCompletion(
   const STABILITY_REQUIRED = 3
 
   while (Date.now() - pollStart < MAX_POLL_TIME_MS) {
-    // Check if aborted
     if (toolContext.abort?.aborted) {
       log(`[delegate_agent] Aborted by user`)
       throw new Error("Task aborted.")
@@ -31,7 +30,6 @@ export async function waitForCompletion(
 
     await new Promise(resolve => setTimeout(resolve, POLL_INTERVAL_MS))
 
-    // Check session status
     const statusResult = await ctx.client.session.status()
     const allStatuses = normalizeSDKResponse(statusResult, {} as Record<string, { type: string }>)
     const sessionStatus = allStatuses[sessionID]

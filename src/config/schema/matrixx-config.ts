@@ -3,6 +3,7 @@ import { AnyMcpNameSchema } from "../../mcp/types"
 import { AgentDefinitionsConfigSchema } from "./agent-definitions"
 import { BuiltinAgentNameSchema, BuiltinSkillNameSchema } from "./agent-names"
 import { AgentOverridesSchema } from "./agent-overrides"
+import { AssemblyConfigSchema } from "./assembly"
 import { BabysittingConfigSchema } from "./babysitting"
 import { BackgroundTaskConfigSchema } from "./background-task"
 import { BrowserAutomationConfigSchema } from "./browser-automation"
@@ -58,6 +59,8 @@ export const MatrixxConfigSchema = z.object({
   websearch: WebsearchConfigSchema.optional(),
   tmux: TmuxConfigSchema.optional(),
   morpheus: MorpheusConfigSchema.optional(),
+  /** Assembly tool configuration — provider models for multi-model voting */
+  assembly: AssemblyConfigSchema.optional(),
   /** Security scanning, secret detection, and sensitive file guards */
   security: SecurityConfigSchema.optional(),
   runtime_fallback: RuntimeFallbackConfigSchema.optional(),

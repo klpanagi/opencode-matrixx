@@ -13,7 +13,7 @@ export interface StoredMessage {
   tools?: Record<string, ToolPermission>
 }
 
-type OpencodeClient = PluginInput["client"]
+export type OpencodeClient = PluginInput["client"]
 
 interface SDKMessage {
   info?: {

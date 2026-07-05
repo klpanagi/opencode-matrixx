@@ -3,7 +3,6 @@ import { homedir } from "node:os"
 import { join, resolve } from "node:path"
 
 import type {
-  OpenCodeBinaryType,
   OpenCodeConfigDirOptions,
   OpenCodeConfigPaths,
 } from "./opencode-config-dir-types"

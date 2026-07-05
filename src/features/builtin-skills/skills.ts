@@ -26,6 +26,7 @@ import {
   playwrightSkill,
   qualityGateSkill,
   reactNextjsPatternsSkill,
+  removeAiSlopsSkill,
   reviewWorkSkill,
   securityApiSkill,
   securityCoreSkill,
@@ -39,6 +40,7 @@ import {
   softwareDevSkill,
   svelteSveltekitPatternsSkill,
   tddEnforcerSkill,
+  ulwResearchSkill,
 } from "./skills/index"
 import type { BuiltinSkill } from "./types"
 
@@ -60,7 +62,7 @@ export function createBuiltinSkills(options: CreateBuiltinSkillsOptions = {}): B
     browserSkill = playwrightSkill
   }
 
-  const skills = [browserSkill, frontendUiUxSkill, gitMasterSkill, devBrowserSkill, dslCoreSkill, dslGrammarSkill, dslCodegenSkill, dslMetamodelSkill, dslToolingSkill, dslTextxEcosystemSkill, dslPyecoreAdvancedSkill, dslModelTransformationSkill, dslTestingSkill, dslValidationSkill, dslCompositionSkill, frontendA11ySkill, frontendBuildToolingSkill, frontendPerfSkill, frontendStateDataSkill, frontendTestingSkill, reactNextjsPatternsSkill, svelteSveltekitPatternsSkill, documentReaderSkill, securityCoreSkill, securitySecretsSkill, securitySastSkill, securityDastSkill, securityDependenciesSkill, securityApiSkill, securityCryptoSkill, securityInfraSkill, securityReviewSkill, tddEnforcerSkill, reviewWorkSkill, qualityGateSkill, softwareDevSkill, matrixxSelfConfigSkill]
+  const skills = [browserSkill, frontendUiUxSkill, gitMasterSkill, devBrowserSkill, dslCoreSkill, dslGrammarSkill, dslCodegenSkill, dslMetamodelSkill, dslToolingSkill, dslTextxEcosystemSkill, dslPyecoreAdvancedSkill, dslModelTransformationSkill, dslTestingSkill, dslValidationSkill, dslCompositionSkill, frontendA11ySkill, frontendBuildToolingSkill, frontendPerfSkill, frontendStateDataSkill, frontendTestingSkill, reactNextjsPatternsSkill, svelteSveltekitPatternsSkill, documentReaderSkill, securityCoreSkill, securitySecretsSkill, securitySastSkill, securityDastSkill, securityDependenciesSkill, securityApiSkill, securityCryptoSkill, securityInfraSkill, securityReviewSkill,   tddEnforcerSkill, reviewWorkSkill, qualityGateSkill, softwareDevSkill, matrixxSelfConfigSkill, ulwResearchSkill, removeAiSlopsSkill]
 
   if (!disabledSkills) {
     return skills

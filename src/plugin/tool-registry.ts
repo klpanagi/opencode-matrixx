@@ -10,6 +10,7 @@ import { log } from "../shared"
 import { filterDisabledTools } from "../shared/disabled-tools"
 import {
   builtinTools,
+  createAssemblyTool,
   createAstGrepTools,
   createBackgroundTools,
   createDelegateAgent,
@@ -120,6 +121,14 @@ export function createToolRegistry(args: {
     ? { edit: createHashlineEditTool(ctx) }
     : {}
 
+  const assemblyEnabled = pluginConfig.assembly?.enabled !== false
+const assemblyTool = assemblyEnabled
+  ? createAssemblyTool({
+    manager: managers.backgroundManager,
+    pluginConfig,
+  })
+  : null
+
   const allTools: Record<string, ToolDefinition> = {
     ...builtinTools,
     ...createGrepTools(ctx),
@@ -137,6 +146,7 @@ export function createToolRegistry(args: {
     interactive_bash,
     ...taskToolsRecord,
     ...hashlineToolsRecord,
+    ...(assemblyTool ? { assembly: assemblyTool } : {}),
   }
 
   const filteredTools = filterDisabledTools(allTools, pluginConfig.disabled_tools)

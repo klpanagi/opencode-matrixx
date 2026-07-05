@@ -17,11 +17,6 @@ on:
         description: "Override version (e.g., 3.0.0-beta.6). Takes precedence over bump."
         required: false
         type: string
-      skip_platform:
-        description: "Skip platform binary packages"
-        required: false
-        type: boolean
-        default: false
 
 concurrency: ${{ github.workflow }}-${{ github.ref }}
 
@@ -54,8 +49,6 @@ jobs:
           bun test src/plugin-handlers
           bun test src/hooks/compaction-context-injector
           bun test src/features/tmux-subagent
-          bun test src/cli/doctor/formatter.test.ts
-          bun test src/cli/doctor/format-default.test.ts
           bun test src/tools/delegate-agent/sync-executor.test.ts
           bun test src/tools/delegate-agent/session-creator.test.ts
           bun test src/features/opencode-skill-loader/loader.test.ts
@@ -70,15 +63,10 @@ jobs:
           bun test src/hooks/rules-injector
 
           # --- Non-hook files that use mock.module() ---
-          bun test src/cli/doctor/runner.test.ts
           bun test src/shared/opencode-message-dir.test.ts
-          bun test src/cli/run/integration.test.ts
-          bun test src/cli/run/server-connection.test.ts
-          bun test src/cli/mcp-oauth/login.test.ts
           bun test src/features/background-agent/manager.test.ts
           # OPENCODE_CONFIG_DIR env var pollution — must run isolated to prevent
           # parallel test interference from other files that modify this global var
-          bun test src/cli/config-manager/auth-plugins.test.ts
 
       - name: Run remaining tests
         run: |
@@ -86,15 +74,13 @@ jobs:
           # Excluded: mock.module files (run isolated above), pre-existing failures.
           # Pre-existing failures excluded:
           #   src/shared/model-requirements.test.ts (stale model expectations)
-          #   src/cli/config-manager.test.ts (stale model expectation)
-          #   src/cli/model-fallback.test.ts (stale model snapshots, 13 fail)
           #   src/hooks/anthropic-context-window-limit-recovery (CI-only failures, bun version)
           #   src/hooks/todo-continuation-enforcer (7 fail)
           #   src/hooks/auto-update-checker (4 fail)
           #   src/hooks/context-window-monitor.test.ts (2 fail)
           #   src/hooks/preemptive-compaction.test.ts (3 fail)
           #   src/agents/utils.test.ts (CI-only failures: stale model expectations after merovingian model refactor; passes locally)
-          bun test bin script src/config src/mcp src/index.test.ts \
+          bun test src/config src/mcp src/index.test.ts \
             src/agents/builtin-agents/resolve-file-uri.test.ts \
             src/agents/cipher.test.ts \
             src/agents/dynamic-agent-prompt-builder.test.ts \
@@ -135,22 +121,6 @@ jobs:
             src/shared/system-directive.test.ts \
             src/shared/tmux \
             src/shared/truncate-description.test.ts \
-            src/cli/run/completion.test.ts \
-            src/cli/run/event-handlers.test.ts \
-            src/cli/run/events.test.ts \
-            src/cli/run/json-output.test.ts \
-            src/cli/run/on-complete-hook.test.ts \
-            src/cli/run/opencode-binary-resolver.test.ts \
-            src/cli/run/opencode-bin-path.test.ts \
-            src/cli/run/poll-for-completion.test.ts \
-            src/cli/run/runner.test.ts \
-            src/cli/run/session-resolver.test.ts \
-            src/cli/config-manager/add-provider-config.test.ts \
-            src/cli/mcp-oauth/index.test.ts \
-            src/cli/mcp-oauth/logout.test.ts \
-            src/cli/mcp-oauth/status.test.ts \
-            src/cli/index.test.ts src/cli/install.test.ts \
-            src/cli/doctor/checks \
             src/tools/ast-grep src/tools/background-task src/tools/delegate-task \
             src/tools/glob src/tools/grep src/tools/hashline-edit src/tools/interactive-bash \
             src/tools/look-at \
@@ -291,18 +261,11 @@ jobs:
           VERSION="${{ steps.version.outputs.version }}"
           jq --arg v "$VERSION" '.version = $v' package.json > tmp.json && mv tmp.json package.json
           
-          for platform in darwin-arm64 darwin-x64 linux-x64 linux-arm64 linux-x64-musl linux-arm64-musl windows-x64; do
-            jq --arg v "$VERSION" '.version = $v' "packages/${platform}/package.json" > tmp.json
-            mv tmp.json "packages/${platform}/package.json"
-          done
-          
-          jq --arg v "$VERSION" '.optionalDependencies = (.optionalDependencies | to_entries | map(.value = $v) | from_entries)' package.json > tmp.json && mv tmp.json package.json
 
       - name: Build main package
         if: steps.check.outputs.skip != 'true'
         run: |
           bun build src/index.ts --outdir dist --target bun --format esm --external @ast-grep/napi
-          bun build src/cli/index.ts --outdir dist/cli --target bun --format esm --external @ast-grep/napi
           bunx tsc --emitDeclarationOnly
           bun run build:schema
 
@@ -323,7 +286,7 @@ jobs:
         run: |
           git config user.email "github-actions[bot]@users.noreply.github.com"
           git config user.name "github-actions[bot]"
-          git add package.json assets/matrixx.schema.json packages/*/package.json || true
+          git add package.json assets/matrixx.schema.json || true
           git diff --cached --quiet || git commit -m "release: v${{ steps.version.outputs.version }}"
           git tag -f "v${{ steps.version.outputs.version }}"
           git push origin --tags --force
@@ -331,20 +294,6 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
-  trigger-platform:
-    runs-on: ubuntu-latest
-    needs: publish-main
-    if: inputs.skip_platform != true
-    steps:
-      - name: Trigger platform publish workflow
-        run: |
-          gh workflow run publish-platform.yml \
-            --repo ${{ github.repository }} \
-            --ref ${{ github.ref }} \
-            -f version=${{ needs.publish-main.outputs.version }} \
-            -f dist_tag=${{ needs.publish-main.outputs.dist_tag }}
-        env:
-          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
   release:
     runs-on: ubuntu-latest

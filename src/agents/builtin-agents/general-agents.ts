@@ -109,7 +109,7 @@ export function collectPendingBuiltinAgents(input: {
     availableAgents.push({
       name: "oracle",
       description:
-        "Read-only consultation agent. High-IQ reasoning specialist for debugging hard problems and high-difficulty architecture design. (Oracle - Matrixx)",
+        "Plan Builder agent. Creates detailed, structured work plans from user requests. (Oracle - Matrixx)",
       metadata: oracleMetadata,
     })
   }

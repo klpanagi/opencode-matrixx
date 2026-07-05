@@ -41,4 +41,3 @@ export const CategoriesConfigSchema = z.record(z.string(), CategoryConfigSchema)
 
 export type CategoryConfig = z.infer<typeof CategoryConfigSchema>
 export type CategoriesConfig = z.infer<typeof CategoriesConfigSchema>
-type BuiltinCategoryName = z.infer<typeof BuiltinCategoryNameSchema>

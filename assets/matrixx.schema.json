@@ -91,7 +91,9 @@
           "review-work",
           "quality-gate",
           "software-dev",
-          "matrixx-self-config"
+          "matrixx-self-config",
+          "ulw-research",
+          "remove-ai-slops"
         ]
       }
     },
@@ -170,7 +172,11 @@
           "start-work",
           "stop-continuation",
           "profile",
-          "end-ultrawork"
+          "end-ultrawork",
+          "handoff",
+          "research",
+          "assembly",
+          "ultrawork"
         ]
       }
     },
@@ -4227,6 +4233,53 @@
           "additionalProperties": false
         }
       },
+      "additionalProperties": false
+    },
+    "assembly": {
+      "type": "object",
+      "properties": {
+        "providers": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "providerID": {
+                "type": "string"
+              },
+              "modelID": {
+                "type": "string"
+              }
+            },
+            "required": [
+              "providerID",
+              "modelID"
+            ],
+            "additionalProperties": false
+          }
+        },
+        "default_voters": {
+          "type": "integer",
+          "minimum": 2,
+          "maximum": 5
+        },
+        "default_rounds": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 3
+        },
+        "timeout_ms": {
+          "type": "integer",
+          "minimum": 10000,
+          "maximum": 300000
+        },
+        "enabled": {
+          "default": false,
+          "type": "boolean"
+        }
+      },
+      "required": [
+        "enabled"
+      ],
       "additionalProperties": false
     },
     "security": {

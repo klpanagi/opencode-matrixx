@@ -61,8 +61,6 @@ jobs:
           bun test src/features/tmux-subagent
           #
           # Individual files that use mock.module and cause cross-file pollution
-          bun test src/cli/doctor/formatter.test.ts
-          bun test src/cli/doctor/format-default.test.ts
           bun test src/tools/delegate-agent/sync-executor.test.ts
           bun test src/tools/delegate-agent/session-creator.test.ts
           bun test src/features/opencode-skill-loader/loader.test.ts
@@ -89,12 +87,6 @@ jobs:
           bun test src/hooks/anthropic-context-window-limit-recovery/empty-content-recovery-sdk.test.ts
           bun test src/hooks/anthropic-context-window-limit-recovery/recovery-hook.test.ts
           bun test src/hooks/anthropic-context-window-limit-recovery/storage.test.ts
-          bun test src/cli/run/integration.test.ts
-          bun test src/cli/run/server-connection.test.ts
-          bun test src/cli/mcp-oauth/login.test.ts
-          # OPENCODE_CONFIG_DIR env var pollution — must run isolated to prevent
-          # parallel test interference from other files that modify this global var
-          bun test src/cli/config-manager/auth-plugins.test.ts
           # spyOn() leaks from earlier tests pollute these (pass in isolation, fail
           # in batch). Same pattern as publish.yml (line 96 documents utils.test.ts
           # as a pre-existing CI-only failure).
@@ -105,13 +97,11 @@ jobs:
         run: |
           # Run all other tests together. The mock-heavy files above are excluded
           # via --exclude patterns to prevent double-running and pollution.
-          find src bin script -name '*.test.ts' -type f \
+          find src script -name '*.test.ts' -type f \
             | grep -v -F \
               -e 'src/plugin-handlers/' \
               -e 'src/hooks/compaction-context-injector/' \
               -e 'src/features/tmux-subagent/' \
-              -e 'src/cli/doctor/formatter.test.ts' \
-              -e 'src/cli/doctor/format-default.test.ts' \
               -e 'src/tools/delegate-agent/sync-executor.test.ts' \
               -e 'src/tools/delegate-agent/session-creator.test.ts' \
               -e 'src/features/opencode-skill-loader/loader.test.ts' \
@@ -138,10 +128,6 @@ jobs:
               -e 'src/hooks/anthropic-context-window-limit-recovery/empty-content-recovery-sdk.test.ts' \
               -e 'src/hooks/anthropic-context-window-limit-recovery/recovery-hook.test.ts' \
               -e 'src/hooks/anthropic-context-window-limit-recovery/storage.test.ts' \
-              -e 'src/cli/run/integration.test.ts' \
-              -e 'src/cli/run/server-connection.test.ts' \
-              -e 'src/cli/mcp-oauth/login.test.ts' \
-              -e 'src/cli/config-manager/auth-plugins.test.ts' \
               -e 'src/agents/utils.test.ts' \
               -e 'src/hooks/task-notepad/hook.test.ts' \
             | xargs bun test

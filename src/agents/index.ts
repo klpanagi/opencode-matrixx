@@ -2,7 +2,7 @@ export { architectPromptMetadata, createArchitectAgent } from "./architect"
 export { createBuiltinAgents } from "./builtin-agents"
 export { createMultimodalLookerAgent, MULTIMODAL_LOOKER_PROMPT_METADATA } from "./construct"
 export type { AvailableAgent, AvailableCategory, AvailableSkill } from "./dynamic-agent-prompt-builder"
-export { createOracleAgent, ORACLE_PROMPT_METADATA } from "./merovingian"
+export { createMerovingianAgent, ORACLE_PROMPT_METADATA } from "./merovingian"
 export { createMorpheusAgent } from "./morpheus"
 export { createLibrarianAgent, LIBRARIAN_PROMPT_METADATA } from "./operator"
 export {

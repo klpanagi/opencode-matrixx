@@ -34,6 +34,7 @@ export const ORACLE_PROMPT_METADATA: AgentPromptMetadata = {
 export const ORACLE_PLAN_BUILDER_METADATA: AgentPromptMetadata = {
   category: "advisor",
   cost: "EXPENSIVE",
+  keyTrigger: "Complex feature implementation, refactoring, or architecture design → consult Oracle for planning first",
   triggers: [
     { domain: "Architecture decisions", trigger: "Multi-system tradeoffs, unfamiliar patterns" },
     { domain: "Work planning", trigger: "Complex feature implementation, refactoring" },
@@ -167,7 +168,7 @@ Before finalizing answers on architecture, security, or performance:
 Your response goes directly to the user with no intermediate processing. Make your final message self-contained: a clear recommendation they can act on immediately, covering both what to do and why.
 </delivery>`
 
-export function createOracleAgent(model: string): AgentConfig {
+export function createMerovingianAgent(model: string): AgentConfig {
   const restrictions = createAgentToolRestrictions([
     "write",
     "edit",
@@ -177,7 +178,7 @@ export function createOracleAgent(model: string): AgentConfig {
 
   const base = {
     description:
-      "Read-only consultation agent. High-IQ reasoning specialist for debugging hard problems and high-difficulty architecture design. (Oracle - Matrixx)",
+      "Read-only consultation agent. High-IQ reasoning specialist for debugging hard problems and high-difficulty architecture design. (Merovingian - Matrixx)",
     mode: MODE,
     model,
     temperature: 0.1,
@@ -191,5 +192,5 @@ export function createOracleAgent(model: string): AgentConfig {
 
   return { ...base, thinking: { type: "enabled", budgetTokens: 16000 } } as AgentConfig
 }
-createOracleAgent.mode = MODE
+createMerovingianAgent.mode = MODE
 

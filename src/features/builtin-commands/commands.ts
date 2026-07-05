@@ -1,4 +1,5 @@
 import type { CommandDefinition } from "../claude-code-command-loader"
+import { ASSEMBLY_TEMPLATE } from "./templates/assembly"
 import { END_ULTRAWORK_TEMPLATE } from "./templates/end-ultrawork"
 import { HANDOFF_TEMPLATE } from "./templates/handoff"
 import { INIT_DEEP_TEMPLATE } from "./templates/init-deep"
@@ -7,8 +8,10 @@ import { PICKUP_TEMPLATE } from "./templates/pickup"
 import { PROFILE_TEMPLATE } from "./templates/profile"
 import { REFACTOR_TEMPLATE } from "./templates/refactor"
 import { REMOVE_DEADCODE_TEMPLATE } from "./templates/remove-deadcode"
+import { RESEARCH_TEMPLATE } from "./templates/research"
 import { START_WORK_TEMPLATE } from "./templates/start-work"
 import { STOP_CONTINUATION_TEMPLATE } from "./templates/stop-continuation"
+import { ULTRAWORK_TEMPLATE } from "./templates/ultrawork"
 import type { BuiltinCommandName, BuiltinCommands } from "./types"
 
 const BUILTIN_COMMAND_DEFINITIONS: Record<BuiltinCommandName, Omit<CommandDefinition, "name">> = {
@@ -137,6 +140,42 @@ ${END_ULTRAWORK_TEMPLATE}
 $ARGUMENTS
 </user-request>`,
     argumentHint: "[optional follow-up task]",
+  },
+  research: {
+    description:
+      "(builtin) Saturation research with parallel swarms and convergence — code, docs, web, and OSS repos",
+    template: `<command-instruction>
+${RESEARCH_TEMPLATE}
+</command-instruction>
+
+<user-request>
+$ARGUMENTS
+</user-request>`,
+    argumentHint: "<topic> [--scope=code|docs|web|oss|all] [--max-rounds=N]",
+  },
+  assembly: {
+    description:
+      "(builtin) Toggle assembly tool enable/disable for the current session",
+    template: `<command-instruction>
+${ASSEMBLY_TEMPLATE}
+</command-instruction>
+
+<user-request>
+$ARGUMENTS
+</user-request>`,
+    argumentHint: "[enable|disable|status]",
+  },
+  ultrawork: {
+    description:
+      "(builtin) Toggle ultrawork mode on/off for the current session",
+    template: `<command-instruction>
+${ULTRAWORK_TEMPLATE}
+</command-instruction>
+
+<user-request>
+$ARGUMENTS
+</user-request>`,
+    argumentHint: "[enable|disable|status]",
   },
 }
 
