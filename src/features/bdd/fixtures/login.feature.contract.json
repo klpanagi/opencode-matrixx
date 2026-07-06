@@ -1,0 +1,121 @@
+{
+  "schemaVersion": 1,
+  "generatedAt": "2026-07-06T18:01:02.373Z",
+  "sourceFile": "/home/klpanagi/matrixx/src/features/bdd/fixtures/login.feature",
+  "feature": {
+    "name": "User Login",
+    "description": "As a registered user, I want to log in with my credentials so that I can access my account dashboard",
+    "tags": [],
+    "annotations": {
+      "business_domain": "authentication",
+      "intent": "authenticate user and redirect to dashboard"
+    }
+  },
+  "scenarios": [
+    {
+      "name": "Successful login with valid credentials",
+      "tags": [],
+      "steps": [
+        {
+          "keyword": "Given",
+          "text": "the user is on the login page",
+          "intent": "navigation",
+          "actor": "user",
+          "action": "navigate"
+        },
+        {
+          "keyword": "When",
+          "text": "the user enters \"alice@example.com\" as the email",
+          "intent": "credential_input",
+          "field": "email",
+          "value": "alice@example.com",
+          "actor": "user",
+          "action": "input"
+        },
+        {
+          "keyword": "And",
+          "text": "the user enters \"securePass123\" as the password",
+          "intent": "credential_input",
+          "field": "password",
+          "value": "securePass123",
+          "actor": "user",
+          "action": "input"
+        },
+        {
+          "keyword": "Then",
+          "text": "the user should be redirected to the dashboard",
+          "intent": "redirection",
+          "target": "dashboard",
+          "actor": "system",
+          "action": "redirect"
+        },
+        {
+          "keyword": "And",
+          "text": "a welcome message should be displayed",
+          "intent": "feedback",
+          "actor": "system",
+          "action": "display"
+        }
+      ],
+      "examples": []
+    }
+  ],
+  "annotations": {
+    "api": [
+      {
+        "method": "POST",
+        "path": "/api/v1/auth/login",
+        "request": {
+          "body": {
+            "email": "string",
+            "password": "string"
+          },
+          "contentType": "application/json"
+        },
+        "response": {
+          "status": 200,
+          "description": "Login successful — redirects to dashboard with session token",
+          "body": {
+            "token": "string (JWT)",
+            "redirect": "string (dashboard URL)"
+          }
+        }
+      }
+    ],
+    "ui": [
+      {
+        "component": "form",
+        "testId": "login-form-component",
+        "description": "Login form container — email and password fields",
+        "route": "/login"
+      },
+      {
+        "component": "button",
+        "testId": "login-submit-button",
+        "description": "Login submit button"
+      }
+    ],
+    "state": [
+      {
+        "key": "session",
+        "type": "SessionState",
+        "initial": "new-session-init",
+        "description": "Tracks authentication session lifecycle — transitions from new-session-init to authenticated after successful login"
+      }
+    ],
+    "assumptions": [
+      {
+        "id": "assumption-001",
+        "description": "Test credentials 'alice@example.com' / 'securePass123' are for testing only and must not reach production environments"
+      },
+      {
+        "id": "assumption-002",
+        "description": "Login page is accessible at /login without prior authentication"
+      },
+      {
+        "id": "assumption-003",
+        "description": "Successful login returns a session token and redirect URL"
+      }
+    ]
+  }
+}
