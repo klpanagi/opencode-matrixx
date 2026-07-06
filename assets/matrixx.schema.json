@@ -53,7 +53,10 @@
           "architect",
           "cipher",
           "sentinel",
-          "sati"
+          "sati",
+          "backend-engineer",
+          "bdd-contract",
+          "test-engineer"
         ]
       }
     },
@@ -93,7 +96,11 @@
           "software-dev",
           "matrixx-self-config",
           "ulw-research",
-          "remove-ai-slops"
+          "remove-ai-slops",
+          "bdd-backend",
+          "bdd-contract",
+          "bdd-frontend",
+          "bdd-tests"
         ]
       }
     },
@@ -176,7 +183,12 @@
           "handoff",
           "research",
           "assembly",
-          "ultrawork"
+          "ultrawork",
+          "bdd-backend",
+          "bdd-contract",
+          "bdd-frontend",
+          "bdd-pipeline",
+          "bdd-tests"
         ]
       }
     },
