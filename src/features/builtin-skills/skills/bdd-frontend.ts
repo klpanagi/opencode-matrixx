@@ -63,8 +63,17 @@ Wrap the bundled code in an HTML page with:
 Write \`preview-server.ts\` in the same output directory as the components.
 
 ## Accessibility
+## Accessibility
 - Proper heading hierarchy
 - ARIA labels on interactive elements
 - Keyboard navigation support
-- Focus management`,
+- Focus management
+
+## Batch Mode
+When the input is a directory or glob of .contract.json files:
+1. Expand the input into a list of contract files
+2. For each contract, run the single-file workflow above
+3. Use \`task(run_in_background=true)\` to spawn parallel subagents (up to 5 concurrent) for each contract
+4. Collect all results and report a per-feature summary
+5. Output structure: \`<out-dir>/<feature>/components/\` with one component tree + preview-server.ts per feature`,
 }

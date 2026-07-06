@@ -38,5 +38,12 @@ Transform Gherkin .feature files into structured Contract JSON with semantic enr
 - \`@assumption: text\` → Business assumptions
 
 ## Delivery
-Report the contract file path and key features identified.`,
+Report the contract file path and key features identified.
+
+## Batch Mode
+When the input is a directory or glob of .feature files:
+1. Expand the input into a list of .feature files
+2. For each .feature file, run the deterministic tools (\`bdd_parse_gherkin\` + \`bdd_create_contract\`) in a loop — no LLM needed for the contract phase
+3. Report a summary (count, paths, any failures) in a single message
+4. The contract phase is fast and deterministic, so parallelism is not required`,
 }

@@ -28,6 +28,14 @@ Generate typed API services from BDD Contract JSON annotations.
 - Error handling with typed error responses
 - Single file per feature endpoint group
 
+## Batch Mode
+When the input is a directory or glob of .contract.json files:
+1. Expand the input into a list of contract files
+2. For each contract, run the single-file workflow above
+3. Use \`task(run_in_background=true)\` to spawn parallel subagents (up to 5 concurrent) for each contract
+4. Collect all results and report a per-feature summary
+5. Output structure: \`<out-dir>/<feature>/backend/\` with one service module per feature
+
 ## Example Pattern
 \`\`\`typescript
 import { z } from "zod"
@@ -38,5 +46,5 @@ export type LoginRequest = z.infer<typeof LoginRequest>
 export async function login(data: LoginRequest): Promise<LoginResponse> {
   // Implementation
 }
-\`\`\``,
+\`\`\``
 }

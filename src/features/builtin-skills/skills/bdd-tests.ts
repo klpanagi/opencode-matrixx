@@ -40,5 +40,5 @@ Generate Cucumber step definitions and page objects from a BDD Contract JSON.
 ## Running Tests
 \`\`\`bash
 npx cucumber-js path/to/features --require path/to/step-definitions
-\`\`\``,
+\`\`\``
 }
