@@ -1,0 +1,33 @@
+Task 1.2 Evidence: Minimal Contract Schema Validation
+=====================================================
+Date: 2025-07-06
+
+Validated via bun REPL that a minimal contract (1 feature, 1 scenario, 1 step) parses successfully:
+
+```
+$ bun -e "
+import { ContractSchema } from './src/features/bdd/schema'
+const minimal = {
+  schemaVersion: 1,
+  generatedAt: '2025-01-15T10:30:00.000Z',
+  sourceFile: 'features/login.feature',
+  feature: { name: 'Login', tags: [], annotations: {} },
+  scenarios: [{ name: 'Test', tags: [], steps: [{ keyword: 'Given', text: 'something' }] }],
+  annotations: {}
+}
+const result = ContractSchema.safeParse(minimal)
+console.log('success:', result.success)
+console.log('schemaVersion:', result.success ? result.data.schemaVersion : 'N/A')
+console.log('feature.name:', result.success ? result.data.feature.name : 'N/A')
+console.log('scenarios count:', result.success ? result.data.scenarios.length : 'N/A')
+"
+```
+
+Expected output:
+  success: true
+  schemaVersion: 1
+  feature.name: Login
+  scenarios count: 1
+
+Test file: src/features/bdd/__tests__/schema.test.ts
+Test result: 9/9 pass
