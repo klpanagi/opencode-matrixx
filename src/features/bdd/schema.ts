@@ -7,13 +7,13 @@ export const StepKeywordSchema = z.enum(["Given", "When", "Then", "And", "But"])
 export const StepSchema = z.object({
   keyword: StepKeywordSchema,
   text: z.string(),
-  dataTable: z.array(z.record(z.string())).optional(),
+  dataTable: z.array(z.record(z.string(), z.string())).optional(),
   docString: z.string().optional(),
 })
 
 // --- Example (Scenario Outline) ---
 
-export const ExampleRowSchema = z.record(z.string())
+export const ExampleRowSchema = z.record(z.string(), z.string())
 
 // --- Scenario ---
 
@@ -69,7 +69,7 @@ export const FeatureSchema = z.object({
   name: z.string(),
   description: z.string().optional(),
   tags: z.array(z.string()),
-  annotations: z.record(z.unknown()),
+  annotations: z.record(z.string(), z.unknown()),
 })
 
 // --- Contract (root) ---

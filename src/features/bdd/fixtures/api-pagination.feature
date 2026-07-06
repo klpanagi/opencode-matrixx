@@ -1,6 +1,6 @@
 # @assumption:api-version v2 or later
-# @ui:string pagination-controls-label
-# @state:variable currentPage
+# @ui:string pagination.controlsLabel=Page Controls
+# @state:variable currentPage number 1
 @smoke
 @regression
 Feature: API Pagination
@@ -9,7 +9,7 @@ Feature: API Pagination
   So that I can retrieve data in manageable chunks
 
   Rule: Standard cursor-based pagination
-    # @state:variable cursorToken
+    # @state:variable cursorToken string ""
     Scenario: Fetch first page of results
       Given the API endpoint "/api/v2/items" is available
       When the client requests the first page with a limit of 20
@@ -17,7 +17,7 @@ Feature: API Pagination
       And the response should include a "next_cursor" field
       But the "previous_cursor" field should be null
 
-    # @ui:string next-page-button
+    # @ui:string pagination.nextButton=Next Page
     Scenario: Navigate to subsequent pages
       Given the client has a valid cursor token
       When the client requests the next page

@@ -1,6 +1,6 @@
-# @state:shopping-cart initialized
-# @ui:route /checkout
-# @api:response checkout-response-v2
+# @state:initial cart=initialized
+# @ui:route page=/checkout
+# @api:response 200 application/json
 Feature: Checkout Process
   As a customer with items in my cart
   I want to complete the checkout flow
@@ -10,7 +10,7 @@ Feature: Checkout Process
     Given the user has items in the shopping cart
     And the user is authenticated
 
-  # @ui:route /checkout/shipping
+  # @ui:route page=/checkout/shipping
   Scenario Outline: Select shipping method
     Given the user is on the shipping step
     When the user selects "<method>" as the shipping option
@@ -23,7 +23,7 @@ Feature: Checkout Process
       | express     | $12.99 |
       | overnight   | $24.99 |
 
-  # @api:response payment-gateway-response
+  # @api:response 200 application/json
   Scenario: Apply discount code during checkout
     Given the user is on the payment step
     When the user applies discount code "SAVE20"
