@@ -177,6 +177,26 @@ $ARGUMENTS
 </user-request>`,
     argumentHint: "[enable|disable|status]",
   },
+  "bdd-backend": {
+    description: "(builtin) BDD backend engineer command",
+    template: "<command-instruction>\nBDD Backend Engineer\n</command-instruction>\n\n<user-request>\n$ARGUMENTS\n</user-request>",
+  },
+  "bdd-contract": {
+    description: "(builtin) BDD contract command",
+    template: "<command-instruction>\nBDD Contract\n</command-instruction>\n\n<user-request>\n$ARGUMENTS\n</user-request>",
+  },
+  "bdd-frontend": {
+    description: "(builtin) BDD frontend engineer command",
+    template: "<command-instruction>\nBDD Frontend Engineer\n</command-instruction>\n\n<user-request>\n$ARGUMENTS\n</user-request>",
+  },
+  "bdd-pipeline": {
+    description: "(builtin) BDD pipeline command",
+    template: "<command-instruction>\nBDD Pipeline\n</command-instruction>\n\n<user-request>\n$ARGUMENTS\n</user-request>",
+  },
+  "bdd-tests": {
+    description: "(builtin) BDD tests command",
+    template: "<command-instruction>\nBDD Tests\n</command-instruction>\n\n<user-request>\n$ARGUMENTS\n</user-request>",
+  },
 }
 
 export function loadBuiltinCommands(
