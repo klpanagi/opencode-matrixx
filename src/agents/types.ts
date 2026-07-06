@@ -105,6 +105,9 @@ export type BuiltinAgentName =
   | "cipher"
   | "sentinel"
   | "sati"
+  | "backend-engineer"
+  | "bdd-contract"
+  | "test-engineer"
 
 type OverridableAgentName =
   | "build"
