@@ -13,6 +13,8 @@ import {
   createAssemblyTool,
   createAstGrepTools,
   createBackgroundTools,
+  createBddCreateContractTool,
+  createBddParseGherkinTool,
   createDelegateAgent,
   createDelegateTask,
   createGlobTools,
@@ -147,6 +149,8 @@ const assemblyTool = assemblyEnabled
     ...taskToolsRecord,
     ...hashlineToolsRecord,
     ...(assemblyTool ? { assembly: assemblyTool } : {}),
+    bdd_create_contract: createBddCreateContractTool(),
+    bdd_parse_gherkin: createBddParseGherkinTool(),
   }
 
   const filteredTools = filterDisabledTools(allTools, pluginConfig.disabled_tools)
