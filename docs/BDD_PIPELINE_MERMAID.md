@@ -51,7 +51,7 @@ flowchart TB
         CmdFrontend["🚀 /bdd-frontend &lt;contract&gt;"]:::cmd
         CmdBackend["🚀 /bdd-backend &lt;contract&gt;"]:::cmd
 
-        subgraph Agent2["test-engineer Agent (EXPENSIVE)"]
+        subgraph Agent2["Morpheus Agent + bdd-tests skill"]
             direction TB
             A2_Model["Claude 3.5 Sonnet<br/>GPT-4o"]:::agent
             A2_Skill["Skill: bdd-tests"]:::tool
@@ -59,7 +59,7 @@ flowchart TB
             A2_Model --> A2_Skill --> A2_Output
         end
 
-        subgraph Agent3["Sati Agent — Frontend Specialist (EXPENSIVE)"]
+        subgraph Agent3["Morpheus Agent + bdd-frontend skill"]
             direction TB
             A3_Model["Claude 3.5 Sonnet<br/>GPT-4o"]:::agent
             A3_Skill["Skill: bdd-frontend"]:::tool
@@ -67,7 +67,7 @@ flowchart TB
             A3_Model --> A3_Skill --> A3_Output
         end
 
-        subgraph Agent4["backend-engineer Agent (EXPENSIVE)"]
+        subgraph Agent4["Morpheus Agent + bdd-backend skill"]
             direction TB
             A4_Model["Claude 3.5 Sonnet<br/>GPT-4o"]:::agent
             A4_Skill["Skill: bdd-backend"]:::tool
@@ -117,9 +117,9 @@ flowchart TB
 
 ```
 User Input           →    Phase 1 (Deterministic)     →    Phase 2 (Generative, Parallel)
-.feature files            bdd-contract agent                test-engineer   →  step defs
-+ @ annotations    ───►   bdd_parse_gherkin tool      ───►  Sati            →  React components
-                          bdd_create_contract tool           backend-engineer →  API services
+.feature files            bdd-contract agent                Morpheus + bdd-tests skill    →  step defs
++ @ annotations    ───►   bdd_parse_gherkin tool      ───►  Morpheus + bdd-frontend skill →  React components
+                          bdd_create_contract tool           Morpheus + bdd-backend skill  →  API services
                                     │
                                     ▼
                               Contract JSON

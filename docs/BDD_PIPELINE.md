@@ -21,14 +21,14 @@
 
 ## What It Is
 
-The BDD Pipeline is a **first-class feature in matrixx** that transforms Gherkin `.feature` files into production-ready artifacts through specialized AI agents. Given a feature file, the pipeline produces:
+| The BDD Pipeline is a **first-class feature in matrixx** that transforms Gherkin `.feature` files into production-ready artifacts through AI agents. Given a feature file, the pipeline produces:
 
 - **📋 Contract JSON** — Structured, schema-validated representation of the feature
 - **🧪 Tests** — Cucumber step definitions + page objects (E2E test suite)
 - **🎨 Frontend** — React components derived from UI annotations
 - **⚙️ Backend** — Typed API services with Zod validation
 
-All of this is driven by **dedicated agents** — no human-in-loop required.
+| All of this is driven by matrixx's built-in agents and skills — no human-in-loop required. The `bdd-contract` agent enriches the parsed Contract, and **Morpheus** (with `bdd-frontend`, `bdd-backend`, `bdd-tests` skills) generates the test, frontend, and backend artifacts. |
 
 ---
 
@@ -54,10 +54,10 @@ All of this is driven by **dedicated agents** — no human-in-loop required.
 ┌──────────────────────────────────────────────────────────────┐
 │                    AI Agents (EXPENSIVE)                       │
 │                                                               │
-│  bdd-contract      → Enriches Contract with semantic insights │
-│  test-engineer     → Generates step defs + page objects       │
-│  backend-engineer  → Generates typed API services             │
-│  Sati (existing)   → Generates React components               │
+| │  bdd-contract  → Enriches Contract with semantic insights      |
+| │  Morpheus      → Runs bdd-frontend / bdd-tests / bdd-backend  │
+| │                  skills to generate components, step defs,    │
+| │                  and typed API services                        |
 └──────────────────────┬───────────────────────────────────────┘
                        │
                        ▼
@@ -76,7 +76,7 @@ All of this is driven by **dedicated agents** — no human-in-loop required.
 | **No `stories_2_tdd` bundling** | Agents do the work natively; no legacy code import |
 | **5 separate slash commands** | No subcommand routing infrastructure needed |
 | **Deterministic tools first, agents second** | Tools (bdd_parse_gherkin, bdd_create_contract) do the parsing work; agents enrich on top |
-| **3 new EXPENSIVE agents** | BDD-contract, test-engineer, backend-engineer — each a specialist with a dedicated skill |
+|| **1 new EXPENSIVE agent** | `bdd-contract` is the only specialist — Morpheus (the matrixx orchestrator) handles tests/frontend/backend via skills |
 
 ---
 
@@ -122,7 +122,8 @@ All of this is driven by **dedicated agents** — no human-in-loop required.
                     │                       │                       │
                     ▼                       ▼                       ▼
         ┌──────────────────┐   ┌──────────────────┐   ┌────────────────────┐
-        │  test-engineer    │   │  Sati (existing) │   │  backend-engineer  │
+        │  Morpheus         │   │  Morpheus         │   │  Morpheus            │
+        │  + bdd-tests      │   │  + bdd-frontend   │   │  + bdd-backend       │
         │                   │   │                  │   │                    │
         │  Step defs        │   │  React           │   │  Typed API         │
         │  Page objects     │   │  components      │   │  services (Zod)    │
@@ -194,7 +195,7 @@ There are **5 slash commands**, each accessible from the matrixx chat prompt:
 
 **What happens**:
 1. Reads the Contract JSON
-2. The `test-engineer` agent generates `*.steps.ts` files (Given/When/Then implementations)
+2. The `bdd-tests` skill (loaded into Morpheus) generates `*.steps.ts` files (Given/When/Then implementations)
 3. Generates page object files (encapsulating UI interactions)
 4. You run tests with `npx cucumber-js`
 
@@ -210,7 +211,7 @@ There are **5 slash commands**, each accessible from the matrixx chat prompt:
 
 **What happens**:
 1. Reads the Contract JSON
-2. Invokes Sati (matrixx frontend specialist) with the `bdd-frontend` skill
+2. The `bdd-frontend` skill (loaded into Morpheus) generates React components
 3. Uses `@ui:route`, `@ui:testid`, `@ui:string` annotations to drive component design
 4. Generates functional React components
 
@@ -226,7 +227,7 @@ There are **5 slash commands**, each accessible from the matrixx chat prompt:
 
 **What happens**:
 1. Reads the Contract JSON
-2. The `backend-engineer` agent generates typed service files
+2. The `bdd-backend` skill (loaded into Morpheus) generates typed service files
 3. Uses `@api:endpoint` and `@api:response` annotations for request/response types
 4. Uses Zod schemas for runtime validation
 
@@ -349,13 +350,23 @@ export async function login(data: z.infer<typeof LoginRequestSchema>) {
 
 ## Agent Reference
 
-### New Agents (3 EXPENSIVE)
+### New Agent (1 EXPENSIVE)
 
 | Agent | Cost | Mode | Skill | Purpose |
 |-------|------|------|-------|---------|
 | **bdd-contract** | EXPENSIVE | `all` | `bdd-contract` | Enrich parsed Contract JSON with business semantics, naming, and intent |
-| **test-engineer** | EXPENSIVE | `all` | `bdd-tests` | Generate Cucumber step definitions + page objects from Contract |
-| **backend-engineer** | EXPENSIVE | `all` | `bdd-backend` | Generate typed API services with Zod validation from Contract |
+
+### Reused Agent
+
+| Agent | Skills Loaded | Purpose |
+|-------|---------------|---------|
+| **Morpheus** (existing) | `bdd-frontend`, `bdd-backend`, `bdd-tests` | Generates React components, Cucumber step defs, and typed API services from Contract JSON |
+
+### Existing Specialist (Frontend)
+
+| Agent | Skill Loaded | Purpose |
+|-------|---------------|---------|
+| **Sati** (existing) | `bdd-frontend` (alt path) | Same `bdd-frontend` skill — Sati remains a valid invocation target for React-specific work |
 
 ### Existing Agent (Reused)
 
@@ -365,7 +376,7 @@ export async function login(data: z.infer<typeof LoginRequestSchema>) {
 
 ### Agent Architecture
 
-All 3 new agents follow the **Cipher template** (see `src/agents/cipher.ts`):
+| The `bdd-contract` agent follows the **Cipher template** (see `src/agents/cipher.ts`): |
 
 ```
 ┌──────────────────────────────────────────────────────────┐
@@ -385,7 +396,7 @@ All 3 new agents follow the **Cipher template** (see `src/agents/cipher.ts`):
 └──────────────────────────────────────────────────────────┘
 ```
 
-All 3 are registered in `agentSources` and `agentMetadata` in `src/agents/builtin-agents.ts`, discoverable via the agent menu (mode: `"all"`).
+| `bdd-contract` is registered in `agentSources` and `agentMetadata` in `src/agents/builtin-agents.ts`, discoverable via the agent menu (mode: `"all"`). The `bdd-frontend` / `bdd-backend` / `bdd-tests` skills are auto-loaded into Morpheus via `buildAvailableSkills()` and surfaced through the dynamic prompt builder — no specialist wrapper agents are needed. |
 
 ---
 
@@ -441,7 +452,7 @@ All 3 are registered in `agentSources` and `agentMetadata` in `src/agents/builti
 | ❌ No new MCP servers | ✓ None |
 | ❌ No new hooks | ✓ None |
 | ❌ No auto-installation of test runners | ✓ User runs `bun install` themselves for cucumber |
-| ❌ No 4th new agent | ✓ Exactly 3 new agents |
+| ❌ No new specialist agents for tests/frontend/backend | ✓ These run via Morpheus + bdd-* skills (single-source-of-truth consolidation) |
 | ❌ No subcommand routing | ✓ 5 separate commands |
 
 ### Fixtures
@@ -517,11 +528,12 @@ bun run lint
 
 | Metric | Value |
 |--------|-------|
-| New test files | 70+ (33 agent + 23 schema/annotation + 14 tool) |
-| New source files | ~30 across features/, agents/, tools/ |
-| Commits | 13 on `feat/bdd` branch |
+| New test files | 49+ (12 agent + 23 schema/annotation + 14 tool) |
+| New source files | ~28 across features/, agents/, tools/ |
+| Commits | 16 on `feat/bdd` branch (after consolidation) |
 | Branch target | `dev` (merge to `dev`, not `master`) |
 | Production deps added | 1 (`@cucumber/gherkin`) |
+| Dev deps added | 3 (`@cucumber/cucumber`, `@playwright/test`, `tsx` — for generated E2E test runs) |
 | Lines of implementation | ~800 (non-test, non-prompt) |
 | Lines of tests | ~1,300 |
 
@@ -546,12 +558,9 @@ src/
 │   ├── bdd-parse-gherkin/     ← bdd_parse_gherkin tool (6 tests)
 │   └── bdd-create-contract/   ← bdd_create_contract tool (8 tests)
 ├── agents/
-│   ├── bdd-contract.ts        ← BDD contract specialist agent
-│   ├── test-engineer.ts       ← Test generation specialist agent
-│   ├── backend-engineer.ts    ← Backend service specialist agent
+│   ├── bdd-contract.ts        ← BDD contract specialist agent (only new agent)
 │   ├── bdd-contract.test.ts   ← 12 agent tests
-│   ├── test-engineer.test.ts  ← 12 agent tests
-│   └── backend-engineer.test.ts ← 9 agent tests
+│   ├── morpheus.ts            ← Matrixx orchestrator (runs bdd-tests, bdd-frontend, bdd-backend)
 ├── features/builtin-skills/skills/
 │   ├── bdd-contract.ts        ← BDD contract skill (template prompt)
 │   ├── bdd-tests.ts           ← BDD tests skill
