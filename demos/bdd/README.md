@@ -68,6 +68,44 @@ docker run --rm matrixx-bdd-login
 docker run --rm -e BDD_ARGS="--tags @happy-path" matrixx-bdd-login
 ```
 
+## Running every feature (parent batch runner)
+
+When the pipeline is run on a directory of multiple `.feature` files, it also
+generates a **parent** `Dockerfile` and `run-tests.sh` at the input directory
+root. The parent runner discovers every subdirectory that has a per-feature
+`run-tests.sh` and invokes them in sequence, aggregating pass/fail counts.
+
+```bash
+# Run all features locally:
+bash demos/bdd/run-tests.sh
+
+# Run a single feature by name (e.g. just `login`):
+BDD_FEATURE=login bash demos/bdd/run-tests.sh
+
+# Forward cucumber args to every feature:
+bash demos/bdd/run-tests.sh --tags @happy-path
+```
+
+In Docker, the parent image builds once and runs them all:
+
+```bash
+# Build the parent image:
+docker build -f demos/bdd/Dockerfile -t matrixx-bdd .
+
+# Run all features:
+docker run --rm matrixx-bdd
+
+# Run a single feature:
+docker run --rm -e BDD_FEATURE=login matrixx-bdd
+
+# Forward cucumber args:
+docker run --rm -e BDD_ARGS="--tags @happy-path" matrixx-bdd
+```
+
+The parent exits 0 only when every feature passes. Failures are listed at the
+end of the run.
+
+
 ## Adding a new feature
 
 1. Drop a `<feature>.feature` (pure Gherkin, no `# @` comments) into
