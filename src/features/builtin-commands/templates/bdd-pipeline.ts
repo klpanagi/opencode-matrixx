@@ -16,7 +16,7 @@ Batch (directory or glob):
 \`\`\`
 
 ## Pipeline Steps
-1. /bdd-contract <input> — Parse feature(s) → generate Contract JSON
+1. /bdd-contract <input> — Parse feature(s) → generate Contract JSON AND LLM-enrich annotations (api/ui/state/assumptions) via the bdd-contract skill. The bdd_create_contract tool is deterministic and writes empty annotations — the bdd-contract skill loaded into the running agent must fill them via LLM inference from feature content (name, scenarios, tags, step text) before moving to step 2.
 2. /bdd-tests <contracts> — Generate Cucumber step definitions + page objects
 3. /bdd-frontend <contracts> — Generate React components
 4. /bdd-backend <contracts> — Generate typed API services
