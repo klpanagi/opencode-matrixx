@@ -56,9 +56,11 @@ Spawns the feature's \`components/preview-server.ts\` in the background, waits f
 - \`set -euo pipefail\` at the top.
 - Compute \`SCRIPT_DIR\` from \`\${BASH_SOURCE[0]}\` so the script is location-independent.
 - \`trap cleanup EXIT INT TERM\` to guarantee the preview server is killed even on cucumber failure.
-- Health-check loop: \`curl -fsS http://localhost:$PORT/login\` for up to 30s before giving up.
+- Health-check loop: \`curl -fsS http://localhost:$PORT/\` for up to 30s before giving up. (Probe the index/root path -- the generated \`preview-server.ts\` always serves \`/\`, but per-feature route paths like \`/login\` may not be wired and will return 404.)
 - Forward all script args (\`"$@"\`) and \`\${BDD_ARGS:-}\` to cucumber-js so users can pass \`--tags @happy-path\` etc.
 - Make the file executable (\`chmod +x\`).
+- **CRITICAL pitfall**: do NOT spawn the preview server inside a subshell with \`( cd "$FEATURE_DIR" && PORT=... bun "$PREVIEW_SERVER" >log 2>&1 & )\`. The \`&\` inside the subshell means the job never enters the parent shell job table, so \`PREVIEW_PID=$!\` in the parent is unbound and the script crashes with \`$!: unbound variable\` under \`set -u\`. Use \`pushd "$FEATURE_DIR" >/dev/null; PORT=... bun "$PREVIEW_SERVER" >log 2>&1 &; PREVIEW_PID=$!; popd >/dev/null\` instead.
+
 
 ### Dockerfile (containerised)
 Per-feature \`Dockerfile\` with the repo root as build context. Implementation requirements:
