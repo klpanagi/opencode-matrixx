@@ -1,38 +1,13 @@
 import * as fs from "node:fs"
 import { type ToolDefinition, tool } from "@opencode-ai/plugin"
-import { type Annotations, parseAnnotations } from "../../features/bdd/annotations"
 import { ContractSchema } from "../../features/bdd/schema"
 
-/** Map nested Annotations to the flat ContractAnnotations shape. */
-function mapAnnotations(ann: Annotations): Record<string, unknown> {
-  const result: Record<string, unknown> = {}
-  const api: Array<{ method: string; path: string }> = [
-    ...ann.api.endpoints.map((e) => ({ method: e.method, path: e.path })),
-    ...ann.api.responses.map((r) => ({ method: r.status, path: r.format })),
-  ]
-  if (api.length > 0) result.api = api
-  const ui: Array<{ component: string; description?: string }> = [
-    ...ann.ui.routes.flatMap((r) =>
-      Object.entries(r).map(([k, v]) => ({ component: k, description: v })),
-    ),
-    ...ann.ui.testIds.flatMap((t) =>
-      Object.entries(t).map(([k, v]) => ({ component: k, description: v })),
-    ),
-    ...ann.ui.strings.map((s) => ({
-      component: `${s.category}.${s.key}`,
-      description: s.value,
-    })),
-  ]
-  if (ui.length > 0) result.ui = ui
-  const state: Array<{ key: string; description?: string }> = [
-    ...ann.state.variables.map((v) => ({ key: v.name, description: v.type })),
-    ...ann.state.initial.map((i) => ({ key: i.key, description: i.value })),
-    ...ann.state.preconditions.map((p) => ({ key: p.key, description: p.value })),
-  ]
-  if (state.length > 0) result.state = state
-  if (ann.assumptions.length > 0) result.assumptions = ann.assumptions
-  return result
-}
+/**
+ * The bdd_create_contract tool is deterministic. It lifts the parsed Gherkin
+ * AST into the Contract shape and leaves `annotations` empty. The bdd-contract
+ * agent is responsible for enriching `annotations` via LLM inference from the
+ * feature content (feature name, scenarios, tags, step text).
+ */
 
 /** Extract a step from the Gherkin AST. */
 function extractStep(s: Record<string, unknown>): Record<string, unknown> {
@@ -91,10 +66,11 @@ function extractScenario(s: Record<string, unknown>): Record<string, unknown> {
 /** Create a tool that produces a Contract JSON from a parsed Gherkin AST. */
 export function createBddCreateContractTool(): ToolDefinition {
   return tool({
-    description:
-      "Create a structured contract JSON from a parsed Gherkin AST. " +
-      "Parses annotations from the .feature source text, builds a Contract " +
-      "object, validates against ContractSchema, and writes to disk.",
+      description:
+        "Create a structured contract JSON from a parsed Gherkin AST. " +
+        "Builds a Contract object with empty annotations, validates " +
+        "against ContractSchema, and writes to disk. The bdd-contract " +
+        "agent is responsible for filling annotations via LLM inference.",
     args: {
       parsedAst: tool.schema
         .string()
@@ -102,7 +78,7 @@ export function createBddCreateContractTool(): ToolDefinition {
       sourceFile: tool.schema.string().describe("Original .feature file path"),
       sourceText: tool.schema
         .string()
-        .describe("Original .feature file content for annotation parsing"),
+        .describe("Original .feature file content (kept for compatibility, not parsed)"),
       force: tool.schema
         .boolean()
         .default(false)
@@ -120,7 +96,6 @@ export function createBddCreateContractTool(): ToolDefinition {
           return JSON.stringify({ success: false, error: "Invalid GherkinDocument AST: missing feature" })
         }
         const sourceFile = args.sourceFile as string
-        const ann = parseAnnotations(args.sourceText as string)
         const feature = doc.feature as Record<string, unknown>
         const children = (feature.children ?? []) as Array<Record<string, unknown>>
         const bgChild = children.find((c) => c.background)
@@ -160,7 +135,7 @@ export function createBddCreateContractTool(): ToolDefinition {
               }
             : {}),
           ...(rules.length > 0 ? { rules } : {}),
-          annotations: mapAnnotations(ann),
+          annotations: {},
         }
         const validation = ContractSchema.safeParse(contract)
         if (!validation.success) {

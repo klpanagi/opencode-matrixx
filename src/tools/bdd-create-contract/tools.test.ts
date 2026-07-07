@@ -30,10 +30,7 @@ function parseGherkin(content: string): Record<string, unknown> | undefined {
 // ---------------------------------------------------------------------------
 // Fixtures
 // ---------------------------------------------------------------------------
-
-const VALID_FEATURE = `# @api:endpoint POST /api/v1/auth/login
-# @assumption: mock-oauth-server running
-Feature: User Login
+const VALID_FEATURE = `Feature: User Login
   As a user
   I want to log in
 
@@ -144,6 +141,33 @@ describe("bdd_create_contract tool", () => {
     const contractJson = JSON.parse(contractStr)
     const validation = ContractSchema.safeParse(contractJson)
     expect(validation.success).toBe(true)
+    expect(contractJson.annotations).toEqual({})
+  })
+
+  it("leaves annotations empty for agent enrichment (no # @ comments parsed)", async () => {
+    // given
+    const ast = parseGherkin(VALID_FEATURE)
+    const parsedAst = JSON.stringify({ success: true, data: ast })
+    const tool = createBddCreateContractTool()
+
+    // when
+    const result = await tool.execute(
+      {
+        parsedAst,
+        sourceFile: "/test/login.feature",
+        sourceText: VALID_FEATURE,
+        force: true,
+      },
+      mockContext,
+    )
+    const parsed = JSON.parse(result)
+
+    // then
+    expect(parsed.success).toBe(true)
+    const contractStr = writtenFiles.get("/test/login.feature.contract.json") || "{}"
+    const contractJson = JSON.parse(contractStr)
+    expect(contractJson.annotations).toEqual({})
+    expect(contractJson.feature.annotations).toEqual({})
   })
 
   it("returns error when output file exists and force is false", async () => {
@@ -327,3 +351,4 @@ describe("bdd_create_contract tool", () => {
     expect(writtenFiles.has("/custom/output/contract.json")).toBe(true)
   })
 })
+
