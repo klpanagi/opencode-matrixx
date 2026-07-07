@@ -27,13 +27,17 @@ Single file:
 
 Batch input (directory or glob):
 1. Expand the input into a list of .contract.json files
-2. For each contract, run the single-file workflow above (including the Dockerfile + run-tests.sh generation)
+2. For each contract, run the single-file workflow above (including the per-feature Dockerfile + run-tests.sh generation)
 3. Use background subagents (\`task(run_in_background=true)\`) to run each in parallel (up to 5 concurrent)
-4. Wait for all to finish, then collect results and report a summary
+4. Wait for all to finish and collect results
+5. AFTER all per-feature runs finish, generate TWO parent-shared files at the input directory root:
+   - \`<input-dir>/Dockerfile\` — same base image as the per-feature one, CMD points to the parent run-tests.sh
+   - \`<input-dir>/run-tests.sh\` — iterates every feature subdir that has a run-tests.sh and invokes it in sequence (with BDD_FEATURE filter support)
+6. Report a summary that lists the per-feature outputs AND the parent batch runner
 
 ## Output
 
 Single file: \`<out-dir>/<feature>/\` containing \`cucumber.cjs\`, \`Dockerfile\`, \`run-tests.sh\`, plus \`tests/\` (step definitions, page objects, world, hooks).
 
-Batch: per-feature subdirectory tree under \`<out-dir>/<feature>/\` with the same layout for each feature.
+Batch: per-feature subdirectory tree under \`<input-dir>/<feature>/\` with the same layout for each feature, PLUS parent-shared \`<input-dir>/Dockerfile\` and \`<input-dir>/run-tests.sh\` for running every feature in one go.
 `

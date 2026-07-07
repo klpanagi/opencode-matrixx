@@ -73,5 +73,11 @@ Per-feature \`Dockerfile\` with the repo root as build context. Implementation r
 
 ### .dockerignore (repo root)
 The build context is the repo root, so the \`.dockerignore\` lives at the repo root and applies to every per-feature \`docker build\`. Must exclude: \`.git\`, \`node_modules\`, \`dist\`, \`coverage\`, \`reports\`, \`*.log\`, \`bun.lockb\`, \`.matrixx/\`, \`docs/\`, \`*.md\` (except the per-feature \`Dockerfile\`, \`run-tests.sh\`, and \`demos/bdd/README.md\`).
-`,
+
+### Batch Mode (REQUIRED when input is a directory of multiple features)
+When the bdd-tests input is a directory or a glob of multiple contracts (not a single file), AFTER the per-feature generation above, ALSO emit two parent-shared files at the **input directory root** so the entire suite can be run with one command. These are NOT optional:
+
+- **\`<input-dir>/run-tests.sh\`** -- iterates every immediate subdirectory of \`<input-dir>\` that has a \`run-tests.sh\`, invokes each in sequence, and prints a \`N passed, M failed\` summary at the end. A failure in one feature MUST NOT abort the loop. The parent reads the same env vars as the per-feature runner (\`BDD_FEATURE\` to filter to a single subdir, \`BDD_ARGS\` to forward extra cucumber args). Implementation: \`set -uo pipefail\` (NOT \`-e\` so one bad feature does not stop the rest), \`shopt -s nullglob\`, \`[[ ! -f "$runner" ]] && continue\` to skip subdirs without a generated runner. Make the file executable.
+
+- **\`<input-dir>/Dockerfile\`** -- same base image, system libs, and \`bun install\` + \`playwright install\` flow as the per-feature one. Differences: (a) no per-feature \`ENV\` block (defaults live in the parent only); (b) \`WORKDIR /app/demos/bdd\`; (c) \`CMD ["bash", "run-tests.sh"]\`. Also \`RUN find ./demos/bdd -name "run-tests.sh" -exec chmod +x {} +\` to make every per-feature runner executable in one shot.`,
 }
