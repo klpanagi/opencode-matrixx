@@ -172,4 +172,117 @@ describe("ContractSchema", () => {
       expect(result.data.rules?.[0].name).toBe("Rate Limiting")
     }
   })
+
+  // --- Strict-annotation tests (new) ---
+
+  //#given a contract with a fully populated api.endpoints array
+  //#when parsed through ContractSchema
+  //#then succeeds
+  it("accepts well-formed api.endpoints", () => {
+    const contract = makeMinimalContract()
+    contract.annotations = {
+      api: {
+        endpoints: [
+          { method: "POST", path: "/api/auth/login", description: "Authenticate a user" },
+          { method: "GET", path: "/api/users/me" },
+        ],
+        responses: [{ status: 200, format: "json" }, { status: 401, format: "json", description: "Unauthorized" }],
+      },
+    }
+    const result = ContractSchema.safeParse(contract)
+    expect(result.success).toBe(true)
+  })
+
+  //#given an api.endpoints entry with an invalid HTTP method
+  //#when parsed through ContractSchema
+  //#then fails
+  it("rejects invalid HTTP method", () => {
+    const contract = makeMinimalContract()
+    contract.annotations = { api: { endpoints: [{ method: "BREW", path: "/x" }] } }
+    const result = ContractSchema.safeParse(contract)
+    expect(result.success).toBe(false)
+  })
+
+  //#given an api.endpoints entry with a non-/ path
+  //#when parsed through ContractSchema
+  //#then fails
+  it("rejects api endpoint without leading slash", () => {
+    const contract = makeMinimalContract()
+    contract.annotations = { api: { endpoints: [{ method: "GET", path: "api/x" }] } }
+    const result = ContractSchema.safeParse(contract)
+    expect(result.success).toBe(false)
+  })
+
+  //#given a ui.testIds entry with a non-kebab-case name
+  //#when parsed through ContractSchema
+  //#then fails
+  it("rejects non-kebab-case ui.testId name", () => {
+    const contract = makeMinimalContract()
+    contract.annotations = { ui: { testIds: [{ name: "LoginButton", value: "login-btn" }] } }
+    const result = ContractSchema.safeParse(contract)
+    expect(result.success).toBe(false)
+  })
+
+  //#given a ui.strings entry with a non-dotted key
+  //#when parsed through ContractSchema
+  //#then fails
+  it("rejects ui.string key without category", () => {
+    const contract = makeMinimalContract()
+    contract.annotations = { ui: { strings: [{ key: "signin", value: "Sign in" }] } }
+    const result = ContractSchema.safeParse(contract)
+    expect(result.success).toBe(false)
+  })
+
+  //#given a state.variable with a non-camelCase name
+  //#when parsed through ContractSchema
+  //#then fails
+  it("rejects non-camelCase state variable name", () => {
+    const contract = makeMinimalContract()
+    contract.annotations = { state: { variables: [{ name: "UserName", type: "string" }] } }
+    const result = ContractSchema.safeParse(contract)
+    expect(result.success).toBe(false)
+  })
+
+  //#given a state.variable with an invalid type
+  //#when parsed through ContractSchema
+  //#then fails
+  it("rejects unknown state variable type", () => {
+    const contract = makeMinimalContract()
+    // @ts-expect-error testing invalid enum value
+    contract.annotations = { state: { variables: [{ name: "count", type: "bigint" }] } }
+    const result = ContractSchema.safeParse(contract)
+    expect(result.success).toBe(false)
+  })
+
+  //#given an api.responses entry with an HTTP status outside 100-599
+  //#when parsed through ContractSchema
+  //#then fails
+  it("rejects out-of-range api response status", () => {
+    const contract = makeMinimalContract()
+    contract.annotations = { api: { responses: [{ status: 99, format: "json" }] } }
+    const result = ContractSchema.safeParse(contract)
+    expect(result.success).toBe(false)
+  })
+
+  //#given an annotation grouping with an unknown field
+  //#when parsed through ContractSchema
+  //#then fails (strict object)
+  it("rejects unknown field in api annotations", () => {
+    const contract = makeMinimalContract()
+    contract.annotations = { api: { endpoints: [], unknownKey: true } }
+    const result = ContractSchema.safeParse(contract)
+    expect(result.success).toBe(false)
+  })
+
+  //#given a feature.annotations that is not the empty object
+  //#when parsed through ContractSchema
+  //#then fails (feature.annotations must be empty or omitted)
+  it("rejects non-empty feature.annotations", () => {
+    const contract = makeMinimalContract()
+    // @ts-expect-error testing forbidden field
+    contract.feature.annotations = { foo: "bar" }
+    const result = ContractSchema.safeParse(contract)
+    expect(result.success).toBe(false)
+  })
+
 })

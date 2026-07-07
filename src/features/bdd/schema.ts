@@ -38,38 +38,136 @@ export const RuleSchema = z.object({
   scenarios: z.array(ScenarioSchema),
 })
 
-// --- Annotation schemas (exported individually) ---
+// --- Naming-convention primitives (strict regex) ---
 
-export const AnnotationApiSchema = z.object({
-  method: z.string(),
-  path: z.string(),
-  description: z.string().optional(),
-})
+// kebab-case: starts with lowercase letter, then lowercase letters / digits / hyphens
+export const KebabCaseSchema = z
+  .string()
+  .regex(/^[a-z][a-z0-9-]*$/, "must be kebab-case (lowercase letters, digits, hyphens; no leading digit)")
 
-export const AnnotationUiSchema = z.object({
-  component: z.string(),
-  description: z.string().optional(),
-})
+// camelCase: starts with lowercase letter, then alphanumeric
+export const CamelCaseSchema = z
+  .string()
+  .regex(/^[a-z][a-zA-Z0-9]*$/, "must be camelCase (lowercase first letter, then alphanumeric)")
 
-export const AnnotationStateSchema = z.object({
-  key: z.string(),
-  description: z.string().optional(),
-})
+// dotted kebab-case: "category.name" (both segments kebab-case)
+export const DottedKebabSchema = z
+  .string()
+  .regex(
+    /^[a-z][a-z0-9-]*(\.[a-z][a-z0-9-]*)+$/,
+    "must be dotted kebab-case (e.g. 'button.sign-in')",
+  )
 
-export const ContractAnnotationsSchema = z.object({
-  api: z.array(AnnotationApiSchema).optional(),
-  ui: z.array(AnnotationUiSchema).optional(),
-  state: z.array(AnnotationStateSchema).optional(),
-  assumptions: z.array(z.string()).optional(),
-})
+// URL path: must start with '/'
+export const UrlPathSchema = z.string().regex(/^\//, "must be an absolute path starting with '/'")
+
+// --- Enum schemas ---
+
+export const HttpMethodSchema = z.enum(["GET", "POST", "PUT", "PATCH", "DELETE", "HEAD", "OPTIONS"])
+
+export const ResponseFormatSchema = z.enum(["json", "html", "text", "xml", "binary"])
+
+export const VarTypeSchema = z.enum(["string", "number", "boolean", "object", "array", "null"])
+
+// --- Annotation element schemas (strict — reject unknown fields) ---
+
+export const ApiEndpointSchema = z
+  .object({
+    method: HttpMethodSchema,
+    path: UrlPathSchema,
+    request: z.string().optional(),
+    response: z.string().optional(),
+    description: z.string().optional(),
+  })
+  .strict()
+
+export const ApiResponseSchema = z
+  .object({
+    status: z.number().int().min(100).max(599),
+    format: ResponseFormatSchema,
+    description: z.string().optional(),
+  })
+  .strict()
+
+export const UiRouteSchema = z
+  .object({
+    name: KebabCaseSchema,
+    path: UrlPathSchema,
+  })
+  .strict()
+
+export const UiTestIdSchema = z
+  .object({
+    name: KebabCaseSchema,
+    value: KebabCaseSchema,
+  })
+  .strict()
+
+export const UiStringSchema = z
+  .object({
+    key: DottedKebabSchema,
+    value: z.string().min(1),
+  })
+  .strict()
+
+export const StateVariableSchema = z
+  .object({
+    name: CamelCaseSchema,
+    type: VarTypeSchema,
+    default: z.unknown().optional(),
+  })
+  .strict()
+
+export const StateTransitionSchema = z
+  .object({
+    from: z.string().min(1),
+    to: z.string().min(1),
+    trigger: z.string().min(1),
+  })
+  .strict()
+
+// --- Annotation grouping schemas (strict) ---
+
+export const ApiAnnotationsSchema = z
+  .object({
+    endpoints: z.array(ApiEndpointSchema).optional(),
+    responses: z.array(ApiResponseSchema).optional(),
+  })
+  .strict()
+
+export const UiAnnotationsSchema = z
+  .object({
+    routes: z.array(UiRouteSchema).optional(),
+    testIds: z.array(UiTestIdSchema).optional(),
+    strings: z.array(UiStringSchema).optional(),
+  })
+  .strict()
+
+export const StateAnnotationsSchema = z
+  .object({
+    variables: z.array(StateVariableSchema).optional(),
+    transitions: z.array(StateTransitionSchema).optional(),
+  })
+  .strict()
+
+export const ContractAnnotationsSchema = z
+  .object({
+    api: ApiAnnotationsSchema.optional(),
+    ui: UiAnnotationsSchema.optional(),
+    state: StateAnnotationsSchema.optional(),
+    assumptions: z.array(z.string().min(1)).optional(),
+  })
+  .strict()
 
 // --- Feature ---
-
+// `feature.annotations` is reserved for future use; it must be the empty
+// object `{}` when present (or omitted entirely). Per-feature metadata
+// lives under `Contract.annotations`, not here.
 export const FeatureSchema = z.object({
   name: z.string(),
   description: z.string().optional(),
   tags: z.array(z.string()),
-  annotations: z.record(z.string(), z.unknown()),
+  annotations: z.object({}).strict().optional(),
 })
 
 // --- Contract (root) ---
@@ -93,9 +191,23 @@ export type ExampleRow = z.infer<typeof ExampleRowSchema>
 export type Scenario = z.infer<typeof ScenarioSchema>
 export type Background = z.infer<typeof BackgroundSchema>
 export type Rule = z.infer<typeof RuleSchema>
-export type AnnotationApi = z.infer<typeof AnnotationApiSchema>
-export type AnnotationUi = z.infer<typeof AnnotationUiSchema>
-export type AnnotationState = z.infer<typeof AnnotationStateSchema>
+
+export type HttpMethod = z.infer<typeof HttpMethodSchema>
+export type ResponseFormat = z.infer<typeof ResponseFormatSchema>
+export type VarType = z.infer<typeof VarTypeSchema>
+
+export type ApiEndpoint = z.infer<typeof ApiEndpointSchema>
+export type ApiResponse = z.infer<typeof ApiResponseSchema>
+export type UiRoute = z.infer<typeof UiRouteSchema>
+export type UiTestId = z.infer<typeof UiTestIdSchema>
+export type UiString = z.infer<typeof UiStringSchema>
+export type StateVariable = z.infer<typeof StateVariableSchema>
+export type StateTransition = z.infer<typeof StateTransitionSchema>
+
+export type ApiAnnotations = z.infer<typeof ApiAnnotationsSchema>
+export type UiAnnotations = z.infer<typeof UiAnnotationsSchema>
+export type StateAnnotations = z.infer<typeof StateAnnotationsSchema>
 export type ContractAnnotations = z.infer<typeof ContractAnnotationsSchema>
+
 export type Feature = z.infer<typeof FeatureSchema>
 export type Contract = z.infer<typeof ContractSchema>
