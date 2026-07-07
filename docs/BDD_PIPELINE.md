@@ -142,7 +142,7 @@ There are **5 slash commands**, each accessible from the matrixx chat prompt:
 **Purpose**: Parse a `.feature` file and produce a Contract JSON.
 
 ```
-/bdd-contract src/features/bdd/fixtures/login.feature
+/bdd-contract demos/bdd/login/1001_username_password.feature
 ```
 
 **What happens**:
@@ -159,7 +159,7 @@ There are **5 slash commands**, each accessible from the matrixx chat prompt:
 {
   "schemaVersion": 1,
   "generatedAt": "2026-07-06T...",
-  "sourceFile": "src/features/bdd/fixtures/login.feature",
+  "sourceFile": "demos/bdd/login/1001_username_password.feature",
   "feature": {
     "name": "User Login",
     "description": "As a registered user...",
@@ -190,7 +190,7 @@ There are **5 slash commands**, each accessible from the matrixx chat prompt:
 **Purpose**: Generate Cucumber step definitions + page objects from a Contract JSON.
 
 ```
-/bdd-tests src/features/bdd/fixtures/login.contract.json
+/bdd-tests demos/bdd/login/1001_username_password.contract.json
 ```
 
 **What happens**:
@@ -206,7 +206,7 @@ There are **5 slash commands**, each accessible from the matrixx chat prompt:
 **Purpose**: Generate React components from a Contract JSON (using `@ui:*` annotations).
 
 ```
-/bdd-frontend src/features/bdd/fixtures/login.contract.json
+/bdd-frontend demos/bdd/login/1001_username_password.contract.json
 ```
 
 **What happens**:
@@ -222,7 +222,7 @@ There are **5 slash commands**, each accessible from the matrixx chat prompt:
 **Purpose**: Generate typed API services from a Contract JSON (using `@api:*` annotations).
 
 ```
-/bdd-backend src/features/bdd/fixtures/login.contract.json
+/bdd-backend demos/bdd/login/1001_username_password.contract.json
 ```
 
 **What happens**:
@@ -238,7 +238,7 @@ There are **5 slash commands**, each accessible from the matrixx chat prompt:
 **Purpose**: Run the full pipeline end-to-end — all 4 steps in sequence.
 
 ```
-/bdd-pipeline src/features/bdd/fixtures/login.feature
+/bdd-pipeline demos/bdd/login/1001_username_password.feature
 ```
 
 **Pipeline Steps**:
@@ -543,10 +543,7 @@ src/
 │   ├── schema.ts              ← Contract JSON v1 Zod schema
 │   ├── types.ts               ← Re-exported TypeScript types
 │   ├── annotations.ts         ← Gherkin comment annotation parser
-│   ├── fixtures/
-│   │   ├── login.feature      ← Simple fixture
-│   │   ├── checkout.feature   ← Medium fixture
-│   │   └── api-pagination.feature ← Complex fixture
+
 │   └── __tests__/
 │       ├── schema.test.ts     ← 9 schema tests
 │       └── annotations.test.ts ← 14 annotation parser tests
