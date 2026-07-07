@@ -9,7 +9,9 @@ export class World extends CucumberWorld {
 
   async init(): Promise<void> {
     this.browser = await chromium.launch({ headless: true });
-    this.context = await this.browser.newContext();
+    this.context = await this.browser.newContext({
+      baseURL: process.env.BDD_BASE_URL || 'http://localhost:4000',
+    });
     this.page = await this.context.newPage();
   }
 
