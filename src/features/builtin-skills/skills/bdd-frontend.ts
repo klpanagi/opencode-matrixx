@@ -49,20 +49,21 @@ For each \`@api:endpoint METHOD /path\` annotation in the contract, add a fetch 
 
 ### Entry Point
 Generate an inline entry script that:
+- Imports \`React\` (default) + \`createElement\` from \`"react"\` so \`React.useState\` / \`React.useEffect\` work in the bundled component
+- Exposes \`window.React = React\` for components that reference the global
 - Imports \`createRoot\` from \`react-dom/client\`
 - Imports the main route component
 - Renders it on \`#root\` with mock callbacks
 
 ### HTML Template
 Wrap the bundled code in an HTML page with:
-- \`importmap\` pointing to esm.sh for React packages
+- \`importmap\` pointing to esm.sh for React packages (must include \`react\`, \`react-dom\`, \`react-dom/client\`, and \`react/jsx-runtime\`)
 - Minimal reset CSS
 - \`<div id="root">\` mount point
 
 ### File Output
 Write \`preview-server.ts\` in the same output directory as the components.
 
-## Accessibility
 ## Accessibility
 - Proper heading hierarchy
 - ARIA labels on interactive elements

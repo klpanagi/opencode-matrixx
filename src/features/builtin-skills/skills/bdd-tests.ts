@@ -40,5 +40,11 @@ Generate Cucumber step definitions and page objects from a BDD Contract JSON.
 ## Running Tests
 \`\`\`bash
 npx cucumber-js path/to/features --require path/to/step-definitions
-\`\`\``
+\`\`\`
+
+## Cucumber Configuration
+- **File name**: Use \`cucumber.cjs\` (not \`cucumber.js\`) when the project's \`package.json\` has \`"type": "module"\` — otherwise Node will treat the CommonJS file as ESM and fail with \`module is not defined\`.
+- **Step definition loading**: \`require: ['tests/**/*.ts', 'tests/**/*.steps.ts']\` to load page objects, world, hooks, and step files together. Use \`tests/**/*.{ts,steps.ts}\` or two globs — do NOT use \`*.steps.ts\` alone (it misses the supporting files).
+- **TypeScript loader**: Add \`{ module: ['tsx/esm'] }\` to \`requireModule\` so \`tsx\` transpiles \`.ts\` files on import.
+`,
 }
