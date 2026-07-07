@@ -1,0 +1,58 @@
+# ---------------------------------------------------------------------------
+# .dockerignore for per-feature BDD Dockerfiles (e.g. demos/bdd/login/Dockerfile)
+# Build context is always the repo root, so this file lives here too.
+# Slims the build context so `docker build` stays fast.
+# ---------------------------------------------------------------------------
+
+# VCS / IDE
+.git
+.gitignore
+.gitattributes
+.github
+.opencode
+.idea
+.vscode
+*.swp
+.DS_Store
+
+# Node / Bun
+node_modules
+**/node_modules
+.npm
+.pnp.*
+
+# Build artifacts
+dist
+build
+out
+coverage
+reports
+**/reports
+**/cucumber-report.html
+**/.bdd-build-state.json
+
+# Logs
+*.log
+logs
+tmp
+.tmp
+
+# Bun
+bun.lockb
+
+# Matrixx dev state
+.matrixx
+UNIQUE_BRANCH_MARKER.md
+.matrixx.log
+
+# Test cache
+.cache
+.parcel-cache
+.eslintcache
+
+# Documentation (not needed for test runs)
+docs/
+*.md
+!demos/bdd/*/Dockerfile
+!demos/bdd/*/run-tests.sh
+!demos/bdd/README.md
