@@ -16,13 +16,16 @@ Batch (directory or glob):
 \`\`\`
 
 ## Pipeline Steps
-1. /bdd-contract <input> — Parse feature(s) → generate Contract JSON AND LLM-enrich annotations (api/ui/state/assumptions) via the bdd-contract skill. The bdd_create_contract tool is deterministic and writes empty annotations — the bdd-contract skill loaded into the running agent must fill them via LLM inference from feature content (name, scenarios, tags, step text) before moving to step 2.
-2. /bdd-tests <contracts> — Generate Cucumber step definitions + page objects
-3. /bdd-frontend <contracts> — Generate React components
-4. /bdd-backend <contracts> — Generate typed API services
+1. /bdd-contract <input> -- Parse feature(s) -> generate Contract JSON AND LLM-enrich annotations (api/ui/state/assumptions) via the bdd-contract skill. The bdd_create_contract tool is deterministic and writes empty annotations; the bdd-contract skill loaded into the running agent must fill them via LLM inference from feature content (name, scenarios, tags, step text) before moving to step 2.
+2. /bdd-tests <contracts> -- Generate Cucumber step definitions + page objects
+3. /bdd-frontend <contracts> -- Generate React components
+4. /bdd-backend <contracts> -- Generate typed API services
 
 For batch input, run each step per feature. Use background subagents (\`task(run_in_background=true)\`) to parallelize the LLM-driven steps (tests, frontend, backend) across features.
 
 ## Output
 All outputs: per-feature Contract JSON, test files, components, and API services. For batch input, everything is organized under \`<out-dir>/<feature>/\`.
+
+## Git Actions (HARD RULE)
+NEVER run \`git commit\`, \`git add\`, \`git push\`, \`git rebase\`, \`git reset\`, \`git tag\`, or any other git command in this pipeline context. The pipeline runner is responsible for version control. You may only create/edit the generated files in the target output directory. If subagents try to commit, REFUSE.
 `

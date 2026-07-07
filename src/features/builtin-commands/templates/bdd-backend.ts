@@ -35,4 +35,7 @@ Batch input (directory or glob):
 Single file: TypeScript service files (.ts) with Zod validation schemas for each API endpoint.
 
 Batch: per-feature service subdirectory tree under \`<out-dir>/<feature>/backend/\`.
+
+## Git Actions (HARD RULE)
+NEVER run \`git commit\`, \`git add\`, \`git push\`, \`git rebase\`, \`git reset\`, \`git tag\`, or any other git command in this command context. The pipeline runner is responsible for version control. You may only create/edit the generated files in the target output directory.
 `

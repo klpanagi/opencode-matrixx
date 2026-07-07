@@ -36,4 +36,7 @@ Batch input (directory or glob):
 Single file: React component files (.tsx) with TypeScript props, design tokens, data-testid attributes, and a preview-server.ts for visual review.
 
 Batch: per-feature component subdirectory tree under \`<out-dir>/<feature>/components/\`, with one preview-server.ts per feature.
+
+## Git Actions (HARD RULE)
+NEVER run \`git commit\`, \`git add\`, \`git push\`, \`git rebase\`, \`git reset\`, \`git tag\`, or any other git command in this command context. The pipeline runner is responsible for version control. You may only create/edit the generated files in the target output directory.
 `

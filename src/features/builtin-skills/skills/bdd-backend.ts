@@ -7,7 +7,7 @@ const BDD_BACKEND_SKILL_DESCRIPTION =
 
 export const bddBackendSkill: BuiltinSkill = {
   name: BDD_BACKEND_SKILL_NAME,
-  description: BDD_BACKEND_SKILL_DESCRIPTION,
+  description: BDD_BACKEND_SKILL_DESCRIPTION + ' NEVER commits or runs git in this skill context.',
   template: `# BDD Backend Generation
 
 ## Overview
@@ -46,5 +46,7 @@ export type LoginRequest = z.infer<typeof LoginRequest>
 export async function login(data: LoginRequest): Promise<LoginResponse> {
   // Implementation
 }
-\`\`\``
+
+## Git Actions (HARD RULE)
+NEVER run \`git commit\`, \`git add\`, \`git push\`, \`git rebase\`, \`git reset\`, \`git tag\`, or any other git command in this skill context. The pipeline runner is responsible for version control. You may only create/edit the generated files in the target output directory.`,
 }

@@ -7,7 +7,7 @@ const BDD_TESTS_SKILL_DESCRIPTION =
 
 export const bddTestsSkill: BuiltinSkill = {
   name: BDD_TESTS_SKILL_NAME,
-  description: BDD_TESTS_SKILL_DESCRIPTION,
+  description: BDD_TESTS_SKILL_DESCRIPTION + ' NEVER commits or runs git in this skill context.',
   template: `# BDD Test Generation
 
 ## Overview
@@ -81,5 +81,7 @@ When the bdd-tests input is a directory or a glob of multiple contracts (not a s
 
 - **\`<input-dir>/run-tests.sh\`** -- iterates every immediate subdirectory of \`<input-dir>\` that has a \`run-tests.sh\`, invokes each in sequence, and prints a \`N passed, M failed\` summary at the end. A failure in one feature MUST NOT abort the loop. The parent reads the same env vars as the per-feature runner (\`BDD_FEATURE\` to filter to a single subdir, \`BDD_ARGS\` to forward extra cucumber args). Implementation: \`set -uo pipefail\` (NOT \`-e\` so one bad feature does not stop the rest), \`shopt -s nullglob\`, \`[[ ! -f "$runner" ]] && continue\` to skip subdirs without a generated runner. Make the file executable.
 
-- **\`<input-dir>/Dockerfile\`** -- same base image, system libs, and \`bun install\` + \`playwright install\` flow as the per-feature one. Differences: (a) no per-feature \`ENV\` block (defaults live in the parent only); (b) \`WORKDIR /app/demos/bdd\`; (c) \`CMD ["bash", "run-tests.sh"]\`. Also \`RUN find ./demos/bdd -name "run-tests.sh" -exec chmod +x {} +\` to make every per-feature runner executable in one shot.`,
+
+## Git Actions (HARD RULE)
+NEVER run \`git commit\`, \`git add\`, \`git push\`, \`git rebase\`, \`git reset\`, \`git tag\`, or any other git command in this skill context. The pipeline runner is responsible for version control. You may only create/edit the generated files in the target output directory.`,
 }

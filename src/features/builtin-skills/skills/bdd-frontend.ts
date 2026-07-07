@@ -7,7 +7,7 @@ const BDD_FRONTEND_SKILL_DESCRIPTION =
 
 export const bddFrontendSkill: BuiltinSkill = {
   name: BDD_FRONTEND_SKILL_NAME,
-  description: BDD_FRONTEND_SKILL_DESCRIPTION,
+  description: BDD_FRONTEND_SKILL_DESCRIPTION + ' NEVER commits or runs git in this skill context.',
   template: `# BDD Frontend Generation
 
 ## Overview
@@ -76,5 +76,7 @@ When the input is a directory or glob of .contract.json files:
 2. For each contract, run the single-file workflow above
 3. Use \`task(run_in_background=true)\` to spawn parallel subagents (up to 5 concurrent) for each contract
 4. Collect all results and report a per-feature summary
-5. Output structure: \`<out-dir>/<feature>/components/\` with one component tree + preview-server.ts per feature`,
+
+## Git Actions (HARD RULE)
+NEVER run \`git commit\`, \`git add\`, \`git push\`, \`git rebase\`, \`git reset\`, \`git tag\`, or any other git command in this skill context. The pipeline runner is responsible for version control. You may only create/edit the generated files in the target output directory.`,
 }

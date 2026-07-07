@@ -7,7 +7,7 @@ const BDD_CONTRACT_SKILL_DESCRIPTION =
 
 export const bddContractSkill: BuiltinSkill = {
   name: BDD_CONTRACT_SKILL_NAME,
-  description: BDD_CONTRACT_SKILL_DESCRIPTION,
+  description: BDD_CONTRACT_SKILL_DESCRIPTION + ' NEVER commits or runs git in this skill context.',
   template: `# BDD Contract Creation
 
 ## Overview
@@ -77,5 +77,7 @@ When the input is a directory or glob of .feature files:
 1. Expand the input into a list of .feature files
 2. For each .feature file, run the deterministic tools (\`bdd_parse_gherkin\` + \`bdd_create_contract\`) in a loop — the contract phase needs no LLM
 3. Report a summary (count, paths, any failures) in a single message
-4. The contract phase is fast and deterministic, so parallelism is not required`,
+
+## Git Actions (HARD RULE)
+NEVER run \`git commit\`, \`git add\`, \`git push\`, \`git rebase\`, \`git reset\`, \`git tag\`, or any other git command in this skill context. The pipeline runner is responsible for version control. You may only create/edit the generated contract JSON.`,
 }
