@@ -160,14 +160,11 @@ export const ContractAnnotationsSchema = z
   .strict()
 
 // --- Feature ---
-// `feature.annotations` is reserved for future use; it must be the empty
-// object `{}` when present (or omitted entirely). Per-feature metadata
-// lives under `Contract.annotations`, not here.
+// Per-feature metadata lives under `Contract.annotations`, not here.
 export const FeatureSchema = z.object({
   name: z.string(),
   description: z.string().optional(),
   tags: z.array(z.string()),
-  annotations: z.object({}).strict().optional(),
 })
 
 // --- Contract (root) ---

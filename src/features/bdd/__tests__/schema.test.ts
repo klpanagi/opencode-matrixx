@@ -11,7 +11,6 @@ function makeMinimalContract(): Contract {
     feature: {
       name: "User Login",
       tags: ["auth"],
-      annotations: {},
     },
     scenarios: [
       {
@@ -63,7 +62,6 @@ describe("ContractSchema", () => {
   it("accepts empty annotations object", () => {
     const contract = makeMinimalContract()
     contract.annotations = {}
-    contract.feature.annotations = {}
     const result = ContractSchema.safeParse(contract)
     expect(result.success).toBe(true)
   })
@@ -274,15 +272,5 @@ describe("ContractSchema", () => {
     expect(result.success).toBe(false)
   })
 
-  //#given a feature.annotations that is not the empty object
-  //#when parsed through ContractSchema
-  //#then fails (feature.annotations must be empty or omitted)
-  it("rejects non-empty feature.annotations", () => {
-    const contract = makeMinimalContract()
-    // @ts-expect-error testing forbidden field
-    contract.feature.annotations = { foo: "bar" }
-    const result = ContractSchema.safeParse(contract)
-    expect(result.success).toBe(false)
-  })
 
 })

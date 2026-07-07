@@ -167,7 +167,6 @@ describe("bdd_create_contract tool", () => {
     const contractStr = writtenFiles.get("/test/login.feature.contract.json") || "{}"
     const contractJson = JSON.parse(contractStr)
     expect(contractJson.annotations).toEqual({})
-    expect(contractJson.feature.annotations).toEqual({})
   })
 
   it("returns error when output file exists and force is false", async () => {

@@ -122,7 +122,6 @@ export function createBddCreateContractTool(): ToolDefinition {
             tags: ((feature.tags ?? []) as Array<Record<string, unknown>>).map(
               (t: any) => t.name as string,
             ),
-            annotations: {} as Record<string, unknown>,
           },
           scenarios,
           ...(bgChild
