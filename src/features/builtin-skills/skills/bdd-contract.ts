@@ -11,12 +11,12 @@ export const bddContractSkill: BuiltinSkill = {
   template: `# BDD Contract Creation
 
 ## Overview
-Transform Gherkin .feature files into structured Contract JSON with semantic enrichment.
+Transform Gherkin .feature files into structured Contract JSON with LLM-inferred annotations. The .feature file must be 100% pure Gherkin — NO '# @annotation' comments. The bdd-contract agent infers all api/ui/state/assumptions annotations from feature content via LLM reasoning.
 
 ## Workflow
 1. Parse Gherkin file → \`bdd_parse_gherkin\` tool (deterministic AST)
-2. Create Contract → \`bdd_create_contract\` tool (AST → Contract JSON with annotations)
-3. Enrich → Add business semantics, naming improvements, intent clarification
+2. Create Contract → \`bdd_create_contract\` tool (AST → Contract JSON with EMPTY annotations)
+3. Enrich → Agent infers annotations by LLM reasoning from feature content and edits the Contract JSON file in place
 
 ## Contract Schema Fields
 - \`schemaVersion\`: Always 1 (current)
@@ -26,24 +26,36 @@ Transform Gherkin .feature files into structured Contract JSON with semantic enr
 - \`scenarios\`: array of scenario objects with steps, examples, data tables
 - \`background\`: optional setup steps
 - \`rules\`: optional Gherkin 6+ rules
-- \`annotations\`: structured api/ui/state/assumptions
+- \`annotations\`: structured api/ui/state/assumptions (INFERRED BY LLM)
 
-## Annotation Enrichment
-- \`@api:endpoint METHOD /path\` → API endpoint metadata
-- \`@api:response STATUS description\` → Response metadata
-- \`@ui:route path=value\` → UI route configuration
-- \`@ui:testid key=value\` → Test ID mapping
-- \`@ui:string key=value\` → UI string resources
-- \`@state:variable name type default\` → State variable definitions
-- \`@assumption: text\` → Business assumptions
+## Annotation Inference (LLM-based)
+The tool ALWAYS produces empty annotations. The bdd-contract agent fills them via LLM inference from feature content:
+- \`@api:endpoint METHOD /path\` — INFER from HTTP verb/path patterns in scenario steps (NOT in .feature file)
+- \`@api:response STATUS description\` — INFER from response/return patterns in steps
+- \`@ui:route path=value\` — INFER from page/screen/navigation patterns in steps
+- \`@ui:testid key=value\` — INFER from element/form/button patterns in steps
+- \`@ui:string category.key=value\` — INFER from label/placeholder/message patterns in steps
+- \`@state:variable name type default\` — INFER from form field names + types + defaults in steps
+- \`@assumption: text\` — INFER from implicit preconditions in feature description/scenarios
+
+## Inference Signals
+- Feature name + description (high-level intent)
+- Scenario names + tags (specific behaviors)
+- Step text (concrete actions, field names, expected outcomes)
+- Background steps (preconditions)
+
+## Guidelines
+- Be conservative: only infer what is clearly evidenced by the feature content
+- Annotations are derived insight, not invented detail — prefer accuracy over completeness
+- .feature files MUST be 100% pure Gherkin (no '# @' comments)
 
 ## Delivery
-Report the contract file path and key features identified.
+Report the contract file path and the annotations inferred (api/ui/state/assumptions).
 
 ## Batch Mode
 When the input is a directory or glob of .feature files:
 1. Expand the input into a list of .feature files
-2. For each .feature file, run the deterministic tools (\`bdd_parse_gherkin\` + \`bdd_create_contract\`) in a loop — no LLM needed for the contract phase
+2. For each .feature file, run the deterministic tools (\`bdd_parse_gherkin\` + \`bdd_create_contract\`) in a loop — the contract phase needs no LLM
 3. Report a summary (count, paths, any failures) in a single message
-4. The contract phase is fast and deterministic, so parallelism is not required`,
+4. The contract phase is fast and deterministic, so parallelism is not required`
 }
