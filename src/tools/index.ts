@@ -13,6 +13,7 @@ import {
 export { createAstGrepTools } from "./ast-grep"
 export { createBddCreateContractTool } from "./bdd-create-contract"
 export { createBddParseGherkinTool } from "./bdd-parse-gherkin"
+export { createBddValidateContractTool } from "./bdd-validate-contract"
 export { createGlobTools } from "./glob"
 export { createGrepTools } from "./grep"
 export { createHandoffTools } from "./handoff"
