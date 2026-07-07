@@ -16,13 +16,12 @@ Batch (directory or glob):
 \`\`\`
 
 ## Workflow
-
 Single file:
 1. Parse the .feature file using bdd_parse_gherkin tool (deterministic AST)
 2. Create initial Contract JSON using bdd_create_contract tool (deterministic, empty annotations)
 3. ENRICH the Contract: the bdd-contract agent infers annotations (api/ui/state/assumptions) via LLM reasoning from feature content and edits the Contract JSON file in place
-4. Report the Contract file path, key features identified, and annotations inferred
-
+4. **VALIDATE**: call bdd_validate_contract on the file — if it returns errors, fix the contract and re-validate. The contract must conform to the strict ContractSchema (all annotation field names must match the required naming conventions: kebab-case for routes/testIds, camelCase for state variables, dotted kebab-case for string keys).
+5. Report the Contract file path, key features identified, and annotations inferred
 Batch input (directory or glob):
 1. Expand the input into a list of .feature files
 2. For each .feature file, run the single-file workflow above

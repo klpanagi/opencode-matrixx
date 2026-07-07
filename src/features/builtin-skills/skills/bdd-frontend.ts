@@ -15,11 +15,11 @@ Generate React components and a dev preview server from BDD Contract JSON annota
 
 ## Workflow
 1. Read the Contract JSON
-2. Extract \`@ui:*\` annotations
-3. Generate React components for each route
-4. Implement form fields for each state variable
-5. Apply test IDs from \`@ui:testid\` annotations
-6. Use design tokens for consistent styling
+2. Read the contract's \`annotations.ui\` and \`annotations.state\` blocks
+3. Generate React components for each route in \`annotations.ui.routes\`
+4. Implement form fields for each variable in \`annotations.state.variables\`
+5. Apply \`data-testid\` attributes from \`annotations.ui.testIds\` (each testId has \`name\` and \`value\`)
+6. Use strings from \`annotations.ui.strings\` for labels, placeholders, and messages (key is \`category.name\`)
 7. Generate a **preview-server.ts** for visual review (see Preview Server section below)
 
 ## Component Structure
@@ -30,10 +30,10 @@ Generate React components and a dev preview server from BDD Contract JSON annota
 - Data attributes for testability
 
 ## Annotation Mapping
-- \`@ui:route\` → Create route/page component
-- \`@ui:testid\` → Add \`data-testid\` attributes
-- \`@ui:string\` → Use for labels, placeholders, messages
-- \`@state:variable\` → Form state management
+- \`annotations.ui.routes[]\` → Create one route/page component per entry (\`name\` + \`path\`)
+- \`annotations.ui.testIds[]\` → Add \`data-testid={value}\` attributes (use the \`value\` field, not \`name\`)
+- \`annotations.ui.strings[]\` → Use for labels, placeholders, messages (key is \`category.name\`, value is the displayed text)
+- \`annotations.state.variables[]\` → Form state via \`useState\`; type drives the input element; \`default\` provides the initial value
 
 ## Preview Server
 Generate a \`preview-server.ts\` alongside the components so developers can visually review the UI in a browser with zero npm installs.
@@ -45,7 +45,7 @@ Generate a \`preview-server.ts\` alongside the components so developers can visu
 - **Bundle**: Build the main component TSX into an ESM bundle using \`Bun.build()\` with \`external: ["react", "react-dom", ...]\`
 
 ### Mock API Endpoints
-For each \`@api:endpoint METHOD /path\` annotation in the contract, add a fetch handler in the preview server that returns realistic mock data. Map \`@api:response\` annotations to shape the mock response body.
+For each entry in \`annotations.api.endpoints\` (\`{ method, path, request?, response? }\`), add a fetch handler in the preview server that returns realistic mock data shaped by \`annotations.api.responses[]\` (\`{ status, format }\`).
 
 ### Entry Point
 Generate an inline entry script that:

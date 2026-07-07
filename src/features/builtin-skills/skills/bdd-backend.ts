@@ -15,15 +15,15 @@ Generate typed API services from BDD Contract JSON annotations.
 
 ## Workflow
 1. Read the Contract JSON
-2. Extract \`@api:*\` annotations
-3. For each \`@api:endpoint METHOD /path\`, create a service function
-4. For each \`@api:response STATUS\`, define a typed response
+2. Read the contract's \`annotations.api\` block (\`endpoints[]\` + \`responses[]\`)
+3. For each \`endpoints[]\` entry (\`{ method, path, request?, response?, description? }\`), create a service function
+4. For each \`responses[]\` entry (\`{ status, format, description? }\`), define a typed response shape
 5. Use Zod schemas for request/response validation
 6. Generate a service class or module file
 
 ## API Service Structure
-- Request types inferred from endpoint annotations
-- Response types from \`@api:response\` annotations
+- Request types inferred from \`annotations.api.endpoints[].request\`
+- Response types from \`annotations.api.responses[]\` (\`status\` + \`format\`)
 - Zod schemas for runtime validation
 - Error handling with typed error responses
 - Single file per feature endpoint group
