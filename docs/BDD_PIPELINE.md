@@ -256,15 +256,11 @@ There are **5 slash commands**, each accessible from the matrixx chat prompt:
 ### Starting Point: `login.feature`
 
 ```gherkin
-# @ui:testid form=login-form-component
-# @api:endpoint POST /api/v1/auth/login
-# @state:initial session=new-session-init
 Feature: User Login
   As a registered user
   I want to log in with my credentials
   So that I can access my account dashboard
 
-  # @ui:testid button=login-submit-button
   Scenario: Successful login with valid credentials
     Given the user is on the login page
     When the user enters "alice@example.com" as the email
@@ -415,19 +411,19 @@ export async function login(data: z.infer<typeof LoginRequestSchema>) {
 | `rules` | Rule[]? | ❌ | Gherkin 6+ `Rule:` blocks |
 | `annotations` | Annotations | ✅ | Structured annotations: api, ui, state, assumptions |
 
-### Annotation Types
+### Annotation Types (LLM-inferred)
 
-| Annotation Prefix | Fields | Purpose |
-|-------------------|--------|---------|
-| `# @api:endpoint METHOD /path` | endpoints[] | API endpoint definitions |
-| `# @api:response STATUS json` | responses[] | Expected API responses |
-| `# @ui:route key=value` | routes[] | Frontend route mappings |
-| `# @ui:testid key=value` | testIds[] | Test ID selectors for components |
-| `# @ui:string category.key=value` | strings[] | UI copy/text strings |
-| `# @state:variable name type default` | variables[] | State variables |
-| `# @state:initial=value` | initial[] | Initial state values |
-| `# @state:precondition=value` | preconditions[] | Preconditions for scenarios |
-| `# @assumption: text` | assumptions[] | Business assumptions captured |
+Annotations are NOT placed in `.feature` files. The `.feature` file must be 100% pure Gherkin. The bdd-contract agent infers all annotations from the feature content via LLM reasoning and writes them into the Contract JSON.
+
+| Annotation Field | Inferred From |
+|------------------|----------------|
+| `annotations.api[].method` + `path` | HTTP verbs (GET/POST/PUT/DELETE), URL paths in step text |
+| `annotations.api[].description` | API context from feature/scenario descriptions |
+| `annotations.ui[].component` | Page/screen names, form/button patterns in step text |
+| `annotations.ui[].description` | UI element context |
+| `annotations.state[].key` | Form field names, session/auth/cart state references |
+| `annotations.state[].description` | State variable purpose and lifecycle |
+| `annotations.assumptions[]` | Implicit preconditions, business rules in feature description |
 
 ### Deterministic Tools
 
@@ -438,10 +434,10 @@ export async function login(data: z.infer<typeof LoginRequestSchema>) {
 - TDD: 6 tests (valid file, missing file, malformed, sourceMap toggle, empty file)
 
 **`bdd_create_contract`**
-- Input: parsed AST JSON + source file path + source text + options
-- Output: JSON Contract file written to disk
-- Steps: walks GherkinDocument AST, extracts annotations via `parseAnnotations()`, validates against `ContractSchema`
-- TDD: 8 tests (valid contract, schema validation, force flag, malformed input, data tables, outlines, rules)
+- Input: parsed AST JSON + source file path + options
+- Output: JSON Contract file written to disk (with empty annotations)
+- Steps: walks GherkinDocument AST, validates against `ContractSchema`. Annotations are LEFT EMPTY — the bdd-contract agent fills them via LLM inference from feature content
+- TDD: 9 tests (valid contract, schema validation, force flag, malformed input, data tables, outlines, rules, empty annotations)
 
 ### Guardrails (Must NOT Have)
 
