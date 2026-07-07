@@ -19,7 +19,7 @@ Generate Cucumber step definitions and page objects from a BDD Contract JSON.
 3. Generate step definition files for each scenario
 4. Generate page object classes for UI interactions
 5. Generate a Cucumber configuration file if needed
-6. Verify with \`npx cucumber-js\`
+6. **Run the generated cucumber suite** as the final step (see Running Tests section below). Up to 3 retry attempts on failure. Do not declare success until all scenarios pass.
 
 ## Step Definition Structure
 - Given: Setup preconditions and state
@@ -37,11 +37,19 @@ Generate Cucumber step definitions and page objects from a BDD Contract JSON.
 - Convert tables to arrays of maps
 - Use in scenario outlines with Examples tables
 
-## Running Tests
-\`\`\`bash
-npx cucumber-js path/to/features --require path/to/step-definitions
-\`\`\`
 
+## Running Tests (MANDATORY final step)
+After all step definitions, page objects, and \`cucumber.cjs\` are generated, run the cucumber suite. The generated per-feature \`run-tests.sh\` is the canonical entry point -- it starts the preview server, waits for it, runs cucumber, and cleans up on exit:
+\`\`\`bash
+bash <feature-dir>/run-tests.sh
+\`\`\`
+If the \`run-tests.sh\` is not yet generated (older flow), invoke cucumber directly:
+\`\`\`bash
+npx cucumber-js <feature-dir> --require <feature-dir>/tests/**/*.ts --require <feature-dir>/tests/**/*.steps.ts --require-module tsx/esm
+\`\`\`
+If a scenario fails, read the failure output, fix the step definition (or the page object, or the preview server mock), and re-run. Up to **3 retry attempts**. If still failing after 3 attempts, report the failure with the cucumber output and the list of files that need attention. Do not declare success until all scenarios pass.
+
+## Cucumber Configuration
 ## Cucumber Configuration
 - **File name**: Use \`cucumber.cjs\` (not \`cucumber.js\`) when the project's \`package.json\` has \`"type": "module"\` -- otherwise Node will treat the CommonJS file as ESM and fail with \`module is not defined\`.
 - **Step definition loading**: \`require: ['tests/**/*.ts', 'tests/**/*.steps.ts']\` to load page objects, world, hooks, and step files together. Use \`tests/**/*.{ts,steps.ts}\` or two globs -- do NOT use \`*.steps.ts\` alone (it misses the supporting files).
