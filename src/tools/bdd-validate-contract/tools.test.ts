@@ -28,8 +28,8 @@ const mockContext: ToolContext = {
   ask: async () => {},
 }
 
-beforeAll(() => {
-  fs.mkdirSync(TMP_DIR, { recursive: true })
+beforeAll(async () => {
+  await fs.promises.mkdir(TMP_DIR, { recursive: true })
 })
 
 afterAll(() => {
@@ -80,7 +80,7 @@ describe("bdd_validate_contract tool", () => {
         assumptions: ["User has already registered"],
       },
     })
-    fs.writeFileSync(VALID_CONTRACT_PATH, JSON.stringify(validContract, null, 2), "utf-8")
+    await Bun.write(VALID_CONTRACT_PATH, JSON.stringify(validContract, null, 2))
     const tool = createBddValidateContractTool()
 
     // when
@@ -117,7 +117,7 @@ describe("bdd_validate_contract tool", () => {
         },
       },
     }
-    fs.writeFileSync(INVALID_CONTRACT_PATH, JSON.stringify(invalidContract, null, 2), "utf-8")
+    await Bun.write(INVALID_CONTRACT_PATH, JSON.stringify(invalidContract, null, 2))
     const tool = createBddValidateContractTool()
 
     // when
@@ -147,7 +147,7 @@ describe("bdd_validate_contract tool", () => {
         },
       },
     }
-    fs.writeFileSync(INVALID_CONTRACT_PATH, JSON.stringify(contractWithExtra, null, 2), "utf-8")
+    await Bun.write(INVALID_CONTRACT_PATH, JSON.stringify(contractWithExtra, null, 2))
     const tool = createBddValidateContractTool()
 
     // when
@@ -161,7 +161,7 @@ describe("bdd_validate_contract tool", () => {
 
   it("returns error for malformed JSON", async () => {
     // given
-    fs.writeFileSync(MALFORMED_JSON_PATH, "{ this is not json", "utf-8")
+    await Bun.write(MALFORMED_JSON_PATH, "{ this is not json")
     const tool = createBddValidateContractTool()
 
     // when
@@ -208,7 +208,7 @@ describe("bdd_validate_contract tool", () => {
       ],
       annotations: {},
     }
-    fs.writeFileSync(VALID_CONTRACT_PATH, JSON.stringify(minimalContract, null, 2), "utf-8")
+    await Bun.write(VALID_CONTRACT_PATH, JSON.stringify(minimalContract, null, 2))
     const tool = createBddValidateContractTool()
 
     // when
@@ -219,3 +219,4 @@ describe("bdd_validate_contract tool", () => {
     expect(parsed.success).toBe(true)
   })
 })
+

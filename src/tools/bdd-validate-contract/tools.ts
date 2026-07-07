@@ -1,4 +1,4 @@
-import * as fs from "node:fs"
+import * as fsp from "node:fs/promises"
 import { type ToolDefinition, tool } from "@opencode-ai/plugin"
 import { ContractSchema } from "../../features/bdd/schema"
 
@@ -39,13 +39,19 @@ export function createBddValidateContractTool(): ToolDefinition {
     async execute(args): Promise<string> {
       try {
         const contractPath = args.contractPath as string
-        if (!fs.existsSync(contractPath)) {
-          return JSON.stringify({
-            success: false,
-            error: `Contract file not found: ${contractPath}`,
-          })
+        let raw: string
+        try {
+          raw = await fsp.readFile(contractPath, "utf-8")
+        } catch (e) {
+          const err = e as NodeJS.ErrnoException
+          if (err.code === "ENOENT") {
+            return JSON.stringify({
+              success: false,
+              error: `Contract file not found: ${contractPath}`,
+            })
+          }
+          return JSON.stringify({ success: false, error: err.message })
         }
-        const raw = fs.readFileSync(contractPath, "utf-8")
         let parsed: unknown
         try {
           parsed = JSON.parse(raw)
