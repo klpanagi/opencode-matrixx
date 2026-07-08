@@ -11,6 +11,7 @@ import { CategoriesConfigSchema } from "./categories"
 import { ClaudeCodeConfigSchema } from "./claude-code"
 import { BuiltinCommandNameSchema } from "./commands"
 import { CommentCheckerConfigSchema } from "./comment-checker"
+import { DcpConfigSchema } from "./dcp"
 import { ExperimentalConfigSchema } from "./experimental"
 import { HookNameSchema } from "./hooks"
 import { MatrixLoopConfigSchema } from "./matrix-loop"
@@ -47,6 +48,8 @@ export const MatrixxConfigSchema = z.object({
   morpheus_agent: MorpheusAgentConfigSchema.optional(),
   comment_checker: CommentCheckerConfigSchema.optional(),
   experimental: ExperimentalConfigSchema.optional(),
+  /** Dynamic Context Pruning (DCP) profile switcher configuration */
+  dcp: DcpConfigSchema.optional(),
   auto_update: z.boolean().optional(),
   skills: SkillsConfigSchema.optional(),
   matrix_loop: MatrixLoopConfigSchema.optional(),

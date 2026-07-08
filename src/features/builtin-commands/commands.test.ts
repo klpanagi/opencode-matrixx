@@ -1,5 +1,6 @@
 import { describe, expect, test } from "bun:test"
 import { loadBuiltinCommands } from "./commands"
+import { DCP_PROFILE_TEMPLATE } from "./templates/dcp-profile"
 import { END_ULTRAWORK_TEMPLATE } from "./templates/end-ultrawork"
 import { HANDOFF_TEMPLATE } from "./templates/handoff"
 import { REMOVE_DEADCODE_TEMPLATE } from "./templates/remove-deadcode"
@@ -305,4 +306,70 @@ describe("HANDOFF_TEMPLATE", () => {
     const emojiRegex = /[\u{1F600}-\u{1F64F}\u{1F300}-\u{1F5FF}\u{1F680}-\u{1F6FF}\u{1F1E0}-\u{1F1FF}\u{2702}-\u{27B0}\u{24C2}-\u{1F251}\u{1F900}-\u{1F9FF}\u{1FA00}-\u{1FA6F}\u{1FA70}-\u{1FAFF}\u{2600}-\u{26FF}\u{2700}-\u{27BF}]/u
     expect(emojiRegex.test(HANDOFF_TEMPLATE)).toBe(false)
   })
+
+describe("loadBuiltinCommands - dcp-profile", () => {
+  test("should include dcp-profile command in loaded commands", () => {
+    //#given
+    const disabledCommands: BuiltinCommandName[] = []
+
+    //#when
+    const commands = loadBuiltinCommands(disabledCommands)
+
+    //#then
+    expect(commands["dcp-profile"]).toBeDefined()
+    expect(commands["dcp-profile"].name).toBe("dcp-profile")
+  })
+
+  test("should exclude dcp-profile when disabled", () => {
+    //#given
+    const disabledCommands: BuiltinCommandName[] = ["dcp-profile"]
+
+    //#when
+    const commands = loadBuiltinCommands(disabledCommands)
+
+    //#then
+    expect(commands["dcp-profile"]).toBeUndefined()
+  })
+
+  test("should include dcp-profile template content in command template", () => {
+    //#given - no disabled commands
+
+    //#when
+    const commands = loadBuiltinCommands()
+
+    //#then
+    expect(commands["dcp-profile"].template).toContain(DCP_PROFILE_TEMPLATE)
+  })
+
+  test("should include $ARGUMENTS in dcp-profile template", () => {
+    //#given - no disabled commands
+
+    //#when
+    const commands = loadBuiltinCommands()
+
+    //#then
+    expect(commands["dcp-profile"].template).toContain("$ARGUMENTS")
+  })
+
+  test("should have correct description for dcp-profile", () => {
+    //#given - no disabled commands
+
+    //#when
+    const commands = loadBuiltinCommands()
+
+    //#then
+    expect(commands["dcp-profile"].description).toContain("DCP")
+  })
+})
+
+describe("DCP_PROFILE_TEMPLATE", () => {
+  test("should not contain emojis", () => {
+    //#given - the template string
+
+    //#when / #then
+    const emojiRegex = /[\u{1F600}-\u{1F64F}\u{1F300}-\u{1F5FF}\u{1F680}-\u{1F6FF}\u{1F1E0}-\u{1F1FF}\u{2702}-\u{27B0}\u{24C2}-\u{1F251}\u{1F900}-\u{1F9FF}\u{1FA00}-\u{1FA6F}\u{1FA70}-\u{1FAFF}\u{2600}-\u{26FF}\u{2700}-\u{27BF}]/u
+    expect(emojiRegex.test(DCP_PROFILE_TEMPLATE)).toBe(false)
+  })
+})
+
 })

@@ -5,6 +5,7 @@ import { BDD_CONTRACT_TEMPLATE } from "./templates/bdd-contract"
 import { BDD_FRONTEND_TEMPLATE } from "./templates/bdd-frontend"
 import { BDD_PIPELINE_TEMPLATE } from "./templates/bdd-pipeline"
 import { BDD_TESTS_TEMPLATE } from "./templates/bdd-tests"
+import { DCP_PROFILE_TEMPLATE } from "./templates/dcp-profile"
 import { END_ULTRAWORK_TEMPLATE } from "./templates/end-ultrawork"
 import { HANDOFF_TEMPLATE } from "./templates/handoff"
 import { INIT_DEEP_TEMPLATE } from "./templates/init-deep"
@@ -236,6 +237,17 @@ ${BDD_TESTS_TEMPLATE}
 $ARGUMENTS
 </user-request>`,
     argumentHint: "<contract.json>",
+  },
+  "dcp-profile": {
+    description: "(builtin) Switch the active DCP (Dynamic Context Pruning) profile tier (economy/balanced/performance/ultimate)",
+    template: `<command-instruction>
+${DCP_PROFILE_TEMPLATE}
+</command-instruction>
+
+<user-request>
+$ARGUMENTS
+</user-request>`,
+    argumentHint: "<profile-name>",
   },
 }
 

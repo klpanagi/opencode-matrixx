@@ -19,6 +19,7 @@ export const BuiltinCommandNameSchema = z.enum([
   "bdd-frontend",
   "bdd-pipeline",
   "bdd-tests",
+  "dcp-profile",
 ])
 
 export type BuiltinCommandName = z.infer<typeof BuiltinCommandNameSchema>

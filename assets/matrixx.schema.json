@@ -186,7 +186,8 @@
           "bdd-contract",
           "bdd-frontend",
           "bdd-pipeline",
-          "bdd-tests"
+          "bdd-tests",
+          "dcp-profile"
         ]
       }
     },
@@ -3908,6 +3909,31 @@
           "type": "boolean"
         }
       },
+      "additionalProperties": false
+    },
+    "dcp": {
+      "type": "object",
+      "properties": {
+        "enabled": {
+          "default": true,
+          "type": "boolean"
+        },
+        "switch_script": {
+          "type": "string"
+        },
+        "profiles": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "default_profile": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "enabled"
+      ],
       "additionalProperties": false
     },
     "auto_update": {
