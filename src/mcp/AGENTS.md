@@ -74,3 +74,10 @@ export const mcp_name = {
 - **Exa**: Default websearch provider, works without API key
 - **Tavily**: Requires `TAVILY_API_KEY` env var
 - **document_reader**: Requires `uvx` (uv) installed on the system
+
+## LAZY INITIALIZATION (v2.0.0+)
+
+The `websearch` MCP uses deferred config construction (P1 optimization). `createWebsearchConfig(config?.websearch)` is wrapped in an `Object.defineProperty` getter on the returned `mcps` record (see `index.ts` ~line 28-40). Env vars (`EXA_API_KEY`, `TAVILY_API_KEY`) and provider selection only resolve when the consumer first reads `mcps.websearch`.
+
+The other three MCPs (context7, grep_app, document_reader) are static configs assigned eagerly.
+

@@ -124,6 +124,31 @@ Skills provide specialized workflows with embedded MCP servers and detailed inst
 || **ulw-research** | research, deep dive, investigate, explore codebase | Saturation research orchestrator. Spawns parallel explore/librarian swarms across code, docs, web, and OSS repos. Recursively follows EXPAND leads until convergence (novelty-based, max 5 rounds). Proves contested claims by running code. Returns cited synthesis to .matrixx/. |
 || **remove-ai-slops** | cleanup code, remove ai slop, de-ai, code cleanup | Detects and removes 7 categories of AI-generated code smells: verbose comments, redundant error handling, over-engineered patterns, generic AI phrasing, cargo-cult boilerplate, padding/verbosity, weird codegen artifacts. Hybrid analysis + guided fix mode. |
 
+### Lazy Skill Loading (Built-in Skills)
+
+All 45 built-in skills use **lazy template resolution**. Skill factories (and their large markdown template bodies) are NOT evaluated at plugin init — they hydrate on first reference via a self-destructing getter pattern.
+
+**How it works:**
+
+- `createBuiltinSkills()` returns BuiltinSkill objects whose `.template` is an `Object.defineProperty` getter.
+- On first `.template` access, the factory is invoked once; the result is cached on the skill object (replaces getter with a data property).
+- Browser skills (playwright / agent-browser / playwright-cli) are loaded eagerly because the active provider is decided at init; all other 42 skills are lazy.
+- `description` is populated only on first access as well (cannot call factory eagerly without defeating laziness).
+
+**Why it matters:**
+
+- **Faster plugin init** — module parse time for skill files is deferred.
+- **Lower memory pressure at startup** — template bodies (often 5–20KB of markdown each) stay un-evaluated.
+- **Zero behavioral change** — the API (`BuiltinSkill.template: string`) is unchanged. Consumers see no difference.
+- **Transparent** — no config flag, no opt-in.
+
+**Files:**
+
+- `src/features/builtin-skills/lazy-skill-helper.ts` — `createLazyTemplateSkill()` factory + cache.
+- `src/features/builtin-skills/skills.ts` — wraps all non-browser skill loaders via the helper.
+
+**Note:** Custom (project / user) skills loaded via the opencode-skill-loader are NOT affected — they already use the async `LazyContentLoader` pattern for their markdown bodies.
+
 ### Skill: Browser Automation (playwright / agent-browser)
 
 **Trigger**: Any browser-related request
@@ -849,6 +874,15 @@ mcp:
 The `skill_mcp` tool invokes these operations with full schema discovery.
 
 #### OAuth-Enabled MCPs
+
+### Lazy MCP Initialization (websearch)
+
+The `websearch` MCP uses deferred initialization. Its config depends on env vars (`EXA_API_KEY`, `TAVILY_API_KEY`) and user-configured provider, so the `createWebsearchConfig(config?.websearch)` call is wrapped in an `Object.defineProperty` getter on the returned `mcps` record. The other three built-in MCPs (context7, grep_app, document_reader) have static configs and initialize eagerly.
+
+**Why:** The Exa/Tavily env var read happens only when OpenCode first introspects the websearch server, not at plugin init — matches the lazy skill pattern.
+
+**Files:** `src/mcp/index.ts` (the `websearch` lazy block).
+
 
 Skills can define OAuth-protected remote MCP servers. OAuth 2.1 with full RFC compliance (RFC 9728, 8414, 8707, 7591) is supported:
 
