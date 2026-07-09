@@ -2,7 +2,6 @@ import type { AgentConfig } from "@opencode-ai/sdk"
 import type { CategoryConfig } from "../../config/schema"
 import { AGENT_MODEL_REQUIREMENTS, isAnyProviderConnected } from "../../shared"
 import type { AvailableAgent, AvailableCategory, AvailableSkill } from "../dynamic-agent-prompt-builder"
-import { createEnvContext } from "../env-context"
 import { createKeymakerAgent } from "../keymaker"
 import type { AgentOverrides } from "../types"
 import { applyCategoryOverride, mergeAgentConfig } from "./agent-overrides"
@@ -30,8 +29,6 @@ export function maybeCreateKeymakerConfig(input: {
     availableAgents,
     availableSkills,
     availableCategories,
-    mergedCategories,
-    directory,
     useTaskSystem,
   } = input
 
@@ -79,10 +76,6 @@ export function maybeCreateKeymakerConfig(input: {
     keymakerConfig = applyCategoryOverride(keymakerConfig, hepOverrideCategory, mergedCategories)
   }
 
-  if (directory && keymakerConfig.prompt) {
-    const envContext = createEnvContext()
-    keymakerConfig = { ...keymakerConfig, prompt: keymakerConfig.prompt + envContext }
-  }
 
   if (keymakerOverride) {
     keymakerConfig = mergeAgentConfig(keymakerConfig, keymakerOverride)

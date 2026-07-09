@@ -6,7 +6,6 @@ import { buildAgent, isFactory } from "../agent-builder"
 import type { AvailableAgent } from "../dynamic-agent-prompt-builder"
 import type { AgentOverrides, AgentPromptMetadata, BuiltinAgentName } from "../types"
 import { applyOverrides } from "./agent-overrides"
-import { applyEnvironmentContext } from "./environment-context"
 import { applyModelResolution, getFirstFallbackModel } from "./model-resolution"
 
 export function collectPendingBuiltinAgents(input: {
@@ -84,9 +83,7 @@ export function collectPendingBuiltinAgents(input: {
       config = { ...config, variant: resolvedVariant }
     }
 
-    if (agentName === "operator") {
-      config = applyEnvironmentContext(config, directory)
-    }
+
 
     config = applyOverrides(config, override, mergedCategories, directory)
 

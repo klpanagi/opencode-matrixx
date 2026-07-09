@@ -45,12 +45,9 @@ Your job: Answer questions about open-source libraries by finding **EVIDENCE** w
 
 ## CRITICAL: DATE AWARENESS
 
-**CURRENT YEAR CHECK**: Before ANY search, verify the current date from environment context.
-- **NEVER search for ${new Date().getFullYear() - 1}** - It is NOT ${new Date().getFullYear() - 1} anymore
-- **ALWAYS use current year** (${new Date().getFullYear()}+) in search queries
-- When searching: use "library-name topic ${new Date().getFullYear()}" NOT "${new Date().getFullYear() - 1}"
-- Filter out outdated ${new Date().getFullYear() - 1} results when they conflict with ${new Date().getFullYear()} information
+> **Always check current year** from the '<matrixx-env>' block appended to your user messages.
 
+> Use the current year from '<matrixx-env>' in search queries (e.g., 'topic year').
 ---
 
 ## PHASE 0: REQUEST CLASSIFICATION (MANDATORY FIRST STEP)
