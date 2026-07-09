@@ -1,5 +1,9 @@
-import { describe, expect, test } from "bun:test"
+import { afterAll, describe, expect, test } from "bun:test"
+import { clearLazyTemplateCache } from "./lazy-skill-helper"
 import { createBuiltinSkills } from "./skills"
+import { dslCoreSkill } from "./skills/dsl-core"
+import { frontendUiUxSkill } from "./skills/frontend-ui-ux"
+import { gitMasterSkill } from "./skills/git-master"
 
 describe("createBuiltinSkills", () => {
 	test("returns playwright skill by default", () => {
@@ -216,5 +220,90 @@ describe("lazy skill template loading", () => {
       expect(skill.template).toBeDefined()
       expect(skill.template.length).toBeGreaterThan(0)
     }
+  })
+})
+
+describe("behavior-level: lazy loading proof (P1)", () => {
+  afterAll(() => {
+    clearLazyTemplateCache()
+  })
+
+  test("non-browser skills have lazy template getter (not loaded at construction)", () => {
+    //#given
+    const skills = createBuiltinSkills()
+
+    //#when - introspect property descriptor
+    const gitMaster = skills.find((s) => s.name === "git-master")!
+    const desc = Object.getOwnPropertyDescriptor(gitMaster, "template")
+
+    //#then - lazy skill has getter, not value
+    expect(desc?.get).toBeDefined()
+    expect(desc?.value).toBeUndefined()
+  })
+
+  test("browser skill template is loaded eagerly (value property at construction)", () => {
+    //#given
+    const skills = createBuiltinSkills({ browserProvider: "playwright" })
+
+    //#when - introspect property descriptor
+    const playwright = skills.find((s) => s.name === "playwright")!
+    const desc = Object.getOwnPropertyDescriptor(playwright, "template")
+
+    //#then - browser skill has value directly, not getter
+    expect(desc?.value).toBeDefined()
+    expect(desc?.get).toBeUndefined()
+  })
+
+  test("lazy template self-destructs to value property after first access (memoized)", () => {
+    //#given
+    const skills = createBuiltinSkills()
+    const gitMaster = skills.find((s) => s.name === "git-master")!
+
+    //#when - first access triggers getter
+    const template = gitMaster.template
+
+    //#then - getter replaced by value property
+    const desc = Object.getOwnPropertyDescriptor(gitMaster, "template")
+    expect(desc?.value).toBe(template)
+    expect(desc?.get).toBeUndefined()
+
+    // second access returns same cached value
+    expect(gitMaster.template).toBe(template)
+  })
+
+  test("lazy template content equals eagerly loaded content for core skill (git-master)", () => {
+    //#given
+    const skills = createBuiltinSkills()
+    const lazySkill = skills.find((s) => s.name === "git-master")!
+
+    //#when
+    const lazyTemplate = lazySkill.template
+
+    //#then
+    expect(lazyTemplate).toBe(gitMasterSkill.template)
+  })
+
+  test("lazy template content equals eagerly loaded content for DSL skill (dsl-core)", () => {
+    //#given
+    const skills = createBuiltinSkills()
+    const lazySkill = skills.find((s) => s.name === "dsl-core")!
+
+    //#when
+    const lazyTemplate = lazySkill.template
+
+    //#then
+    expect(lazyTemplate).toBe(dslCoreSkill.template)
+  })
+
+  test("lazy template content equals eagerly loaded content for frontend skill (frontend-ui-ux)", () => {
+    //#given
+    const skills = createBuiltinSkills()
+    const lazySkill = skills.find((s) => s.name === "frontend-ui-ux")!
+
+    //#when
+    const lazyTemplate = lazySkill.template
+
+    //#then
+    expect(lazyTemplate).toBe(frontendUiUxSkill.template)
   })
 })

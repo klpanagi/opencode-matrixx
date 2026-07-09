@@ -1,4 +1,4 @@
-import { describe, expect, test } from "bun:test"
+import { afterEach, beforeEach, describe, expect, test } from "bun:test"
 import { createBuiltinMcps } from "./index"
 
 describe("createBuiltinMcps", () => {
@@ -133,5 +133,73 @@ describe("lazy websearch config", () => {
     // then
     expect("websearch" in mcps).toBe(false)
     expect(Object.keys(mcps)).not.toContain("websearch")
+  })
+})
+
+describe("behavior-level: lazy env-var reading (P1)", () => {
+  const originalEnv: Record<string, string | undefined> = {}
+
+  beforeEach(() => {
+    originalEnv.EXA_API_KEY = process.env.EXA_API_KEY
+    originalEnv.TAVILY_API_KEY = process.env.TAVILY_API_KEY
+  })
+
+  afterEach(() => {
+    if (originalEnv.EXA_API_KEY !== undefined) {
+      process.env.EXA_API_KEY = originalEnv.EXA_API_KEY
+    } else {
+      delete process.env.EXA_API_KEY
+    }
+    if (originalEnv.TAVILY_API_KEY !== undefined) {
+      process.env.TAVILY_API_KEY = originalEnv.TAVILY_API_KEY
+    } else {
+      delete process.env.TAVILY_API_KEY
+    }
+  })
+
+  test("EXA_API_KEY is NOT read during createBuiltinMcps — read lazily on first websearch access", () => {
+    //#given
+    process.env.EXA_API_KEY = "should-be-read-lazily"
+
+    //#when — construct mcps (env var present)
+    const mcps = createBuiltinMcps()
+
+    // Immediately clear env var — if eagerly read, too late
+    delete process.env.EXA_API_KEY
+
+    // Access websearch config — triggers lazy factory
+    const websearch = mcps.websearch
+
+    //#then — config was built lazily; env var was gone by then
+    expect(websearch.url).not.toContain("should-be-read-lazily")
+    expect(websearch.url).toBe("https://mcp.exa.ai/mcp?tools=web_search_exa")
+  })
+
+  test("TAVILY_API_KEY is NOT read during createBuiltinMcps with tavily config — read lazily", () => {
+    //#given
+    process.env.TAVILY_API_KEY = "tavily-lazy-test-key"
+
+    //#when — construct mcps with tavily config (env var present)
+    const mcps = createBuiltinMcps([], { websearch: { provider: "tavily" } })
+
+    // Immediately clear env var — should NOT have been read yet
+    delete process.env.TAVILY_API_KEY
+
+    // Access websearch config — triggers lazy factory
+    expect(() => mcps.websearch).toThrow(
+      "TAVILY_API_KEY environment variable is required for Tavily provider",
+    )
+  })
+
+  test("env vars are still read correctly when present at first access time", () => {
+    //#given — set env vars before lazy access
+    process.env.EXA_API_KEY = "access-time-key"
+    const mcps = createBuiltinMcps()
+
+    //#when — env var is present at access time
+    const websearch = mcps.websearch
+
+    //#then — config captures the env var value
+    expect(websearch.url).toContain("access-time-key")
   })
 })

@@ -63,3 +63,43 @@ describe("createMessagesTransformHandler — T3.25 idempotency", () => {
     expect(thinkingBlockValidatorHook).toHaveBeenCalledTimes(1)
   })
 })
+
+describe("P2: hook ordering in messages-transform pipeline", () => {
+  afterEach(() => {
+    _resetMessagesTransformCacheForTesting()
+  })
+
+  test("hooks run in order: contextInjector -> envContextInjector -> thinkingBlockValidator", async () => {
+    //#given
+    const callOrder: string[] = []
+    const contextInjectorHook = mock(async () => { callOrder.push("contextInjector") })
+    const envContextInjectorHook = mock(async () => { callOrder.push("envContextInjector") })
+    const thinkingBlockValidatorHook = mock(async () => { callOrder.push("thinkingBlockValidator") })
+
+    const handler = createMessagesTransformHandler({
+      hooks: {
+        contextInjectorMessagesTransform: {
+          "experimental.chat.messages.transform": contextInjectorHook,
+        },
+        envContextInjector: {
+          "experimental.chat.messages.transform": envContextInjectorHook,
+        },
+        thinkingBlockValidator: {
+          "experimental.chat.messages.transform": thinkingBlockValidatorHook,
+        },
+      } as Parameters<typeof createMessagesTransformHandler>[0]["hooks"],
+    })
+
+    const msg: MessageWithParts[] = [makeMessage("user", "ses_ord", "msg_1")]
+
+    //#when
+    await handler({} as Record<string, never>, { messages: msg })
+
+    //#then
+    expect(callOrder).toEqual([
+      "contextInjector",
+      "envContextInjector",
+      "thinkingBlockValidator",
+    ])
+  })
+})
