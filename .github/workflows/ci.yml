@@ -89,6 +89,7 @@ jobs:
           bun test src/hooks/anthropic-context-window-limit-recovery/storage.test.ts
           bun test src/tools/bdd-create-contract/tools.test.ts
           bun test src/tools/bdd-parse-gherkin/tools.test.ts
+          bun test src/tools/bdd-pipeline/pipeline-runner.test.ts
           # spyOn() leaks from earlier tests pollute these (pass in isolation, fail
           # in batch). Same pattern as publish.yml (line 96 documents utils.test.ts
           # as a pre-existing CI-only failure).
@@ -134,6 +135,7 @@ jobs:
               -e 'src/hooks/task-notepad/hook.test.ts' \
               -e 'src/tools/bdd-create-contract/tools.test.ts' \
               -e 'src/tools/bdd-parse-gherkin/tools.test.ts' \
+              -e 'src/tools/bdd-pipeline/pipeline-runner.test.ts' \
             | xargs bun test
 
   typecheck:

@@ -1,107 +1,43 @@
 export const BDD_PIPELINE_TEMPLATE = `# /bdd-pipeline
 
-Full BDD pipeline: generate contract, tests, frontend, backend, AND a per-feature analysis report from one or more .feature files.
+Full BDD pipeline: parse one or more .feature files, generate a Contract, run
+the 3 parallel subagents (tests, frontend, backend), and write a per-feature
+ANALYSIS.md. The pipeline is implemented as a tool — same input produces the
+same task shape every run.
 
 ## Usage
 
-Single file:
 \`\`\`
-/bdd-pipeline <feature-path> [--force]
-\`\`\`
-
-Batch (directory or glob):
-\`\`\`
-/bdd-pipeline <dir> --out <out-dir> [--force]
-/bdd-pipeline "<dir>/**/*.feature" --out <out-dir> [--force]
+/bdd-pipeline <feature-path|dir|glob> --out <out-dir> [--force]
 \`\`\`
 
-## Pipeline Steps (enforced in order)
+Examples:
+- Single file: \`/bdd-pipeline features/auth/login.feature --out ./generated\`
+- Directory: \`/bdd-pipeline features/auth --out ./generated\`
+- Glob: \`/bdd-pipeline "features/**/*.feature" --out ./generated\`
 
-1. **/bdd-contract <input>** -- Parse feature(s) -> generate Contract JSON AND LLM-enrich annotations (api/ui/state/assumptions) via the bdd-contract skill. The bdd_create_contract tool is deterministic and writes empty annotations; the bdd-contract skill loaded into the running agent must fill them via LLM inference from feature content (name, scenarios, tags, step text) before moving to step 2.
+## What to do
 
-2. **Run bdd-tests, bdd-frontend, and bdd-backend in parallel** as 3 background subagents (\`task(run_in_background=true)\`). Each subagent has a contract JSON as input and:
-   - generates its respective artefacts (step defs + page objects + cucumber.cjs + Dockerfile + run-tests.sh | React components + *.test.tsx + preview-server.ts | typed Zod API service + *.test.ts)
-   - runs its own test suite as the FINAL step of its work (3 retries on failure, then report)
-   - returns a structured { stage, files_created, tests_passed, tests_failed, test_output } report
-   Each stage is independent -- no shared state between the three subagents.
+1. Call the \`bdd_pipeline_run\` tool with the resolved inputs:
 
-3. **Generate per-feature ANALYSIS.md (MANDATORY final step).** For EACH feature in the batch, after its 3 parallel subagents return, the orchestrator (the agent running /bdd-pipeline) MUST:
-   - Read the contract.json, the generated components/, and the generated backend/ for that feature
-   - Synthesize the per-feature Markdown report following the format in the 'Per-Feature Analysis Report Format' section below
-   - Write the report to \`<out-dir>/<feature>/ANALYSIS.md\`
-   - The report is the document a product owner / tech lead reads to (a) understand what the pipeline inferred about their feature and (b) catch ambiguities before the code gets merged
-
-4. **Verify all required outputs exist (GATE before PASS).** Before declaring the pipeline successful, the orchestrator MUST verify that for every feature in the batch:
-   \`\`\`bash
-   test -f "<out-dir>/<feature>/ANALYSIS.md" || { echo "MISSING REPORT: <feature>"; exit 1; }
-   test -f "<out-dir>/<feature>/cucumber.cjs" || { echo "MISSING: <feature>/cucumber.cjs"; exit 1; }
-   test -f "<out-dir>/<feature>/run-tests.sh" || { echo "MISSING: <feature>/run-tests.sh"; exit 1; }
+   \`\`\`json
+   {
+     "featurePaths": ["<absolute path(s) or glob(s)>"],
+     "outDir": "<absolute output dir>",
+     "force": false
+   }
    \`\`\`
-   The pipeline MAY NOT declare PASS if any required output is missing -- even if all 3 test stages passed. Report which file is missing in the final response.
 
-## Aggregation
+   The tool returns \`{ success, count, passed, failed, results[] }\`. Each
+   \`result\` contains \`status\`, per-stage \`tests_passed\`/\`tests_failed\`,
+   \`filesCreated\`, \`missingOutputs\`, and \`error\`.
 
-When the 3 subagents return, aggregate:
-- **PASS** if all 3 stages report tests_passed == tests_total AND the step-4 verification gate passed (all required outputs present, including every \`ANALYSIS.md\`)
-- **FAIL** otherwise, with a per-stage breakdown: which stage(s) failed, how many tests failed, the first 50 lines of failing test output per stage, AND a list of any missing required outputs
+2. Report the aggregated result. PASS means every feature has \`status: "PASS"\`
+   (all 3 subagent stages completed + the file-existence gate passed). FAIL
+   otherwise — list the failing features, failing stages, and missing outputs.
 
-Report the aggregated result in the pipeline's final response. Do NOT mark the pipeline as successful if any of the 3 stages failed, OR if any required output is missing.
+3. Do NOT spawn subagents, parse .feature files, generate components, or write
+   ANALYSIS.md yourself — the tool does all of that.
 
-## Per-Feature Analysis Report Format
-
-The \`<out-dir>/<feature>/ANALYSIS.md\` file has these 9 sections, in order:
-
-### 1. Header
-\`\`\`markdown
-# Feature Analysis: <feature.name>
-
-> Auto-generated by /bdd-pipeline on <ISO timestamp>
-> Source: \`<relative path to .feature>\`
-> Contract: \`<relative path to .feature.contract.json>\`
-> Pipeline status: PASS | FAIL
-\`\`\`
-
-### 2. Overview
-A 3-4 line bulleted block: name, description, scenario count, tag list, pipeline status badge.
-
-### 3. Contract Annotations
-Re-state the contract's inferred annotations as tables, NOT raw JSON. One table per annotation category that has at least one entry. Categories: API Endpoints, API Responses, UI Routes, UI Test IDs, UI Strings, State Variables, State Transitions, Assumptions. If a category is empty, omit its table (do not show 'none').
-
-### 4. Frontend Mapping (Feature -> Components)
-A table that maps each \`annotations.ui.routes[]\` entry to the generated component file. For each row, list the component path, the test file path, and the row's status (PASS if the unit tests for that component pass, FAIL otherwise). Add a second table that maps each \`annotations.ui.testIds[]\` entry to the component file that uses the \`data-testid={value}\` attribute. If a testId is defined in the contract but not used in any component, flag it as 'UNUSED' -- that's an ambiguity for the human reviewer.
-
-### 5. Backend API Mapping (Feature -> Endpoints)
-A table that maps each \`annotations.api.endpoints[]\` entry to the generated service file. For each row, list the service file path, the test file path, and the row's status. Add a second table for \`annotations.api.responses[]\` -> the response shapes that the service actually returns. Missing responses flag as 'NOT IMPLEMENTED' -- another ambiguity.
-
-### 6. Test Coverage
-A single summary table with one row per pipeline stage (Frontend unit, Backend unit, E2E cucumber) and columns: stage, runner (e.g. \`bun test components/\`), tests_run, tests_passed, tests_failed, status.
-
-### 7. Assumptions
-A flat bullet list of every entry in \`annotations.assumptions\`. One bullet per assumption. No additional commentary here -- the Ambiguities section is for that.
-
-### 8. Ambiguities & Open Questions (THE MOST IMPORTANT SECTION)
-The LLM surfaces judgment calls, NOT facts. The report MUST call out:
-
-- **Inferences where the contract was unclear** -- e.g. 'The feature mentions "session" but never says what type. Inferred as \`object\` based on the assumption that it holds \`{ token, expiresAt }\`. Confirm with backend.'
-- **Multiple plausible interpretations** -- e.g. 'Step 3 says "the user is redirected to the dashboard". This could be an SPA route change (no HTTP redirect) OR a 302 HTTP redirect. Generated the SPA interpretation. Confirm with frontend lead.'
-- **Contract fields that are unused or under-specified** -- e.g. '\`annotations.ui.testIds\` declares \`submit-button\` but the generated \`LoginPage\` uses \`data-testid="login-submit-button"\` (per the \`bdd-tests\` page object). Either the testIds annotation should be updated to match, or the component should be re-generated to use the annotation value.'
-- **State transitions with multiple possible triggers** -- e.g. '\`state.transitions\` has \`{ from: "new-session-init", to: "authenticated" }\` with no trigger. Inferred the trigger is "successful POST /api/v1/auth/login returning 2xx". If the actual trigger is different (token refresh, OAuth callback, etc.), the state machine needs review.'
-
-Each ambiguity is a bullet with a bold lead-in and a one-paragraph explanation. The LLM is encouraged to flag anything it had to guess at -- the goal is that a human reviewer never has to wonder 'why did the pipeline make this decision'.
-
-If the pipeline genuinely made NO judgment calls for this feature, write 'No ambiguities flagged.' instead of omitting the section -- the human reviewer needs to see this acknowledgement to trust the report.
-
-### 9. Files Generated
-A \`tree -L 2\`-style listing of the feature output directory, showing the directory structure with key file types. Truncate long file contents (just show file names). The goal is 'where do I find what' -- not a full file dump.
-
-## Batch Mode (multiple .feature files)
-
-For batch input (multiple .feature files), iterate the contract phase per file (deterministic + fast), then for each contract spawn the 3 parallel subagents (tests/frontend/backend). Subagents across different features can themselves run in parallel up to 5 concurrent. After ALL per-feature parallel runs finish, iterate per feature to generate each feature's ANALYSIS.md (step 3) and run the step-4 verification gate. The pipeline only declares PASS when every feature has all required outputs AND every test stage passed.
-
-## Output
-
-All outputs per feature: Contract JSON, test files (cucumber.cjs + run-tests.sh + tests/), components (with *.test.tsx), API services (with *.test.ts), Dockerfile, AND the per-feature ANALYSIS.md report. For batch input, everything is organized under \`<out-dir>/<feature>/\`. The pipeline's exit status is PASS only when every required output exists and every test stage passed for every feature.
-
-## Git Actions (HARD RULE)
-NEVER run \`git commit\`, \`git add\`, \`git push\`, \`git rebase\`, \`git reset\`, \`git tag\`, or any other git command in this pipeline context. The pipeline runner is responsible for version control. You may only create/edit the generated files in the target output directory, INCLUDING the ANALYSIS.md report. If subagents try to commit, REFUSE.
+4. Do NOT run any git commands (commit, add, push, rebase, etc.).
 `

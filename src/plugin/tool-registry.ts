@@ -15,6 +15,7 @@ import {
   createBackgroundTools,
   createBddCreateContractTool,
   createBddParseGherkinTool,
+  createBddPipelineTool,
   createBddValidateContractTool,
 createDelegateAgent,
   createDelegateTask,
@@ -152,6 +153,7 @@ const assemblyTool = assemblyEnabled
     ...(assemblyTool ? { assembly: assemblyTool } : {}),
     bdd_create_contract: createBddCreateContractTool(),
     bdd_parse_gherkin: createBddParseGherkinTool(),
+    bdd_pipeline_run: createBddPipelineTool({ manager: managers.backgroundManager }),
     bdd_validate_contract: createBddValidateContractTool(),
 }
 

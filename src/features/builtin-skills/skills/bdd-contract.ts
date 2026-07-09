@@ -37,7 +37,7 @@ The agent MUST conform to this exact shape. Every name, path, and key follows a 
 - \`value\` for \`testIds\` → kebab-case: \`^[a-z][a-z0-9-]*$\`
 - \`path\` for \`endpoints\` and \`routes\` → must start with \`/\`
 - \`name\` for \`state.variables\` → camelCase: \`^[a-z][a-zA-Z0-9]*$\`
-- \`key\` for \`ui.strings\` → dotted kebab-case (category.name): \`^[a-z][a-z0-9-]*(\.[a-z][a-z0-9-]*)+\$\`
+- \`key\` for \`ui.strings\` → dotted kebab-case (category.name): \`^[a-z][a-z0-9-]*(.[a-z][a-z0-9-]*)+$\`
 
 **\`annotations.api\`:**
 - \`endpoints[]\`: \`{ method: GET|POST|PUT|PATCH|DELETE|HEAD|OPTIONS, path: '/...', request?: string, response?: string, description?: string }\`
