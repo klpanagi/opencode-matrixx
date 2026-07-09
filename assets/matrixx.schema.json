@@ -3820,6 +3820,15 @@
                 }
               }
             ]
+          },
+          "complexity_downgrades": {
+            "type": "object",
+            "propertyNames": {
+              "type": "string"
+            },
+            "additionalProperties": {
+              "type": "string"
+            }
           }
         },
         "additionalProperties": false
