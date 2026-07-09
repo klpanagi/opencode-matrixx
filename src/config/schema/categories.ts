@@ -24,6 +24,8 @@ export const CategoryConfigSchema = z.object({
   disable: z.boolean().optional(),
   /** Ordered list of fallback models to try when the primary model fails (e.g. rate limit, quota) */
   fallback_models: z.union([z.string(), z.array(z.string())]).optional(),
+  /** Per-complexity-level model downgrades. Key is complexity level string ("1"-"5"), value is model string. */
+  complexity_downgrades: z.record(z.string(), z.string()).optional(),
 })
 
 export const BuiltinCategoryNameSchema = z.enum([
