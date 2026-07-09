@@ -26,7 +26,8 @@ export function createDelegateAgent(
         .describe("The type of specialized agent to use for this task (explore or librarian only)"),
       run_in_background: tool.schema
         .boolean()
-        .describe("REQUIRED. true: run asynchronously (use background_output to get results), false: run synchronously and wait for completion"),
+        .default(false)
+        .describe("true: run asynchronously (use background_output to get results), false: run synchronously and wait for completion. Default: false"),
       session_id: tool.schema.string().describe("Existing Task session to continue").optional(),
     },
     async execute(args: DelegateAgentArgs, toolContext) {

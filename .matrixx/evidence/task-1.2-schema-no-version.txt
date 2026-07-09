@@ -1,0 +1,32 @@
+Task 1.2 Evidence: Missing schemaVersion Rejection
+===================================================
+Date: 2025-07-06
+
+Validated via bun REPL that a contract missing schemaVersion is rejected:
+
+```
+$ bun -e "
+import { ContractSchema } from './src/features/bdd/schema'
+const noVersion = {
+  generatedAt: '2025-01-15T10:30:00.000Z',
+  sourceFile: 'features/login.feature',
+  feature: { name: 'Login', tags: [], annotations: {} },
+  scenarios: [{ name: 'Test', tags: [], steps: [{ keyword: 'Given', text: 'something' }] }],
+  annotations: {}
+}
+const result = ContractSchema.safeParse(noVersion)
+console.log('success:', result.success)
+if (!result.success) {
+  console.log('error.issues:', JSON.stringify(result.error.issues.map(i => i.path), null, 2))
+}
+"
+```
+
+Expected output:
+  success: false
+  error.issues: [["schemaVersion"]]
+
+Also verified schemaVersion: 2 is rejected (literal(1) constraint).
+
+Test file: src/features/bdd/__tests__/schema.test.ts
+Test result: 9/9 pass

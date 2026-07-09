@@ -97,6 +97,40 @@ describe("createDelegateAgent", () => {
     )
 
     //#then
-    expect(result).not.toContain("disabled via disabled_agents")
+expect(result).not.toContain("disabled via disabled_agents")
+  })
+
+  //#given the schema previously had no .default(false) and Zod would reject omitted run_in_background
+  //#when the caller omits run_in_background entirely
+  //#then the tool must accept it (defaults to false = sync) without a Zod/Required error
+  test("omitting run_in_background should default to false (no REQUIRED error)", async () => {
+    //#given the schema previously had no .default(false); Zod would reject omitted run_in_background
+    //#when the caller omits run_in_background entirely
+    //#then the tool must not surface a "REQUIRED" / Zod-level error about run_in_background
+    // (we only check the error message — we don't need to mock the full session pipeline)
+    const toolDef = createDelegateAgent(mockCtx, mockBackgroundManager, [])
+    const executeFunc = toolDef.execute
+
+    //#when
+    let caughtError: unknown
+    let result: string | undefined
+    try {
+      result = await executeFunc(
+        {
+          description: "Default background test",
+          prompt: "Test prompt",
+          subagent_type: "trinity",
+          // run_in_background intentionally omitted
+        },
+        { sessionID: "test", messageID: "msg", agent: "test", abort: new AbortController().signal }
+      )
+    } catch (err) {
+      caughtError = err
+    }
+
+    //#then - the misleading "REQUIRED" error must NOT appear, neither in result nor in thrown error
+    const combined = `${String(result ?? "")} ${String((caughtError as Error)?.message ?? caughtError ?? "")}`
+    expect(combined).not.toContain("run_in_background")
+    expect(combined).not.toContain("REQUIRED")
   })
 })

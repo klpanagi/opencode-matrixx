@@ -14,6 +14,7 @@ export const BuiltinAgentNameSchema = z.enum([
   "cipher",
   "sentinel",
   "sati",
+  "bdd-contract",
 ])
 
 export const BuiltinSkillNameSchema = z.enum([
@@ -22,6 +23,7 @@ export const BuiltinSkillNameSchema = z.enum([
   "dev-browser",
   "frontend-ui-ux",
   "git-master",
+  "docker-master",
   "dsl-core",
   "dsl-grammar",
   "dsl-codegen",
@@ -49,6 +51,10 @@ export const BuiltinSkillNameSchema = z.enum([
   "matrixx-self-config",
   "ulw-research",
   "remove-ai-slops",
+  "bdd-backend",
+  "bdd-contract",
+  "bdd-frontend",
+  "bdd-tests",
 ])
 
 export type AgentName = z.infer<typeof BuiltinAgentNameSchema>

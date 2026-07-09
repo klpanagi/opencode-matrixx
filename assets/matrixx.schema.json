@@ -53,7 +53,8 @@
           "architect",
           "cipher",
           "sentinel",
-          "sati"
+          "sati",
+          "bdd-contract"
         ]
       }
     },
@@ -67,6 +68,7 @@
           "dev-browser",
           "frontend-ui-ux",
           "git-master",
+          "docker-master",
           "dsl-core",
           "dsl-grammar",
           "dsl-codegen",
@@ -93,7 +95,11 @@
           "software-dev",
           "matrixx-self-config",
           "ulw-research",
-          "remove-ai-slops"
+          "remove-ai-slops",
+          "bdd-backend",
+          "bdd-contract",
+          "bdd-frontend",
+          "bdd-tests"
         ]
       }
     },
@@ -176,7 +182,13 @@
           "handoff",
           "research",
           "assembly",
-          "ultrawork"
+          "ultrawork",
+          "bdd-backend",
+          "bdd-contract",
+          "bdd-frontend",
+          "bdd-pipeline",
+          "bdd-tests",
+          "dcp-profile"
         ]
       }
     },
@@ -3898,6 +3910,31 @@
           "type": "boolean"
         }
       },
+      "additionalProperties": false
+    },
+    "dcp": {
+      "type": "object",
+      "properties": {
+        "enabled": {
+          "default": true,
+          "type": "boolean"
+        },
+        "switch_script": {
+          "type": "string"
+        },
+        "profiles": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "default_profile": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "enabled"
+      ],
       "additionalProperties": false
     },
     "auto_update": {

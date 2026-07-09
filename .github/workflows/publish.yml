@@ -65,6 +65,9 @@ jobs:
           # --- Non-hook files that use mock.module() ---
           bun test src/shared/opencode-message-dir.test.ts
           bun test src/features/background-agent/manager.test.ts
+          bun test src/tools/bdd-create-contract/tools.test.ts
+          bun test src/tools/bdd-parse-gherkin/tools.test.ts
+          bun test src/tools/bdd-pipeline/pipeline-runner.test.ts
           # OPENCODE_CONFIG_DIR env var pollution — must run isolated to prevent
           # parallel test interference from other files that modify this global var
 
