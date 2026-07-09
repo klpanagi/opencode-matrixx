@@ -1,0 +1,16 @@
+{
+  "baseUrl": "http://127.0.0.1:3000",
+  "browser": "chromium",
+  "headless": true,
+  "viewport": { "width": 1280, "height": 800 },
+  "timeout": {
+    "default": 10000,
+    "navigation": 15000,
+    "action": 8000
+  },
+  "previewServer": {
+    "port": 3000,
+    "host": "127.0.0.1",
+    "command": "bun run components/preview-server.ts"
+  }
+}
