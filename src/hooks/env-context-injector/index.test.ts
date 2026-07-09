@@ -1,12 +1,23 @@
 import { describe, expect, it } from "bun:test"
+
 import { createEnvContextInjectorHook } from "./index"
 
-function createMessage(role: string, text: string, id = "msg_1") {
+type TestPart = {
+  type: "text"
+  text: string
+  id: string
+  messageID: string
+  sessionID: string
+}
+type TestMessage = { info: { role: string; id: string; sessionID: string }; parts: TestPart[] }
+type TestOutput = { messages: TestMessage[] }
+
+function createMessage(role: string, text: string, id = "msg_1"): TestMessage {
   return {
     info: { role, id, sessionID: "ses_test" },
     parts: [
       {
-        type: "text" as const,
+        type: "text",
         text,
         id: `part_${id}`,
         messageID: id,
@@ -16,12 +27,20 @@ function createMessage(role: string, text: string, id = "msg_1") {
   }
 }
 
+function getTransform(): (input: Record<string, never>, output: TestOutput) => Promise<void> {
+  const hook = createEnvContextInjectorHook()
+  const transform = hook["experimental.chat.messages.transform"]
+  if (!transform) {
+    throw new Error("experimental.chat.messages.transform not defined on hook")
+  }
+  return transform
+}
+
 describe("createEnvContextInjectorHook", () => {
   it("appends env block to last user message text part", async () => {
     //#given
-    const hook = createEnvContextInjectorHook()
-    const transform = hook["experimental.chat.messages.transform"]!
-    const output = {
+    const transform = getTransform()
+    const output: TestOutput = {
       messages: [
         createMessage("system", "System prompt."),
         createMessage("user", "First message"),
@@ -31,7 +50,7 @@ describe("createEnvContextInjectorHook", () => {
     }
 
     //#when
-    await transform({}, output as any)
+    await transform({}, output)
 
     //#then
     const lastUserMsg = output.messages[3]
@@ -42,12 +61,11 @@ describe("createEnvContextInjectorHook", () => {
 
   it("handles empty messages gracefully", async () => {
     //#given
-    const hook = createEnvContextInjectorHook()
-    const transform = hook["experimental.chat.messages.transform"]!
-    const output = { messages: [] }
+    const transform = getTransform()
+    const output: TestOutput = { messages: [] }
 
     //#when
-    await transform({}, output as any)
+    await transform({}, output)
 
     //#then
     expect(output.messages).toHaveLength(0)
@@ -55,9 +73,8 @@ describe("createEnvContextInjectorHook", () => {
 
   it("handles no user messages gracefully", async () => {
     //#given
-    const hook = createEnvContextInjectorHook()
-    const transform = hook["experimental.chat.messages.transform"]!
-    const output = {
+    const transform = getTransform()
+    const output: TestOutput = {
       messages: [
         createMessage("system", "System prompt."),
         createMessage("assistant", "How can I help?"),
@@ -65,7 +82,7 @@ describe("createEnvContextInjectorHook", () => {
     }
 
     //#when
-    await transform({}, output as any)
+    await transform({}, output)
 
     //#then
     expect(output.messages[0].parts[0].text).not.toContain("<matrixx-env>")
@@ -74,9 +91,8 @@ describe("createEnvContextInjectorHook", () => {
 
   it("does not modify system, assistant, or tool messages", async () => {
     //#given
-    const hook = createEnvContextInjectorHook()
-    const transform = hook["experimental.chat.messages.transform"]!
-    const output = {
+    const transform = getTransform()
+    const output: TestOutput = {
       messages: [
         createMessage("system", "System prompt."),
         createMessage("assistant", "Hello"),
@@ -86,7 +102,7 @@ describe("createEnvContextInjectorHook", () => {
     }
 
     //#when
-    await transform({}, output as any)
+    await transform({}, output)
 
     //#then - only the user message (index 2) should contain env context
     expect(output.messages[0].parts[0].text).not.toContain("<matrixx-env>")
@@ -97,14 +113,13 @@ describe("createEnvContextInjectorHook", () => {
 
   it("each call generates fresh env context (not cached across calls)", async () => {
     //#given
-    const hook = createEnvContextInjectorHook()
-    const transform = hook["experimental.chat.messages.transform"]!
+    const transform = getTransform()
 
     //#when
-    const output1 = { messages: [createMessage("user", "First")] }
-    const output2 = { messages: [createMessage("user", "Second")] }
-    await transform({}, output1 as any)
-    await transform({}, output2 as any)
+    const output1: TestOutput = { messages: [createMessage("user", "First")] }
+    const output2: TestOutput = { messages: [createMessage("user", "Second")] }
+    await transform({}, output1)
+    await transform({}, output2)
 
     //#then
     expect(output1.messages[0].parts[0].text).toContain("<matrixx-env>")
