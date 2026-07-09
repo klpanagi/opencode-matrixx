@@ -110,3 +110,28 @@ describe("createBuiltinMcps", () => {
     }
   })
 })
+
+describe("lazy websearch config", () => {
+  test("websearch config property exists before config is created", () => {
+    // given
+    const mcps = createBuiltinMcps()
+
+    // then - property exists (enumerable getter) but config is deferred
+    expect("websearch" in mcps).toBe(true)
+    expect(Object.keys(mcps)).toContain("websearch")
+
+    // when - accessing triggers config creation
+    const websearch = mcps.websearch
+    expect(websearch).toBeDefined()
+    expect(websearch.type).toBe("remote")
+  })
+
+  test("disabled websearch never appears in result", () => {
+    // given
+    const mcps = createBuiltinMcps(["websearch"])
+
+    // then
+    expect("websearch" in mcps).toBe(false)
+    expect(Object.keys(mcps)).not.toContain("websearch")
+  })
+})
