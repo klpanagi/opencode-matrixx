@@ -1,3 +1,9 @@
+// NOTE: These barrel re-exports are for type-level access only.
+// Runtime template loading is now lazy via createBuiltinSkills().
+// Do NOT import individual skills for runtime template access.
+// Use createBuiltinSkills() instead.
+
+
 export { bddBackendSkill } from "./bdd-backend"
 export { bddContractSkill } from "./bdd-contract"
 export { bddFrontendSkill } from "./bdd-frontend"

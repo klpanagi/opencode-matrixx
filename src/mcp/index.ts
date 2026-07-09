@@ -26,7 +26,17 @@ export function createBuiltinMcps(disabledMcps: string[] = [], config?: MatrixxC
   const mcps: Record<string, BuiltinMcpConfig> = {}
 
   if (!disabledMcps.includes("websearch")) {
-    mcps.websearch = createWebsearchConfig(config?.websearch)
+    let websearchConfig: BuiltinMcpConfig | undefined
+    Object.defineProperty(mcps, "websearch", {
+      enumerable: true,
+      configurable: true,
+      get() {
+        if (!websearchConfig) {
+          websearchConfig = createWebsearchConfig(config?.websearch)
+        }
+        return websearchConfig
+      },
+    })
   }
 
   if (!disabledMcps.includes("context7")) {

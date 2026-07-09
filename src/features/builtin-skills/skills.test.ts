@@ -181,3 +181,40 @@ describe("createBuiltinSkills", () => {
 		expect(skill?.template).toContain("playwright-cli click")
 	})
 })
+
+describe("lazy skill template loading", () => {
+  test("browser skill template is available eagerly", () => {
+    // given
+    const skills = createBuiltinSkills()
+
+    // when
+    const playwright = skills.find((s) => s.name === "playwright")
+
+    // then - browser skill loaded eagerly, template accessible immediately
+    expect(playwright).toBeDefined()
+    expect(playwright?.template).toBeDefined()
+    expect(playwright?.template?.length).toBeGreaterThan(100)
+  })
+
+  test("non-browser skill template becomes accessible on first access", () => {
+    // given
+    const skills = createBuiltinSkills()
+    const gitMaster = skills.find((s) => s.name === "git-master")
+
+    // then - template is accessible (loaded lazily, consumer doesn't notice)
+    expect(gitMaster).toBeDefined()
+    expect(gitMaster?.template).toBeDefined()
+    expect(gitMaster?.template?.length).toBeGreaterThan(100)
+  })
+
+  test("template access returns expected content for all skills", () => {
+    // given
+    const skills = createBuiltinSkills()
+
+    // then - all skills have templates
+    for (const skill of skills) {
+      expect(skill.template).toBeDefined()
+      expect(skill.template.length).toBeGreaterThan(0)
+    }
+  })
+})
