@@ -3942,4 +3942,75 @@ describe("morpheus-task", () => {
       expect(result).toContain("</task_metadata>")
     }, { timeout: 10000 })
   })
+
+  describe("run_in_background default (regression: 'REQUIRED' error)", () => {
+    //#given the schema promises "Default: false" in its describe
+    //#when the caller omits run_in_background entirely
+    //#then the tool must NOT throw the "run_in_background parameter is REQUIRED" error
+    test("omitting run_in_background defaults to sync (false) and does not throw REQUIRED error", async () => {
+      //#given
+      const { createDelegateTask } = require("./tools")
+
+      const mockManager = {
+        launch: async () => ({}),
+        getTasksByParentSession: () => [],
+        hasInFlightNotificationForParent: () => false,
+      }
+      const mockClient = {
+        app: { agents: async () => ({ data: [] }) },
+        config: { get: async () => ({ data: { model: SYSTEM_DEFAULT_MODEL } }) },
+        session: {
+          get: async () => ({ data: { directory: "/project" } }),
+          create: async () => ({ data: { id: "ses_default_bg" } }),
+          prompt: async () => ({ data: {} }),
+          promptAsync: async () => ({ data: {} }),
+          messages: async () => ({
+            data: [
+              {
+                info: { id: "msg_001", role: "user", time: { created: Date.now() } },
+                parts: [{ type: "text", text: "Do something" }],
+              },
+              {
+                info: { id: "msg_002", role: "assistant", time: { created: Date.now() + 1 }, finish: "end_turn" },
+                parts: [{ type: "text", text: "Sync task completed" }],
+              },
+            ],
+          }),
+          status: async () => ({ data: { "ses_default_bg": { type: "idle" } } }),
+          abort: mock(() => Promise.resolve()),
+        },
+      }
+
+      const tool = createDelegateTask({
+        manager: mockManager,
+        client: mockClient,
+      })
+
+      const toolContext = {
+        sessionID: "parent-session",
+        messageID: "parent-message",
+        agent: "morpheus",
+        abort: new AbortController().signal,
+      }
+
+      //#when - run_in_background is OMITTED entirely (relies on schema default)
+      const result = await tool.execute(
+        {
+          description: "Default background test",
+          prompt: "Do something",
+          category: "source",
+          load_skills: [],
+          // run_in_background intentionally omitted
+        } as unknown as DelegateTaskArgs,
+        toolContext
+      )
+
+      //#then - the misleading "REQUIRED" error must NOT appear
+      expect(String(result)).not.toContain("REQUIRED")
+      // and the sync path should have executed (returns task content)
+      expect(String(result)).toContain("Sync task completed")
+      // and the result should look like a successful task completion
+      expect(String(result)).toContain("Task completed")
+    }, { timeout: 20000 })
+  })
 })

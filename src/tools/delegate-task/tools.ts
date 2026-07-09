@@ -82,7 +82,7 @@ Prompts MUST be in English.`
       load_skills: tool.schema.array(tool.schema.string()).describe("Skill names to inject. REQUIRED - pass [] if no skills needed."),
       description: tool.schema.string().describe("Short task description (3-5 words)"),
       prompt: tool.schema.string().describe("Full detailed prompt for the agent"),
-      run_in_background: tool.schema.boolean().describe("true=async (returns task_id), false=sync (waits). Default: false"),
+      run_in_background: tool.schema.boolean().default(false).describe("true=async (returns task_id), false=sync (waits). Default: false"),
       category: tool.schema.string().optional().describe(`REQUIRED if subagent_type not provided. Do NOT provide both category and subagent_type.`),
       subagent_type: tool.schema.string().optional().describe("REQUIRED if category not provided. Do NOT provide both category and subagent_type."),
       session_id: tool.schema.string().optional().describe("Existing Task session to continue"),
@@ -104,8 +104,13 @@ Prompts MUST be in English.`
         title: args.description,
       })
 
+      // Honor the schema's documented "Default: false" — Zod .default() is not applied
+      // at runtime by the OpenCode plugin tool executor, so we apply the default here.
+      // Defense-in-depth: throw only for invalid types (not for missing values).
       if (args.run_in_background === undefined) {
-        throw new Error(`Invalid arguments: 'run_in_background' parameter is REQUIRED. Use run_in_background=false for task delegation, run_in_background=true only for parallel exploration.`)
+        args.run_in_background = false
+      } else if (typeof args.run_in_background !== "boolean") {
+        throw new Error(`Invalid arguments: 'run_in_background' must be a boolean, got ${typeof args.run_in_background}.`)
       }
       if (typeof args.load_skills === "string") {
         try {
