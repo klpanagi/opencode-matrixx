@@ -6,6 +6,7 @@ import {
   bddFrontendSkill,
   bddTestsSkill,
   devBrowserSkill,
+  dockerMasterSkill,
   documentReaderSkill,
   dslCodegenSkill,
   dslCompositionSkill,
@@ -66,7 +67,7 @@ export function createBuiltinSkills(options: CreateBuiltinSkillsOptions = {}): B
     browserSkill = playwrightSkill
   }
 
-  const skills = [browserSkill, frontendUiUxSkill, gitMasterSkill, devBrowserSkill, dslCoreSkill, dslGrammarSkill, dslCodegenSkill, dslMetamodelSkill, dslToolingSkill, dslTextxEcosystemSkill, dslPyecoreAdvancedSkill, dslModelTransformationSkill, dslTestingSkill, dslValidationSkill, dslCompositionSkill, frontendA11ySkill, bddBackendSkill, bddContractSkill, bddFrontendSkill, bddTestsSkill, frontendBuildToolingSkill, frontendPerfSkill, frontendStateDataSkill, frontendTestingSkill, reactNextjsPatternsSkill, svelteSveltekitPatternsSkill, documentReaderSkill, securityCoreSkill, securitySecretsSkill, securitySastSkill, securityDastSkill, securityDependenciesSkill, securityApiSkill, securityCryptoSkill, securityInfraSkill, securityReviewSkill,   tddEnforcerSkill, reviewWorkSkill, qualityGateSkill, softwareDevSkill, matrixxSelfConfigSkill, ulwResearchSkill, removeAiSlopsSkill]
+  const skills = [browserSkill, frontendUiUxSkill, dockerMasterSkill, gitMasterSkill, devBrowserSkill, dslCoreSkill, dslGrammarSkill, dslCodegenSkill, dslMetamodelSkill, dslToolingSkill, dslTextxEcosystemSkill, dslPyecoreAdvancedSkill, dslModelTransformationSkill, dslTestingSkill, dslValidationSkill, dslCompositionSkill, frontendA11ySkill, bddBackendSkill, bddContractSkill, bddFrontendSkill, bddTestsSkill, frontendBuildToolingSkill, frontendPerfSkill, frontendStateDataSkill, frontendTestingSkill, reactNextjsPatternsSkill, svelteSveltekitPatternsSkill, documentReaderSkill, securityCoreSkill, securitySecretsSkill, securitySastSkill, securityDastSkill, securityDependenciesSkill, securityApiSkill, securityCryptoSkill, securityInfraSkill, securityReviewSkill,   tddEnforcerSkill, reviewWorkSkill, qualityGateSkill, softwareDevSkill, matrixxSelfConfigSkill, ulwResearchSkill, removeAiSlopsSkill]
 
   if (!disabledSkills) {
     return skills

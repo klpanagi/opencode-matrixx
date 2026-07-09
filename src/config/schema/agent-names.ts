@@ -23,6 +23,7 @@ export const BuiltinSkillNameSchema = z.enum([
   "dev-browser",
   "frontend-ui-ux",
   "git-master",
+  "docker-master",
   "dsl-core",
   "dsl-grammar",
   "dsl-codegen",
