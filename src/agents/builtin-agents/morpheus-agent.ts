@@ -5,7 +5,6 @@ import type { AvailableAgent, AvailableCategory, AvailableSkill } from "../dynam
 import { createMorpheusAgent } from "../morpheus"
 import type { AgentOverrides } from "../types"
 import { applyOverrides } from "./agent-overrides"
-import { applyEnvironmentContext } from "./environment-context"
 import { applyModelResolution, getFirstFallbackModel } from "./model-resolution"
 
 export function maybeCreateMorpheusConfig(input: {
@@ -34,7 +33,6 @@ export function maybeCreateMorpheusConfig(input: {
     availableSkills,
     availableCategories,
     mergedCategories,
-    directory,
     useTaskSystem,
   } = input
 
@@ -78,7 +76,6 @@ export function maybeCreateMorpheusConfig(input: {
   }
 
   morpheusConfig = applyOverrides(morpheusConfig, morpheusOverride, mergedCategories)
-  morpheusConfig = applyEnvironmentContext(morpheusConfig, directory)
 
   return morpheusConfig
 }

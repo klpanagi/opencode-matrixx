@@ -23,11 +23,14 @@ export function createEnvContext(): string {
     hour12: true,
   })
 
+  const year = now.getFullYear()
+
   return `
 <matrixx-env>
   Current date: ${dateStr}
   Current time: ${timeStr}
   Timezone: ${timezone}
   Locale: ${locale}
+  Current year: ${year}
 </matrixx-env>`
 }

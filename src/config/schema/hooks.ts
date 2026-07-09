@@ -45,6 +45,7 @@ export const HookNameSchema = z.enum([
   "anthropic-effort",
   "hashline-read-enhancer",
   "secret-leak-guard",
+  "env-context-injector",
   "env-file-write-guard",
   "json-error-recovery",
   "bash-file-read-guard",

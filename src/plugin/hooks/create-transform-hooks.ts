@@ -6,6 +6,7 @@ import {
 
 import {
   createDesignIntentPreserverHook,
+  createEnvContextInjectorHook,
   createKeywordDetectorHook,
   createThinkingBlockValidatorHook,
   createToolPairValidatorHook,
@@ -16,6 +17,7 @@ import type { PluginContext } from "../types"
 export type TransformHooks = {
   keywordDetector: ReturnType<typeof createKeywordDetectorHook> | null
   contextInjectorMessagesTransform: ReturnType<typeof createContextInjectorMessagesTransformHook>
+  envContextInjector: ReturnType<typeof createEnvContextInjectorHook> | null
   thinkingBlockValidator: ReturnType<typeof createThinkingBlockValidatorHook> | null
   toolPairValidator: ReturnType<typeof createToolPairValidatorHook> | null
   designIntentPreserver: ReturnType<typeof createDesignIntentPreserverHook> | null
@@ -40,6 +42,14 @@ export function createTransformHooks(args: {
 
   const contextInjectorMessagesTransform =
     createContextInjectorMessagesTransformHook(contextCollector)
+
+  const envContextInjector = isHookEnabled("env-context-injector")
+    ? safeCreateHook(
+        "env-context-injector",
+        () => createEnvContextInjectorHook(),
+        { enabled: safeHookEnabled },
+      )
+    : null
 
   const thinkingBlockValidator = isHookEnabled("thinking-block-validator")
     ? safeCreateHook(
@@ -68,6 +78,7 @@ export function createTransformHooks(args: {
   return {
     keywordDetector,
     contextInjectorMessagesTransform,
+    envContextInjector,
     thinkingBlockValidator,
     toolPairValidator,
     designIntentPreserver,

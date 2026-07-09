@@ -16,6 +16,7 @@ export { createDirectoryAgentsInjectorHook } from "./directory-agents-injector";
 export { createDirectoryReadmeInjectorHook } from "./directory-readme-injector";
 export { createEditErrorRecoveryHook } from "./edit-error-recovery";
 export { createEmptyTaskResponseDetectorHook } from "./empty-task-response-detector";
+export { createEnvContextInjectorHook } from "./env-context-injector";
 export { createEnvFileWriteGuardHook } from "./env-file-write-guard"
 export { createHashlineEditDiffEnhancerHook } from "./hashline-edit-diff-enhancer"
 export { createHashlineReadEnhancerHook } from "./hashline-read-enhancer";

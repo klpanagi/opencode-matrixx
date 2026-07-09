@@ -68,6 +68,10 @@ export function createMessagesTransformHandler(args: {
         "experimental.chat.messages.transform"
       ]?.(input, output)
 
+      await args.hooks.envContextInjector?.[
+        "experimental.chat.messages.transform"
+      ]?.(input, output)
+
       await args.hooks.thinkingBlockValidator?.[
         "experimental.chat.messages.transform"
       ]?.(input, output)
@@ -77,15 +81,17 @@ export function createMessagesTransformHandler(args: {
     const messagesHash = hashMessages(output.messages)
     const cached = getCachedTransform(sessionID, messagesHash)
     if (cached !== undefined) return
-
     await args.hooks.contextInjectorMessagesTransform?.[
+      "experimental.chat.messages.transform"
+    ]?.(input, output)
+
+    await args.hooks.envContextInjector?.[
       "experimental.chat.messages.transform"
     ]?.(input, output)
 
     await args.hooks.thinkingBlockValidator?.[
       "experimental.chat.messages.transform"
     ]?.(input, output)
-
     setCachedTransform(sessionID, messagesHash, output.messages)
   }
 }
