@@ -29,6 +29,7 @@ export function maybeCreateKeymakerConfig(input: {
     availableAgents,
     availableSkills,
     availableCategories,
+    mergedCategories,
     useTaskSystem,
   } = input
 
