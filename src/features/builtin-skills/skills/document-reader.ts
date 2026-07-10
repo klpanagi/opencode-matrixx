@@ -3,7 +3,7 @@ import type { BuiltinSkill } from "../types"
 const DOCUMENT_READER_SKILL_NAME = "document-reader"
 
 const DOCUMENT_READER_SKILL_DESCRIPTION =
-  "Read and extract content from local or remote documents (PDF, DOCX, XLSX, PPTX, HTML, images). Use the document_reader MCP tool `convert_to_markdown` with a file: or https: URI. Triggers: 'read the PDF', 'analyze the document', 'extract from .docx', 'summarize the file', 'look at the spreadsheet'."
+  "Use when reading PDFs, extracting content from documents, or analyzing office files (DOCX, XLSX, PPTX) — document conversion via document_reader MCP convert_to_markdown supporting file: and https: URIs for local and remote files. Related: ulw-research, dev-browser."
 
 export const documentReaderSkill: BuiltinSkill = {
   name: DOCUMENT_READER_SKILL_NAME,

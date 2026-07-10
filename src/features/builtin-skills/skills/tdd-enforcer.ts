@@ -3,7 +3,7 @@ import type { BuiltinSkill } from "../types"
 const TDD_ENFORCER_SKILL_NAME = "tdd-enforcer"
 
 const TDD_ENFORCER_SKILL_DESCRIPTION =
-  "Test-Driven Development enforcement: RED-GREEN-REFACTOR cycle, mandatory test-first for every fix/feature/refactor, bun test conventions, BDD comment patterns, unit vs integration test strategy, evidence requirements. Triggers: 'write tests', 'TDD', 'test first', 'unit test', 'integration test', 'test coverage', 'testing', 'failing test', 'test suite'."
+  "Use when writing tests, enforcing TDD, or running bun test suites — test-driven development with RED-GREEN-REFACTOR cycle, mandatory test-first for fixes/features/refactors, BDD comment patterns, unit vs integration test strategy, and evidence requirements. Related: quality-gate, frontend-testing."
 
 export const tddEnforcerSkill: BuiltinSkill = {
   name: TDD_ENFORCER_SKILL_NAME,

@@ -32,6 +32,13 @@ export function createLazyTemplateSkill(
       if (!templateCache.has(name)) {
         const actual = skillFactory()
         templateCache.set(name, actual.template)
+        // Also hydrate description from the actual skill
+        Object.defineProperty(this, "description", {
+          value: actual.description,
+          writable: true,
+          enumerable: true,
+          configurable: true,
+        })
       }
       const value = templateCache.get(name) as string
       // Self-destructing getter: replace with writable data property
