@@ -134,6 +134,7 @@
           "edit-error-recovery",
           "delegate-task-retry",
           "prometheus-md-only",
+          "plan-persister",
           "mouse-notepad",
           "start-work",
           "architect",
