@@ -3,7 +3,7 @@ import type { BuiltinSkill } from "../types"
 const REMOVE_AI_SLOPS_SKILL_NAME = "remove-ai-slops"
 
 const REMOVE_AI_SLOPS_SKILL_DESCRIPTION =
-  "Detects and removes AI-generated code smells across 7 categories: verbose comments, redundant error handling, over-engineered patterns, generic AI phrasing, cargo-cult boilerplate, padding/verbosity, weird codegen artifacts. Hybrid mode: scan first, then guide fixes. Triggers: 'cleanup code', 'remove ai slop', 'code cleanup', 'fix ai code', 'de-ai', 'remove ai comments', 'clean ai smells'."
+  "Use when cleaning up AI-generated code, removing verbose comments, or fixing redundant error handling — detects and removes 7 categories of AI code smells (verbose comments, redundant error handling, over-engineering, generic phrasing, boilerplate, padding, codegen artifacts) with hybrid scan-then-fix mode. Related: review-work, quality-gate."
 
 export const removeAiSlopsSkill: BuiltinSkill = {
   name: REMOVE_AI_SLOPS_SKILL_NAME,

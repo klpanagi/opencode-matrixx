@@ -3,7 +3,7 @@ import type { BuiltinSkill } from "../types"
 export const FRONTEND_PERF_SKILL_NAME = "frontend-perf"
 
 const FRONTEND_PERF_SKILL_DESCRIPTION =
-  "Frontend performance optimization — Core Web Vitals (LCP/INP/CLS), Lighthouse, bundle optimization (code splitting, tree shaking), resource hints (preload/prefetch), image optimization, runtime memoization, HTTP caching"
+  "Use when optimizing page speed, improving Lighthouse scores, or fixing Core Web Vitals — performance optimization covering LCP/INP/CLS, bundle analysis, code splitting, image optimization, and runtime memoization. Related: frontend-ui-ux."
 
 export const frontendPerfSkill: BuiltinSkill = {
   name: FRONTEND_PERF_SKILL_NAME,

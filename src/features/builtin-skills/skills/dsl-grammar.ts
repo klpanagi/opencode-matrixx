@@ -3,7 +3,7 @@ import type { BuiltinSkill } from "../types"
 export const DSL_GRAMMAR_SKILL_NAME = "dsl-grammar"
 
 const DSL_GRAMMAR_SKILL_DESCRIPTION =
-  "Grammar design and parser implementation for DSLs. Domain analysis, formal grammar (BNF/EBNF/PEG), expression precedence, declaration patterns, error recovery, framework adaptation. Triggers: 'grammar', 'BNF', 'EBNF', 'PEG', 'parser', 'lexer', 'ANTLR', 'textX grammar', 'precedence', 'operator'."
+  "Use when designing grammars, implementing parsers, or defining BNF/EBNF/PEG rules — grammar design and parser implementation: domain analysis, formal grammar, expression precedence patterns, error recovery strategies, and framework adaptation (textX, ANTLR4, Tree-sitter). Related: dsl-core, dsl-metamodel."
 
 export const dslGrammarSkill: BuiltinSkill = {
   name: DSL_GRAMMAR_SKILL_NAME,

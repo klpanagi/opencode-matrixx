@@ -3,7 +3,7 @@ import type { BuiltinSkill } from "../types"
 const SOFTWARE_DEV_SKILL_NAME = "software-dev"
 
 const SOFTWARE_DEV_SKILL_DESCRIPTION =
-  "Structured software development pipeline: PLAN → BUILD (TDD) → VERIFY → REVIEW → SECURE → SHIP. Coordinates specialized roles (Developer, Tester, Quality Evaluator, Security Expert, Architect) through a 6-phase workflow with entry/exit criteria. Triggers: 'build feature', 'implement', 'develop', 'software development', 'dev pipeline', 'development workflow', 'code and test', 'full stack development'."
+  "Use when building new features, implementing significant changes, or running a structured development workflow — coordinates specialized roles through build phases with entry/exit criteria. Related: tdd-enforcer, quality-gate, review-work."
 
 export const softwareDevSkill: BuiltinSkill = {
   name: SOFTWARE_DEV_SKILL_NAME,

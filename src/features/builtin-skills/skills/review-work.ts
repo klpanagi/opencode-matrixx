@@ -3,7 +3,7 @@ import type { BuiltinSkill } from "../types"
 const REVIEW_WORK_SKILL_NAME = "review-work"
 
 const REVIEW_WORK_SKILL_DESCRIPTION =
-  "Post-implementation review orchestrator. Launches 6 parallel background sub-agents: Oracle (goal/constraint verification), Oracle (code quality), Oracle (security), unspecified-high (hands-on QA execution), unspecified-high (context mining from GitHub/git/Slack/Notion), unspecified-high (AI slop detection). All must pass for review to pass. MUST USE after completing any significant implementation work. Triggers: 'review work', 'review my work', 'review changes', 'QA my work', 'verify implementation', 'check my work', 'validate changes', 'post-implementation review'."
+  "Use when reviewing completed work, verifying implementations, or performing post-implementation QA — orchestrates parallel review sub-agents (goal verification, QA execution, code review, security audit, context mining, AI slop detection). Related: quality-gate, software-dev."
 
 export const reviewWorkSkill: BuiltinSkill = {
   name: REVIEW_WORK_SKILL_NAME,

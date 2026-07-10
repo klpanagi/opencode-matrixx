@@ -2,7 +2,7 @@ import type { BuiltinSkill } from "../types"
 
 export const FRONTEND_REACT_NEXTJS_SKILL_NAME = "react-nextjs-patterns"
 
-const FRONTEND_REACT_NEXTJS_SKILL_DESCRIPTION = "React 19 (Server Components, useOptimistic, useActionState) and Next.js 15 App Router (Server Actions, Streaming, Routing) patterns"
+const FRONTEND_REACT_NEXTJS_SKILL_DESCRIPTION = "Use when building React or Next.js features, implementing Server Components or Server Actions, or designing App Router patterns — React 19 (Server Components, useOptimistic, useActionState) and Next.js 15 App Router (streaming, routing, middleware). Related: frontend-ui-ux, frontend-state-data."
 
 export const reactNextjsPatternsSkill: BuiltinSkill = {
   name: FRONTEND_REACT_NEXTJS_SKILL_NAME,

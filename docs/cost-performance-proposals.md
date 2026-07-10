@@ -100,7 +100,9 @@ Total: 15 proposals across 3 tiers, plus a recommended implementation sequence a
 - **Where:** `src/tools/delegate-task/constants.ts` (591 LOC), `src/agents/oracle/`
 - **Source:** Nanako0129/pilotfish (Anthropic research validation)
 
-### P4. Skill Discovery Optimization (SDO) Audit (superpowers pattern)
+> **Status:** ✅ Shipped (v2.0.0, branch `feat/p4-sdo-audit`). 37 skill descriptions rewritten to follow obra/superpowers SDO pattern (trigger-first, max 150 tokens, cross-references, no workflow). Lazy-skill-helper description-hydration bug fixed. SDO compliance test suite added. Docs: `docs/features.md` § "Skill Discovery Optimization" + `src/features/builtin-skills/AGENTS.md` § "Skill Description SDO".
+
+- **What:** Audit all 45 built-in skill descriptions so each contains **ONLY triggering conditions** (no workflow summaries). This is superpowers' most counterintuitive but highest-leverage finding: workflow summaries cause agents to shortcut.
 
 - **What:** Audit all 45 built-in skill descriptions so each contains **ONLY triggering conditions** (no workflow summaries). This is superpowers' most counterintuitive but highest-leverage finding: workflow summaries cause agents to shortcut.
 - **Cost impact:** Prevents skill-misuse retries and re-explanations. **10–30% reduction in skill-related rework.**

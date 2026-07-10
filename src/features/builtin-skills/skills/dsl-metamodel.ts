@@ -3,7 +3,7 @@ import type { BuiltinSkill } from "../types"
 export const DSL_METAMODEL_SKILL_NAME = "dsl-metamodel"
 
 const DSL_METAMODEL_SKILL_DESCRIPTION =
-  "Metamodeling for DSLs with textX, PyEcore, and EMF-style tools. Complete textX grammar reference (assignments, rule types, references, modifiers), scoping, validation, model transformations. Triggers: 'metamodel', 'PyEcore', 'EMF', 'model-driven', 'M2M', 'textX', 'Ecore', 'scoping', 'obj_processors'."
+  "Use when building metamodels, defining textX grammars, or working with PyEcore/EMF — metamodeling with textX (grammar reference, assignments, scoping, obj_processors) and PyEcore (EPackage, EClass, EReference, serialization, code generation). Related: dsl-core, dsl-grammar."
 
 export const dslMetamodelSkill: BuiltinSkill = {
   name: DSL_METAMODEL_SKILL_NAME,

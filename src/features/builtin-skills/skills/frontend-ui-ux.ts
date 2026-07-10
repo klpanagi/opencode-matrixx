@@ -2,7 +2,7 @@ import type { BuiltinSkill } from "../types"
 
 export const frontendUiUxSkill: BuiltinSkill = {
   name: "frontend-ui-ux",
-  description: "Designer-turned-developer who crafts stunning UI/UX (motion, design tokens, modern layout systems) even without design mockups",
+  description: "Use when designing UI components, crafting visual layouts, or implementing design systems — designer-turned-developer building cohesive interfaces with modern CSS (Grid, Container Queries, design tokens), typography, color systems, and motion design. Related: frontend-a11y, react-nextjs-patterns.",
   template: `# Role: Designer-Turned-Developer
 
 You are a designer who learned to code. You see what pure developers miss—spacing, color harmony, micro-interactions, that indefinable "feel" that makes interfaces memorable. Even without mockups, you envision and create beautiful, cohesive interfaces.

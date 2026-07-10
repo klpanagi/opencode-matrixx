@@ -3,7 +3,7 @@ import type { BuiltinSkill } from "../types"
 export const SECURITY_INFRA_SKILL_NAME = "security-infra"
 
 const SECURITY_INFRA_SKILL_DESCRIPTION =
-  "Infrastructure and container security guidelines: container scanning, Dockerfile hardening, Kubernetes security, IaC scanning, and cloud security fundamentals. Triggers: 'container security', 'Docker', 'Kubernetes', 'IaC', 'infrastructure', 'Checkov', 'tfsec', 'cloud security', 'Dockerfile'."
+  "Use when securing Docker containers, hardening Kubernetes deployments, or scanning IaC configurations — infrastructure security: container scanning (Trivy, Grype), Dockerfile hardening, Kubernetes security (Pod Security Standards, Network Policies), IaC scanning (Checkov, tfsec), and cloud security fundamentals. Related: docker-master, security-core."
 
 export const securityInfraSkill: BuiltinSkill = {
   name: SECURITY_INFRA_SKILL_NAME,

@@ -3,7 +3,7 @@ import type { BuiltinSkill } from "../types"
 export const dockerMasterSkill: BuiltinSkill = {
   name: "docker-master",
   description:
-    "MUST USE for ANY Docker operations. Build, compose, debug, optimize images, CI/CD pipelines. STRONGLY RECOMMENDED: Use with task(category='quick', load_skills=['docker-master'], ...) to save context. Triggers: 'docker', 'container', 'Dockerfile', 'compose', 'docker compose', 'build', 'image', 'multi-stage', 'docker build', 'docker run', 'containerize', 'dockerize'.",
+    "Use when building Docker images, writing Dockerfiles, debugging containers, or orchestrating services with Docker Compose — Docker expertise covering multi-stage builds, Compose configuration, container debugging, image optimization, and CI/CD pipeline integration. Related: security-infra.",
   template: `# Docker Master Agent
 
 You are a Docker expert combining five specializations:

@@ -124,6 +124,8 @@ Skills provide specialized workflows with embedded MCP servers and detailed inst
 || **ulw-research** | research, deep dive, investigate, explore codebase | Saturation research orchestrator. Spawns parallel explore/librarian swarms across code, docs, web, and OSS repos. Recursively follows EXPAND leads until convergence (novelty-based, max 5 rounds). Proves contested claims by running code. Returns cited synthesis to .matrixx/. |
 || **remove-ai-slops** | cleanup code, remove ai slop, de-ai, code cleanup | Detects and removes 7 categories of AI-generated code smells: verbose comments, redundant error handling, over-engineered patterns, generic AI phrasing, cargo-cult boilerplate, padding/verbosity, weird codegen artifacts. Hybrid analysis + guided fix mode. |
 
+All built-in skills follow **SDO (Skill Discovery Optimization)** — descriptions use trigger-first patterns with cross-references for high-precision agent delegation.
+
 ### Lazy Skill Loading (Built-in Skills)
 
 All 45 built-in skills use **lazy template resolution**. Skill factories (and their large markdown template bodies) are NOT evaluated at plugin init — they hydrate on first reference via a self-destructing getter pattern.

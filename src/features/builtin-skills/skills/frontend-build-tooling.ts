@@ -3,7 +3,7 @@ import type { BuiltinSkill } from "../types"
 export const FRONTEND_BUILD_TOOLING_SKILL_NAME = "frontend-build-tooling"
 
 const FRONTEND_BUILD_TOOLING_SKILL_DESCRIPTION =
-  "Frontend build tooling — Build tools (Vite 6, Turbopack, Webpack), Tailwind v4, Biome 2.5/ESLint 9, TypeScript strict, monorepo tooling, CI/CD, environment management"
+  "Use when configuring build tools, setting up Vite or Tailwind CSS, or managing frontend toolchains — build tooling expertise covering Vite 6, Turbopack, Webpack, Tailwind v4, Biome/ESLint, TypeScript strict mode, and monorepo tooling. Related: frontend-ui-ux."
 
 export const frontendBuildToolingSkill: BuiltinSkill = {
   name: FRONTEND_BUILD_TOOLING_SKILL_NAME,

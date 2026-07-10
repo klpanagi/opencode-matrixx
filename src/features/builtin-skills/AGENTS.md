@@ -119,3 +119,26 @@ Remove from `skillLoaders` in `skills.ts`. Note: this affects all profiles; user
 - `src/features/builtin-skills/skills/git-master.ts` — large skill with many workflow procedures
 - `src/features/builtin-skills/skills/ulw-research.ts` — references the research skill
 - `src/features/builtin-skills/skills.ts` `skillLoaders` map — must stay in sync with `skills/*.ts` exports
+
+## Skill Description SDO (Skill Discovery Optimization)
+
+All built-in skill descriptions MUST follow the SDO pattern:
+
+**Format:**
+```
+Use when {trigger1}, {trigger2}, {trigger3} — {1-sentence domain context}. Related: {skill-x}, {skill-y}.
+```
+
+**Rules:**
+- First sentence MUST contain a trigger pattern (`Use when`, `For ... tasks`, etc.)
+- Trigger phrases MUST appear in the first 120 characters (survives `truncateDescription()`)
+- Maximum 150 tokens (~500-600 chars)
+- Cross-reference max 2 related skills
+- No workflow content (phases, agents, step numbers)
+- No directives (`MUST USE`, `STRONGLY RECOMMENDED`)
+
+**Example:**
+```
+GOOD: "Use when setting up auth, configuring login, or implementing access control — authentication and authorization patterns for web APIs. Related: security-api, security-core."
+BAD:  "Authentication and authorization. Covers JWT, OAuth, sessions, RBAC, ABAC. Triggers: 'auth', 'login'."
+```

@@ -3,7 +3,7 @@ import type { BuiltinSkill } from "../types"
 export const SECURITY_SAST_SKILL_NAME = "security-sast"
 
 const SECURITY_SAST_SKILL_DESCRIPTION =
-  "Static Application Security Testing (SAST), Semgrep usage, CWE-specific code patterns, and ESLint security plugins. Triggers: 'SAST', 'static analysis', 'semgrep', 'code scanning', 'vulnerability pattern'."
+  "Use when running SAST scans, using Semgrep for pattern detection, or reviewing code for CWE-classified vulnerabilities — static analysis: Semgrep CLI, CWE-specific code patterns (XSS, SQLi, path traversal, command injection), ESLint security plugins, and SARIF output interpretation. Related: security-core, security-review."
 
 export const securitySastSkill: BuiltinSkill = {
   name: SECURITY_SAST_SKILL_NAME,

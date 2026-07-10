@@ -3,7 +3,7 @@ import type { BuiltinSkill } from "../types"
 export const SECURITY_DAST_SKILL_NAME = "security-dast"
 
 const SECURITY_DAST_SKILL_DESCRIPTION =
-  "DAST overview: testing running applications for vulnerabilities at runtime, differs from SAST by finding issues only visible during execution. Triggers: 'DAST', 'dynamic analysis', 'ZAP', 'Nuclei', 'runtime security', 'penetration test', 'fuzzing'."
+  "Use when testing running applications for runtime vulnerabilities, running ZAP or Nuclei scans, or performing penetration testing — dynamic analysis: OWASP ZAP, Nuclei, HTTP fuzzing patterns, runtime vulnerability detection (CORS, clickjacking), and API endpoint discovery. Related: security-core, security-sast."
 
 export const securityDastSkill: BuiltinSkill = {
   name: SECURITY_DAST_SKILL_NAME,
