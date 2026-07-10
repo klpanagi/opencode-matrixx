@@ -3,7 +3,7 @@ import type { BuiltinSkill } from "../types"
 export const SECURITY_CRYPTO_SKILL_NAME = "security-crypto"
 
 const SECURITY_CRYPTO_SKILL_DESCRIPTION =
-  "Cryptography and key management security guidelines: algorithm selection, key management, TLS configuration, common crypto mistakes, and secure random generation. Triggers: 'cryptography', 'encryption', 'hashing', 'TLS', 'key management', 'crypto', 'password hashing', 'certificate'."
+  "Use when choosing cryptographic algorithms, implementing encryption, or managing cryptographic keys — cryptography security: algorithm selection (AES-256-GCM, Ed25519, SHA-256), key management, TLS configuration, password hashing (Argon2id, bcrypt), and common crypto mistakes to avoid. Related: security-core."
 
 export const securityCryptoSkill: BuiltinSkill = {
   name: SECURITY_CRYPTO_SKILL_NAME,

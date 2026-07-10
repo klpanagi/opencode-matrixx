@@ -3,7 +3,7 @@ import type { BuiltinSkill } from "../types"
 export const SECURITY_SECRETS_SKILL_NAME = "security-secrets"
 
 const SECURITY_SECRETS_SKILL_DESCRIPTION =
-  "Secret scanning, entropy analysis, gitleaks usage, and remediation playbooks for exposed credentials. Triggers: 'secret', 'API key', 'credential', 'gitleaks', 'secret scanning', 'key exposure'."
+  "Use when scanning for secrets, detecting exposed credentials, or remediating leaked API keys — secret scanning: gitleaks usage, entropy analysis, common secret patterns (AWS keys, tokens, JWTs), .gitleaks.toml allowlist config, remediation playbooks, and envsitter integration. Related: security-core."
 
 export const securitySecretsSkill: BuiltinSkill = {
   name: SECURITY_SECRETS_SKILL_NAME,

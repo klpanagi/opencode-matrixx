@@ -3,7 +3,7 @@ import type { BuiltinSkill } from "../types"
 export const SECURITY_API_SKILL_NAME = "security-api"
 
 const SECURITY_API_SKILL_DESCRIPTION =
-  "API security patterns: authentication, authorization, input validation, rate limiting, CORS, CSRF, security headers, and error handling. Triggers: 'API security', 'authentication', 'authorization', 'JWT', 'OAuth', 'CORS', 'CSRF', 'rate limiting', 'input validation'."
+  "Use when securing APIs, implementing authentication or authorization, or configuring CORS and rate limiting — API security: authentication (JWT, OAuth 2.0, sessions), authorization (RBAC, ABAC), input validation, rate limiting, CORS, CSRF protection, security headers, and error handling. Related: security-core."
 
 export const securityApiSkill: BuiltinSkill = {
   name: SECURITY_API_SKILL_NAME,

@@ -3,7 +3,7 @@ import type { BuiltinSkill } from "../types"
 export const SECURITY_DEPENDENCIES_SKILL_NAME = "security-dependencies"
 
 const SECURITY_DEPENDENCIES_SKILL_DESCRIPTION =
-  "Dependency security scanning, SBOM generation, CVE lookups, remediation strategies, license compliance, and supply chain risk management. Triggers: 'dependency', 'CVE', 'npm audit', 'trivy', 'supply chain', 'vulnerability scanning', 'SBOM', 'license'."
+  "Use when scanning dependencies for CVEs, generating SBOMs, or auditing supply chain security — dependency security: Trivy filesystem scan, npm/bun audit, OSV-scanner, SBOM generation (SPDX), CVE lookup, remediation strategies, license compliance, and supply chain risk management. Related: security-core."
 
 export const securityDependenciesSkill: BuiltinSkill = {
   name: SECURITY_DEPENDENCIES_SKILL_NAME,
