@@ -1,7 +1,4 @@
-export { DEPRECATED_PROFILES, deprecationMessage, isDeprecatedProfile } from "./deprecated-profiles"
-export { migrateAgentOverride, migrateCategoryOverride, migrateProfileToTiers, modelToTier } from "./migrate-profile"
-export type { ProfileName } from "./profiles"
-export { expandProfile, PROFILE_NAMES } from "./profiles"
+export { expandPreset, PRESET_NAMES, type PresetName } from "./presets"
 export type {
   AgentDefinitions,
   AgentName,

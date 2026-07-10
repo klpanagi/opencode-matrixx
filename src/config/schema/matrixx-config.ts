@@ -29,8 +29,6 @@ import { WebsearchConfigSchema } from "./websearch"
 
 export const MatrixxConfigSchema = z.object({
   $schema: z.string().optional(),
-  /** Predefined model profile: "free" | "budget" | "economy" | "balanced" | "performance" | "go" | "xiaomi-ultimate" | "go-ultimate" | "go-trio" | "go-duo". Expanded at config load time; explicit agents/categories override profile defaults. */
-  profile: z.enum(["free", "budget", "economy", "balanced", "performance", "go", "xiaomi-ultimate", "go-ultimate", "go-trio", "go-duo"]).optional(),
   /** Default tier applied to every agent and category that has no explicit `model` or `tier`. */
   default_tier: TierNameSchema.optional(),
   /** Enable new task system (default: false) */

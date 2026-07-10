@@ -1,8 +1,6 @@
 import * as fs from "node:fs";
 import * as path from "node:path";
 import { type MatrixxConfig, MatrixxConfigSchema } from "./config";
-import { deprecationMessage, isDeprecatedProfile } from "./config/deprecated-profiles";
-import { expandProfile, PROFILE_NAMES } from "./config/profiles";
 import { resolveTiersInCategoryRegistry, resolveTiersInConfig } from "./config/resolve-tiers";
 import {
   addConfigLoadError,
@@ -229,14 +227,6 @@ export async function loadPluginConfig(
   const projectConfig = loadConfigFromPath(projectConfigPath, ctx);
   if (projectConfig) {
     config = mergeConfigs(config, projectConfig);
-  }
-
-  if (config.profile && PROFILE_NAMES.includes(config.profile)) {
-    if (isDeprecatedProfile(config.profile)) {
-      log(deprecationMessage(config.profile));
-    }
-    const profileDefaults = expandProfile(config.profile) as MatrixxConfig;
-    config = mergeConfigs(profileDefaults, config);
   }
 
   // Resolve any `tier: "..."` aliases against the live provider list.

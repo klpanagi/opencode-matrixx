@@ -8,21 +8,6 @@
     "$schema": {
       "type": "string"
     },
-    "profile": {
-      "type": "string",
-      "enum": [
-        "free",
-        "budget",
-        "economy",
-        "balanced",
-        "performance",
-        "go",
-        "xiaomi-ultimate",
-        "go-ultimate",
-        "go-trio",
-        "go-duo"
-      ]
-    },
     "default_tier": {
       "type": "string",
       "enum": [
