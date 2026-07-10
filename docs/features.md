@@ -617,6 +617,12 @@ Hooks intercept and modify behavior at key points in the agent lifecycle.
 | **interactive-bash-session** | PreToolUse | Manages tmux sessions for interactive CLI. |
 | **non-interactive-env** | PreToolUse | Handles non-interactive environment constraints. |
 
+#### Persistence & Recovery
+
+| Hook | Event | Description |
+|------|-------|-------------|
+| **plan-persister** | Stop | Persists active plan state (todos + metadata) to plan file on session.idle. Builds rehydration context for injection after compaction. Survives process restarts, /clear, and crashes. |
+
 #### Specialized
 
 | Hook | Event | Description |

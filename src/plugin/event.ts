@@ -47,7 +47,9 @@ export function createEventHandler(args: {
     await Promise.resolve(hooks.stopContinuationGuard?.event?.(input))
     await Promise.resolve(hooks.compactionTodoPreserver?.event?.(input))
     await Promise.resolve(hooks.architectHook?.handler?.(input))
+    await Promise.resolve(hooks.planPersister?.event?.(input))
   }
+
 
   const recentSyntheticIdles = new Map<string, number>()
   const recentRealIdles = new Map<string, number>()

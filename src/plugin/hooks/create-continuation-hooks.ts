@@ -5,6 +5,7 @@ import {
   createBackgroundNotificationHook,
   createCompactionContextInjector,
   createCompactionTodoPreserverHook,
+  createPlanPersister,
   createStopContinuationGuardHook,
   createTodoContinuationEnforcer,
 } from "../../hooks"
@@ -20,6 +21,7 @@ export type ContinuationHooks = {
   unstableAgentBabysitter: ReturnType<typeof createUnstableAgentBabysitter> | null
   backgroundNotificationHook: ReturnType<typeof createBackgroundNotificationHook> | null
   architectHook: ReturnType<typeof createArchitectHook> | null
+  planPersister: ReturnType<typeof createPlanPersister> | null
 }
 
 type SessionRecovery = {
@@ -110,6 +112,11 @@ export function createContinuationHooks(args: {
         }))
     : null
 
+  const planPersister = isHookEnabled("plan-persister")
+    ? safeHook("plan-persister", () =>
+        createPlanPersister(ctx, { directory: ctx.directory }))
+    : null
+
   return {
     stopContinuationGuard,
     compactionContextInjector,
@@ -118,5 +125,7 @@ export function createContinuationHooks(args: {
     unstableAgentBabysitter,
     backgroundNotificationHook,
     architectHook,
-  }
+    planPersister,
+}
+
 }

@@ -82,6 +82,14 @@ const MatrixxPlugin: Plugin = async (ctx) => {
       if (hooks.compactionContextInjector) {
         output.context.push(hooks.compactionContextInjector(_input.sessionID))
       }
+
+      // Inject plan context if mission is active
+      if (hooks.planPersister) {
+        const planContext = hooks.planPersister.buildRehydrationContext(_input.sessionID)
+        if (planContext) {
+          output.context.push(planContext)
+        }
+      }
     },
   }
 }
