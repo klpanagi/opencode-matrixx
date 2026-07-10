@@ -3,7 +3,7 @@ import type { BuiltinSkill } from "../types"
 const ULW_RESEARCH_SKILL_NAME = "ulw-research"
 
 const ULW_RESEARCH_SKILL_DESCRIPTION =
-  "Saturation research orchestrator. Spawns parallel explore/librarian swarms across code, docs, web, and OSS repos. Recursively follows EXPAND leads until convergence (novelty-based, max 5 rounds). Proves contested claims by running code. Returns cited synthesis. Writes artifacts to .matrixx/. Triggers: 'research', 'deep dive', 'investigate', 'explore codebase', 'find how', 'saturation research', 'ulw research'."
+  "Use when conducting deep research, investigating complex topics, or exploring codebases across multiple sources — spawns parallel search agents across code, docs, web, and OSS repos with recursive convergence. Related: dev-browser, document-reader."
 
 export const ulwResearchSkill: BuiltinSkill = {
   name: ULW_RESEARCH_SKILL_NAME,
