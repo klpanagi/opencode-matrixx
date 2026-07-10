@@ -3,11 +3,11 @@ import type { BuiltinSkill } from "../types"
 export const BDD_TESTS_SKILL_NAME = "bdd-tests"
 
 const BDD_TESTS_SKILL_DESCRIPTION =
-  "Cucumber step definition + page object generation from BDD Contract JSON. Use when generating E2E tests for a feature."
+  "Use when generating Cucumber E2E tests from BDD contracts, creating page objects, or setting up test runners with Docker — generates Cucumber step definitions, page object classes, Dockerfile, and run-tests.sh from BDD Contract JSON. Related: bdd-contract, bdd-backend, playwright."
 
 export const bddTestsSkill: BuiltinSkill = {
   name: BDD_TESTS_SKILL_NAME,
-  description: BDD_TESTS_SKILL_DESCRIPTION + ' NEVER commits or runs git in this skill context.',
+  description: BDD_TESTS_SKILL_DESCRIPTION,
   template: `# BDD Test Generation
 
 ## Overview

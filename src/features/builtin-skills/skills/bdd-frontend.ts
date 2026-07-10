@@ -3,11 +3,11 @@ import type { BuiltinSkill } from "../types"
 export const BDD_FRONTEND_SKILL_NAME = "bdd-frontend"
 
 const BDD_FRONTEND_SKILL_DESCRIPTION =
-  "React component generation from BDD Contract JSON. Use when generating UI for a feature."
+  "Use when generating React components from BDD contracts, building preview servers, or creating accessible UI with data-testid attributes — generates React components, preview server, unit tests, and accessible markup from BDD Contract JSON annotations. Related: bdd-contract, bdd-backend, frontend-testing."
 
 export const bddFrontendSkill: BuiltinSkill = {
   name: BDD_FRONTEND_SKILL_NAME,
-  description: BDD_FRONTEND_SKILL_DESCRIPTION + ' NEVER commits or runs git in this skill context.',
+  description: BDD_FRONTEND_SKILL_DESCRIPTION,
   template: `# BDD Frontend Generation
 
 ## Overview

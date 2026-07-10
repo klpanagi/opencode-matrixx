@@ -3,11 +3,11 @@ import type { BuiltinSkill } from "../types"
 export const BDD_BACKEND_SKILL_NAME = "bdd-backend"
 
 const BDD_BACKEND_SKILL_DESCRIPTION =
-  "Typed API service generation from BDD Contract JSON. Use when generating backend services for a feature."
+  "Use when generating API services from BDD contracts, building typed backend endpoints, or implementing Zod-validated API routes — generates typed API services (Zod schemas, service functions, test files) from BDD Contract JSON annotations. Related: bdd-contract, bdd-tests."
 
 export const bddBackendSkill: BuiltinSkill = {
   name: BDD_BACKEND_SKILL_NAME,
-  description: BDD_BACKEND_SKILL_DESCRIPTION + ' NEVER commits or runs git in this skill context.',
+  description: BDD_BACKEND_SKILL_DESCRIPTION,
   template: `# BDD Backend Generation
 
 ## Overview

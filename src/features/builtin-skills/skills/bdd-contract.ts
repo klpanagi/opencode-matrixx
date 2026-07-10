@@ -3,11 +3,11 @@ import type { BuiltinSkill } from "../types"
 export const BDD_CONTRACT_SKILL_NAME = "bdd-contract"
 
 const BDD_CONTRACT_SKILL_DESCRIPTION =
-  "BDD contract creation: Gherkin AST → structured Contract JSON with semantic enrichment. Use when authoring or enriching BDD contracts from feature files."
+  "Use when creating BDD contracts from feature files, enriching Gherkin scenarios with annotations, or validating contract JSON — transforms Gherkin .feature files into structured Contract JSON with LLM-inferred annotations (api/ui/state/assumptions). Related: bdd-backend, bdd-frontend, bdd-tests."
 
 export const bddContractSkill: BuiltinSkill = {
   name: BDD_CONTRACT_SKILL_NAME,
-  description: BDD_CONTRACT_SKILL_DESCRIPTION + ' NEVER commits or runs git in this skill context.',
+  description: BDD_CONTRACT_SKILL_DESCRIPTION,
   template: `# BDD Contract Creation
 
 ## Overview
