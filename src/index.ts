@@ -20,7 +20,7 @@ const MatrixxPlugin: Plugin = async (ctx) => {
   injectServerAuthIntoClient(ctx.client)
   startTmuxCheck()
 
-  const pluginConfig = loadPluginConfig(ctx.directory, ctx)
+  const pluginConfig = await loadPluginConfig(ctx.directory, ctx)
   const disabledHooks = new Set(pluginConfig.disabled_hooks ?? [])
 
   const isHookEnabled = (hookName: HookName): boolean => !disabledHooks.has(hookName)

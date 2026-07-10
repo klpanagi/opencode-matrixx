@@ -1,9 +1,14 @@
 import { z } from "zod"
+import { TierNameSchema } from "./agent-overrides"
 
 export const CategoryConfigSchema = z.object({
   /** Human-readable description of the category's purpose. Shown in task prompt. */
   description: z.string().optional(),
   model: z.string().optional(),
+  /** Tier alias. Resolved at config-load time against the live provider list and
+   *  converted to a concrete `model` string. Higher priority than built-in category
+   *  defaults, lower priority than an explicit `model`. */
+  tier: TierNameSchema.optional(),
   variant: z.string().optional(),
   temperature: z.number().min(0).max(2).optional(),
   top_p: z.number().min(0).max(1).optional(),
@@ -24,6 +29,8 @@ export const CategoryConfigSchema = z.object({
   disable: z.boolean().optional(),
   /** Ordered list of fallback models to try when the primary model fails (e.g. rate limit, quota) */
   fallback_models: z.union([z.string(), z.array(z.string())]).optional(),
+  /** Per-complexity-level model downgrades. Key is complexity level string ("1"-"5"), value is model string. */
+  complexity_downgrades: z.record(z.string(), z.string()).optional(),
 })
 
 export const BuiltinCategoryNameSchema = z.enum([

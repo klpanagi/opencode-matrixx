@@ -2,7 +2,7 @@ import { z } from "zod"
 import { AnyMcpNameSchema } from "../../mcp/types"
 import { AgentDefinitionsConfigSchema } from "./agent-definitions"
 import { BuiltinAgentNameSchema, BuiltinSkillNameSchema } from "./agent-names"
-import { AgentOverridesSchema } from "./agent-overrides"
+import { AgentOverridesSchema, TierNameSchema } from "./agent-overrides"
 import { AssemblyConfigSchema } from "./assembly"
 import { BabysittingConfigSchema } from "./babysitting"
 import { BackgroundTaskConfigSchema } from "./background-task"
@@ -29,8 +29,8 @@ import { WebsearchConfigSchema } from "./websearch"
 
 export const MatrixxConfigSchema = z.object({
   $schema: z.string().optional(),
-  /** Predefined model profile: "free" | "budget" | "economy" | "balanced" | "performance" | "go" | "xiaomi-ultimate" | "go-ultimate" | "go-trio" | "go-duo". Expanded at config load time; explicit agents/categories override profile defaults. */
-  profile: z.enum(["free", "budget", "economy", "balanced", "performance", "go", "xiaomi-ultimate", "go-ultimate", "go-trio", "go-duo"]).optional(),
+  /** Default tier applied to every agent and category that has no explicit `model` or `tier`. */
+  default_tier: TierNameSchema.optional(),
   /** Enable new task system (default: false) */
   new_task_system_enabled: z.boolean().optional(),
   /** Default agent name for `matrixx run` (env: OPENCODE_DEFAULT_AGENT) */

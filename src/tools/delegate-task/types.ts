@@ -21,6 +21,13 @@ export interface DelegateTaskArgs {
     task_id: string
     task_dir?: string
   }
+  /**
+   * Task complexity level (1-5) or "auto" for automatic scoring.
+   * When < 3, model may be downgraded to a cheaper tier.
+   * Default: "auto" (scored from prompt/description heuristics)
+   */
+  complexity?: import("./complexity-types").ComplexityLevel | "auto"
+
 }
 
 export interface ToolContextWithMetadata {

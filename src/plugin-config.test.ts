@@ -1,8 +1,12 @@
-import { describe, expect, it } from "bun:test";
+import { afterEach, beforeEach, describe, expect, it } from "bun:test";
+import { mkdirSync, mkdtempSync, rmSync, writeFileSync } from "node:fs";
+import { tmpdir } from "node:os";
+import { join } from "node:path";
 import type { MatrixxConfig } from "./config";
 import {
   _resetDisabledSetsCacheForTesting,
   getDisabledSets,
+  loadPluginConfig,
   mergeConfigs,
   parseConfigPartially,
 } from "./plugin-config";
@@ -336,4 +340,202 @@ describe("parseConfigPartially", () => {
       expect((result as Record<string, unknown>).some_future_key).toBeUndefined();
     });
   });
+});
+
+describe("loadPluginConfig - tier resolution (end-to-end)", () => {
+  let tempDir: string
+  let originalConfigDir: string | undefined
+  let originalXdgCache: string | undefined
+
+  beforeEach(() => {
+    tempDir = mkdtempSync(join(tmpdir(), "matrixx-config-test-"))
+    originalConfigDir = process.env.OPENCODE_CONFIG_DIR
+    originalXdgCache = process.env.XDG_CACHE_HOME
+    process.env.OPENCODE_CONFIG_DIR = tempDir
+    process.env.XDG_CACHE_HOME = tempDir
+  })
+
+  afterEach(() => {
+    if (originalConfigDir === undefined) delete process.env.OPENCODE_CONFIG_DIR
+    else process.env.OPENCODE_CONFIG_DIR = originalConfigDir
+    if (originalXdgCache === undefined) delete process.env.XDG_CACHE_HOME
+    else process.env.XDG_CACHE_HOME = originalXdgCache
+    rmSync(tempDir, { recursive: true, force: true })
+  })
+
+  function writeUserMatrixx(content: object): void {
+    writeFileSync(join(tempDir, "matrixx.json"), JSON.stringify(content))
+  }
+
+  function writeCacheFiles(
+    connectedProviders: string[],
+    providerModels: Record<string, string[]>,
+  ): void {
+    const matrixxCacheDir = join(tempDir, "matrixx")
+    mkdirSync(matrixxCacheDir, { recursive: true })
+    writeFileSync(
+      join(matrixxCacheDir, "connected-providers.json"),
+      JSON.stringify({ connected: connectedProviders, updatedAt: new Date().toISOString() }),
+    )
+    writeFileSync(
+      join(matrixxCacheDir, "provider-models.json"),
+      JSON.stringify({ models: providerModels, connected: connectedProviders, updatedAt: new Date().toISOString() }),
+    )
+    const opencodeCacheDir = join(tempDir, "opencode")
+    mkdirSync(opencodeCacheDir, { recursive: true })
+    const opencodeFormat: Record<string, { id: string; models: Record<string, { id: string }> }> = {}
+    for (const [provider, models] of Object.entries(providerModels)) {
+      opencodeFormat[provider] = {
+        id: provider,
+        models: Object.fromEntries(models.map((m) => [m, { id: m }])),
+      }
+    }
+    writeFileSync(join(opencodeCacheDir, "models.json"), JSON.stringify(opencodeFormat))
+  }
+
+  function freshProjectDir(): string {
+    const projectDir = join(tempDir, "project")
+    mkdirSync(projectDir, { recursive: true })
+    return projectDir
+  }
+
+  it("#given a matrixx.json with agent.tier='premium' and anthropic connected #when loadPluginConfig #then the merged config has model='anthropic/claude-opus-4-6' and tier is cleared", async () => {
+    //#given
+    writeCacheFiles(
+      ["anthropic", "openai"],
+      { anthropic: ["claude-opus-4-6", "claude-sonnet-4-6"], openai: ["gpt-5.3-codex"] },
+    )
+    writeUserMatrixx({ agents: { morpheus: { tier: "premium" } } })
+
+    //#when
+    const result = await loadPluginConfig(freshProjectDir(), null)
+
+    //#then
+    expect(result.agents?.morpheus?.model).toBe("anthropic/claude-opus-4-6")
+    expect(result.agents?.morpheus?.tier).toBeUndefined()
+  })
+
+  it("#given agent.tier='premium' but only openai connected #when loadPluginConfig #then model resolves to 'openai/gpt-5.3-codex' (cross-provider)", async () => {
+    //#given
+    writeCacheFiles(
+      ["openai"],
+      { openai: ["gpt-5.3-codex", "gpt-5.2"] },
+    )
+    writeUserMatrixx({ agents: { oracle: { tier: "premium" } } })
+
+    //#when
+    const result = await loadPluginConfig(freshProjectDir(), null)
+
+    //#then
+    expect(result.agents?.oracle?.model).toBe("openai/gpt-5.3-codex")
+  })
+
+  it("#given default_tier='fast' and agents without explicit model or tier #when loadPluginConfig #then those listed agents get a fast-tier model and default_tier is cleared", async () => {
+    //#given
+    writeCacheFiles(
+      ["anthropic"],
+      { anthropic: ["claude-haiku-4-5", "claude-opus-4-6"] },
+    )
+    writeUserMatrixx({
+      default_tier: "fast",
+      agents: { trinity: {}, operator: {} },
+    })
+
+    //#when
+    const result = await loadPluginConfig(freshProjectDir(), null)
+
+    //#then
+    expect(result.agents?.trinity?.model).toBe("anthropic/claude-haiku-4-5")
+    expect(result.agents?.operator?.model).toBe("anthropic/claude-haiku-4-5")
+    expect((result as unknown as { default_tier?: string }).default_tier).toBeUndefined()
+  })
+
+  it("#given default_tier='fast' and an agent with explicit model #when loadPluginConfig #then explicit model wins (not overridden by default_tier)", async () => {
+    //#given
+    writeCacheFiles(
+      ["anthropic"],
+      { anthropic: ["claude-haiku-4-5", "claude-opus-4-6"] },
+    )
+    writeUserMatrixx({
+      default_tier: "fast",
+      agents: { trinity: { model: "anthropic/claude-opus-4-6" } },
+    })
+
+    //#when
+    const result = await loadPluginConfig(freshProjectDir(), null)
+
+    //#then
+    expect(result.agents?.trinity?.model).toBe("anthropic/claude-opus-4-6")
+  })
+
+  it("#given category with tier='premium' #when loadPluginConfig #then category.model is set", async () => {
+    //#given
+    writeCacheFiles(
+      ["anthropic"],
+      { anthropic: ["claude-opus-4-6"] },
+    )
+    writeUserMatrixx({ categories: { source: { tier: "premium" } } })
+
+    //#when
+    const result = await loadPluginConfig(freshProjectDir(), null)
+
+    //#then
+    expect(result.categories?.source?.model).toBe("anthropic/claude-opus-4-6")
+    expect(result.categories?.source?.tier).toBeUndefined()
+  })
+
+  it("#given a legacy matrixx.json with hardcoded model #when loadPluginConfig #then behavior is unchanged (no regression)", async () => {
+    //#given
+    writeCacheFiles(
+      ["anthropic"],
+      { anthropic: ["claude-opus-4-6"] },
+    )
+    writeUserMatrixx({ agents: { morpheus: { model: "anthropic/claude-opus-4-6" } } })
+
+    //#when
+    const result = await loadPluginConfig(freshProjectDir(), null)
+
+    //#then
+    expect(result.agents?.morpheus?.model).toBe("anthropic/claude-opus-4-6")
+  })
+
+  it("#given agent with both model and tier #when loadPluginConfig #then model wins (model takes precedence over tier)", async () => {
+    //#given
+    writeCacheFiles(
+      ["anthropic"],
+      { anthropic: ["claude-opus-4-6", "claude-haiku-4-5"] },
+    )
+    writeUserMatrixx({
+      agents: { morpheus: { model: "anthropic/claude-opus-4-6", tier: "fast" } },
+    })
+
+    //#when
+    const result = await loadPluginConfig(freshProjectDir(), null)
+
+    //#then
+    expect(result.agents?.morpheus?.model).toBe("anthropic/claude-opus-4-6")
+    expect(result.agents?.morpheus?.tier).toBeUndefined()
+  })
+
+  it("#given a project matrixx.json overrides the user config #when loadPluginConfig #then both files are merged and tiers resolved from the merged config", async () => {
+    //#given
+    writeCacheFiles(
+      ["anthropic"],
+      { anthropic: ["claude-opus-4-6", "claude-sonnet-4-6"] },
+    )
+    writeUserMatrixx({ agents: { morpheus: { tier: "premium" } } })
+    const projectDir = freshProjectDir()
+    mkdirSync(join(projectDir, ".opencode"), { recursive: true })
+    writeFileSync(
+      join(projectDir, ".opencode", "matrixx.json"),
+      JSON.stringify({ agents: { oracle: { tier: "premium" } } }),
+    )
+
+    //#when
+    const result = await loadPluginConfig(projectDir, null)
+
+    //#then
+    expect(result.agents?.morpheus?.model).toBe("anthropic/claude-opus-4-6")
+    expect(result.agents?.oracle?.model).toBe("anthropic/claude-opus-4-6")
+  })
 });

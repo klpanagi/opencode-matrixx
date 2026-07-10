@@ -160,6 +160,14 @@ task_update({
 
 Each category defines: model, variant, temperature, max tokens, thinking/reasoning config, prompt append, stability flag.
 
+### Per-Task Complexity Routing (v2.0.0+)
+
+`delegate_task` accepts an optional `complexity: 1-5 | "auto"` field. When set, the resolver may downgrade the model to a cheaper tier per category (downgrade-only, never upgrade). `auto` scores the task from description/prompt/skills/category. 100% backwards compatible — omit the field and behavior is identical to pre-P3.
+
+Files: `src/tools/delegate-task/complexity-{types,constants,scorer}.ts` + `category-resolver.ts`. Tests: 18 cases across `complexity-scorer.test.ts`, `complexity-constants.test.ts`, `category-resolver.test.ts`.
+
+Each category defines: model, variant, temperature, max tokens, thinking/reasoning config, prompt append, stability flag.
+
 ## HOW TO ADD
 
 1. Create `src/tools/[name]/` with index.ts, tools.ts, types.ts, constants.ts

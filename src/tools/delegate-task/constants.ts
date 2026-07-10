@@ -206,14 +206,14 @@ You are NOT an interactive assistant. You are an autonomous problem-solver.
 </Category_Context>`
 
 export const DEFAULT_CATEGORIES: Record<string, CategoryConfig> = {
-  "construct": { model: "anthropic/claude-sonnet-4-6" },
-  "source": { model: "anthropic/claude-opus-4-6", variant: "max" },
-  "deep-jack": { model: "anthropic/claude-opus-4-6", variant: "max" },
-  "matrix-bend": { model: "anthropic/claude-sonnet-4-6" },
-  "bullet-time": { model: "anthropic/claude-haiku-4-5" },
-  "blue-pill": { model: "anthropic/claude-sonnet-4-6" },
-  "red-pill": { model: "anthropic/claude-opus-4-6", variant: "max" },
-  "broadcast": { model: "anthropic/claude-sonnet-4-6" },
+  "construct": { tier: "standard" },
+  "source": { tier: "premium", variant: "max" },
+  "deep-jack": { tier: "premium", variant: "max" },
+  "matrix-bend": { tier: "standard" },
+  "bullet-time": { tier: "fast" },
+  "blue-pill": { tier: "standard" },
+  "red-pill": { tier: "premium", variant: "max" },
+  "broadcast": { tier: "standard" },
 }
 
 export const CATEGORY_PROMPT_APPENDS: Record<string, string> = {

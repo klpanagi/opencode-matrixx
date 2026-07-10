@@ -1,8 +1,13 @@
 import type { ModelFallbackInfo } from "../../features/task-toast-manager/types"
+import { readConnectedProvidersCache } from "../../shared/connected-providers-cache"
+import { log } from "../../shared/logger"
 import { mergeCategories } from "../../shared/merge-categories"
 import { CATEGORY_MODEL_REQUIREMENTS } from "../../shared/model-requirements"
 import { getAvailableModelsForDelegateTask } from "./available-models"
 import { resolveCategoryConfig } from "./categories"
+import { resolveComplexityModel } from "./complexity-constants"
+import { autoScoreComplexity } from "./complexity-scorer"
+import type { ComplexityLevel } from "./complexity-types"
 import type { ExecutorContext } from "./executor-types"
 import { resolveModelForDelegateTask } from "./model-selection"
 import { parseModelString } from "./model-string-parser"
@@ -16,6 +21,12 @@ export interface CategoryResolutionResult {
   modelInfo: ModelFallbackInfo | undefined
   actualModel: string | undefined
   isUnstableAgent: boolean
+  /** The complexity level that was applied (auto-scored or caller-provided) */
+  complexityApplied?: import("./complexity-types").ComplexityLevel
+  /** If true, model was downgraded due to low complexity */
+  complexityDowngraded?: boolean
+  /** Human-readable note about complexity-based model selection */
+  _complexityNote?: string
   error?: string
 }
 
@@ -28,6 +39,7 @@ export async function resolveCategoryExecution(
   const { client, userCategories, mouseModel } = executorCtx
 
   const availableModels = await getAvailableModelsForDelegateTask(client)
+  const connectedProviders = readConnectedProvidersCache()
 
   const categoryName = args.category as string
   const enabledCategories = mergeCategories(userCategories)
@@ -38,6 +50,7 @@ export async function resolveCategoryExecution(
     inheritedModel,
     systemDefaultModel,
     availableModels,
+    tierContext: { availableModels, connectedProviders },
   })
 
   if (!resolved) {
@@ -150,6 +163,48 @@ Available categories: ${allCategoryNames}`,
   }
   const categoryPromptAppend = resolved.promptAppend || undefined
 
+  // === COMPLEXITY-AWARE MODEL DOWNGRADE ===
+  let complexityLevel: ComplexityLevel = 3
+  let complexityDowngraded = false
+  let _complexityNote: string | undefined
+
+  const complexityInput = args.complexity
+  if (complexityInput === undefined || complexityInput === "auto") {
+    if (actualModel) {
+      complexityLevel = autoScoreComplexity({
+        description: args.description,
+        prompt: args.prompt,
+        loadSkills: args.load_skills,
+        category: args.category,
+      })
+    }
+  } else {
+    complexityLevel = complexityInput
+  }
+
+  if (actualModel && (complexityLevel === 1 || complexityLevel === 2)) {
+    const userDowngrades = userCategories?.[args.category as string]?.complexity_downgrades
+    const resolvedDowngrade = resolveComplexityModel(args.category as string, complexityLevel, actualModel, userDowngrades)
+
+    if (resolvedDowngrade.downgraded) {
+      complexityDowngraded = true
+      log("[complexity] Auto-downgraded model", {
+        category: args.category,
+        from: actualModel,
+        to: resolvedDowngrade.model,
+        complexity: complexityLevel,
+      })
+      const previousModel = actualModel
+      actualModel = resolvedDowngrade.model
+      // Re-parse model after downgrade
+      const parsed = parseModelString(actualModel)
+      if (parsed) {
+        categoryModel = { ...parsed, temperature: resolved.config.temperature }
+      }
+      _complexityNote = "Model auto-downgraded from " + previousModel + " to " + resolvedDowngrade.model + " (complexity: " + complexityLevel + ")"
+    }
+  }
+
   if (!categoryModel && !actualModel) {
     const categoryNames = Object.keys(enabledCategories)
     return {
@@ -181,5 +236,8 @@ Available categories: ${categoryNames.join(", ")}`,
     modelInfo,
     actualModel,
     isUnstableAgent,
+    complexityApplied: complexityLevel,
+    complexityDowngraded,
+    _complexityNote,
   }
 }

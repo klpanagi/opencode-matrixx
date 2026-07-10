@@ -1,5 +1,4 @@
-export type { ProfileName } from "./profiles"
-export { expandProfile, PROFILE_NAMES } from "./profiles"
+export { expandPreset, PRESET_NAMES, type PresetName } from "./presets"
 export type {
   AgentDefinitions,
   AgentName,

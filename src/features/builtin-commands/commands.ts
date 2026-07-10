@@ -126,7 +126,7 @@ ${REMOVE_DEADCODE_TEMPLATE}
     argumentHint: "[target-path] [--scope=<file|module|project>] [--dry-run]",
   },
   profile: {
-    description: "(builtin) View or change the active Matrixx profile (free/budget/economy/balanced/performance/go)",
+    description: "(builtin) View recommended tier configurations (replaces the v2.x profile system; use `tier: \"...\"` in matrixx.jsonc instead)",
     template: `<command-instruction>
 ${PROFILE_TEMPLATE}
 </command-instruction>

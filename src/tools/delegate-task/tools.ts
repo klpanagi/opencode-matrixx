@@ -87,8 +87,19 @@ Prompts MUST be in English.`
       subagent_type: tool.schema.string().optional().describe("REQUIRED if category not provided. Do NOT provide both category and subagent_type."),
       session_id: tool.schema.string().optional().describe("Existing Task session to continue"),
       command: tool.schema.string().optional().describe("The command that triggered this task"),
+      complexity: tool.schema.union([
+        tool.schema.literal(1),
+        tool.schema.literal(2),
+        tool.schema.literal(3),
+        tool.schema.literal(4),
+        tool.schema.literal(5),
+        tool.schema.literal("auto"),
+      ]).optional().default("auto").describe(
+        "Task complexity (1-5) or 'auto' for automatic scoring. Levels 1-2 may use cheaper models."
+      ),
     },
     async execute(args: DelegateTaskArgs, toolContext) {
+
       const ctx = toolContext as ToolContextWithMetadata
 
       if (args.category) {

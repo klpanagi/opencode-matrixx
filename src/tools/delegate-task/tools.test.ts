@@ -26,6 +26,7 @@ const TEST_CONNECTED_PROVIDERS = ["anthropic", "google", "openai"]
 const TEST_AVAILABLE_MODELS = new Set([
   "anthropic/claude-opus-4-6",
   "anthropic/claude-sonnet-4-5",
+  "anthropic/claude-sonnet-4-6",
   "anthropic/claude-haiku-4-5",
   "google/gemini-3-pro",
   "google/gemini-3.1-pro",
@@ -33,6 +34,11 @@ const TEST_AVAILABLE_MODELS = new Set([
   "openai/gpt-5.2",
   "openai/gpt-5.3-codex",
 ])
+
+const TEST_TIER_CONTEXT = {
+  availableModels: TEST_AVAILABLE_MODELS,
+  connectedProviders: TEST_CONNECTED_PROVIDERS,
+}
 
 type DelegateTaskArgsWithSerializedSkills = Omit<DelegateTaskArgs, "load_skills"> & {
   load_skills: string
@@ -78,33 +84,33 @@ describe("morpheus-task", () => {
   })
 
   describe("DEFAULT_CATEGORIES", () => {
-    test("construct category has model and variant config", () => {
+    test("construct category has tier config (standard)", () => {
       // given
       const category = DEFAULT_CATEGORIES.construct
 
       // when / #then
       expect(category).toBeDefined()
-      expect(category.model).toBe("anthropic/claude-sonnet-4-6")
+      expect(category.tier).toBe("standard")
       expect(category.variant).toBeUndefined()
     })
 
-    test("source category has model and variant config", () => {
+    test("source category has tier config (premium) and variant", () => {
       // given
       const category = DEFAULT_CATEGORIES.source
 
       // when / #then
       expect(category).toBeDefined()
-      expect(category.model).toBe("anthropic/claude-opus-4-6")
+      expect(category.tier).toBe("premium")
       expect(category.variant).toBe("max")
     })
 
-    test("deep-jack category has model and variant config", () => {
+    test("deep-jack category has tier config (premium) and variant", () => {
       // given
       const category = DEFAULT_CATEGORIES["deep-jack"]
 
       // when / #then
       expect(category).toBeDefined()
-      expect(category.model).toBe("anthropic/claude-opus-4-6")
+      expect(category.tier).toBe("premium")
       expect(category.variant).toBe("max")
     })
   })
@@ -729,6 +735,7 @@ describe("morpheus-task", () => {
       const result = resolveCategoryConfig(categoryName, {
         systemDefaultModel: SYSTEM_DEFAULT_MODEL,
         availableModels,
+        tierContext: TEST_TIER_CONTEXT,
       })
 
       // then - resolves successfully since anthropic is available
@@ -745,9 +752,10 @@ describe("morpheus-task", () => {
       const result = resolveCategoryConfig(categoryName, {
         systemDefaultModel: SYSTEM_DEFAULT_MODEL,
         availableModels,
+        tierContext: TEST_TIER_CONTEXT,
       })
 
-      // then - resolves via deep-jack's built-in model (anthropic/claude-opus-4-6)
+      // then - resolves via deep-jack's tier (premium → claude-opus-4-6)
       expect(result).not.toBeNull()
       expect(result?.config.model).toBe("anthropic/claude-opus-4-6")
     })
@@ -797,11 +805,14 @@ describe("morpheus-task", () => {
       const categoryName = "construct"
 
       // when
-      const result = resolveCategoryConfig(categoryName, { systemDefaultModel: SYSTEM_DEFAULT_MODEL })
+      const result = resolveCategoryConfig(categoryName, {
+        systemDefaultModel: SYSTEM_DEFAULT_MODEL,
+        tierContext: TEST_TIER_CONTEXT,
+      })
 
-      // then
+      // then - construct tier "standard" resolves to the shortest sonnet match
       expect(result).not.toBeNull()
-      expect(result?.config.model).toBe("anthropic/claude-sonnet-4-6")
+      expect(result?.config.model).toBe("anthropic/claude-sonnet-4-5")
       expect(result?.promptAppend).toContain("VISUAL/UI")
     })
 
@@ -884,11 +895,15 @@ describe("morpheus-task", () => {
       const inheritedModel = "cliproxy/claude-opus-4-6"
 
       // when
-      const result = resolveCategoryConfig(categoryName, { inheritedModel, systemDefaultModel: SYSTEM_DEFAULT_MODEL })
+      const result = resolveCategoryConfig(categoryName, {
+        inheritedModel,
+        systemDefaultModel: SYSTEM_DEFAULT_MODEL,
+        tierContext: TEST_TIER_CONTEXT,
+      })
 
-      // then - category's built-in model wins over inheritedModel
+      // then - category's tier-resolved model (standard → sonnet-4-5) wins over inheritedModel
       expect(result).not.toBeNull()
-      expect(result?.config.model).toBe("anthropic/claude-sonnet-4-6")
+      expect(result?.config.model).toBe("anthropic/claude-sonnet-4-5")
     })
 
     test("systemDefaultModel is used as fallback when custom category has no model", () => {
@@ -926,11 +941,14 @@ describe("morpheus-task", () => {
       const categoryName = "construct"
 
       // when
-      const result = resolveCategoryConfig(categoryName, { systemDefaultModel: SYSTEM_DEFAULT_MODEL })
+      const result = resolveCategoryConfig(categoryName, {
+        systemDefaultModel: SYSTEM_DEFAULT_MODEL,
+        tierContext: TEST_TIER_CONTEXT,
+      })
 
-      // then
+      // then - construct tier "standard" resolves to the shortest sonnet match (sonnet-4-5)
       expect(result).not.toBeNull()
-      expect(result?.config.model).toBe("anthropic/claude-sonnet-4-6")
+      expect(result?.config.model).toBe("anthropic/claude-sonnet-4-5")
     })
   })
 
@@ -2964,39 +2982,49 @@ describe("morpheus-task", () => {
 
   describe("modelInfo detection via resolveCategoryConfig", () => {
     test("catalog model is used for category with catalog entry", () => {
-      // given - source has catalog entry
+      // given - source has tier "premium" → opus
       const categoryName = "source"
-      
+
       // when
-      const resolved = resolveCategoryConfig(categoryName, { systemDefaultModel: SYSTEM_DEFAULT_MODEL })
-      
-      // then - catalog model is used
+      const resolved = resolveCategoryConfig(categoryName, {
+        systemDefaultModel: SYSTEM_DEFAULT_MODEL,
+        tierContext: TEST_TIER_CONTEXT,
+      })
+
+      // then - premium tier resolves to opus-4-6
       expect(resolved).not.toBeNull()
       expect(resolved?.config.model).toBe("anthropic/claude-opus-4-6")
       expect(resolved?.config.variant).toBe("max")
     })
 
     test("default model is used for category with default entry", () => {
-      // given - blue-pill has default model
+      // given - blue-pill has tier "standard" → sonnet
       const categoryName = "blue-pill"
-      
+
       // when
-      const resolved = resolveCategoryConfig(categoryName, { systemDefaultModel: SYSTEM_DEFAULT_MODEL })
-      
-      // then - default model from DEFAULT_CATEGORIES is used
+      const resolved = resolveCategoryConfig(categoryName, {
+        systemDefaultModel: SYSTEM_DEFAULT_MODEL,
+        tierContext: TEST_TIER_CONTEXT,
+      })
+
+      // then - standard tier resolves to the shortest sonnet match (sonnet-4-5)
       expect(resolved).not.toBeNull()
-      expect(resolved?.config.model).toBe("anthropic/claude-sonnet-4-6")
+      expect(resolved?.config.model).toBe("anthropic/claude-sonnet-4-5")
     })
 
     test("category built-in model takes precedence over inheritedModel for builtin category", () => {
-      // given - builtin source category with its own model, inherited model also provided
+      // given - builtin source category with tier "premium", inherited model also provided
       const categoryName = "source"
       const inheritedModel = "cliproxy/claude-opus-4-6"
-      
+
       // when
-      const resolved = resolveCategoryConfig(categoryName, { inheritedModel, systemDefaultModel: SYSTEM_DEFAULT_MODEL })
-      
-      // then - category's built-in model wins (source uses anthropic/claude-opus-4-6)
+      const resolved = resolveCategoryConfig(categoryName, {
+        inheritedModel,
+        systemDefaultModel: SYSTEM_DEFAULT_MODEL,
+        tierContext: TEST_TIER_CONTEXT,
+      })
+
+      // then - premium tier resolves to opus-4-6
       expect(resolved).not.toBeNull()
       const actualModel = resolved?.config.model
       expect(actualModel).toBe("anthropic/claude-opus-4-6")
@@ -3007,10 +3035,10 @@ describe("morpheus-task", () => {
       const categoryName = "source"
       const userCategories = { "source": { model: "my-provider/custom-model" } }
       const inheritedModel = "cliproxy/claude-opus-4-6"
-      
+
       // when
       const resolved = resolveCategoryConfig(categoryName, { userCategories, inheritedModel, systemDefaultModel: SYSTEM_DEFAULT_MODEL })
-      
+
       // then - actualModel should be userModel, type should be "user-defined"
       expect(resolved).not.toBeNull()
       const actualModel = resolved?.config.model
@@ -3048,15 +3076,19 @@ describe("morpheus-task", () => {
     // These tests verify the NEW behavior where categories do NOT have default models
 
     test("FIXED: category built-in model takes precedence over inheritedModel", () => {
-      // given a builtin category with its own model, and an inherited model from parent
-      // The CORRECT chain: userConfig?.model ?? categoryBuiltIn ?? systemDefaultModel
+      // given a builtin category with tier "premium", and an inherited model from parent
+      // The CORRECT chain: userConfig?.model ?? categoryTier ?? systemDefaultModel
       const categoryName = "source"
       const inheritedModel = "anthropic/claude-haiku-4-5"
-      
-      // when category has a built-in model (anthropic/claude-opus-4-6 for source)
-      const resolved = resolveCategoryConfig(categoryName, { inheritedModel, systemDefaultModel: SYSTEM_DEFAULT_MODEL })
-      
-      // then category's built-in model should be used, NOT inheritedModel
+
+      // when category has a tier (premium → opus)
+      const resolved = resolveCategoryConfig(categoryName, {
+        inheritedModel,
+        systemDefaultModel: SYSTEM_DEFAULT_MODEL,
+        tierContext: TEST_TIER_CONTEXT,
+      })
+
+      // then category's tier-resolved model should be used, NOT inheritedModel
       expect(resolved).not.toBeNull()
       expect(resolved?.model).toBe("anthropic/claude-opus-4-6")
     })
@@ -3117,13 +3149,18 @@ describe("morpheus-task", () => {
       // Using type assertion since we're testing fallback behavior for categories without model
       const userCategories = { "construct": { temperature: 0.2 } } as unknown as Record<string, CategoryConfig>
       const inheritedModel = "anthropic/claude-haiku-4-5"
-      
+
       // when resolveCategoryConfig is called
-      const resolved = resolveCategoryConfig(categoryName, { userCategories, inheritedModel, systemDefaultModel: SYSTEM_DEFAULT_MODEL })
-      
-      // then should use category's built-in model (anthropic/claude-sonnet-4-6 for construct)
+      const resolved = resolveCategoryConfig(categoryName, {
+        userCategories,
+        inheritedModel,
+        systemDefaultModel: SYSTEM_DEFAULT_MODEL,
+        tierContext: TEST_TIER_CONTEXT,
+      })
+
+      // then should use category's tier-resolved model (standard → sonnet-4-5)
       expect(resolved).not.toBeNull()
-      expect(resolved?.model).toBe("anthropic/claude-sonnet-4-6")
+      expect(resolved?.model).toBe("anthropic/claude-sonnet-4-5")
     })
 
     test("systemDefaultModel is used when no other model is available", () => {
