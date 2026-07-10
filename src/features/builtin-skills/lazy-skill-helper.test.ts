@@ -147,4 +147,27 @@ describe("createLazyTemplateSkill", () => {
     expect(skill2.template).toBe("val")
     expect(callCount).toBe(2)
   })
+
+  test("description is hydrated on every template access, even when template cache is already populated (regression for cache-poisoning bug)", () => {
+    // given - first skill instance populates the cache
+    const skill1 = createLazyTemplateSkill("regression-test", () => ({
+      name: "rt",
+      description: "first-skill-description",
+      template: "first-template",
+    }))
+    void skill1.template
+    expect(skill1.description).toBe("first-skill-description")
+
+    // when - a new instance is created with the same name (test re-run scenario)
+    const skill2 = createLazyTemplateSkill("regression-test", () => ({
+      name: "rt",
+      description: "second-skill-description",
+      template: "second-template",
+    }))
+
+    // then - description is hydrated even though template is already cached
+    void skill2.template
+    expect(skill2.description).toBe("first-skill-description")
+    expect(skill2.template).toBe("first-template")
+  })
 })

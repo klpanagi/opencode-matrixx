@@ -1,6 +1,10 @@
 import type { BuiltinSkill } from "./types"
 
-const templateCache = new Map<string, string>()
+interface CachedSkill {
+  template: string
+  description: string
+}
+const skillCache = new Map<string, CachedSkill>()
 
 /**
  * Wraps a skill factory into a BuiltinSkill with a lazy `template` getter.
@@ -8,6 +12,8 @@ const templateCache = new Map<string, string>()
  * The factory is NOT called at construction time — only when `.template` is
  * first accessed. Subsequent accesses return a cached value (self-destructing
  * getter pattern replaces itself with a data property after first access).
+ * `description` is hydrated on every template access so the cache being
+ * populated by an earlier test does not leave subsequent instances empty.
  *
  * @param name - Skill name (used as cache key)
  * @param skillFactory - Factory returning a full BuiltinSkill
@@ -29,33 +35,35 @@ export function createLazyTemplateSkill(
     enumerable: true,
     configurable: true,
     get(this: BuiltinSkill) {
-      if (!templateCache.has(name)) {
+      let cached = skillCache.get(name)
+      if (!cached) {
         const actual = skillFactory()
-        templateCache.set(name, actual.template)
-        // Also hydrate description from the actual skill
-        Object.defineProperty(this, "description", {
-          value: actual.description,
-          writable: true,
-          enumerable: true,
-          configurable: true,
-        })
+        cached = { template: actual.template, description: actual.description }
+        skillCache.set(name, cached)
       }
-      const value = templateCache.get(name) as string
-      // Self-destructing getter: replace with writable data property
-      Object.defineProperty(this, "template", {
-        value,
+      // Always hydrate description from cache (idempotent)
+      Object.defineProperty(this, "description", {
+        value: cached.description,
         writable: true,
         enumerable: true,
         configurable: true,
       })
-      return value
+      // Self-destructing getter: replace with writable data property
+      Object.defineProperty(this, "template", {
+        value: cached.template,
+        writable: true,
+        enumerable: true,
+        configurable: true,
+      })
+      return cached.template
     },
   })
 
   return result
 }
 
-/** Clears the internal template cache (for testing). */
+
+/** Clears the internal skill cache (for testing). */
 export function clearLazyTemplateCache(): void {
-  templateCache.clear()
+  skillCache.clear()
 }
