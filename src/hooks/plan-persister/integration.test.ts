@@ -10,7 +10,7 @@ import { tmpdir } from "node:os"
 import { join } from "node:path"
 import type { PluginInput } from "@opencode-ai/plugin"
 import { createOpencodeClient } from "@opencode-ai/sdk"
-import { parseMetadataComment, readPlanFile } from "../../features/plan-persistence/storage"
+import { parseMetadataComment, readPlanFile } from "../../features/mission-state/plan-storage"
 import { createPlanPersister } from "./hook"
 
 function tmpDir(): string {

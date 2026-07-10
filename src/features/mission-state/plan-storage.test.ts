@@ -14,7 +14,7 @@ import {
   syncCheckboxes,
   upsertMetadataComment,
   writePlanFile,
-} from "./storage"
+} from "./plan-storage"
 import type { PlanMeta } from "./types"
 
 function tmpDir(): string {

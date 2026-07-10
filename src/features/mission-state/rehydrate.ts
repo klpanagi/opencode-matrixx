@@ -7,8 +7,8 @@
 
 import { existsSync } from "node:fs"
 import { createSystemDirective } from "../../shared/system-directive"
-import { getPlanProgress, readMissionState } from "../mission-state"
-import { parseMetadataComment, readPlanFile } from "./storage"
+import { parseMetadataComment, readPlanFile } from "./plan-storage"
+import { getPlanProgress, readMissionState } from "./storage"
 import type { RehydrationContext } from "./types"
 
 const PLAN_DIRECTIVE_TYPE = "PLAN PERSISTER"

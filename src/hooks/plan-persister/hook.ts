@@ -8,16 +8,14 @@
 
 import { existsSync } from "node:fs"
 import type { PluginInput } from "@opencode-ai/plugin"
-import { readMissionState } from "../../features/mission-state"
-import {
+import { 
   atomicWrite,
-  ensurePlanDir,
+  ensurePlanDir,readMissionState, 
   readPlanFile,
   syncCheckboxes,
-  upsertMetadataComment,
-} from "../../features/plan-persistence"
-import { buildRehydrationContext } from "../../features/plan-persistence/rehydrate"
-import type { PlanMeta, PlanPersistenceOptions } from "../../features/plan-persistence/types"
+  upsertMetadataComment,} from "../../features/mission-state"
+import { buildRehydrationContext } from "../../features/mission-state/rehydrate"
+import type { PlanMeta, PlanPersistenceOptions } from "../../features/mission-state/types"
 import { log } from "../../shared/logger"
 import { getGitHead } from "../../tools/handoff/git"
 

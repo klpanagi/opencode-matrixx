@@ -37,7 +37,7 @@ features/
 ├── claude-code-session-state/  # Subagent session state tracking (3 files)
 ├── hook-message-injector/      # System message injection (4 files)
 ├── task-toast-manager/         # Task progress notifications (4 files)
-├── mission-state/              # Persistent state for multi-step ops (5 files)
+├── mission-state/              # Persistent state for multi-step ops (9 files)
 └── tool-metadata-store/        # Tool execution metadata caching (3 files)
 ```
 
