@@ -3,7 +3,7 @@ import type { BuiltinSkill } from "../types"
 export const DSL_TOOLING_SKILL_NAME = "dsl-tooling"
 
 const DSL_TOOLING_SKILL_DESCRIPTION =
-  "IDE tooling and internal DSL engineering. Tree-sitter grammars, LSP implementation, syntax highlighting, formatters, fluent APIs, builder patterns, decorators. Triggers: 'tree-sitter', 'LSP', 'syntax highlighting', 'IDE support', 'formatter', 'fluent API', 'builder pattern', 'internal DSL', 'embedded DSL'."
+  "Use when building IDE tooling for DSLs, implementing LSP servers, or designing internal/embedded DSLs — IDE tooling (Tree-sitter grammars, LSP, syntax highlighting, formatters) and internal DSL engineering (fluent APIs, builder patterns, decorators, context managers). Related: dsl-core, dsl-grammar."
 
 export const dslToolingSkill: BuiltinSkill = {
   name: DSL_TOOLING_SKILL_NAME,

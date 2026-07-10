@@ -3,7 +3,7 @@ import type { BuiltinSkill } from "../types"
 export const DSL_TESTING_SKILL_NAME = "dsl-testing"
 
 const DSL_TESTING_SKILL_DESCRIPTION =
-  "DSL testing patterns: grammar parsing tests, semantic validation testing (TextXSyntaxError/TextXSemanticError), code generator golden-file testing, property-based testing with Hypothesis, model roundtrip testing, test organization. Triggers: 'test grammar', 'test parser', 'test generator', 'golden file', 'roundtrip test', 'DSL test'."
+  "Use when testing DSL grammars, parsers, or code generators — comprehensive DSL testing: grammar parsing (positive/negative), semantic validation, scoping tests, code generator golden-file testing, property-based testing with Hypothesis, and model roundtrip tests. Related: dsl-core, tdd-enforcer."
 
 export const dslTestingSkill: BuiltinSkill = {
   name: DSL_TESTING_SKILL_NAME,

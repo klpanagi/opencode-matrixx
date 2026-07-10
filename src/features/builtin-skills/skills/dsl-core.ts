@@ -3,7 +3,7 @@ import type { BuiltinSkill } from "../types"
 export const DSL_CORE_SKILL_NAME = "dsl-core"
 
 const DSL_CORE_SKILL_DESCRIPTION =
-  "DSL engineering foundations: expert constraints, framework selection guide, paradigm coverage, and anti-patterns. Load alongside domain-specific DSL skills (dsl-grammar, dsl-codegen, dsl-metamodel, dsl-tooling). Triggers: 'DSL', 'domain-specific language', 'language design'."
+  "Use when designing DSLs, selecting frameworks for language workbenches, or applying formal grammar rules — DSL engineering foundations: expert constraints, framework selection (textX, ANTLR4, Tree-sitter, Langium), paradigm coverage (external vs internal DSLs), and anti-patterns. Related: dsl-grammar, dsl-metamodel."
 
 export const dslCoreSkill: BuiltinSkill = {
   name: DSL_CORE_SKILL_NAME,

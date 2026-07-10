@@ -3,7 +3,7 @@ import type { BuiltinSkill } from "../types"
 export const DSL_VALIDATION_SKILL_NAME = "dsl-validation"
 
 const DSL_VALIDATION_SKILL_DESCRIPTION =
-  "Advanced DSL model validation: OCL-style constraint patterns, well-formedness rules, multiplicity/cardinality checks, referential integrity, invariant specifications, constraint categories (structural/semantic/domain), error reporting strategy. Triggers: 'OCL', 'constraint', 'well-formedness', 'invariant', 'model validation', 'cardinality', 'referential integrity'."
+  "Use when validating DSL models, implementing OCL-style constraints, or writing well-formedness rules — advanced model validation: constraint categories (syntactic/structural/semantic), multiplicity checks, referential integrity, type compatibility, cycle detection, and validation framework patterns. Related: dsl-core, dsl-metamodel."
 
 export const dslValidationSkill: BuiltinSkill = {
   name: DSL_VALIDATION_SKILL_NAME,
