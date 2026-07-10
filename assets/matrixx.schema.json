@@ -23,6 +23,16 @@
         "go-duo"
       ]
     },
+    "default_tier": {
+      "type": "string",
+      "enum": [
+        "free",
+        "fast",
+        "standard",
+        "premium",
+        "frontier"
+      ]
+    },
     "new_task_system_enabled": {
       "type": "boolean"
     },
@@ -207,6 +217,16 @@
           "properties": {
             "model": {
               "type": "string"
+            },
+            "tier": {
+              "type": "string",
+              "enum": [
+                "free",
+                "fast",
+                "standard",
+                "premium",
+                "frontier"
+              ]
             },
             "variant": {
               "type": "string"
@@ -415,6 +435,16 @@
             "model": {
               "type": "string"
             },
+            "tier": {
+              "type": "string",
+              "enum": [
+                "free",
+                "fast",
+                "standard",
+                "premium",
+                "frontier"
+              ]
+            },
             "variant": {
               "type": "string"
             },
@@ -621,6 +651,16 @@
           "properties": {
             "model": {
               "type": "string"
+            },
+            "tier": {
+              "type": "string",
+              "enum": [
+                "free",
+                "fast",
+                "standard",
+                "premium",
+                "frontier"
+              ]
             },
             "variant": {
               "type": "string"
@@ -829,6 +869,16 @@
             "model": {
               "type": "string"
             },
+            "tier": {
+              "type": "string",
+              "enum": [
+                "free",
+                "fast",
+                "standard",
+                "premium",
+                "frontier"
+              ]
+            },
             "variant": {
               "type": "string"
             },
@@ -1035,6 +1085,16 @@
           "properties": {
             "model": {
               "type": "string"
+            },
+            "tier": {
+              "type": "string",
+              "enum": [
+                "free",
+                "fast",
+                "standard",
+                "premium",
+                "frontier"
+              ]
             },
             "variant": {
               "type": "string"
@@ -1243,6 +1303,16 @@
             "model": {
               "type": "string"
             },
+            "tier": {
+              "type": "string",
+              "enum": [
+                "free",
+                "fast",
+                "standard",
+                "premium",
+                "frontier"
+              ]
+            },
             "variant": {
               "type": "string"
             },
@@ -1449,6 +1519,16 @@
           "properties": {
             "model": {
               "type": "string"
+            },
+            "tier": {
+              "type": "string",
+              "enum": [
+                "free",
+                "fast",
+                "standard",
+                "premium",
+                "frontier"
+              ]
             },
             "variant": {
               "type": "string"
@@ -1657,6 +1737,16 @@
             "model": {
               "type": "string"
             },
+            "tier": {
+              "type": "string",
+              "enum": [
+                "free",
+                "fast",
+                "standard",
+                "premium",
+                "frontier"
+              ]
+            },
             "variant": {
               "type": "string"
             },
@@ -1863,6 +1953,16 @@
           "properties": {
             "model": {
               "type": "string"
+            },
+            "tier": {
+              "type": "string",
+              "enum": [
+                "free",
+                "fast",
+                "standard",
+                "premium",
+                "frontier"
+              ]
             },
             "variant": {
               "type": "string"
@@ -2071,6 +2171,16 @@
             "model": {
               "type": "string"
             },
+            "tier": {
+              "type": "string",
+              "enum": [
+                "free",
+                "fast",
+                "standard",
+                "premium",
+                "frontier"
+              ]
+            },
             "variant": {
               "type": "string"
             },
@@ -2277,6 +2387,16 @@
           "properties": {
             "model": {
               "type": "string"
+            },
+            "tier": {
+              "type": "string",
+              "enum": [
+                "free",
+                "fast",
+                "standard",
+                "premium",
+                "frontier"
+              ]
             },
             "variant": {
               "type": "string"
@@ -2485,6 +2605,16 @@
             "model": {
               "type": "string"
             },
+            "tier": {
+              "type": "string",
+              "enum": [
+                "free",
+                "fast",
+                "standard",
+                "premium",
+                "frontier"
+              ]
+            },
             "variant": {
               "type": "string"
             },
@@ -2691,6 +2821,16 @@
           "properties": {
             "model": {
               "type": "string"
+            },
+            "tier": {
+              "type": "string",
+              "enum": [
+                "free",
+                "fast",
+                "standard",
+                "premium",
+                "frontier"
+              ]
             },
             "variant": {
               "type": "string"
@@ -2899,6 +3039,16 @@
             "model": {
               "type": "string"
             },
+            "tier": {
+              "type": "string",
+              "enum": [
+                "free",
+                "fast",
+                "standard",
+                "premium",
+                "frontier"
+              ]
+            },
             "variant": {
               "type": "string"
             },
@@ -3105,6 +3255,16 @@
           "properties": {
             "model": {
               "type": "string"
+            },
+            "tier": {
+              "type": "string",
+              "enum": [
+                "free",
+                "fast",
+                "standard",
+                "premium",
+                "frontier"
+              ]
             },
             "variant": {
               "type": "string"
@@ -3313,6 +3473,16 @@
             "model": {
               "type": "string"
             },
+            "tier": {
+              "type": "string",
+              "enum": [
+                "free",
+                "fast",
+                "standard",
+                "premium",
+                "frontier"
+              ]
+            },
             "variant": {
               "type": "string"
             },
@@ -3519,6 +3689,16 @@
           "properties": {
             "model": {
               "type": "string"
+            },
+            "tier": {
+              "type": "string",
+              "enum": [
+                "free",
+                "fast",
+                "standard",
+                "premium",
+                "frontier"
+              ]
             },
             "variant": {
               "type": "string"
@@ -3737,6 +3917,16 @@
           },
           "model": {
             "type": "string"
+          },
+          "tier": {
+            "type": "string",
+            "enum": [
+              "free",
+              "fast",
+              "standard",
+              "premium",
+              "frontier"
+            ]
           },
           "variant": {
             "type": "string"

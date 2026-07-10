@@ -2,14 +2,17 @@ import * as fs from "node:fs";
 import * as path from "node:path";
 import { type MatrixxConfig, MatrixxConfigSchema } from "./config";
 import { expandProfile, PROFILE_NAMES } from "./config/profiles";
+import { resolveTiersInConfig } from "./config/resolve-tiers";
 import {
   addConfigLoadError,
   deepMerge,
   detectConfigFile,
+  fetchAvailableModels,
   getOpenCodeConfigDir,
   log,
   migrateConfigFile,
   parseJsonc,
+  readConnectedProvidersCache,
 } from "./shared";
 
 export function parseConfigPartially(
@@ -208,10 +211,10 @@ function resolveConfigPath(baseDir: string, configName: string): string {
   return `${newBase}.json`;
 }
 
-export function loadPluginConfig(
+export async function loadPluginConfig(
   directory: string,
   ctx: unknown
-): MatrixxConfig {
+): Promise<MatrixxConfig> {
   const configDir = getOpenCodeConfigDir({ binary: "opencode" });
   const userConfigPath = resolveConfigPath(configDir, "matrixx");
 
@@ -230,6 +233,16 @@ export function loadPluginConfig(
     const profileDefaults = expandProfile(config.profile) as MatrixxConfig;
     config = mergeConfigs(profileDefaults, config);
   }
+
+  // Resolve any `tier: "..."` aliases against the live provider list.
+  // Tiers that cannot be resolved (cold cache, no matching provider) are left
+  // as `tier` fields — downstream code will fall through to category defaults.
+  const connectedProviders = readConnectedProvidersCache()
+  const availableModels = await fetchAvailableModels(undefined, { connectedProviders })
+  config = resolveTiersInConfig(config, {
+    availableModels: availableModels ?? new Set(),
+    connectedProviders,
+  })
 
   log("Final merged config", {
     agents: config.agents,

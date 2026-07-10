@@ -1,9 +1,15 @@
 import { z } from "zod"
 import { AgentPermissionSchema } from "./internal/permission"
 
+export const TierNameSchema = z.enum(["free", "fast", "standard", "premium", "frontier"])
+
 export const AgentOverrideConfigSchema = z.object({
   /** @deprecated Use `category` instead. Model is inherited from category defaults. */
   model: z.string().optional(),
+  /** Tier alias. Resolved at config-load time against the live provider list and
+   *  converted to a concrete `model` string. Higher priority than `category` defaults,
+   *  lower priority than an explicit `model`. */
+  tier: TierNameSchema.optional(),
   variant: z.string().optional(),
   /** Category name to inherit model and other settings from CategoryConfig */
   category: z.string().optional(),
