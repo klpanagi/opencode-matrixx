@@ -15,7 +15,7 @@ describe("SDO compliance", () => {
       const hasTrigger = /Use when|For .* tasks|Loads when|Triggers:?/i.test(first120)
       expect(
         hasTrigger,
-        skill.name + ": first 120 chars lack 'Use when' trigger",
+        `${skill.name}: first 120 chars lack "Use when" trigger`,
       ).toBe(true)
     }
   })
@@ -30,7 +30,7 @@ describe("SDO compliance", () => {
       for (const pattern of forbidden) {
         expect(
           pattern.test(skill.description),
-          skill.name + ': contains "' + pattern.source + '" in description',
+          `${skill.name}: contains "${pattern.source}" in description`,
         ).toBe(false)
       }
     }
@@ -49,7 +49,7 @@ describe("SDO compliance", () => {
       for (const ref of refs) {
         expect(
           skillNames.has(ref),
-          skill.name + ': references unknown skill "' + ref + '"',
+          `${skill.name}: references unknown skill "${ref}"`,
         ).toBe(true)
       }
     }
