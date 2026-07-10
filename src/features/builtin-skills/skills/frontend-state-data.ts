@@ -3,7 +3,7 @@ import type { BuiltinSkill } from "../types"
 export const FRONTEND_STATE_DATA_SKILL_NAME = "frontend-state-data"
 
 const FRONTEND_STATE_DATA_SKILL_DESCRIPTION =
-  "State & data management: client state (Zustand/Jotai/Valtio), server state (TanStack Query/SWR), form state (React Hook Form + Zod), validation (Zod v4), URL state, persistence, real-time (WebSocket/SSE)"
+  "Use when managing frontend state, setting up data fetching with TanStack Query, or implementing form validation with Zod — state management covering Zustand, Jotai, TanStack Query, React Hook Form, Zod v4, URL state, and WebSocket/SSE real-time patterns. Related: frontend-react-nextjs, frontend-testing."
 
 export const frontendStateDataSkill: BuiltinSkill = {
   name: FRONTEND_STATE_DATA_SKILL_NAME,

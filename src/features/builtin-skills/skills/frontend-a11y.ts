@@ -3,7 +3,7 @@ import type { BuiltinSkill } from "../types"
 export const FRONTEND_A11Y_SKILL_NAME = "frontend-a11y"
 
 const FRONTEND_A11Y_SKILL_DESCRIPTION =
-  "Web accessibility expert: WCAG 2.2 conformance (Perceivable/Operable/Understandable/Robust), ARIA patterns, semantic HTML, keyboard navigation, and automated testing with axe-core, jest-axe, @axe-core/playwright"
+  "Use when auditing accessibility, implementing WCAG compliance, or fixing keyboard navigation — web accessibility expertise covering WCAG 2.2 (Perceivable/Operable/Understandable/Robust), ARIA patterns, semantic HTML, and automated testing with axe-core. Related: frontend-ui-ux."
 
 export const frontendA11ySkill: BuiltinSkill = {
   name: FRONTEND_A11Y_SKILL_NAME,

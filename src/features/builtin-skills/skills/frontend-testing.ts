@@ -3,7 +3,7 @@ import type { BuiltinSkill } from "../types"
 export const FRONTEND_TESTING_SKILL_NAME = "frontend-testing"
 
 const FRONTEND_TESTING_SKILL_DESCRIPTION =
-  "Frontend testing specialist: Vitest, React Testing Library, Playwright, Storybook, MSW, visual regression (Chromatic, toHaveScreenshot), and TDD workflow"
+  "Use when writing frontend tests, setting up Vitest or Playwright, or implementing component and E2E test suites — frontend testing ecosystem: Vitest, React Testing Library, Playwright, Storybook, MSW, visual regression (Chromatic), and TDD workflow. Related: tdd-enforcer, playwright."
 
 export const frontendTestingSkill: BuiltinSkill = {
   name: FRONTEND_TESTING_SKILL_NAME,
