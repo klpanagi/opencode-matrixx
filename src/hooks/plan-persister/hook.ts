@@ -8,7 +8,7 @@
 
 import { existsSync } from "node:fs"
 import type { PluginInput } from "@opencode-ai/plugin"
-import { getPlanProgress, readMissionState } from "../../features/mission-state"
+import { readMissionState } from "../../features/mission-state"
 import {
   atomicWrite,
   ensurePlanDir,
@@ -64,15 +64,16 @@ export function createPlanPersister(
     // Sync checkbox state
     const syncedContent = syncCheckboxes(content, todos)
 
-    // Add/update metadata
-    const progress = getPlanProgress(planPath)
+    // Add/update metadata — count progress from synced content, not file
+    const total = (syncedContent.match(/^[-*]\s*\[[ xX]\]/gm) || []).length
+    const completed = (syncedContent.match(/^[-*]\s*\[[xX]\]/gm) || []).length
     const gitHead = await getGitHead(directory)
     const meta: PlanMeta = {
       id: mission.plan_name,
       updatedAt: new Date().toISOString(),
       sessionId: sessionID,
-      todoTotal: progress.total,
-      todoCompleted: progress.completed,
+      todoTotal: total,
+      todoCompleted: completed,
       gitHead: gitHead ?? undefined,
     }
     const finalContent = upsertMetadataComment(syncedContent, meta)
@@ -81,7 +82,7 @@ export function createPlanPersister(
     ensurePlanDir(directory)
     const ok = atomicWrite(planPath, finalContent)
     if (ok) {
-      log(`[${HOOK_NAME}] Plan file updated`, { planPath, completed: progress.completed, total: progress.total })
+      log(`[${HOOK_NAME}] Plan file updated`, { planPath, completed, total })
     } else {
       log(`[${HOOK_NAME}] Failed to write plan file`, { planPath })
     }
