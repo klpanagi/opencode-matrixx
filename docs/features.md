@@ -149,6 +149,45 @@ All 45 built-in skills use **lazy template resolution**. Skill factories (and th
 
 **Note:** Custom (project / user) skills loaded via the opencode-skill-loader are NOT affected — they already use the async `LazyContentLoader` pattern for their markdown bodies.
 
+### Per-Task Complexity Routing (delegate_task)
+
+The `delegate_task` tool accepts an optional `complexity` field (1-5 or `"auto"`) that allows the resolver to downgrade the model to a cheaper tier when the task is judged simple. This is an **orthogonal, opt-in** dimension layered on top of the existing 8-category routing.
+
+**Levels:**
+
+| Level | Heuristic | Typical use |
+|-------|-----------|-------------|
+| 1 | Trivial — typo fix, single-line change, no dependencies | "Rename variable X to Y" |
+| 2 | Small — few files, low coupling, well-scoped | "Add a log line to this hook" |
+| 3 | Moderate (default) — typical delegate_task work | "Refactor this component" |
+| 4 | Complex — multi-file, design decisions | "Add a new MCP server" |
+| 5 | Architecturally significant | "Design the auth flow" |
+
+**How it works:**
+
+- **No complexity param (default `"auto"`):** `autoScoreComplexity()` inspects the task's `description`, `prompt`, `load_skills`, and `category` to assign a conservative level. The default is 3 (no downgrade).
+- **Explicit number:** Caller overrides the auto-score (e.g., `complexity: 1` for a known-trivial task).
+- **Downgrade only:** P3 NEVER upgrades a task to a more expensive tier. If the resolved model is already the cheapest available for the category, nothing happens.
+- **Per-category downgrade map:** Built-in `BUILTIN_COMPLEXITY_DOWNGRADES` maps each category to a cheaper-tier model for levels 1-2. Users can override per category via `complexity_downgrades` in their `matrixx.jsonc`.
+- **Logged:** Every downgrade decision is logged with `from`/`to`/`complexity` for transparency. The tool result includes `complexityApplied` and `complexityDowngraded` flags.
+
+**Cost impact:**
+
+- **Honest estimate: 15-25% cost reduction** on routable tasks for sessions on profiles with model headroom (e.g. `balanced`, `performance`, `go`).
+- **0% savings on `free` / `budget` profiles** — those profiles already pin agents to the cheapest tier; P3 has nowhere to downgrade from.
+- Quality impact: conservative default + explicit override + per-task logging means the pilotfish-validated 96% quality at 46% cost (Anthropic BrowseComp) is achievable in principle, but real-world Matrixx savings are lower because typical sessions have fewer routable tasks than the pilotfish benchmark.
+
+**100% backwards compatible:** omitting `complexity` from a `delegate_task` call leaves behavior identical to before. The tool schema adds the field as optional with default `"auto"`.
+
+**Files:**
+
+- `src/tools/delegate-task/complexity-types.ts` — `ComplexityLevel` type + `Complexity` union (1-5 | "auto")
+- `src/tools/delegate-task/complexity-constants.ts` — `BUILTIN_COMPLEXITY_DOWNGRADES` + `resolveComplexityModel()`
+- `src/tools/delegate-task/complexity-scorer.ts` — `autoScoreComplexity()` heuristic (file/line counts, keywords, category modifier)
+- `src/tools/delegate-task/category-resolver.ts` — full integration: auto-score → resolve → log → re-parse model
+- `src/config/schema/categories.ts` — `complexity_downgrades` per-category override field
+- `assets/matrixx.schema.json` — regenerated
+
 ### Skill: Browser Automation (playwright / agent-browser)
 
 **Trigger**: Any browser-related request

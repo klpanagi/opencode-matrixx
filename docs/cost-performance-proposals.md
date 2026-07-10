@@ -81,7 +81,7 @@ Total: 15 proposals across 3 tiers, plus a recommended implementation sequence a
 - **Where:** `src/features/builtin-skills/skills.ts`, `src/mcp/index.ts`, `src/create-tools.ts`
 - **Source:** barkain/claude-code-workflow-orchestration
 
-### P2. Prefix-Cache Stability (DeepSeek-Reasonix pattern)
+> **Status:** ✅ Shipped (v2.0.0, branch `feat/prefix-cache-stability`). Implementation: new `env-context-injector` transform hook appends `<matrixx-env>` to user messages; per-turn dynamic env context no longer in the system prompt prefix.
 
 - **What:** Guarantee the system prompt prefix is **byte-identical** across all turns in a session. Move all variable content (timestamp, model name, etc.) to the suffix.
 - **Cost impact:** **30–50% input cost reduction** on cache-supporting providers (Anthropic prompt caching, DeepSeek cache).
@@ -92,9 +92,9 @@ Total: 15 proposals across 3 tiers, plus a recommended implementation sequence a
 - **Source:** esengine/DeepSeek-Reasonix
 
 ### P3. Per-Task Complexity Routing (pilotfish pattern)
+> **Status:** ✅ Shipped (v2.0.0, branch `feat/per-task-complexity-routing`). Implementation: optional `complexity: 1-5 | "auto"` on `delegate_task`; auto-scoring heuristic on description/prompt/skills/category; downgrade-only with logged decisions. 100% backwards compat; savings only on profiles with model headroom (balanced/performance/go).
 
 - **What:** Already have category-based routing; add **per-task complexity scoring** to pick cheaper model for simple subtasks within a plan. Heuristic: line count, file count, dependency depth, "trivial" flag.
-- **Cost impact:** **54% cost reduction at 96% quality** (Anthropic-validated pilotfish benchmark). Roughly doubles effective throughput.
 - **Performance impact:** Faster execution for simple subtasks.
 - **Complexity:** **Low.** Extends existing 8-category system; add a `complexity: 1-5` field.
 - **Where:** `src/tools/delegate-task/constants.ts` (591 LOC), `src/agents/oracle/`
