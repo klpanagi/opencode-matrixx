@@ -839,10 +839,10 @@ describe("shouldDeleteAgentConfig", () => {
   })
 
   test("returns true when all fields match category defaults", () => {
-    // given: Config with fields matching category defaults
+    // given: Config with fields matching category defaults (tier-based in v2.0+)
     const config = {
       category: "construct",
-      model: "anthropic/claude-sonnet-4-6",
+      tier: "standard",
     }
 
     // when: Check if config should be deleted

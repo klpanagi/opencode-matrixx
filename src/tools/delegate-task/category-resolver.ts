@@ -1,4 +1,5 @@
 import type { ModelFallbackInfo } from "../../features/task-toast-manager/types"
+import { readConnectedProvidersCache } from "../../shared/connected-providers-cache"
 import { log } from "../../shared/logger"
 import { mergeCategories } from "../../shared/merge-categories"
 import { CATEGORY_MODEL_REQUIREMENTS } from "../../shared/model-requirements"
@@ -38,6 +39,7 @@ export async function resolveCategoryExecution(
   const { client, userCategories, mouseModel } = executorCtx
 
   const availableModels = await getAvailableModelsForDelegateTask(client)
+  const connectedProviders = readConnectedProvidersCache()
 
   const categoryName = args.category as string
   const enabledCategories = mergeCategories(userCategories)
@@ -48,6 +50,7 @@ export async function resolveCategoryExecution(
     inheritedModel,
     systemDefaultModel,
     availableModels,
+    tierContext: { availableModels, connectedProviders },
   })
 
   if (!resolved) {

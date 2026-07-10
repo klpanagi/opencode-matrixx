@@ -799,7 +799,9 @@ describe("buildAgent with category and skills", () => {
     }
 
     // #when
-    const agent = buildAgent(source["test-agent"], TEST_MODEL)
+    const agent = buildAgent(source["test-agent"], TEST_MODEL, {
+      construct: { model: "anthropic/claude-sonnet-4-6" },
+    })
 
     // #then - category's built-in model is applied
     expect(agent.model).toBe("anthropic/claude-sonnet-4-6")
@@ -921,7 +923,9 @@ describe("buildAgent with category and skills", () => {
     }
 
     // #when
-    const agent = buildAgent(source["test-agent"], TEST_MODEL)
+    const agent = buildAgent(source["test-agent"], TEST_MODEL, {
+      source: { model: "anthropic/claude-opus-4-6", variant: "max" },
+    })
 
     // #then - category's built-in model and skills are applied
     expect(agent.model).toBe("anthropic/claude-opus-4-6")
@@ -1029,6 +1033,29 @@ describe("buildAgent with category and skills", () => {
 
 describe("override.category expansion in createBuiltinAgents", () => {
   type OverrideMap = Record<string, { category: string; variant?: string; reasoningEffort?: string }>
+
+  let providerModelsSpy: ReturnType<typeof spyOn> | undefined
+  let connectedProvidersSpy: ReturnType<typeof spyOn> | undefined
+
+  beforeEach(() => {
+    providerModelsSpy = spyOn(connectedProvidersCache, "readProviderModelsCache").mockReturnValue({
+      models: {
+        anthropic: [
+          "claude-opus-4-6",
+          "claude-sonnet-4-6",
+          "claude-haiku-4-5",
+        ],
+      },
+      connected: ["anthropic"],
+      updatedAt: new Date().toISOString(),
+    })
+    connectedProvidersSpy = spyOn(connectedProvidersCache, "readConnectedProvidersCache").mockReturnValue(["anthropic"])
+  })
+
+  afterEach(() => {
+    providerModelsSpy?.mockRestore()
+    connectedProvidersSpy?.mockRestore()
+  })
 
   test("standard agent override with category expands category properties", async () => {
     // #given

@@ -13,6 +13,7 @@ import * as pluginLoader from "../features/claude-code-plugin-loader"
 import * as skillLoader from "../features/opencode-skill-loader"
 import * as mcpModule from "../mcp"
 import * as shared from "../shared"
+import * as connectedProvidersCache from "../shared/connected-providers-cache"
 import * as modelResolver from "../shared/model-resolver"
 import * as configDir from "../shared/opencode-config-dir"
 import * as permissionCompat from "../shared/permission-compat"
@@ -407,6 +408,29 @@ describe("default_agent behavior with Morpheus orchestration", () => {
 })
 
 describe("Oracle category config resolution", () => {
+  let providerModelsSpy: ReturnType<typeof spyOn> | undefined
+  let connectedProvidersSpy: ReturnType<typeof spyOn> | undefined
+
+  beforeEach(() => {
+    providerModelsSpy = spyOn(connectedProvidersCache, "readProviderModelsCache").mockReturnValue({
+      models: {
+        anthropic: [
+          "claude-opus-4-6",
+          "claude-sonnet-4-6",
+          "claude-haiku-4-5",
+        ],
+      },
+      connected: ["anthropic"],
+      updatedAt: new Date().toISOString(),
+    })
+    connectedProvidersSpy = spyOn(connectedProvidersCache, "readConnectedProvidersCache").mockReturnValue(["anthropic"])
+  })
+
+  afterEach(() => {
+    providerModelsSpy?.mockRestore()
+    connectedProvidersSpy?.mockRestore()
+  })
+
   test("resolves source category config", () => {
     // given
     const categoryName = "source"

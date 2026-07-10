@@ -2,7 +2,7 @@ import * as fs from "node:fs";
 import * as path from "node:path";
 import { type MatrixxConfig, MatrixxConfigSchema } from "./config";
 import { expandProfile, PROFILE_NAMES } from "./config/profiles";
-import { resolveTiersInConfig } from "./config/resolve-tiers";
+import { resolveTiersInCategoryRegistry, resolveTiersInConfig } from "./config/resolve-tiers";
 import {
   addConfigLoadError,
   deepMerge,
@@ -14,6 +14,7 @@ import {
   parseJsonc,
   readConnectedProvidersCache,
 } from "./shared";
+import { DEFAULT_CATEGORIES } from "./tools/delegate-task/constants";
 
 export function parseConfigPartially(
   rawConfig: Record<string, unknown>
@@ -239,10 +240,24 @@ export async function loadPluginConfig(
   // as `tier` fields — downstream code will fall through to category defaults.
   const connectedProviders = readConnectedProvidersCache()
   const availableModels = await fetchAvailableModels(undefined, { connectedProviders })
-  config = resolveTiersInConfig(config, {
+  const tierCtx = {
     availableModels: availableModels ?? new Set(),
     connectedProviders,
-  })
+  }
+  config = resolveTiersInConfig(config, tierCtx)
+
+  // Also pre-resolve the built-in DEFAULT_CATEGORIES so that downstream code
+  // (createBuiltinAgents, buildAgent, resolveCategoryConfig) only sees
+  // concrete `model:` strings. User-provided `categories.*` entries override
+  // these resolved defaults at config-merge time.
+  const resolvedDefaults = resolveTiersInCategoryRegistry(
+    DEFAULT_CATEGORIES as unknown as Record<string, { model?: string; tier?: string }>,
+    tierCtx,
+  )
+  config = {
+    ...config,
+    categories: { ...resolvedDefaults, ...(config.categories ?? {}) } as MatrixxConfig["categories"],
+  }
 
   log("Final merged config", {
     agents: config.agents,

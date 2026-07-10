@@ -3,6 +3,8 @@ import { log } from "../../shared/logger"
 import { isModelAvailable } from "../../shared/model-availability"
 import { CATEGORY_MODEL_REQUIREMENTS } from "../../shared/model-requirements"
 import { resolveModel } from "../../shared/model-resolver"
+import type { TierResolverContext } from "../../shared/tier-resolver"
+import { resolveTier } from "../../shared/tier-resolver"
 import { CATEGORY_PROMPT_APPENDS, DEFAULT_CATEGORIES } from "./constants"
 
 interface ResolveCategoryConfigOptions {
@@ -10,6 +12,7 @@ interface ResolveCategoryConfigOptions {
   inheritedModel?: string
   systemDefaultModel?: string
   availableModels?: Set<string>
+  tierContext?: TierResolverContext
 }
 
 interface ResolveCategoryConfigResult {
@@ -22,12 +25,17 @@ interface ResolveCategoryConfigResult {
 /**
  * Resolve the configuration for a given category name.
  * Merges default and user configurations, handles model resolution.
+ *
+ * Tier resolution: both `userConfig.tier` and `defaultConfig.tier` are
+ * resolved against the live provider list (`tierContext`). An explicit
+ * `userConfig.model` always wins; an explicit `userConfig.tier` wins
+ * over the default tier; otherwise the default tier is used.
  */
 export function resolveCategoryConfig(
   categoryName: string,
   options: ResolveCategoryConfigOptions
 ): ResolveCategoryConfigResult | null {
-  const { userCategories, inheritedModel: _inheritedModel, systemDefaultModel, availableModels } = options
+  const { userCategories, inheritedModel: _inheritedModel, systemDefaultModel, availableModels, tierContext } = options
 
   const defaultConfig = DEFAULT_CATEGORIES[categoryName]
   const userConfig = userCategories?.[categoryName]
@@ -50,14 +58,18 @@ export function resolveCategoryConfig(
     return null
   }
 
+  // Resolve tiers: user tier wins over default tier; both resolve to model strings.
+  const effectiveUserModel = resolveTierOnEntry(userConfig, tierContext)
+  const effectiveDefaultModel = resolveTierOnEntry(defaultConfig, tierContext)
+
   // Model priority for categories: user override > category default > system default
   // Categories have explicit models - no inheritance from parent session
   const model = resolveModel({
-    userModel: userConfig?.model,
-    inheritedModel: defaultConfig?.model, // Category's built-in model takes precedence over system default
+    userModel: effectiveUserModel ?? userConfig?.model,
+    inheritedModel: effectiveDefaultModel ?? defaultConfig?.model, // Category's built-in model takes precedence over system default
     systemDefault: systemDefaultModel,
   })
-  const hasUserModelOverride = userConfig?.model !== undefined
+  const hasUserModelOverride = (effectiveUserModel ?? userConfig?.model) !== undefined
   const config: CategoryConfig = {
     ...defaultConfig,
     ...userConfig,
@@ -73,4 +85,13 @@ export function resolveCategoryConfig(
   }
 
   return { config, promptAppend, model, temperature: config.temperature }
+}
+
+function resolveTierOnEntry(
+  entry: { model?: string; tier?: string } | undefined,
+  ctx: TierResolverContext | undefined,
+): string | undefined {
+  if (!entry || entry.model || !entry.tier || !ctx) return undefined
+  const resolved = resolveTier(entry.tier as never, ctx)
+  return resolved?.model
 }

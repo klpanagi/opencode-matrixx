@@ -37,6 +37,26 @@ export function resolveTiersInConfig(
   return { ...rest, agents, categories } as MatrixxConfig
 }
 
+/**
+ * Resolve tier fields in a category registry (e.g. `DEFAULT_CATEGORIES`) and
+ * return a new object with `tier` cleared and `model` set where the tier
+ * resolved. Entries that already have a concrete `model` are passed through.
+ * Used at config load time to pre-resolve the built-in defaults so that
+ * downstream code (createBuiltinAgents, buildAgent) only ever sees model
+ * strings.
+ */
+export function resolveTiersInCategoryRegistry(
+  registry: Record<string, WithTier | undefined>,
+  ctx: TierResolverContext,
+): Record<string, WithTier> {
+  const result: Record<string, WithTier> = {}
+  for (const [name, entry] of Object.entries(registry)) {
+    if (!entry) continue
+    result[name] = resolveEntry(entry, undefined, ctx)
+  }
+  return result
+}
+
 function walkAgentOverrides(
   agents: MatrixxConfig["agents"],
   defaultTier: string | undefined,

@@ -119,7 +119,13 @@ describe("complexity integration", () => {
 	})
 
 	test("complexity: 3 on source category keeps original model", async () => {
-		//#given — level 3 is not downgradable
+		//#given — level 3 is not downgradable; source tier "premium" resolves to opus
+		connectedProvidersSpy?.mockReturnValue(["anthropic"])
+		providerModelsSpy?.mockReturnValue({
+			models: { anthropic: ["claude-opus-4-6"] },
+			connected: ["anthropic"],
+			updatedAt: new Date().toISOString(),
+		})
 		const args = {
 			category: "source",
 			prompt: "test prompt",
