@@ -111,7 +111,9 @@ Total: 15 proposals across 3 tiers, plus a recommended implementation sequence a
 - **Where:** `src/features/builtin-skills/skills/*.ts` (45 files)
 - **Source:** obra/superpowers (Skill Discovery Optimization)
 
-### P5. Plan-as-File Crash Recovery (planning-with-files pattern)
+> **Status:** ✅ Shipped (v2.0.0, branch `feat/p5-plan-as-file`). New `plan-persistence` feature module (storage + rehydration) + `plan-persister` continuation hook. Writes plan state to `.matrixx/plans/<id>.md` on every `session.idle` (atomic write, markdown checkbox sync, metadata comment). Rehydrates on compaction via `experimental.session.compacting` handler. No new file format — reuses existing mission.json + markdown checkboxes. 35 new tests, 0 new deps.
+
+- **What:** Persist active plan to `.matrixx/plans/<id>.md` on every step. On compaction/crash, reload from disk. **Survives `/clear`, compaction, and crashes.**
 
 - **What:** Persist active plan to `.matrixx/plans/<id>.md` on every step. On compaction/crash, reload from disk. **Survives `/clear`, compaction, and crashes.**
 - **Cost impact:** Avoids re-planning waste (re-generating a complex plan can cost 5–20K tokens).
