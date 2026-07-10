@@ -2,7 +2,7 @@
 
 ## OVERVIEW
 
-~52 lifecycle hooks intercepting/modifying agent behavior across 7 event types. Three-tier registration: Core (31+) → Continuation (7) → Skill (2).
+~53 lifecycle hooks intercepting/modifying agent behavior across 7 event types. Three-tier registration: Core (31+) → Continuation (8) → Skill (2).
 
 ## STRUCTURE
 ```
@@ -29,6 +29,7 @@ hooks/
 ├── keyword-detector/             # ultrawork/search/analyze modes (1665 lines)
 ├── non-interactive-env/          # Non-TTY handling (483 lines)
 ├── preemptive-compaction.ts      # Auto-compact at 78% usage (108 lines)
+├── plan-persister/              # Persists plan state to disk on idle + compact (132 lines)
 ├── oracle-md-only/           # Planner read-only mode (955 lines)
 ├── quality-gate/                 # Post-task quality verification
 ├── question-label-truncator/     # Truncates labels to 30 chars (199 lines)
