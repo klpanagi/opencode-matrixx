@@ -46,30 +46,30 @@ jobs:
           # Each runs in its own bun test invocation to prevent cross-contamination.
 
           # --- Plugin handlers & original isolated ---
-          bun test src/plugin-handlers
-          bun test src/hooks/compaction-context-injector
-          bun test src/features/tmux-subagent
-          bun test src/tools/delegate-agent/sync-executor.test.ts
-          bun test src/tools/delegate-agent/session-creator.test.ts
-          bun test src/features/opencode-skill-loader/loader.test.ts
+          bun test tests/plugin-handlers
+          bun test tests/hooks/compaction-context-injector
+          bun test tests/features/tmux-subagent
+          bun test tests/tools/delegate-agent/sync-executor.test.ts
+          bun test tests/tools/delegate-agent/session-creator.test.ts
+          bun test tests/features/opencode-skill-loader/loader.test.ts
 
           # --- Hook directories that use mock.module() ---
-          bun test src/hooks/architect
-          bun test src/hooks/comment-checker
-          bun test src/hooks/compaction-todo-preserver
-          bun test src/hooks/directory-agents-injector
-          bun test src/hooks/directory-readme-injector
-          bun test src/hooks/prometheus-md-only
-          bun test src/hooks/rules-injector
+          bun test tests/hooks/architect
+          bun test tests/hooks/comment-checker
+          bun test tests/hooks/compaction-todo-preserver
+          bun test tests/hooks/directory-agents-injector
+          bun test tests/hooks/directory-readme-injector
+          bun test tests/hooks/prometheus-md-only
+          bun test tests/hooks/rules-injector
 
           # --- Non-hook files that use mock.module() ---
-          bun test src/shared/opencode-message-dir.test.ts
-          bun test src/features/background-agent/manager.test.ts
-          bun test src/tools/bdd-create-contract/tools.test.ts
-          bun test src/tools/bdd-parse-gherkin/tools.test.ts
-          bun test src/tools/bdd-pipeline/pipeline-runner.test.ts
-          bun test src/plugin/tool-execute-before.test.ts
-          bun test src/features/mission-state/plan-storage.test.ts
+          bun test tests/shared/opencode-message-dir.test.ts
+          bun test tests/features/background-agent/manager.test.ts
+          bun test tests/tools/bdd-create-contract/tools.test.ts
+          bun test tests/tools/bdd-parse-gherkin/tools.test.ts
+          bun test tests/tools/bdd-pipeline/pipeline-runner.test.ts
+          bun test tests/plugin/tool-execute-before.test.ts
+          bun test tests/features/mission-state/plan-storage.test.ts
           # OPENCODE_CONFIG_DIR env var pollution — must run isolated to prevent
           # parallel test interference from other files that modify this global var
 
@@ -85,97 +85,97 @@ jobs:
           #   src/hooks/context-window-monitor.test.ts (2 fail)
           #   src/hooks/preemptive-compaction.test.ts (3 fail)
           #   src/agents/utils.test.ts (CI-only failures: stale model expectations after merovingian model refactor; passes locally)
-          bun test src/config src/mcp src/index.test.ts \
-            src/agents/builtin-agents/resolve-file-uri.test.ts \
-            src/agents/cipher.test.ts \
-            src/agents/dynamic-agent-prompt-builder.test.ts \
-            src/agents/momus.test.ts \
-            src/agents/mouse/index.test.ts \
-            src/agents/oracle-prompt.test.ts \
-            src/agents/types.test.ts \
-            src/shared/agent-config-integration.test.ts \
-            src/shared/agent-display-names.test.ts \
-            src/shared/agent-variant.test.ts \
-            src/shared/connected-providers-cache.test.ts \
-            src/shared/deep-merge.test.ts \
-            src/shared/external-plugin-detector.test.ts \
-            src/shared/file-utils.test.ts \
-            src/shared/first-message-variant.test.ts \
-            src/shared/frontmatter.test.ts \
-            src/shared/git-worktree \
-            src/shared/jsonc-parser.test.ts \
-            src/shared/merge-categories.test.ts \
-            src/shared/migration.test.ts \
-            src/shared/model-availability.test.ts \
-            src/shared/model-resolver.test.ts \
-            src/shared/model-suggestion-retry.test.ts \
-            src/shared/normalize-sdk-response.test.ts \
-            src/shared/opencode-config-dir.test.ts \
-            src/shared/opencode-http-api.test.ts \
-            src/shared/opencode-server-auth.test.ts \
-            src/shared/opencode-storage-detection.test.ts \
-            src/shared/opencode-version.test.ts \
-            src/shared/permission-compat.test.ts \
-            src/shared/port-utils.test.ts \
-            src/shared/safe-create-hook.test.ts \
-            src/shared/session-cursor.test.ts \
-            src/shared/session-directory-resolver.test.ts \
-            src/shared/session-tools-store.test.ts \
-            src/shared/skill-path-resolver.test.ts \
-            src/shared/system-directive.test.ts \
-            src/shared/tmux \
-            src/shared/truncate-description.test.ts \
-            src/tools/ast-grep src/tools/background-task src/tools/delegate-task \
-            src/tools/glob src/tools/grep src/tools/hashline-edit src/tools/interactive-bash \
-            src/tools/look-at \
-            src/tools/lsp/lsp-process.test.ts \
-            src/tools/lsp/server-config-loader.test.ts \
-            src/tools/lsp/utils.test.ts \
-            src/tools/lsp/config.test.ts \
-            src/tools/session-manager/tools.test.ts \
-            src/tools/session-manager/utils.test.ts \
-            src/tools/skill-mcp src/tools/slashcommand src/tools/task \
-            src/tools/delegate-agent/background-agent-executor.test.ts \
-            src/tools/delegate-agent/background-executor.test.ts \
-            src/tools/delegate-agent/subagent-session-creator.test.ts \
-            src/hooks/anthropic-effort \
-            src/hooks/auto-slash-command \
-            src/hooks/category-skill-reminder \
-            src/hooks/delegate-task-retry \
-            src/hooks/edit-error-recovery \
-            src/hooks/env-file-write-guard \
-            src/hooks/handoff-injector \
-            src/hooks/hashline-read-enhancer \
-            src/hooks/keyword-detector \
-            src/hooks/matrix-loop \
-            src/hooks/non-interactive-env \
-            src/hooks/question-label-truncator \
-            src/hooks/secret-leak-guard \
-            src/hooks/session-recovery \
-            src/hooks/start-work \
-            src/hooks/stop-continuation-guard \
-            src/hooks/task-reminder \
-            src/hooks/task-resume-info \
-            src/hooks/tasks-todowrite-disabler \
-            src/hooks/think-mode \
-            src/hooks/unstable-agent-babysitter \
-            src/hooks/write-existing-file-guard \
-            src/hooks/session-notification.test.ts \
-            src/hooks/tool-output-truncator.test.ts \
-            src/features/background-agent/manager.polling.test.ts \
-            src/features/background-agent/task-poller.test.ts \
-            src/features/background-agent/parent-session-notifier.test.ts \
-            src/features/background-agent/concurrency.test.ts \
-            src/features/background-agent/task-history.test.ts \
-            src/features/builtin-commands \
-            src/features/builtin-skills \
-            src/features/session-state \
-            src/features/hook-message-injector \
-            src/features/opencode-skill-loader/config-source-discovery.test.ts \
-            src/features/opencode-skill-loader/merger.test.ts \
-            src/features/opencode-skill-loader/skill-content.test.ts \
-            src/features/opencode-skill-loader/blocking.test.ts \
-            src/features/skill-mcp-manager/env-cleaner.test.ts
+          bun test tests/config tests/mcp tests/index.test.ts \
+            tests/agents/builtin-agents/resolve-file-uri.test.ts \
+            tests/agents/cipher.test.ts \
+            tests/agents/dynamic-agent-prompt-builder.test.ts \
+            tests/agents/momus.test.ts \
+            tests/agents/mouse/index.test.ts \
+            tests/agents/oracle-prompt.test.ts \
+            tests/agents/types.test.ts \
+            tests/shared/agent-config-integration.test.ts \
+            tests/shared/agent-display-names.test.ts \
+            tests/shared/agent-variant.test.ts \
+            tests/shared/connected-providers-cache.test.ts \
+            tests/shared/deep-merge.test.ts \
+            tests/shared/external-plugin-detector.test.ts \
+            tests/shared/file-utils.test.ts \
+            tests/shared/first-message-variant.test.ts \
+            tests/shared/frontmatter.test.ts \
+            tests/shared/git-worktree \
+            tests/shared/jsonc-parser.test.ts \
+            tests/shared/merge-categories.test.ts \
+            tests/shared/migration.test.ts \
+            tests/shared/model-availability.test.ts \
+            tests/shared/model-resolver.test.ts \
+            tests/shared/model-suggestion-retry.test.ts \
+            tests/shared/normalize-sdk-response.test.ts \
+            tests/shared/opencode-config-dir.test.ts \
+            tests/shared/opencode-http-api.test.ts \
+            tests/shared/opencode-server-auth.test.ts \
+            tests/shared/opencode-storage-detection.test.ts \
+            tests/shared/opencode-version.test.ts \
+            tests/shared/permission-compat.test.ts \
+            tests/shared/port-utils.test.ts \
+            tests/shared/safe-create-hook.test.ts \
+            tests/shared/session-cursor.test.ts \
+            tests/shared/session-directory-resolver.test.ts \
+            tests/shared/session-tools-store.test.ts \
+            tests/shared/skill-path-resolver.test.ts \
+            tests/shared/system-directive.test.ts \
+            tests/shared/tmux \
+            tests/shared/truncate-description.test.ts \
+            tests/tools/ast-grep tests/tools/background-task tests/tools/delegate-task \
+            tests/tools/glob tests/tools/grep tests/tools/hashline-edit tests/tools/interactive-bash \
+            tests/tools/look-at \
+            tests/tools/lsp/lsp-process.test.ts \
+            tests/tools/lsp/server-config-loader.test.ts \
+            tests/tools/lsp/utils.test.ts \
+            tests/tools/lsp/config.test.ts \
+            tests/tools/session-manager/tools.test.ts \
+            tests/tools/session-manager/utils.test.ts \
+            tests/tools/skill-mcp tests/tools/slashcommand tests/tools/task \
+            tests/tools/delegate-agent/background-agent-executor.test.ts \
+            tests/tools/delegate-agent/background-executor.test.ts \
+            tests/tools/delegate-agent/subagent-session-creator.test.ts \
+            tests/hooks/anthropic-effort \
+            tests/hooks/auto-slash-command \
+            tests/hooks/category-skill-reminder \
+            tests/hooks/delegate-task-retry \
+            tests/hooks/edit-error-recovery \
+            tests/hooks/env-file-write-guard \
+            tests/hooks/handoff-injector \
+            tests/hooks/hashline-read-enhancer \
+            tests/hooks/keyword-detector \
+            tests/hooks/matrix-loop \
+            tests/hooks/non-interactive-env \
+            tests/hooks/question-label-truncator \
+            tests/hooks/secret-leak-guard \
+            tests/hooks/session-recovery \
+            tests/hooks/start-work \
+            tests/hooks/stop-continuation-guard \
+            tests/hooks/task-reminder \
+            tests/hooks/task-resume-info \
+            tests/hooks/tasks-todowrite-disabler \
+            tests/hooks/think-mode \
+            tests/hooks/unstable-agent-babysitter \
+            tests/hooks/write-existing-file-guard \
+            tests/hooks/session-notification.test.ts \
+            tests/hooks/tool-output-truncator.test.ts \
+            tests/features/background-agent/manager.polling.test.ts \
+            tests/features/background-agent/task-poller.test.ts \
+            tests/features/background-agent/parent-session-notifier.test.ts \
+            tests/features/background-agent/concurrency.test.ts \
+            tests/features/background-agent/task-history.test.ts \
+            tests/features/builtin-commands \
+            tests/features/builtin-skills \
+            tests/features/session-state \
+            tests/features/hook-message-injector \
+            tests/features/opencode-skill-loader/config-source-discovery.test.ts \
+            tests/features/opencode-skill-loader/merger.test.ts \
+            tests/features/opencode-skill-loader/skill-content.test.ts \
+            tests/features/opencode-skill-loader/blocking.test.ts \
+            tests/features/skill-mcp-manager/env-cleaner.test.ts
 
   typecheck:
     runs-on: ubuntu-latest

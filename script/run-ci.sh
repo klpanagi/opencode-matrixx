@@ -45,44 +45,43 @@ bun run lint && pass "Lint" || fail "Lint"
 # Mock-heavy tests (isolated)  (mirrors ci.yml test job)
 # ------------------------------------------------------------------
 step "Mock-heavy tests (isolated) — plugin-handlers"
-bun test src/plugin-handlers && pass "plugin-handlers" || fail "plugin-handlers"
+bun test tests/plugin-handlers && pass "plugin-handlers" || fail "plugin-handlers"
 
 step "Mock-heavy tests (isolated) — compaction-context-injector"
-bun test src/hooks/compaction-context-injector && pass "compaction-context-injector" || fail "compaction-context-injector"
+bun test tests/hooks/compaction-context-injector && pass "compaction-context-injector" || fail "compaction-context-injector"
 
 step "Mock-heavy tests (isolated) — tmux-subagent"
-bun test src/features/tmux-subagent && pass "tmux-subagent" || fail "tmux-subagent"
+bun test tests/features/tmux-subagent && pass "tmux-subagent" || fail "tmux-subagent"
 
 step "Mock-heavy tests (isolated) — individual files"
 for test in \
-  src/tools/delegate-agent/sync-executor.test.ts \
-  src/tools/delegate-agent/session-creator.test.ts \
-  src/features/opencode-skill-loader/loader.test.ts \
-  src/features/opencode-skill-loader/agents-skills-global.test.ts \
-  src/tools/session-manager/storage.test.ts \
-  src/hooks/prometheus-md-only/index.test.ts \
-  src/hooks/architect/index.test.ts \
-  src/hooks/matrix-loop/index.test.ts \
-  src/hooks/start-work/index.test.ts \
-  src/hooks/auto-update-checker/hook/background-update-check.test.ts \
-  src/hooks/auto-update-checker/hook.test.ts \
-  src/features/skill-mcp-manager/manager.test.ts \
-  src/features/background-agent/manager.test.ts \
-  src/hooks/comment-checker/cli.test.ts \
-  src/hooks/comment-checker/hook.apply-patch.test.ts \
-  src/hooks/directory-agents-injector/injector.test.ts \
-  src/hooks/directory-readme-injector/injector.test.ts \
-  src/hooks/rules-injector/injector.test.ts \
-  src/hooks/compaction-todo-preserver/index.test.ts \
-  src/hooks/preemptive-compaction.test.ts \
-  src/tools/lsp/client.test.ts \
-  src/tools/skill/tools.test.ts \
-  src/features/claude-code-mcp-loader/loader.test.ts \
-  src/hooks/anthropic-context-window-limit-recovery/empty-content-recovery-sdk.test.ts \
-  src/hooks/anthropic-context-window-limit-recovery/recovery-hook.test.ts \
-  src/hooks/anthropic-context-window-limit-recovery/storage.test.ts \
-  src/agents/utils.test.ts \
-  src/hooks/task-notepad/hook.test.ts
+  tests/tools/delegate-agent/sync-executor.test.ts \
+  tests/tools/delegate-agent/session-creator.test.ts \
+  tests/features/opencode-skill-loader/loader.test.ts \
+  tests/features/opencode-skill-loader/agents-skills-global.test.ts \
+  tests/tools/session-manager/storage.test.ts \
+  tests/hooks/prometheus-md-only/index.test.ts \
+  tests/hooks/architect/index.test.ts \
+  tests/hooks/matrix-loop/index.test.ts \
+  tests/hooks/start-work/index.test.ts \
+  tests/hooks/auto-update-checker/hook/background-update-check.test.ts \
+  tests/hooks/auto-update-checker/hook.test.ts \
+  tests/features/skill-mcp-manager/manager.test.ts \
+  tests/features/background-agent/manager.test.ts \
+  tests/hooks/comment-checker/cli.test.ts \
+  tests/hooks/comment-checker/hook.apply-patch.test.ts \
+  tests/hooks/directory-agents-injector/injector.test.ts \
+  tests/hooks/directory-readme-injector/injector.test.ts \
+  tests/hooks/rules-injector/injector.test.ts \
+  tests/hooks/compaction-todo-preserver/index.test.ts \
+  tests/hooks/preemptive-compaction.test.ts \
+  tests/tools/lsp/client.test.ts \
+  tests/tools/skill/tools.test.ts \
+  tests/hooks/anthropic-context-window-limit-recovery/empty-content-recovery-sdk.test.ts \
+  tests/hooks/anthropic-context-window-limit-recovery/recovery-hook.test.ts \
+  tests/hooks/anthropic-context-window-limit-recovery/storage.test.ts \
+  tests/agents/utils.test.ts \
+  tests/hooks/task-notepad/hook.test.ts
 do
   label="$(basename "$(dirname "$test")")/$(basename "$test")"
   bun test "$test" && pass "$label" || fail "$label"
@@ -92,39 +91,38 @@ done
 # Remaining tests  (mirrors ci.yml remaining-tests step)
 # ------------------------------------------------------------------
 step "Remaining tests"
-find src script -name '*.test.ts' -type f \
+find tests script -name '*.test.ts' -type f \
   | grep -v -F \
-    -e 'src/plugin-handlers/' \
-    -e 'src/hooks/compaction-context-injector/' \
-    -e 'src/features/tmux-subagent/' \
-    -e 'src/tools/delegate-agent/sync-executor.test.ts' \
-    -e 'src/tools/delegate-agent/session-creator.test.ts' \
-    -e 'src/features/opencode-skill-loader/loader.test.ts' \
-    -e 'src/features/opencode-skill-loader/agents-skills-global.test.ts' \
-    -e 'src/tools/session-manager/storage.test.ts' \
-    -e 'src/hooks/prometheus-md-only/index.test.ts' \
-    -e 'src/hooks/architect/index.test.ts' \
-    -e 'src/hooks/matrix-loop/index.test.ts' \
-    -e 'src/hooks/start-work/index.test.ts' \
-    -e 'src/hooks/auto-update-checker/hook/background-update-check.test.ts' \
-    -e 'src/hooks/auto-update-checker/hook.test.ts' \
-    -e 'src/features/skill-mcp-manager/manager.test.ts' \
-    -e 'src/features/background-agent/manager.test.ts' \
-    -e 'src/hooks/comment-checker/cli.test.ts' \
-    -e 'src/hooks/comment-checker/hook.apply-patch.test.ts' \
-    -e 'src/hooks/directory-agents-injector/injector.test.ts' \
-    -e 'src/hooks/directory-readme-injector/injector.test.ts' \
-    -e 'src/hooks/rules-injector/injector.test.ts' \
-    -e 'src/hooks/compaction-todo-preserver/index.test.ts' \
-    -e 'src/hooks/preemptive-compaction.test.ts' \
-    -e 'src/tools/lsp/client.test.ts' \
-    -e 'src/tools/skill/tools.test.ts' \
-    -e 'src/features/claude-code-mcp-loader/loader.test.ts' \
-    -e 'src/hooks/anthropic-context-window-limit-recovery/empty-content-recovery-sdk.test.ts' \
-    -e 'src/hooks/anthropic-context-window-limit-recovery/recovery-hook.test.ts' \
-    -e 'src/hooks/anthropic-context-window-limit-recovery/storage.test.ts' \
-    -e 'src/agents/utils.test.ts' \
-    -e 'src/hooks/task-notepad/hook.test.ts' \
+    -e 'tests/plugin-handlers/' \
+    -e 'tests/hooks/compaction-context-injector/' \
+    -e 'tests/features/tmux-subagent/' \
+    -e 'tests/tools/delegate-agent/sync-executor.test.ts' \
+    -e 'tests/tools/delegate-agent/session-creator.test.ts' \
+    -e 'tests/features/opencode-skill-loader/loader.test.ts' \
+    -e 'tests/features/opencode-skill-loader/agents-skills-global.test.ts' \
+    -e 'tests/tools/session-manager/storage.test.ts' \
+    -e 'tests/hooks/prometheus-md-only/index.test.ts' \
+    -e 'tests/hooks/architect/index.test.ts' \
+    -e 'tests/hooks/matrix-loop/index.test.ts' \
+    -e 'tests/hooks/start-work/index.test.ts' \
+    -e 'tests/hooks/auto-update-checker/hook/background-update-check.test.ts' \
+    -e 'tests/hooks/auto-update-checker/hook.test.ts' \
+    -e 'tests/features/skill-mcp-manager/manager.test.ts' \
+    -e 'tests/features/background-agent/manager.test.ts' \
+    -e 'tests/hooks/comment-checker/cli.test.ts' \
+    -e 'tests/hooks/comment-checker/hook.apply-patch.test.ts' \
+    -e 'tests/hooks/directory-agents-injector/injector.test.ts' \
+    -e 'tests/hooks/directory-readme-injector/injector.test.ts' \
+    -e 'tests/hooks/rules-injector/injector.test.ts' \
+    -e 'tests/hooks/compaction-todo-preserver/index.test.ts' \
+    -e 'tests/hooks/preemptive-compaction.test.ts' \
+    -e 'tests/tools/lsp/client.test.ts' \
+    -e 'tests/tools/skill/tools.test.ts' \
+    -e 'tests/hooks/anthropic-context-window-limit-recovery/empty-content-recovery-sdk.test.ts' \
+    -e 'tests/hooks/anthropic-context-window-limit-recovery/recovery-hook.test.ts' \
+    -e 'tests/hooks/anthropic-context-window-limit-recovery/storage.test.ts' \
+    -e 'tests/agents/utils.test.ts' \
+    -e 'tests/hooks/task-notepad/hook.test.ts' \
   | xargs bun test && pass "Remaining tests" || fail "Remaining tests"
 
 # ------------------------------------------------------------------
