@@ -1,10 +1,9 @@
 import type { Client } from "@modelcontextprotocol/sdk/client/index.js"
 import type { Prompt, Resource, Tool } from "@modelcontextprotocol/sdk/types.js"
-import type { McpServerDefinition } from "./types"
 import { disconnectAll, disconnectSession, forceReconnect } from "./cleanup"
 import { getOrCreateClient, getOrCreateClientWithRetryImpl } from "./connection"
 import { handleStepUpIfNeeded } from "./oauth-handler"
-import type { SkillMcpClientInfo, SkillMcpManagerState, SkillMcpServerContext } from "./types"
+import type { McpServerDefinition, SkillMcpClientInfo, SkillMcpManagerState, SkillMcpServerContext } from "./types"
 
 export class SkillMcpManager {
   private readonly state: SkillMcpManagerState = {

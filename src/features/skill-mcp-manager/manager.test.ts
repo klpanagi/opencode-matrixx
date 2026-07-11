@@ -1,8 +1,6 @@
 import { afterAll, afterEach, beforeEach, describe, expect, it, mock, spyOn } from "bun:test"
-import type { McpServerDefinition } from "./types"
 import { SkillMcpManager } from "./manager"
-import { SkillMcpManager } from "./manager"
-import type { SkillMcpClientInfo, SkillMcpServerContext } from "./types"
+import type { McpServerDefinition, SkillMcpClientInfo, SkillMcpServerContext } from "./types"
 
 // Mock the MCP SDK transports to avoid network calls
 const mockHttpConnect = mock(() => Promise.reject(new Error("Mocked HTTP connection failure")))

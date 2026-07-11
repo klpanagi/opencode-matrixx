@@ -1,11 +1,10 @@
 import type { Client } from "@modelcontextprotocol/sdk/client/index.js"
-import { expandEnvVarsInObject } from "./env-expander"
-import type { McpServerDefinition } from "./types"
 import { forceReconnect } from "./cleanup"
 import { getConnectionType } from "./connection-type"
+import { expandEnvVarsInObject } from "./env-expander"
 import { createHttpClient } from "./http-client"
 import { createStdioClient } from "./stdio-client"
-import type { SkillMcpClientConnectionParams, SkillMcpClientInfo, SkillMcpManagerState } from "./types"
+import type { McpServerDefinition, SkillMcpClientConnectionParams, SkillMcpClientInfo, SkillMcpManagerState } from "./types"
 
 export async function getOrCreateClient(params: {
   state: SkillMcpManagerState

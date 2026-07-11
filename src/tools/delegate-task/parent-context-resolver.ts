@@ -1,5 +1,5 @@
-import { getSessionAgent } from "../../features/session-state"
 import { resolveMessageContext } from "../../features/hook-message-injector"
+import { getSessionAgent } from "../../features/session-state"
 import { log } from "../../shared/logger"
 import { getMessageDir } from "../../shared/opencode-message-dir"
 import type { ParentContext } from "./executor-types"

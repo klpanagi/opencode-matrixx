@@ -1,5 +1,4 @@
-import type { McpServerDefinition } from "./types"
-import type { ConnectionType } from "./types"
+import type { ConnectionType, McpServerDefinition } from "./types"
 
 /**
  * Determines connection type from MCP server configuration.

@@ -1,7 +1,7 @@
 import type { PluginInput } from "@opencode-ai/plugin"
 import type { BackgroundManager } from "../../features/background-agent"
-import { getSessionAgent } from "../../features/session-state"
 import { resolveMessageContext } from "../../features/hook-message-injector"
+import { getSessionAgent } from "../../features/session-state"
 import { log } from "../../shared"
 import { formatDetailedError } from "../../shared/error-formatting"
 import { getSessionTools } from "../../shared/session-tools-store"

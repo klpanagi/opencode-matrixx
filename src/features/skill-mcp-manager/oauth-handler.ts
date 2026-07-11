@@ -1,7 +1,7 @@
-import type { McpServerDefinition } from "./types"
 import { McpOAuthProvider } from "../mcp-oauth/provider"
 import { isStepUpRequired, mergeScopes } from "../mcp-oauth/step-up"
 import type { OAuthTokenData } from "../mcp-oauth/storage"
+import type { McpServerDefinition } from "./types"
 
 function getOrCreateAuthProvider(
   authProviders: Map<string, McpOAuthProvider>,

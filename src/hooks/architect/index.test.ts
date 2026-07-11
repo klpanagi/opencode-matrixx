@@ -4,13 +4,13 @@ import { existsSync, mkdirSync, rmSync, writeFileSync } from "node:fs"
 import { tmpdir } from "node:os"
 import { join } from "node:path"
 import type { BackgroundManager } from "../../features/background-agent"
-import { _resetForTesting, subagentSessions } from "../../features/session-state"
 import type { MissionState } from "../../features/mission-state"
 import {
   clearMissionState,
   readMissionState,
   writeMissionState,
 } from "../../features/mission-state"
+import { _resetForTesting, subagentSessions } from "../../features/session-state"
 
 const TEST_STORAGE_ROOT = join(tmpdir(), `architect-test-storage-${randomUUID()}`)
 const TEST_MESSAGE_STORAGE = join(TEST_STORAGE_ROOT, "messages")

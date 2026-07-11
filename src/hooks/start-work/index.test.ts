@@ -3,12 +3,12 @@ import { randomUUID } from "node:crypto"
 import { existsSync, mkdirSync, rmSync, writeFileSync } from "node:fs"
 import { tmpdir } from "node:os"
 import { join } from "node:path"
-import * as sessionState from "../../features/session-state"
 import type { MissionState } from "../../features/mission-state"
 import {
   clearMissionState,
   writeMissionState,
 } from "../../features/mission-state"
+import * as sessionState from "../../features/session-state"
 import { createStartWorkHook } from "./index"
 
 describe("start-work hook", () => {

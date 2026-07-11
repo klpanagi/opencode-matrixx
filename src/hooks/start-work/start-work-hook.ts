@@ -1,5 +1,4 @@
 import type { PluginInput } from "@opencode-ai/plugin"
-import { updateSessionAgent } from "../../features/session-state"
 import {
   appendSessionId,
   clearMissionState,
@@ -10,6 +9,7 @@ import {
   readMissionState,
   writeMissionState,
 } from "../../features/mission-state"
+import { updateSessionAgent } from "../../features/session-state"
 import { log } from "../../shared/logger"
 
 export const HOOK_NAME = "start-work" as const

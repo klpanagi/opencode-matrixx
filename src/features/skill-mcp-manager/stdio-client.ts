@@ -1,9 +1,8 @@
 import { Client } from "@modelcontextprotocol/sdk/client/index.js"
 import { StdioClientTransport } from "@modelcontextprotocol/sdk/client/stdio.js"
-import type { McpServerDefinition } from "./types"
 import { registerProcessCleanup, startCleanupTimer } from "./cleanup"
 import { createCleanMcpEnvironment } from "./env-cleaner"
-import type { ManagedClient, SkillMcpClientConnectionParams } from "./types"
+import type { ManagedClient, McpServerDefinition, SkillMcpClientConnectionParams } from "./types"
 
 function getStdioCommand(config: McpServerDefinition, serverName: string): string {
   if (!config.command) {

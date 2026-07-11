@@ -1,6 +1,6 @@
 import type { PluginInput } from "@opencode-ai/plugin"
-import { subagentSessions } from "../../features/session-state"
 import { clearMissionState, getPlanProgress, readMissionState } from "../../features/mission-state"
+import { subagentSessions } from "../../features/session-state"
 import { getAgentConfigKey } from "../../shared/agent-display-names"
 import { log } from "../../shared/logger"
 import { HOOK_NAME } from "./hook-name"

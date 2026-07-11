@@ -2,11 +2,11 @@
 
 import { afterEach, beforeEach, describe, expect, spyOn, test } from "bun:test"
 import type { MatrixxConfig } from "../config"
-
 import * as builtinCommandsModule from "../features/builtin-commands"
 import * as ccCommandLoaderModule from "../features/command-loader"
 import * as opencodeSkillLoaderModule from "../features/opencode-skill-loader"
 import * as skillDefinitionRecordModule from "../features/opencode-skill-loader/skill-definition-record"
+import type { LoadedSkill } from "../features/opencode-skill-loader/types"
 
 let loadBuiltinCommandsSpy: ReturnType<typeof spyOn>
 let loadUserCommandsSpy: ReturnType<typeof spyOn>
@@ -200,7 +200,7 @@ describe("applyCommandConfig", () => {
         template: "template",
       },
       scope: "user",
-    } as any])
+    } as LoadedSkill])
     skillsToCommandDefinitionRecordSpy.mockReturnValue({
       "oracle-skill": {
         name: "oracle-skill",
