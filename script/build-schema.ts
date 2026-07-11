@@ -23,7 +23,7 @@ async function main() {
   console.log("Generating JSON Schema...")
 
   const matrixxSchema = buildSchema(
-    "https://raw.githubusercontent.com/klpanagi/matrixx/dev/assets/matrixx.schema.json",
+    "https://raw.githubusercontent.com/klpanagi/opencode-matrixx/dev/assets/matrixx.schema.json",
   )
   await Bun.write(OUTPUT_PATH, JSON.stringify(matrixxSchema, null, 2))
 

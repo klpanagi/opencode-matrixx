@@ -16,7 +16,7 @@ It asks about your providers (Claude, OpenAI, Gemini, etc.) and generates optima
 
 ```jsonc
 {
-  "$schema": "https://raw.githubusercontent.com/klpanagi/matrixx/master/assets/matrixx.schema.json",
+  "$schema": "https://raw.githubusercontent.com/klpanagi/opencode-matrixx/master/assets/matrixx.schema.json",
   
   // Override specific agent models
   "agents": {
@@ -49,7 +49,7 @@ Schema autocomplete supported:
 
 ```json
 {
-  "$schema": "https://raw.githubusercontent.com/klpanagi/matrixx/master/assets/matrixx.schema.json"
+  "$schema": "https://raw.githubusercontent.com/klpanagi/opencode-matrixx/master/assets/matrixx.schema.json"
 }
 ```
 
@@ -66,7 +66,7 @@ When both `matrixx.jsonc` and `matrixx.json` files exist, `.jsonc` takes priorit
 
 ```jsonc
 {
-  "$schema": "https://raw.githubusercontent.com/klpanagi/matrixx/master/assets/matrixx.schema.json",
+  "$schema": "https://raw.githubusercontent.com/klpanagi/opencode-matrixx/master/assets/matrixx.schema.json",
 
   /* Agent overrides - customize models for specific tasks */
   "agents": {
@@ -167,7 +167,7 @@ If you encounter `JSON Parse error: Unexpected EOF`:
 
 The proper long-term fix requires Claude Code SDK to parse NDJSON responses correctly. Until then, use `stream: false` as a workaround.
 
-**Tracking**: https://github.com/klpanagi/matrixx/issues/1124
+**Tracking**: https://github.com/klpanagi/opencode-matrixx/issues/1124
 
 ## Agents
 

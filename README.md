@@ -1,5 +1,5 @@
 >
-> [![Matrixx](./.github/assets/orchestrator-architect.png?v=3)](https://github.com/klpanagi/matrixx)
+> [![Matrixx](./.github/assets/orchestrator-architect.png?v=3)](https://github.com/klpanagi/opencode-matrixx)
 >
 > Matrixx is **highly inspired by** [oh-my-opencode](https://github.com/code-yeongyu/oh-my-opencode) — the project that pioneered the "oh-my-zsh for OpenCode" concept.
 > Full credit to [code-yeongyu](https://github.com/code-yeongyu) for the original vision.
@@ -10,7 +10,7 @@
 <h1>Matrixx</h1>
 
 [![npm](https://img.shields.io/npm/v/opencode-matrixx.svg)](https://www.npmjs.com/package/opencode-matrixx)
-[![License: SUL-1.0](https://img.shields.io/badge/license-SUL--1.0-blue.svg)](https://github.com/klpanagi/matrixx/blob/master/LICENSE)
+[![License: SUL-1.0](https://img.shields.io/badge/license-SUL--1.0-blue.svg)](https://github.com/klpanagi/opencode-matrixx/blob/master/LICENSE)
 
 **Multi-model agent orchestration for [OpenCode](https://github.com/sst/opencode).**<br/>
 **14 specialized agents. ~52 lifecycle hooks. 28 tools. One plugin.**
@@ -73,7 +73,7 @@ Create `matrixx.jsonc` in your project root:
 
 ```jsonc
 {
-  "$schema": "https://raw.githubusercontent.com/klpanagi/matrixx/refs/heads/dev/dist/matrixx.schema.json",
+  "$schema": "https://raw.githubusercontent.com/klpanagi/opencode-matrixx/refs/heads/dev/dist/matrixx.schema.json",
   "profile": "balanced"
 }
 ```
@@ -86,7 +86,7 @@ Open OpenCode and start coding. Matrixx activates automatically.
 
 ```
 Install and configure matrixx by following the instructions here:
-https://raw.githubusercontent.com/klpanagi/matrixx/refs/heads/dev/docs/guide/installation.md
+https://raw.githubusercontent.com/klpanagi/opencode-matrixx/refs/heads/dev/docs/guide/installation.md
 ```
 
 [Manual installation guide →](docs/guide/installation.md) · [Uninstall →](docs/guide/uninstallation.md)

@@ -49,12 +49,12 @@
   "license": "SUL-1.0",
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/klpanagi/matrixx.git"
+    "url": "git+https://github.com/klpanagi/opencode-matrixx.git"
   },
   "bugs": {
-    "url": "https://github.com/klpanagi/matrixx/issues"
+    "url": "https://github.com/klpanagi/opencode-matrixx/issues"
   },
-  "homepage": "https://github.com/klpanagi/matrixx#readme",
+  "homepage": "https://github.com/klpanagi/opencode-matrixx#readme",
   "dependencies": {
     "@ast-grep/cli": "^0.40.0",
     "@ast-grep/napi": "^0.40.0",

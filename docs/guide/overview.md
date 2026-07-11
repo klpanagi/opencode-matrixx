@@ -125,7 +125,7 @@ Here's a real-world config for a user with **Claude, OpenAI, Gemini, and Z.ai** 
 
 ```jsonc
 {
-  "$schema": "https://raw.githubusercontent.com/klpanagi/matrixx/master/assets/matrixx.schema.json",
+  "$schema": "https://raw.githubusercontent.com/klpanagi/opencode-matrixx/master/assets/matrixx.schema.json",
   "agents": {
     // Override specific agents only - rest use fallback chain
     "architect": { "model": "anthropic/claude-sonnet-4-6", "variant": "max" },
