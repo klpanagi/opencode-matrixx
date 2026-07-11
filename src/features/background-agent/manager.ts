@@ -6,7 +6,7 @@ import { getAgentToolRestrictions, log, normalizeSDKResponse, promptWithModelSug
 import { setSessionTemperature } from "../../shared/session-temperature-store"
 import { setSessionTools } from "../../shared/session-tools-store"
 import { isInsideTmux } from "../../shared/tmux"
-import { subagentSessions } from "../claude-code-session-state"
+import { subagentSessions } from "../session-state"
 
 import { getTaskToastManager } from "../task-toast-manager"
 import { ConcurrencyManager } from "./concurrency"

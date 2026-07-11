@@ -1,7 +1,7 @@
 import { afterEach, beforeEach, describe, expect, spyOn, test } from "bun:test"
 import type { PluginInput } from "@opencode-ai/plugin"
 import type { AvailableSkill } from "../../agents/dynamic-agent-prompt-builder"
-import { _resetForTesting, clearSessionAgent, updateSessionAgent } from "../../features/claude-code-session-state"
+import { _resetForTesting, clearSessionAgent, updateSessionAgent } from "../../features/session-state"
 import * as sharedModule from "../../shared"
 import { createCategorySkillReminderHook } from "./index"
 

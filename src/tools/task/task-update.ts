@@ -7,7 +7,7 @@ import {
   getTaskDir,
   readJsonSafe,
   writeJsonAtomic,
-} from "../../features/claude-tasks/storage";
+} from "../../features/task-storage/storage";
 import { TASK_ID_PATTERN } from "./constants";
 import { syncTaskTodoUpdate } from "./todo-sync";
 import { TaskObjectSchema, TaskUpdateInputSchema } from "./types";

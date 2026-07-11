@@ -1,5 +1,5 @@
 import type { PluginInput } from "@opencode-ai/plugin"
-import { subagentSessions } from "../../features/claude-code-session-state"
+import { subagentSessions } from "../../features/session-state"
 import { log } from "../../shared"
 import type { DelegateAgentArgs } from "./types"
 

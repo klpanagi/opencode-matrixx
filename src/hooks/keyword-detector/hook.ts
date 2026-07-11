@@ -1,10 +1,10 @@
 import type { PluginInput } from "@opencode-ai/plugin"
+import type { ContextCollector } from "../../features/context-injector"
 import {
   getMainSessionID,
   getSessionAgent,
   subagentSessions,
-} from "../../features/claude-code-session-state"
-import type { ContextCollector } from "../../features/context-injector"
+} from "../../features/session-state"
 import { getUltraworkState } from "../../features/ultrawork-state"
 import { log } from "../../shared"
 import {

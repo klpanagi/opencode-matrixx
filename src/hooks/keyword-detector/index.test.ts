@@ -1,8 +1,8 @@
 import { afterEach, beforeEach, describe, expect, spyOn, test } from "bun:test"
 import type { PluginInput } from "@opencode-ai/plugin"
-import * as sessionState from "../../features/claude-code-session-state"
-import { _resetForTesting, clearSessionAgent, setMainSession, updateSessionAgent } from "../../features/claude-code-session-state"
 import { ContextCollector } from "../../features/context-injector"
+import * as sessionState from "../../features/session-state"
+import { _resetForTesting, clearSessionAgent, setMainSession, updateSessionAgent } from "../../features/session-state"
 import * as sharedModule from "../../shared"
 import { createKeywordDetectorHook } from "./index"
 

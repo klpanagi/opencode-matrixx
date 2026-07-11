@@ -1,12 +1,12 @@
-import type { ClaudeCodeMcpServer } from "../claude-code-mcp-loader/types"
 import { McpOAuthProvider } from "../mcp-oauth/provider"
 import { isStepUpRequired, mergeScopes } from "../mcp-oauth/step-up"
 import type { OAuthTokenData } from "../mcp-oauth/storage"
+import type { McpServerDefinition } from "./types"
 
 function getOrCreateAuthProvider(
   authProviders: Map<string, McpOAuthProvider>,
   serverUrl: string,
-  oauth: NonNullable<ClaudeCodeMcpServer["oauth"]>
+  oauth: NonNullable<McpServerDefinition["oauth"]>
 ): McpOAuthProvider {
   const existing = authProviders.get(serverUrl)
   if (existing) return existing
@@ -26,7 +26,7 @@ function isTokenExpired(tokenData: OAuthTokenData): boolean {
 }
 
 export async function buildHttpRequestInit(
-  config: ClaudeCodeMcpServer,
+  config: McpServerDefinition,
   authProviders: Map<string, McpOAuthProvider>
 ): Promise<RequestInit | undefined> {
   const headers: Record<string, string> = {}
@@ -59,7 +59,7 @@ export async function buildHttpRequestInit(
 
 export async function handleStepUpIfNeeded(params: {
   error: Error
-  config: ClaudeCodeMcpServer
+  config: McpServerDefinition
   authProviders: Map<string, McpOAuthProvider>
 }): Promise<boolean> {
   const { error, config, authProviders } = params

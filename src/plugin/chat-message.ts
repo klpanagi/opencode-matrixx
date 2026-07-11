@@ -2,7 +2,7 @@ import type { MatrixxConfig } from "../config"
 import type { CreatedHooks } from "../create-hooks"
 import {
   setSessionAgent,
-} from "../features/claude-code-session-state"
+} from "../features/session-state"
 import { hasConnectedProvidersCache } from "../shared"
 import {
   applyAgentVariant,

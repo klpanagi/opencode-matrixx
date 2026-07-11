@@ -9,7 +9,7 @@ import {
   updateSessionAgent,
 } from "./state"
 
-describe("claude-code-session-state", () => {
+describe("session-state", () => {
   beforeEach(() => {
     // given - clean state before each test
     _resetForTesting()

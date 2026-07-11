@@ -1,6 +1,6 @@
 import { describe, expect, it } from "bun:test"
 import type { BuiltinSkill } from "../builtin-skills/types"
-import type { CommandDefinition } from "../claude-code-command-loader/types"
+import type { CommandDefinition } from "../command-loader/types"
 import { mergeSkills } from "./merger"
 import type { LoadedSkill, SkillScope } from "./types"
 

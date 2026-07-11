@@ -1,17 +1,16 @@
 import type { Client } from "@modelcontextprotocol/sdk/client/index.js"
-import { expandEnvVarsInObject } from "../claude-code-mcp-loader/env-expander"
-import type { ClaudeCodeMcpServer } from "../claude-code-mcp-loader/types"
 import { forceReconnect } from "./cleanup"
 import { getConnectionType } from "./connection-type"
+import { expandEnvVarsInObject } from "./env-expander"
 import { createHttpClient } from "./http-client"
 import { createStdioClient } from "./stdio-client"
-import type { SkillMcpClientConnectionParams, SkillMcpClientInfo, SkillMcpManagerState } from "./types"
+import type { McpServerDefinition, SkillMcpClientConnectionParams, SkillMcpClientInfo, SkillMcpManagerState } from "./types"
 
 export async function getOrCreateClient(params: {
   state: SkillMcpManagerState
   clientKey: string
   info: SkillMcpClientInfo
-  config: ClaudeCodeMcpServer
+  config: McpServerDefinition
 }): Promise<Client> {
   const { state, clientKey, info, config } = params
 
@@ -43,7 +42,7 @@ export async function getOrCreateClientWithRetryImpl(params: {
   state: SkillMcpManagerState
   clientKey: string
   info: SkillMcpClientInfo
-  config: ClaudeCodeMcpServer
+  config: McpServerDefinition
 }): Promise<Client> {
   const { state, clientKey } = params
 
@@ -62,7 +61,7 @@ async function createClient(params: {
   state: SkillMcpManagerState
   clientKey: string
   info: SkillMcpClientInfo
-  config: ClaudeCodeMcpServer
+  config: McpServerDefinition
 }): Promise<Client> {
   const { info, config } = params
   const connectionType = getConnectionType(config)

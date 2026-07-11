@@ -5,7 +5,7 @@ import type { SkillDefinition } from "../../../config/schema"
 import { parseFrontmatter } from "../../../shared/frontmatter"
 import { sanitizeModelField } from "../../../shared/model-sanitizer"
 import { resolveSkillPathReferences } from "../../../shared/skill-path-resolver"
-import type { CommandDefinition } from "../../claude-code-command-loader/types"
+import type { CommandDefinition } from "../../command-loader/types"
 import { parseAllowedTools } from "../allowed-tools-parser"
 import type { LoadedSkill, SkillMetadata } from "../types"
 

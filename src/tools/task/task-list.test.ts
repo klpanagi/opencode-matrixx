@@ -1,7 +1,7 @@
 import { afterEach, beforeEach, describe, expect, it } from "bun:test"
 import { existsSync, rmSync } from "node:fs"
 import { join } from "node:path"
-import { writeJsonAtomic } from "../../features/claude-tasks/storage"
+import { writeJsonAtomic } from "../../features/task-storage/storage"
 import { createTaskList } from "./task-list"
 import type { TaskObject } from "./types"
 

@@ -1,6 +1,6 @@
 import { type Dirent, promises as fs } from "node:fs"
 import { basename, join } from "node:path"
-import { getClaudeConfigDir, getOpenCodeConfigDir } from "../../shared"
+import { getOpenCodeConfigDir } from "../../shared"
 import { isMarkdownFile } from "../../shared/file-utils"
 import { parseFrontmatter } from "../../shared/frontmatter"
 import { log } from "../../shared/logger"
@@ -107,18 +107,6 @@ function commandsToRecord(commands: LoadedCommand[]): Record<string, CommandDefi
   return result
 }
 
-export async function loadUserCommands(): Promise<Record<string, CommandDefinition>> {
-  const userCommandsDir = join(getClaudeConfigDir(), "commands")
-  const commands = await loadCommandsFromDir(userCommandsDir, "user")
-  return commandsToRecord(commands)
-}
-
-export async function loadProjectCommands(directory?: string): Promise<Record<string, CommandDefinition>> {
-  const projectCommandsDir = join(directory ?? process.cwd(), ".claude", "commands")
-  const commands = await loadCommandsFromDir(projectCommandsDir, "project")
-  return commandsToRecord(commands)
-}
-
 export async function loadOpencodeGlobalCommands(): Promise<Record<string, CommandDefinition>> {
   const configDir = getOpenCodeConfigDir({ binary: "opencode" })
   const opencodeCommandsDir = join(configDir, "command")
@@ -133,11 +121,9 @@ export async function loadOpencodeProjectCommands(directory?: string): Promise<R
 }
 
 async function _loadAllCommands(directory?: string): Promise<Record<string, CommandDefinition>> {
-  const [user, project, global, projectOpencode] = await Promise.all([
-    loadUserCommands(),
-    loadProjectCommands(directory),
+  const [global, projectOpencode] = await Promise.all([
     loadOpencodeGlobalCommands(),
     loadOpencodeProjectCommands(directory),
   ])
-  return { ...projectOpencode, ...global, ...project, ...user }
+  return { ...projectOpencode, ...global }
 }

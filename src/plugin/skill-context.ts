@@ -2,15 +2,12 @@ import type { AvailableSkill } from "../agents/dynamic-agent-prompt-builder"
 import type { MatrixxConfig } from "../config"
 import type { BrowserAutomationProvider } from "../config/schema/browser-automation"
 import { createBuiltinSkills } from "../features/builtin-skills"
-import { getSystemMcpServerNames } from "../features/claude-code-mcp-loader"
 import {
   discoverConfigSourceSkills,
   discoverGlobalAgentsSkills,
   discoverOpencodeGlobalSkills,
   discoverOpencodeProjectSkills,
   discoverProjectAgentsSkills,
-  discoverProjectClaudeSkills,
-  discoverUserClaudeSkills,
   mergeSkills,
 } from "../features/opencode-skill-loader"
 import type {
@@ -44,30 +41,21 @@ export async function createSkillContext(args: {
   if (!pluginConfig.tdd_enforcer?.enabled) {
     disabledSkills.add("tdd-enforcer")
   }
-  const systemMcpNames = getSystemMcpServerNames()
 
   const builtinSkills = createBuiltinSkills({
     browserProvider,
     disabledSkills,
-  }).filter((skill) => {
-    if (skill.mcpConfig) {
-      for (const mcpName of Object.keys(skill.mcpConfig)) {
-        if (systemMcpNames.has(mcpName)) return false
-      }
-    }
-    return true
   })
 
-  const includeClaudeSkills = pluginConfig.claude_code?.skills !== false
   const [configSourceSkills, userSkills, globalSkills, projectSkills, opencodeProjectSkills, agentsProjectSkills, agentsGlobalSkills] =
     await Promise.all([
       discoverConfigSourceSkills({
         config: pluginConfig.skills,
         configDir: directory,
       }),
-      includeClaudeSkills ? discoverUserClaudeSkills() : Promise.resolve([]),
+      Promise.resolve([]),
       discoverOpencodeGlobalSkills(),
-      includeClaudeSkills ? discoverProjectClaudeSkills(directory) : Promise.resolve([]),
+      Promise.resolve([]),
       discoverOpencodeProjectSkills(directory),
       discoverProjectAgentsSkills(directory),
       discoverGlobalAgentsSkills(),

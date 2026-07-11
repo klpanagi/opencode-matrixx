@@ -1,6 +1,6 @@
 import { describe, expect, test } from "bun:test"
 import type { PluginInput } from "@opencode-ai/plugin"
-import { _resetForTesting, subagentSessions } from "../../features/claude-code-session-state"
+import { _resetForTesting, subagentSessions } from "../../features/session-state"
 import { createOrGetSession } from "./session-creator"
 
 describe("delegate-agent createOrGetSession", () => {

@@ -27,14 +27,14 @@ features/
 │   └── skills/                 # dev-browser, frontend-ui-ux, git-master (1111), matrixx-self-config, playwright
 ├── builtin-commands/           # 6 command templates (11 files, 1511 LOC)
 │   └── templates/              # refactor, matrix-loop, init-deep, handoff, start-work, stop-continuation
-├── claude-tasks/               # Task schema + storage (7 files, 1165 LOC)
+├── task-storage/               # Task schema + storage (7 files, 1165 LOC)
 ├── context-injector/           # AGENTS.md, README.md, rules injection (6 files, 809 LOC)
 ├── handoff/                    # Multi-action handoff: create, read, list, archive
 ├── claude-code-plugin-loader/  # Plugin discovery from .opencode/plugins/ (10 files)
 ├── claude-code-mcp-loader/     # .mcp.json with ${VAR} expansion (6 files)
 ├── claude-code-command-loader/ # Command loading from .opencode/commands/ (3 files)
 ├── claude-code-agent-loader/   # Agent loading from .opencode/agents/ (3 files)
-├── claude-code-session-state/  # Subagent session state tracking (3 files)
+├── session-state/  # Subagent session state tracking (3 files)
 ├── hook-message-injector/      # System message injection (4 files)
 ├── task-toast-manager/         # Task progress notifications (4 files)
 ├── mission-state/              # Persistent state for multi-step ops (9 files)
@@ -76,4 +76,4 @@ mcp:                        # optional embedded MCPs
 
 ## CHILD DOCUMENTATION
 
-- See `claude-tasks/AGENTS.md` for task schema and storage details
+- See `task-storage/AGENTS.md` for task schema and storage details

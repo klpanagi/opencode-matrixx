@@ -7,7 +7,7 @@ import {
   generateTaskId,
   getTaskDir,
   writeJsonAtomic,
-} from "../../features/claude-tasks/storage";
+} from "../../features/task-storage/storage";
 import { syncTaskTodoUpdate } from "./todo-sync";
 import type { TaskObject } from "./types";
 import { TaskCreateInputSchema, TaskObjectSchema } from "./types";

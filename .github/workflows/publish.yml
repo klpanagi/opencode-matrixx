@@ -68,6 +68,8 @@ jobs:
           bun test src/tools/bdd-create-contract/tools.test.ts
           bun test src/tools/bdd-parse-gherkin/tools.test.ts
           bun test src/tools/bdd-pipeline/pipeline-runner.test.ts
+          bun test src/plugin/tool-execute-before.test.ts
+          bun test src/features/mission-state/plan-storage.test.ts
           # OPENCODE_CONFIG_DIR env var pollution — must run isolated to prevent
           # parallel test interference from other files that modify this global var
 
@@ -94,7 +96,6 @@ jobs:
             src/shared/agent-config-integration.test.ts \
             src/shared/agent-display-names.test.ts \
             src/shared/agent-variant.test.ts \
-            src/shared/claude-config-dir.test.ts \
             src/shared/connected-providers-cache.test.ts \
             src/shared/deep-merge.test.ts \
             src/shared/external-plugin-detector.test.ts \
@@ -168,7 +169,7 @@ jobs:
             src/features/background-agent/task-history.test.ts \
             src/features/builtin-commands \
             src/features/builtin-skills \
-            src/features/claude-code-session-state \
+            src/features/session-state \
             src/features/hook-message-injector \
             src/features/opencode-skill-loader/config-source-discovery.test.ts \
             src/features/opencode-skill-loader/merger.test.ts \

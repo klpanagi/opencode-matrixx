@@ -3,15 +3,11 @@ import { loadBuiltinCommands } from "../features/builtin-commands";
 import {
   loadOpencodeGlobalCommands,
   loadOpencodeProjectCommands,
-  loadProjectCommands,
-  loadUserCommands,
-} from "../features/claude-code-command-loader";
+} from "../features/command-loader";
 import {
   discoverConfigSourceSkills,
   loadOpencodeGlobalSkills,
   loadOpencodeProjectSkills,
-  loadProjectSkills,
-  loadUserSkills,
   skillsToCommandDefinitionRecord,
 } from "../features/opencode-skill-loader";
 import type { PluginComponents } from "./plugin-components-loader";
@@ -25,17 +21,12 @@ export async function applyCommandConfig(params: {
   const builtinCommands = loadBuiltinCommands(params.pluginConfig.disabled_commands);
   const systemCommands = (params.config.command as Record<string, unknown>) ?? {};
 
-  const includeClaudeCommands = params.pluginConfig.claude_code?.commands ?? true;
-  const includeClaudeSkills = params.pluginConfig.claude_code?.skills ?? true;
+  // claude_code flags removed during CC compat removal
 
   const [
     configSourceSkills,
-    userCommands,
-    projectCommands,
     opencodeGlobalCommands,
     opencodeProjectCommands,
-    userSkills,
-    projectSkills,
     opencodeGlobalSkills,
     opencodeProjectSkills,
   ] = await Promise.all([
@@ -43,12 +34,8 @@ export async function applyCommandConfig(params: {
       config: params.pluginConfig.skills,
       configDir: params.ctx.directory,
     }),
-    includeClaudeCommands ? loadUserCommands() : Promise.resolve({}),
-    includeClaudeCommands ? loadProjectCommands(params.ctx.directory) : Promise.resolve({}),
     loadOpencodeGlobalCommands(),
     loadOpencodeProjectCommands(params.ctx.directory),
-    includeClaudeSkills ? loadUserSkills() : Promise.resolve({}),
-    includeClaudeSkills ? loadProjectSkills(params.ctx.directory) : Promise.resolve({}),
     loadOpencodeGlobalSkills(),
     loadOpencodeProjectSkills(params.ctx.directory),
   ]);
@@ -56,13 +43,9 @@ export async function applyCommandConfig(params: {
   params.config.command = {
     ...builtinCommands,
     ...skillsToCommandDefinitionRecord(configSourceSkills),
-    ...userCommands,
-    ...userSkills,
     ...opencodeGlobalCommands,
     ...opencodeGlobalSkills,
     ...systemCommands,
-    ...projectCommands,
-    ...projectSkills,
     ...opencodeProjectCommands,
     ...opencodeProjectSkills,
     ...params.pluginComponents.commands,

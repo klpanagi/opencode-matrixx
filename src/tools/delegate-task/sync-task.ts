@@ -1,4 +1,4 @@
-import { subagentSessions } from "../../features/claude-code-session-state"
+import { subagentSessions } from "../../features/session-state"
 import { getTaskToastManager } from "../../features/task-toast-manager"
 import type { ModelFallbackInfo } from "../../features/task-toast-manager/types"
 import { storeToolMetadata } from "../../features/tool-metadata-store"

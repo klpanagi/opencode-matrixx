@@ -6,7 +6,7 @@ import {
   getMainSessionID,
   setMainSession,
   updateSessionAgent,
-} from "../features/claude-code-session-state"
+} from "../features/session-state"
 import { resetMessageCursor } from "../shared"
 import { log } from "../shared/logger"
 import { lspManager } from "../tools"
