@@ -15,7 +15,7 @@ import {
   writeJsonAtomic,
 } from "./storage"
 
-const TEST_DIR = ".test-claude-tasks"
+const TEST_DIR = ".test-task-storage"
 const TEST_DIR_ABS = join(process.cwd(), TEST_DIR)
 
 describe("getTaskDir", () => {

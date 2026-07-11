@@ -4,7 +4,7 @@ import {
   enableAssembly,
   isAssemblyDisabled,
 } from "../features/assembly-state"
-import { getMainSessionID } from "../features/claude-code-session-state"
+import { getMainSessionID } from "../features/session-state"
 import { clearMissionState } from "../features/mission-state"
 import {
   disableUltrawork,

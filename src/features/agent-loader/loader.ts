@@ -1,7 +1,7 @@
 import { existsSync, readdirSync, readFileSync } from "node:fs"
 import { basename, join } from "node:path"
 import type { AgentConfig } from "@opencode-ai/sdk"
-import { getClaudeConfigDir } from "../../shared"
+import { getOpenCodeConfigDir } from "../../shared"
 import { isMarkdownFile } from "../../shared/file-utils"
 import { parseFrontmatter } from "../../shared/frontmatter"
 import type { AgentFrontmatter, AgentScope, LoadedAgent } from "./types"
@@ -67,7 +67,7 @@ function loadAgentsFromDir(agentsDir: string, scope: AgentScope): LoadedAgent[] 
 }
 
 export function loadUserAgents(): Record<string, AgentConfig> {
-  const userAgentsDir = join(getClaudeConfigDir(), "agents")
+  const userAgentsDir = join(getOpenCodeConfigDir({ binary: "opencode" }), "agents")
   const agents = loadAgentsFromDir(userAgentsDir, "user")
 
   const result: Record<string, AgentConfig> = {}
@@ -78,7 +78,7 @@ export function loadUserAgents(): Record<string, AgentConfig> {
 }
 
 export function loadProjectAgents(directory?: string): Record<string, AgentConfig> {
-  const projectAgentsDir = join(directory ?? process.cwd(), ".claude", "agents")
+  const projectAgentsDir = join(directory ?? process.cwd(), ".opencode", "agents")
   const agents = loadAgentsFromDir(projectAgentsDir, "project")
 
   const result: Record<string, AgentConfig> = {}

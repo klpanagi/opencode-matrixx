@@ -1,5 +1,5 @@
 import type { PluginInput } from "@opencode-ai/plugin"
-import { getMainSessionID, subagentSessions } from "../features/claude-code-session-state"
+import { getMainSessionID, subagentSessions } from "../features/session-state"
 import { createIdleNotificationScheduler } from "./session-notification-scheduler"
 import {
   detectPlatform,

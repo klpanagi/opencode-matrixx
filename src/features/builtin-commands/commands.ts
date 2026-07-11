@@ -1,4 +1,4 @@
-import type { CommandDefinition } from "../claude-code-command-loader"
+import type { CommandDefinition } from "../command-loader"
 import { ASSEMBLY_TEMPLATE } from "./templates/assembly"
 import { BDD_BACKEND_TEMPLATE } from "./templates/bdd-backend"
 import { BDD_CONTRACT_TEMPLATE } from "./templates/bdd-contract"

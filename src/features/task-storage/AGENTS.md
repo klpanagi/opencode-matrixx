@@ -6,7 +6,7 @@ Claude Code compatible task schema and storage. Core task management with file-b
 
 ## STRUCTURE
 ```
-claude-tasks/
+task-storage/
 ├── types.ts               # Task schema (Zod)
 ├── types.test.ts          # Schema validation tests
 ├── storage.ts             # File operations (atomic write, locking)

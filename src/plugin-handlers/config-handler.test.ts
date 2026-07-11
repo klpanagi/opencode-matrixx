@@ -6,10 +6,7 @@ import * as mouse from "../agents/mouse"
 import type { MatrixxConfig } from "../config"
 import type { CategoryConfig } from "../config/schema"
 import * as builtinCommands from "../features/builtin-commands"
-import * as agentLoader from "../features/claude-code-agent-loader"
-import * as commandLoader from "../features/claude-code-command-loader"
-import * as mcpLoader from "../features/claude-code-mcp-loader"
-import * as pluginLoader from "../features/claude-code-plugin-loader"
+import * as commandLoader from "../features/command-loader"
 import * as skillLoader from "../features/opencode-skill-loader"
 import * as mcpModule from "../mcp"
 import * as shared from "../shared"
@@ -53,25 +50,6 @@ beforeEach(() => {
   spyOn(skillLoader, "loadProjectSkills").mockResolvedValue({})
   spyOn(skillLoader, "loadOpencodeGlobalSkills").mockResolvedValue({})
   spyOn(skillLoader, "loadOpencodeProjectSkills").mockResolvedValue({})
-  spyOn(skillLoader, "discoverUserClaudeSkills").mockResolvedValue([])
-  spyOn(skillLoader, "discoverProjectClaudeSkills").mockResolvedValue([])
-  spyOn(skillLoader, "discoverOpencodeGlobalSkills").mockResolvedValue([])
-  spyOn(skillLoader, "discoverOpencodeProjectSkills").mockResolvedValue([])
-
-  spyOn(agentLoader, "loadUserAgents").mockReturnValue({})
-  spyOn(agentLoader, "loadProjectAgents").mockReturnValue({})
-
-  spyOn(mcpLoader, "loadMcpConfigs").mockResolvedValue({ servers: {} })
-
-  spyOn(pluginLoader, "loadAllPluginComponents").mockResolvedValue({
-    commands: {},
-    skills: {},
-    agents: {},
-    mcpServers: {},
-    hooksConfigs: [],
-    plugins: [],
-    errors: [],
-  })
 
   spyOn(mcpModule, "createBuiltinMcps").mockReturnValue({})
 
@@ -101,14 +79,6 @@ afterEach(() => {
   ;(skillLoader.loadProjectSkills as unknown as { mockRestore?: () => void })?.mockRestore?.()
   ;(skillLoader.loadOpencodeGlobalSkills as unknown as { mockRestore?: () => void })?.mockRestore?.()
   ;(skillLoader.loadOpencodeProjectSkills as unknown as { mockRestore?: () => void })?.mockRestore?.()
-  ;(skillLoader.discoverUserClaudeSkills as unknown as { mockRestore?: () => void })?.mockRestore?.()
-  ;(skillLoader.discoverProjectClaudeSkills as unknown as { mockRestore?: () => void })?.mockRestore?.()
-  ;(skillLoader.discoverOpencodeGlobalSkills as unknown as { mockRestore?: () => void })?.mockRestore?.()
-  ;(skillLoader.discoverOpencodeProjectSkills as unknown as { mockRestore?: () => void })?.mockRestore?.()
-  ;(agentLoader.loadUserAgents as unknown as { mockRestore?: () => void })?.mockRestore?.()
-  ;(agentLoader.loadProjectAgents as unknown as { mockRestore?: () => void })?.mockRestore?.()
-  ;(mcpLoader.loadMcpConfigs as unknown as { mockRestore?: () => void })?.mockRestore?.()
-  ;(pluginLoader.loadAllPluginComponents as unknown as { mockRestore?: () => void })?.mockRestore?.()
   ;(mcpModule.createBuiltinMcps as unknown as { mockRestore?: () => void })?.mockRestore?.()
   ;(shared.log as unknown as { mockRestore?: () => void })?.mockRestore?.()
   ;(shared.fetchAvailableModels as unknown as { mockRestore?: () => void })?.mockRestore?.()
@@ -912,126 +882,6 @@ describe("Deadlock prevention - fetchAvailableModels must not receive client", (
     expect(firstCallArgs[0]).toBeUndefined()
 
     fetchSpy.mockRestore?.()
-  })
-})
-
-describe("config-handler plugin loading error boundary (#1559)", () => {
-  test("returns empty defaults when loadAllPluginComponents throws", async () => {
-    //#given
-    ;(pluginLoader.loadAllPluginComponents as unknown as { mockRestore?: () => void })?.mockRestore?.()
-    spyOn(pluginLoader, "loadAllPluginComponents").mockRejectedValue(new Error("crash"))
-    const pluginConfig: MatrixxConfig = {}
-    const config: Record<string, unknown> = {
-      model: "anthropic/claude-opus-4-6",
-      agent: {},
-    }
-    const handler = createConfigHandler({
-      ctx: { directory: "/tmp" },
-      pluginConfig,
-      modelCacheState: {
-        anthropicContext1MEnabled: false,
-        modelContextLimitsCache: new Map(),
-      },
-    })
-
-    //#when
-    await handler(config)
-
-    //#then
-    expect(config.agent).toBeDefined()
-  })
-
-  test("returns empty defaults when loadAllPluginComponents times out", async () => {
-    //#given
-    ;(pluginLoader.loadAllPluginComponents as unknown as { mockRestore?: () => void })?.mockRestore?.()
-    spyOn(pluginLoader, "loadAllPluginComponents").mockImplementation(
-      () => new Promise(() => {})
-    )
-    const pluginConfig: MatrixxConfig = {
-      experimental: { plugin_load_timeout_ms: 100 },
-    }
-    const config: Record<string, unknown> = {
-      model: "anthropic/claude-opus-4-6",
-      agent: {},
-    }
-    const handler = createConfigHandler({
-      ctx: { directory: "/tmp" },
-      pluginConfig,
-      modelCacheState: {
-        anthropicContext1MEnabled: false,
-        modelContextLimitsCache: new Map(),
-      },
-    })
-
-    //#when
-    await handler(config)
-
-    //#then
-    expect(config.agent).toBeDefined()
-  }, 5000)
-
-  test("logs error when loadAllPluginComponents fails", async () => {
-    //#given
-    ;(pluginLoader.loadAllPluginComponents as unknown as { mockRestore?: () => void })?.mockRestore?.()
-    spyOn(pluginLoader, "loadAllPluginComponents").mockRejectedValue(new Error("crash"))
-    const logSpy = shared.log as ReturnType<typeof spyOn>
-    const pluginConfig: MatrixxConfig = {}
-    const config: Record<string, unknown> = {
-      model: "anthropic/claude-opus-4-6",
-      agent: {},
-    }
-    const handler = createConfigHandler({
-      ctx: { directory: "/tmp" },
-      pluginConfig,
-      modelCacheState: {
-        anthropicContext1MEnabled: false,
-        modelContextLimitsCache: new Map(),
-      },
-    })
-
-    //#when
-    await handler(config)
-
-    //#then
-    const logCalls = logSpy.mock.calls.map((c: unknown[]) => c[0])
-    const hasPluginFailureLog = logCalls.some(
-      (msg: string) => typeof msg === "string" && msg.includes("Plugin loading failed")
-    )
-    expect(hasPluginFailureLog).toBe(true)
-  })
-
-  test("passes through plugin data on successful load (identity test)", async () => {
-    //#given
-    ;(pluginLoader.loadAllPluginComponents as unknown as { mockRestore?: () => void })?.mockRestore?.()
-    spyOn(pluginLoader, "loadAllPluginComponents").mockResolvedValue({
-      commands: { "test-cmd": { description: "test", template: "test" } },
-      skills: {},
-      agents: {},
-      mcpServers: {},
-      hooksConfigs: [],
-      plugins: [{ name: "test-plugin", version: "1.0.0" }],
-      errors: [],
-    })
-    const pluginConfig: MatrixxConfig = {}
-    const config: Record<string, unknown> = {
-      model: "anthropic/claude-opus-4-6",
-      agent: {},
-    }
-    const handler = createConfigHandler({
-      ctx: { directory: "/tmp" },
-      pluginConfig,
-      modelCacheState: {
-        anthropicContext1MEnabled: false,
-        modelContextLimitsCache: new Map(),
-      },
-    })
-
-    //#when
-    await handler(config)
-
-    //#then
-    const commands = config.command as Record<string, unknown>
-    expect(commands["test-cmd"]).toBeDefined()
   })
 })
 

@@ -1,10 +1,23 @@
 import type { Client } from "@modelcontextprotocol/sdk/client/index.js"
 import type { StdioClientTransport } from "@modelcontextprotocol/sdk/client/stdio.js"
 import type { StreamableHTTPClientTransport } from "@modelcontextprotocol/sdk/client/streamableHttp.js"
-import type { ClaudeCodeMcpServer } from "../claude-code-mcp-loader/types"
 import type { McpOAuthProvider } from "../mcp-oauth/provider"
 
-export type SkillMcpConfig = Record<string, ClaudeCodeMcpServer>
+export interface McpServerDefinition {
+  type?: "http" | "sse" | "stdio"
+  url?: string
+  command?: string
+  args?: string[]
+  env?: Record<string, string>
+  headers?: Record<string, string>
+  oauth?: {
+    clientId?: string
+    scopes?: string[]
+  }
+  disabled?: boolean
+}
+
+export type SkillMcpConfig = Record<string, McpServerDefinition>
 
 export interface SkillMcpClientInfo {
   serverName: string
@@ -13,7 +26,7 @@ export interface SkillMcpClientInfo {
 }
 
 export interface SkillMcpServerContext {
-  config: ClaudeCodeMcpServer
+  config: McpServerDefinition
   skillName: string
 }
 
@@ -62,5 +75,5 @@ export interface SkillMcpClientConnectionParams {
   state: SkillMcpManagerState
   clientKey: string
   info: SkillMcpClientInfo
-  config: ClaudeCodeMcpServer
+  config: McpServerDefinition
 }

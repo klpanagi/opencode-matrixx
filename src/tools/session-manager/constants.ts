@@ -1,9 +1,9 @@
 import { join } from "node:path"
-import { getClaudeConfigDir } from "../../shared"
+import { getOpenCodeConfigDir } from "../../shared"
 
 export { MESSAGE_STORAGE, OPENCODE_STORAGE, PART_STORAGE, SESSION_STORAGE } from "../../shared"
-export const TODO_DIR = join(getClaudeConfigDir(), "todos")
-export const TRANSCRIPT_DIR = join(getClaudeConfigDir(), "transcripts")
+export const TODO_DIR = join(getOpenCodeConfigDir({ binary: "opencode" }), "todos")
+export const TRANSCRIPT_DIR = join(getOpenCodeConfigDir({ binary: "opencode" }), "transcripts")
 export const SESSION_LIST_DESCRIPTION = `List all OpenCode sessions with optional filtering.
 
 Returns a list of available session IDs with metadata including message count, date range, and agents used.

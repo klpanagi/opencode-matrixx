@@ -1,4 +1,4 @@
-import { getSessionAgent } from "../../features/claude-code-session-state"
+import { getSessionAgent } from "../../features/session-state"
 import { log } from "../../shared/logger"
 import { normalizeAgentName, resolveAgentForSession, resolveRegisteredAgentName } from "./agent-resolver"
 import { HOOK_NAME } from "./constants"

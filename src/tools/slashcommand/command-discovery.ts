@@ -1,8 +1,8 @@
 import { existsSync, readdirSync, readFileSync } from "node:fs"
 import { basename, join } from "node:path"
 import { loadBuiltinCommands } from "../../features/builtin-commands"
-import type { CommandFrontmatter } from "../../features/claude-code-command-loader/types"
-import { getClaudeConfigDir, getOpenCodeConfigDir, parseFrontmatter, sanitizeModelField } from "../../shared"
+import type { CommandFrontmatter } from "../../features/command-loader/types"
+import { getOpenCodeConfigDir, parseFrontmatter, sanitizeModelField } from "../../shared"
 import { isMarkdownFile } from "../../shared/file-utils"
 import type { CommandInfo, CommandMetadata, CommandScope } from "./types"
 
@@ -48,14 +48,10 @@ function discoverCommandsFromDir(commandsDir: string, scope: CommandScope): Comm
 
 export function discoverCommandsSync(directory?: string): CommandInfo[] {
   const configDir = getOpenCodeConfigDir({ binary: "opencode" })
-  const userCommandsDir = join(getClaudeConfigDir(), "commands")
-  const projectCommandsDir = join(directory ?? process.cwd(), ".claude", "commands")
   const opencodeGlobalDir = join(configDir, "command")
   const opencodeProjectDir = join(directory ?? process.cwd(), ".opencode", "command")
 
-  const userCommands = discoverCommandsFromDir(userCommandsDir, "user")
   const opencodeGlobalCommands = discoverCommandsFromDir(opencodeGlobalDir, "opencode")
-  const projectCommands = discoverCommandsFromDir(projectCommandsDir, "project")
   const opencodeProjectCommands = discoverCommandsFromDir(opencodeProjectDir, "opencode-project")
 
   const builtinCommandsMap = loadBuiltinCommands()
@@ -76,8 +72,6 @@ export function discoverCommandsSync(directory?: string): CommandInfo[] {
   return [
     ...builtinCommands,
     ...opencodeProjectCommands,
-    ...projectCommands,
     ...opencodeGlobalCommands,
-    ...userCommands,
   ]
 }

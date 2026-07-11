@@ -1,5 +1,5 @@
 import type { MatrixxConfig } from "../../config"
-import { getSessionAgent } from "../../features/claude-code-session-state"
+import { getSessionAgent } from "../../features/session-state"
 import { getAgentConfigKey } from "../../shared/agent-display-names"
 
 export function resolveCompactionModel(

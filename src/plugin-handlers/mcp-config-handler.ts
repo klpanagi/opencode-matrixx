@@ -1,5 +1,4 @@
 import type { MatrixxConfig } from "../config";
-import { loadMcpConfigs } from "../features/claude-code-mcp-loader";
 import { createBuiltinMcps } from "../mcp";
 import type { PluginComponents } from "./plugin-components-loader";
 
@@ -34,14 +33,9 @@ export async function applyMcpConfig(params: {
   const userMcp = params.config.mcp as Record<string, unknown> | undefined;
   const userDisabledMcps = captureUserDisabledMcps(userMcp);
 
-  const mcpResult = params.pluginConfig.claude_code?.mcp ?? true
-    ? await loadMcpConfigs(disabledMcps)
-    : { servers: {} };
-
   const merged = {
     ...createBuiltinMcps(disabledMcps, params.pluginConfig),
     ...(userMcp ?? {}),
-    ...mcpResult.servers,
     ...params.pluginComponents.mcpServers,
   } as Record<string, McpEntry>;
 

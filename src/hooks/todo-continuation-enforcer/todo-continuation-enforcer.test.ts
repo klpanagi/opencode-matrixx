@@ -3,7 +3,7 @@ import { afterEach, beforeEach, describe, expect, test } from "bun:test"
 import type { PluginInput } from "@opencode-ai/plugin"
 
 import type { BackgroundManager } from "../../features/background-agent"
-import { _resetForTesting, setMainSession, subagentSessions } from "../../features/claude-code-session-state"
+import { _resetForTesting, setMainSession, subagentSessions } from "../../features/session-state"
 import { createTodoContinuationEnforcer } from "."
 import {
   CONTINUATION_COOLDOWN_MS,

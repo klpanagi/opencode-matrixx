@@ -5,7 +5,7 @@ import type {
 } from "../agents/dynamic-agent-prompt-builder"
 import type { MatrixxConfig } from "../config"
 import type { Managers } from "../create-managers"
-import { getMainSessionID } from "../features/claude-code-session-state"
+import { getMainSessionID } from "../features/session-state"
 import { log } from "../shared"
 import { filterDisabledTools } from "../shared/disabled-tools"
 import {

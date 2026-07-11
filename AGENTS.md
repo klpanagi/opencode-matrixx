@@ -171,7 +171,25 @@ BUN_INSTALL_ALLOW_SCRIPTS="@ast-grep/napi" bun install
 
 ~30 test files use `mock.module()` which pollutes bun's module cache. Running them in parallel with other tests causes cross-file pollution. They are listed in `.github/workflows/ci.yml` and `.github/workflows/publish.yml`. The exact list drifts — when adding a new test that uses `mock.module()`, add it to **both** workflows in the "mock-heavy" list **and** the `--exclude` patterns in the catch-all `find … | xargs bun test` block.
 
-`bunfig.toml` preloads `test-setup.ts` which calls `_resetForTesting()` from `src/features/claude-code-session-state/state` before each test — keeps state isolated.
+`bunfig.toml` preloads `test-setup.ts` which calls `_resetForTesting()` from `src/features/session-state/state` before each test — keeps state isolated.
+
+### Running CI locally with `act`
+
+The CI workflow (`.github/workflows/ci.yml`) can be run locally using [nektos/act](https://github.com/nektos/act):
+
+```bash
+# Install:
+curl -s https://raw.githubusercontent.com/nektos/act/master/install.sh | bash -s -- -b ~/.local/bin
+
+# Run the full test pipeline:
+act pull_request -j test -P ubuntu-latest=catthehacker/ubuntu:act-latest
+```
+
+This runs the same two-phase CI test pipeline:
+1. **Mock-heavy tests** — each file/dir runs in isolation (separate `bun test` invocation)
+2. **Remaining tests** — all non-mock-heavy tests run together via `find … | xargs bun test`
+
+Run this before pushing to verify your changes don't introduce new `mock.module()` pollution patterns.
 
 ## PLUGIN INITIALIZATION (10 steps, `src/index.ts`)
 

@@ -1,5 +1,5 @@
 import type { PluginInput } from "@opencode-ai/plugin"
-import { updateSessionAgent } from "../../features/claude-code-session-state"
+import { updateSessionAgent } from "../../features/session-state"
 import {
   appendSessionId,
   clearMissionState,

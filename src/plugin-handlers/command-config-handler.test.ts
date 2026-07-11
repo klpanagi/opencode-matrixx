@@ -4,7 +4,7 @@ import { afterEach, beforeEach, describe, expect, spyOn, test } from "bun:test"
 import type { MatrixxConfig } from "../config"
 
 import * as builtinCommandsModule from "../features/builtin-commands"
-import * as ccCommandLoaderModule from "../features/claude-code-command-loader"
+import * as ccCommandLoaderModule from "../features/command-loader"
 import * as opencodeSkillLoaderModule from "../features/opencode-skill-loader"
 import * as skillDefinitionRecordModule from "../features/opencode-skill-loader/skill-definition-record"
 
@@ -188,7 +188,20 @@ describe("applyCommandConfig", () => {
     //#given
     const config: Record<string, unknown> = { command: {} }
     const pluginConfig = createPluginConfig()
-    loadUserSkillsSpy.mockResolvedValue({
+    loadUserSkillsSpy.mockResolvedValue({})
+    discoverConfigSourceSkillsSpy.mockResolvedValue([{
+      name: "oracle-skill",
+      path: "/tmp/oracle-skill/SKILL.md",
+      resolvedPath: "/tmp/oracle-skill/SKILL.md",
+      definition: {
+        name: "oracle-skill",
+        description: "Oracle analysis skill",
+        agent: "oracle",
+        template: "template",
+      },
+      scope: "user",
+    } as any])
+    skillsToCommandDefinitionRecordSpy.mockReturnValue({
       "oracle-skill": {
         name: "oracle-skill",
         description: "Oracle analysis skill",

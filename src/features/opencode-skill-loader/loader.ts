@@ -1,24 +1,11 @@
 import { homedir } from "node:os"
 import { join } from "node:path"
-import { getClaudeConfigDir } from "../../shared/claude-config-dir"
 import { getOpenCodeConfigDir } from "../../shared/opencode-config-dir"
-import type { CommandDefinition } from "../claude-code-command-loader/types"
+import type { CommandDefinition } from "../command-loader/types"
 import { deduplicateSkillsByName } from "./skill-deduplication"
 import { skillsToCommandDefinitionRecord } from "./skill-definition-record"
 import { loadSkillsFromDir } from "./skill-directory-loader"
 import type { LoadedSkill } from "./types"
-
-export async function loadUserSkills(): Promise<Record<string, CommandDefinition>> {
-  const userSkillsDir = join(getClaudeConfigDir(), "skills")
-  const skills = await loadSkillsFromDir({ skillsDir: userSkillsDir, scope: "user" })
-  return skillsToCommandDefinitionRecord(skills)
-}
-
-export async function loadProjectSkills(directory?: string): Promise<Record<string, CommandDefinition>> {
-  const projectSkillsDir = join(directory ?? process.cwd(), ".claude", "skills")
-  const skills = await loadSkillsFromDir({ skillsDir: projectSkillsDir, scope: "project" })
-  return skillsToCommandDefinitionRecord(skills)
-}
 
 export async function loadOpencodeGlobalSkills(): Promise<Record<string, CommandDefinition>> {
   const configDir = getOpenCodeConfigDir({ binary: "opencode" })
@@ -92,12 +79,12 @@ export async function discoverSkills(options: DiscoverSkillsOptions = {}): Promi
 }
 
 export async function discoverUserClaudeSkills(): Promise<LoadedSkill[]> {
-  const userSkillsDir = join(getClaudeConfigDir(), "skills")
+  const userSkillsDir = join(getOpenCodeConfigDir({ binary: "opencode" }), "skills")
   return loadSkillsFromDir({ skillsDir: userSkillsDir, scope: "user" })
 }
 
 export async function discoverProjectClaudeSkills(directory?: string): Promise<LoadedSkill[]> {
-  const projectSkillsDir = join(directory ?? process.cwd(), ".claude", "skills")
+  const projectSkillsDir = join(directory ?? process.cwd(), ".opencode", "skills")
   return loadSkillsFromDir({ skillsDir: projectSkillsDir, scope: "project" })
 }
 

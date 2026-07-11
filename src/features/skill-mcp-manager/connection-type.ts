@@ -1,11 +1,11 @@
-import type { ClaudeCodeMcpServer } from "../claude-code-mcp-loader/types"
+import type { McpServerDefinition } from "./types"
 import type { ConnectionType } from "./types"
 
 /**
  * Determines connection type from MCP server configuration.
  * Priority: explicit type field > url presence > command presence
  */
-export function getConnectionType(config: ClaudeCodeMcpServer): ConnectionType | null {
+export function getConnectionType(config: McpServerDefinition): ConnectionType | null {
   // Explicit type takes priority
   if (config.type === "http" || config.type === "sse") {
     return "http"

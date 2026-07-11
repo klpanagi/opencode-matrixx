@@ -1,6 +1,6 @@
 import type { Client } from "@modelcontextprotocol/sdk/client/index.js"
 import type { Prompt, Resource, Tool } from "@modelcontextprotocol/sdk/types.js"
-import type { ClaudeCodeMcpServer } from "../claude-code-mcp-loader/types"
+import type { McpServerDefinition } from "./types"
 import { disconnectAll, disconnectSession, forceReconnect } from "./cleanup"
 import { getOrCreateClient, getOrCreateClientWithRetryImpl } from "./connection"
 import { handleStepUpIfNeeded } from "./oauth-handler"
@@ -21,7 +21,7 @@ export class SkillMcpManager {
     return `${info.sessionID}:${info.skillName}:${info.serverName}`
   }
 
-  async getOrCreateClient(info: SkillMcpClientInfo, config: ClaudeCodeMcpServer): Promise<Client> {
+  async getOrCreateClient(info: SkillMcpClientInfo, config: McpServerDefinition): Promise<Client> {
     const clientKey = this.getClientKey(info)
     return await getOrCreateClient({
       state: this.state,
@@ -90,7 +90,7 @@ export class SkillMcpManager {
 
   private async withOperationRetry<T>(
     info: SkillMcpClientInfo,
-    config: ClaudeCodeMcpServer,
+    config: McpServerDefinition,
     operation: (client: Client) => Promise<T>
   ): Promise<T> {
     const maxRetries = 3
@@ -130,7 +130,7 @@ export class SkillMcpManager {
   }
 
   // NOTE: tests spy on this exact method name via `spyOn(manager as any, 'getOrCreateClientWithRetry')`.
-  private async getOrCreateClientWithRetry(info: SkillMcpClientInfo, config: ClaudeCodeMcpServer): Promise<Client> {
+  private async getOrCreateClientWithRetry(info: SkillMcpClientInfo, config: McpServerDefinition): Promise<Client> {
     const clientKey = this.getClientKey(info)
     return await getOrCreateClientWithRetryImpl({
       state: this.state,

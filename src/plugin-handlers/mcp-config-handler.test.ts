@@ -3,25 +3,18 @@
 import { afterEach, beforeEach, describe, expect, spyOn, test } from "bun:test"
 import type { MatrixxConfig } from "../config"
 
-import * as mcpLoader from "../features/claude-code-mcp-loader"
 import * as mcpModule from "../mcp"
 import * as shared from "../shared"
 
-let loadMcpConfigsSpy: ReturnType<typeof spyOn>
 let createBuiltinMcpsSpy: ReturnType<typeof spyOn>
 let logSpy: ReturnType<typeof spyOn>
 
 beforeEach(() => {
-  loadMcpConfigsSpy = spyOn(mcpLoader, "loadMcpConfigs").mockResolvedValue({
-    servers: {},
-    loadedServers: [],
-  })
   createBuiltinMcpsSpy = spyOn(mcpModule, "createBuiltinMcps").mockReturnValue({})
   logSpy = spyOn(shared, "log").mockImplementation(() => {})
 })
 
 afterEach(() => {
-  loadMcpConfigsSpy.mockRestore()
   createBuiltinMcpsSpy.mockRestore()
   logSpy.mockRestore()
 })
@@ -44,20 +37,12 @@ const EMPTY_PLUGIN_COMPONENTS = {
 }
 
 describe("applyMcpConfig", () => {
-  test("preserves enabled:false from user config after merge with .mcp.json MCPs", async () => {
+  test("preserves enabled:false from user config", async () => {
     //#given
     const userMcp = {
       firecrawl: { type: "remote", url: "https://firecrawl.example.com", enabled: false },
       exa: { type: "remote", url: "https://exa.example.com", enabled: true },
     }
-
-    loadMcpConfigsSpy.mockResolvedValue({
-      servers: {
-        firecrawl: { type: "remote", url: "https://firecrawl.example.com", enabled: true },
-        exa: { type: "remote", url: "https://exa.example.com", enabled: true },
-      },
-      loadedServers: [],
-    })
 
     const config: Record<string, unknown> = { mcp: userMcp }
     const pluginConfig = createPluginConfig()
@@ -76,13 +61,6 @@ describe("applyMcpConfig", () => {
     //#given
     createBuiltinMcpsSpy.mockReturnValue({
       websearch: { type: "remote", url: "https://mcp.exa.ai/mcp", enabled: true },
-    })
-
-    loadMcpConfigsSpy.mockResolvedValue({
-      servers: {
-        playwright: { type: "local", command: ["npx", "@playwright/mcp"], enabled: true },
-      },
-      loadedServers: [],
     })
 
     const config: Record<string, unknown> = { mcp: {} }
@@ -108,31 +86,12 @@ describe("applyMcpConfig", () => {
     expect(mergedMcp).toHaveProperty("plugin:custom")
   })
 
-  test("passes disabled_mcps to loadMcpConfigs", async () => {
-    //#given
-    const config: Record<string, unknown> = { mcp: {} }
-    const pluginConfig = createPluginConfig({ disabled_mcps: ["firecrawl", "exa"] })
-
-    //#when
-    const { applyMcpConfig } = await import("./mcp-config-handler")
-    await applyMcpConfig({ config, pluginConfig, pluginComponents: EMPTY_PLUGIN_COMPONENTS })
-
-    //#then
-    expect(loadMcpConfigsSpy).toHaveBeenCalledWith(["firecrawl", "exa"])
-  })
-
   test("works when no user MCPs have enabled:false", async () => {
     //#given
     const userMcp = {
       exa: { type: "remote", url: "https://exa.example.com", enabled: true },
+      firecrawl: { type: "remote", url: "https://firecrawl.example.com", enabled: true },
     }
-
-    loadMcpConfigsSpy.mockResolvedValue({
-      servers: {
-        firecrawl: { type: "remote", url: "https://firecrawl.example.com", enabled: true },
-      },
-      loadedServers: [],
-    })
 
     const config: Record<string, unknown> = { mcp: userMcp }
     const pluginConfig = createPluginConfig()

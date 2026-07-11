@@ -1,5 +1,5 @@
 import type { PluginInput } from "@opencode-ai/plugin"
-import { getSessionAgent } from "../../features/claude-code-session-state"
+import { getSessionAgent } from "../../features/session-state"
 import { findFirstMessageWithAgent, 
   findFirstMessageWithAgentFromSDK,findNearestMessageWithFields, 
   findNearestMessageWithFieldsFromSDK,} from "../../features/hook-message-injector"

@@ -4010,36 +4010,6 @@
         "additionalProperties": false
       }
     },
-    "claude_code": {
-      "type": "object",
-      "properties": {
-        "mcp": {
-          "type": "boolean"
-        },
-        "commands": {
-          "type": "boolean"
-        },
-        "skills": {
-          "type": "boolean"
-        },
-        "agents": {
-          "type": "boolean"
-        },
-        "plugins": {
-          "type": "boolean"
-        },
-        "plugins_override": {
-          "type": "object",
-          "propertyNames": {
-            "type": "string"
-          },
-          "additionalProperties": {
-            "type": "boolean"
-          }
-        }
-      },
-      "additionalProperties": false
-    },
     "morpheus_agent": {
       "type": "object",
       "properties": {

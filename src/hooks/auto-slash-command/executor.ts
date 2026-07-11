@@ -1,10 +1,9 @@
 import { existsSync, readdirSync, readFileSync } from "node:fs"
 import { basename, dirname, join } from "node:path"
 import { loadBuiltinCommands } from "../../features/builtin-commands"
-import type { CommandFrontmatter } from "../../features/claude-code-command-loader/types"
+import type { CommandFrontmatter } from "../../features/command-loader/types"
 import { discoverAllSkills, type LazyContentLoader, type LoadedSkill } from "../../features/opencode-skill-loader"
 import {
-  getClaudeConfigDir,
   getOpenCodeConfigDir,
   parseFrontmatter,
   resolveCommandsInText,
@@ -102,14 +101,10 @@ export interface ExecutorOptions {
 
 async function discoverAllCommands(options?: ExecutorOptions): Promise<CommandInfo[]> {
   const configDir = getOpenCodeConfigDir({ binary: "opencode" })
-  const userCommandsDir = join(getClaudeConfigDir(), "commands")
-  const projectCommandsDir = join(process.cwd(), ".claude", "commands")
   const opencodeGlobalDir = join(configDir, "command")
   const opencodeProjectDir = join(process.cwd(), ".opencode", "command")
 
-  const userCommands = discoverCommandsFromDir(userCommandsDir, "user")
   const opencodeGlobalCommands = discoverCommandsFromDir(opencodeGlobalDir, "opencode")
-  const projectCommands = discoverCommandsFromDir(projectCommandsDir, "project")
   const opencodeProjectCommands = discoverCommandsFromDir(opencodeProjectDir, "opencode-project")
   const builtinCommandsMap = loadBuiltinCommands()
   const builtinCommands: CommandInfo[] = Object.values(builtinCommandsMap).map(cmd => ({
@@ -131,9 +126,7 @@ async function discoverAllCommands(options?: ExecutorOptions): Promise<CommandIn
   return [
     ...builtinCommands,
     ...opencodeProjectCommands,
-    ...projectCommands,
     ...opencodeGlobalCommands,
-    ...userCommands,
     ...skillCommands,
   ]
 }

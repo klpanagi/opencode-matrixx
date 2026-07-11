@@ -1,13 +1,11 @@
 import { createBuiltinAgents } from "../agents";
 import { createMouseAgentWithOverrides } from "../agents/mouse";
 import type { MatrixxConfig } from "../config";
-import { loadProjectAgents, loadUserAgents } from "../features/claude-code-agent-loader";
+import { loadProjectAgents, loadUserAgents } from "../features/agent-loader";
 import {
   discoverConfigSourceSkills,
   discoverOpencodeGlobalSkills,
   discoverOpencodeProjectSkills,
-  discoverProjectClaudeSkills,
-  discoverUserClaudeSkills,
 } from "../features/opencode-skill-loader";
 import { log, migrateAgentConfig } from "../shared";
 import { AGENT_NAME_MAP } from "../shared/migration";
@@ -38,7 +36,6 @@ export async function applyAgentConfig(params: {
     },
   ) as typeof params.pluginConfig.disabled_agents;
 
-  const includeClaudeSkillsForAwareness = params.pluginConfig.claude_code?.skills ?? true;
   const [
     discoveredConfigSourceSkills,
     discoveredUserSkills,
@@ -50,10 +47,8 @@ export async function applyAgentConfig(params: {
       config: params.pluginConfig.skills,
       configDir: params.ctx.directory,
     }),
-    includeClaudeSkillsForAwareness ? discoverUserClaudeSkills() : Promise.resolve([]),
-    includeClaudeSkillsForAwareness
-       ? discoverProjectClaudeSkills(params.ctx.directory)
-       : Promise.resolve([]),
+    Promise.resolve([]),
+    Promise.resolve([]),
     discoverOpencodeGlobalSkills(),
     discoverOpencodeProjectSkills(params.ctx.directory),
   ]);
@@ -89,9 +84,8 @@ export async function applyAgentConfig(params: {
     useTaskSystem,
   );
 
-  const includeClaudeAgents = params.pluginConfig.claude_code?.agents ?? true;
-  const userAgents = includeClaudeAgents ? loadUserAgents() : {};
-  const projectAgents = includeClaudeAgents ? loadProjectAgents(params.ctx.directory) : {};
+  const userAgents = loadUserAgents();
+  const projectAgents = loadProjectAgents(params.ctx.directory);
 
   const rawPluginAgents = params.pluginComponents.agents;
   const pluginAgents = Object.fromEntries(

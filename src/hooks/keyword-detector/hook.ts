@@ -3,7 +3,7 @@ import {
   getMainSessionID,
   getSessionAgent,
   subagentSessions,
-} from "../../features/claude-code-session-state"
+} from "../../features/session-state"
 import type { ContextCollector } from "../../features/context-injector"
 import { getUltraworkState } from "../../features/ultrawork-state"
 import { log } from "../../shared"

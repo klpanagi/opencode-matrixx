@@ -1,7 +1,7 @@
 import { join } from "node:path"
-import { getClaudeConfigDir } from "./claude-config-dir"
+import { getOpenCodeConfigDir } from "./opencode-config-dir"
 
-const TRANSCRIPT_DIR = join(getClaudeConfigDir(), "transcripts")
+const TRANSCRIPT_DIR = join(getOpenCodeConfigDir({ binary: "opencode" }), "transcripts")
 
 export function getTranscriptPath(sessionId: string): string {
   return join(TRANSCRIPT_DIR, `${sessionId}.jsonl`)

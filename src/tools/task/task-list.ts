@@ -2,7 +2,7 @@ import { existsSync, readdirSync } from "node:fs"
 import { join } from "node:path"
 import { type ToolDefinition, tool } from "@opencode-ai/plugin/tool"
 import type { MatrixxConfig } from "../../config/schema"
-import { getTaskDir, readJsonSafe } from "../../features/claude-tasks/storage"
+import { getTaskDir, readJsonSafe } from "../../features/task-storage/storage"
 import type { TaskObject, TaskStatus } from "./types"
 import { TaskObjectSchema } from "./types"
 

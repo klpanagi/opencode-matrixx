@@ -1,5 +1,5 @@
 import { log } from "../../shared"
-import { subagentSessions } from "../claude-code-session-state"
+import { subagentSessions } from "../session-state"
 import type { QueueItem } from "./constants"
 import type { BackgroundTask, LaunchInput } from "./types"
 export class TaskStateManager {

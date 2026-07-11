@@ -4,7 +4,7 @@ import { existsSync, mkdirSync, rmSync, writeFileSync } from "node:fs"
 import { tmpdir } from "node:os"
 import { join } from "node:path"
 import type { BackgroundManager } from "../../features/background-agent"
-import { _resetForTesting, subagentSessions } from "../../features/claude-code-session-state"
+import { _resetForTesting, subagentSessions } from "../../features/session-state"
 import type { MissionState } from "../../features/mission-state"
 import {
   clearMissionState,
