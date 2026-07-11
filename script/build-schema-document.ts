@@ -9,7 +9,7 @@ export function createMatrixxJsonSchema(): Record<string, unknown> {
 
   return {
     $schema: "http://json-schema.org/draft-07/schema#",
-    $id: "https://raw.githubusercontent.com/klpanagi/matrixx/dev/assets/matrixx.schema.json",
+    $id: "https://raw.githubusercontent.com/klpanagi/opencode-matrixx/dev/assets/matrixx.schema.json",
     title: "Matrixx Configuration",
     description: "Configuration schema for matrixx plugin",
     ...jsonSchema,
