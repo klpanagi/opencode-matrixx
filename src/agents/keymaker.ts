@@ -3,6 +3,7 @@ import type { AvailableAgent, AvailableCategory, AvailableSkill, AvailableTool }
 import {
   buildAntiPatternsSection,
   buildCategorySkillsDelegationGuide,
+  buildContextDisciplineSection,
   buildDelegationTable,
   buildExploreSection,
   buildHardBlocksSection,
@@ -122,6 +123,8 @@ function buildKeymakerPrompt(
   const oracleSection = buildOracleSection(availableAgents)
   const hardBlocks = buildHardBlocksSection()
   const antiPatterns = buildAntiPatternsSection()
+  const hasContextMode = availableTools.some((t) => t.name.startsWith("ctx_"))
+  const contextDiscipline = buildContextDisciplineSection(hasContextMode)
   const todoDiscipline = buildTodoDisciplineSection(useTaskSystem)
 
   return `You are Keymaker, an autonomous deep worker for software engineering.
@@ -160,6 +163,8 @@ Your job is to SOLVE problems, not report them.
 ${hardBlocks}
 
 ${antiPatterns}
+${contextDiscipline}
+
 
 ## Success Criteria (COMPLETION DEFINITION)
 

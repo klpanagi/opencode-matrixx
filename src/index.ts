@@ -6,6 +6,7 @@ import { createHooks } from "./create-hooks"
 import { createManagers } from "./create-managers"
 import { createTools } from "./create-tools"
 import { loadPluginConfig } from "./plugin-config"
+import { setAvailableToolNames } from "./plugin-handlers/agent-config-handler"
 import { createPluginInterface } from "./plugin-interface"
 import { createModelCacheState } from "./plugin-state"
 import { injectServerAuthIntoClient, log } from "./shared"
@@ -51,6 +52,10 @@ const MatrixxPlugin: Plugin = async (ctx) => {
     pluginConfig,
     managers,
   })
+
+  // Store tool names for use when building agent prompts
+  const toolNames = Object.keys(toolsResult.filteredTools)
+  setAvailableToolNames(toolNames)
 
   const hooks = createHooks({
     ctx,

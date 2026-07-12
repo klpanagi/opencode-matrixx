@@ -14,6 +14,14 @@ import { buildPlanDemoteConfig } from "./plan-model-inheritance";
 import type { PluginComponents } from "./plugin-components-loader";
 import { buildOracleAgentConfig } from "./prometheus-agent-config-builder";
 
+// Module-level tool names cache, set once at startup by index.ts
+let _availableToolNames: string[] = []
+export function setAvailableToolNames(names: string[]) {
+  _availableToolNames = names
+}
+export function getAvailableToolNames(): string[] {
+  return _availableToolNames
+}
 type AgentConfigRecord = Record<string, Record<string, unknown> | undefined> & {
   build?: Record<string, unknown>;
   plan?: Record<string, unknown>;
@@ -69,6 +77,7 @@ export async function applyAgentConfig(params: {
     disabledSkills.add("tdd-enforcer");
   }
   const useTaskSystem = params.pluginConfig.experimental?.task_system ?? false;
+  const availableToolNames = getAvailableToolNames()
 
   const builtinAgents = await createBuiltinAgents(
     migratedDisabledAgents,
@@ -83,6 +92,7 @@ export async function applyAgentConfig(params: {
     disabledSkills,
     useTaskSystem,
     params.pluginConfig.global_model,
+    availableToolNames,
   );
   const userAgents = loadUserAgents();
   const projectAgents = loadProjectAgents(params.ctx.directory);

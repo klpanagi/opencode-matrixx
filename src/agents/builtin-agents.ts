@@ -13,7 +13,7 @@ import { BDD_CONTRACT_PROMPT_METADATA, createBddContractAgent } from "./bdd-cont
 import { maybeCreateArchitectConfig } from "./builtin-agents/architect-agent"
 import { buildAvailableSkills } from "./builtin-agents/available-skills"
 import { collectPendingBuiltinAgents } from "./builtin-agents/general-agents"
-import { maybeCreateKeymakerConfig } from "./builtin-agents/hephaestus-agent"
+import { maybeCreateKeymakerConfig } from "./builtin-agents/keymaker-agent"
 import { maybeCreateMorpheusConfig } from "./builtin-agents/morpheus-agent"
 import { CIPHER_PROMPT_METADATA, createCipherAgent } from "./cipher"
 import { createMultimodalLookerAgent, MULTIMODAL_LOOKER_PROMPT_METADATA } from "./construct"
@@ -80,6 +80,7 @@ export async function createBuiltinAgents(
   disabledSkills?: Set<string>,
   useTaskSystem = false,
   globalModel?: string,
+  availableToolNames: string[] = [],
 ): Promise<Record<string, AgentConfig>> {
   const connectedProviders = readConnectedProvidersCache()
   const providerModelsConnected = connectedProviders
@@ -157,6 +158,7 @@ export async function createBuiltinAgents(
     directory,
     userCategories: categories,
     useTaskSystem,
+    availableToolNames,
   })
   if (morpheusConfig) {
     result.morpheus = morpheusConfig
@@ -175,6 +177,7 @@ export async function createBuiltinAgents(
     mergedCategories,
     directory,
     useTaskSystem,
+    availableToolNames,
   })
   if (keymakerConfig) {
     result.keymaker = keymakerConfig
