@@ -91,6 +91,27 @@ export function isAnthropicModel(model: string): boolean {
   return ANTHROPIC_INDICATORS.some((indicator) => lowered.includes(indicator))
 }
 
+const QWEN_INDICATORS = ["qwen"]
+
+export function isQwenModel(model: string): boolean {
+  const modelName = extractModelName(model).toLowerCase()
+  return QWEN_INDICATORS.some((indicator) => modelName.startsWith(indicator))
+}
+
+const MIMO_INDICATORS = ["mimo"]
+
+export function isMimoModel(model: string): boolean {
+  const modelName = extractModelName(model).toLowerCase()
+  return MIMO_INDICATORS.some((indicator) => modelName.startsWith(indicator))
+}
+
+const DEEPSEEK_INDICATORS = ["deepseek"]
+
+export function isDeepSeekModel(model: string): boolean {
+  const modelName = extractModelName(model).toLowerCase()
+  return DEEPSEEK_INDICATORS.some((indicator) => modelName.startsWith(indicator))
+}
+
 export type BuiltinAgentName =
   | "morpheus"
   | "keymaker"

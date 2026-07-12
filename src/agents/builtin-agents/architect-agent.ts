@@ -10,6 +10,7 @@ import { applyModelResolution } from "./model-resolution"
 export function maybeCreateArchitectConfig(input: {
   disabledAgents: string[]
   agentOverrides: AgentOverrides
+  globalOverrideModel?: string
   uiSelectedModel?: string
   availableModels: Set<string>
   systemDefaultModel?: string
@@ -23,6 +24,7 @@ export function maybeCreateArchitectConfig(input: {
   const {
     disabledAgents,
     agentOverrides,
+    globalOverrideModel,
     uiSelectedModel,
     availableModels,
     systemDefaultModel,
@@ -33,12 +35,14 @@ export function maybeCreateArchitectConfig(input: {
     userCategories,
   } = input
 
+
   if (disabledAgents.includes("architect")) return undefined
 
   const orchestratorOverride = agentOverrides.architect
   const architectRequirement = AGENT_MODEL_REQUIREMENTS.architect
 
   const architectResolution = applyModelResolution({
+    globalOverrideModel,
     uiSelectedModel: orchestratorOverride?.model ? undefined : uiSelectedModel,
     userModel: orchestratorOverride?.model,
     requirement: architectRequirement,

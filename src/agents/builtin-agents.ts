@@ -70,6 +70,7 @@ const agentMetadata: Partial<Record<BuiltinAgentName, AgentPromptMetadata>> = {
 export async function createBuiltinAgents(
   disabledAgents: string[] = [],
   agentOverrides: AgentOverrides = {},
+  globalModel?: string,
   directory?: string,
   systemDefaultModel?: string,
   categories?: CategoriesConfig,
@@ -99,6 +100,7 @@ export async function createBuiltinAgents(
   const result: Record<string, AgentConfig> = {}
 
   const mergedCategories = mergeCategories(categories)
+  const globalOverrideModel = globalModel
 
   const availableCategories: AvailableCategory[] = Object.entries(mergedCategories).map(([name]) => ({
     name,
@@ -113,6 +115,7 @@ export async function createBuiltinAgents(
     agentMetadata,
     disabledAgents,
     agentOverrides,
+    globalOverrideModel,
     directory,
     systemDefaultModel,
     mergedCategories,
@@ -142,6 +145,7 @@ export async function createBuiltinAgents(
   const morpheusConfig = maybeCreateMorpheusConfig({
     disabledAgents,
     agentOverrides,
+    globalOverrideModel,
     uiSelectedModel,
     availableModels,
     systemDefaultModel,
@@ -161,6 +165,7 @@ export async function createBuiltinAgents(
   const keymakerConfig = maybeCreateKeymakerConfig({
     disabledAgents,
     agentOverrides,
+    globalOverrideModel,
     availableModels,
     systemDefaultModel,
     isFirstRunNoCache,
@@ -183,6 +188,7 @@ export async function createBuiltinAgents(
   const architectConfig = maybeCreateArchitectConfig({
     disabledAgents,
     agentOverrides,
+    globalOverrideModel,
     uiSelectedModel,
     availableModels,
     systemDefaultModel,

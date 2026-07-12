@@ -67,6 +67,8 @@ export interface DelegateTaskToolOptions {
    */
   availableModelsOverride?: Set<string>
   userCategories?: CategoriesConfig
+  /** Global provider/model override for ALL tasks (overrides all category models) */
+  globalModel?: string
   mouseModel?: string
   browserProvider?: BrowserAutomationProvider
   disabledSkills?: Set<string>

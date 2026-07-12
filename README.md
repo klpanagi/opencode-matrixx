@@ -298,6 +298,21 @@ Analyzes media files that require interpretation beyond raw text. Extracts speci
 
 ---
 
+### 14. Mouse — *The Task Executor*
+
+*Small, fast, and disposable — the hands that do the work.*
+
+**Role:** Category-spawned delegated executor
+
+**Model:** Claude Sonnet 4.6 · `temperature: 0.1`
+
+Mouse is the worker layer in Matrixx's 3-tier architecture. Spawned automatically when you
+use `task(category="...")`, Mouse executes the task directly without delegating further.
+It cannot spawn sub-agents (`task` tool blocked) — implementation is always done in-house.
+Model-specific prompt variants optimize behavior for Claude, GPT, DeepSeek, Mimo, and Qwen.
+
+---
+
 Every agent, model, temperature, and permission is fully customizable. [**Meet the full team →**](docs/agents.md)
 
 ---
@@ -306,7 +321,7 @@ Every agent, model, temperature, and permission is fully customizable. [**Meet t
 
 | | |
 |---|---|
-| **Agent Orchestration** | 14 agents (incl. **Sati** frontend specialist, **Sentinel** security auditor, **Cipher** DSL expert), parallel background execution, category-based routing, session continuity |
+|| **Agent Orchestration** | 15 agents (incl. **Mouse** dedicated executor, **Sati** frontend specialist, **Sentinel** security auditor, **Cipher** DSL expert), parallel background execution, category-based routing, session continuity |
 | **Developer Tools** | LSP (goto def, rename, diagnostics), AST-Grep (search & replace), Tmux terminal |
 | **~52 Lifecycle Hooks** | Context injection, think mode, comment checking, todo enforcement, error recovery, quality gate |
 || **33 Built-in Skills** | DSL engineering (11), security (9), browser, git, frontend (7 via **Sati**), saturation research, AI slop detection, software dev pipeline |

@@ -8,6 +8,9 @@
     "$schema": {
       "type": "string"
     },
+    "global_model": {
+      "type": "string"
+    },
     "default_tier": {
       "type": "string",
       "enum": [

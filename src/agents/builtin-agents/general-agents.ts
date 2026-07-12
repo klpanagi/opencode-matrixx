@@ -13,6 +13,7 @@ export function collectPendingBuiltinAgents(input: {
   agentMetadata: Partial<Record<BuiltinAgentName, AgentPromptMetadata>>
   disabledAgents: string[]
   agentOverrides: AgentOverrides
+  globalOverrideModel?: string
   directory?: string
   systemDefaultModel?: string
   mergedCategories: Record<string, CategoryConfig>
@@ -27,6 +28,7 @@ export function collectPendingBuiltinAgents(input: {
     agentMetadata,
     disabledAgents,
     agentOverrides,
+    globalOverrideModel,
     directory,
     systemDefaultModel,
     mergedCategories,
@@ -66,6 +68,7 @@ export function collectPendingBuiltinAgents(input: {
     const isPrimaryAgent = isFactory(source) && source.mode === "primary"
 
     const resolution = applyModelResolution({
+      globalOverrideModel,
       uiSelectedModel: (isPrimaryAgent && !override?.model) ? uiSelectedModel : undefined,
       userModel: override?.model,
       requirement,

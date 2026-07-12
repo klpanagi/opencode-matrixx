@@ -17,6 +17,12 @@ export function resolveModelPipeline(
   const fallbackChain = policy?.fallbackChain
   const systemDefaultModel = policy?.systemDefaultModel
 
+  const normalizedGlobalOverride = normalizeModel(intent?.globalOverrideModel)
+  if (normalizedGlobalOverride) {
+    log("Model resolved via global override", { model: normalizedGlobalOverride })
+    return { model: normalizedGlobalOverride, provenance: "override" }
+  }
+
   const normalizedUiModel = normalizeModel(intent?.uiSelectedModel)
   if (normalizedUiModel) {
     log("Model resolved via UI selection", { model: normalizedUiModel })

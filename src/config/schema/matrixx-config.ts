@@ -28,6 +28,9 @@ import { WebsearchConfigSchema } from "./websearch"
 
 export const MatrixxConfigSchema = z.object({
   $schema: z.string().optional(),
+  /** Global provider/model override for ALL agents and categories (e.g., "anthropic/claude-sonnet-4-6").
+   * When set, this model is used for every agent and category regardless of their individual config. */
+  global_model: z.string().optional(),
   /** Default tier applied to every agent and category that has no explicit `model` or `tier`. */
   default_tier: TierNameSchema.optional(),
   /** Enable new task system (default: false) */

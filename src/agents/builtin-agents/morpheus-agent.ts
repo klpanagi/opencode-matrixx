@@ -10,6 +10,7 @@ import { applyModelResolution, getFirstFallbackModel } from "./model-resolution"
 export function maybeCreateMorpheusConfig(input: {
   disabledAgents: string[]
   agentOverrides: AgentOverrides
+  globalOverrideModel?: string
   uiSelectedModel?: string
   availableModels: Set<string>
   systemDefaultModel?: string
@@ -25,6 +26,7 @@ export function maybeCreateMorpheusConfig(input: {
   const {
     disabledAgents,
     agentOverrides,
+    globalOverrideModel,
     uiSelectedModel,
     availableModels,
     systemDefaultModel,
@@ -48,6 +50,7 @@ export function maybeCreateMorpheusConfig(input: {
   if (disabledAgents.includes("morpheus") || !meetsMorpheusAnyModelRequirement) return undefined
 
   let morpheusResolution = applyModelResolution({
+    globalOverrideModel,
     uiSelectedModel: morpheusOverride?.model ? undefined : uiSelectedModel,
     userModel: morpheusOverride?.model,
     requirement: morpheusRequirement,

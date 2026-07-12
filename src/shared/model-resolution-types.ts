@@ -2,10 +2,13 @@ import type { FallbackEntry } from "./model-requirements"
 
 export type ModelResolutionRequest = {
   intent?: {
+    /** Global override for all agents and categories — set via the global_model config.
+     * Highest priority; checked before everything else. */
+    globalOverrideModel?: string
     uiSelectedModel?: string
     userModel?: string
     categoryDefaultModel?: string
-  }
+    }
   constraints: {
     availableModels: Set<string>
     connectedProviders?: string[]

@@ -38,3 +38,6 @@ test-injection/
 notepad.md
 oauth-success.html
 *.bun-build
+
+# Test artifacts
+.test-task-update-tool/

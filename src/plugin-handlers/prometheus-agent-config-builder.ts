@@ -27,6 +27,7 @@ export async function buildOracleAgentConfig(params: {
   pluginOracleOverride: OracleOverride | undefined;
   userCategories: Record<string, CategoryConfig> | undefined;
   currentModel: string | undefined;
+  globalOverrideModel?: string;
 }): Promise<Record<string, unknown>> {
   const categoryConfig = params.pluginOracleOverride?.category
     ? resolveCategoryConfig(params.pluginOracleOverride.category, params.userCategories)
@@ -40,6 +41,7 @@ export async function buildOracleAgentConfig(params: {
 
   const modelResolution = resolveModelPipeline({
     intent: {
+      globalOverrideModel: params.globalOverrideModel,
       uiSelectedModel: params.currentModel,
       userModel: params.pluginOracleOverride?.model ?? categoryConfig?.model,
     },
@@ -48,7 +50,7 @@ export async function buildOracleAgentConfig(params: {
       fallbackChain: requirement?.fallbackChain,
       systemDefaultModel: undefined,
     },
-  });
+  })
 
   const resolvedModel = modelResolution?.model;
   const resolvedVariant = modelResolution?.variant;

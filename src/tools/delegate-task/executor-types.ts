@@ -8,6 +8,7 @@ export interface ExecutorContext {
   directory: string
   userCategories?: CategoriesConfig
   mouseModel?: string
+  globalModel?: string
   browserProvider?: BrowserAutomationProvider
   agentOverrides?: AgentOverrides
   onSyncSessionCreated?: (event: { sessionID: string; parentID: string; title: string }) => Promise<void>

@@ -73,6 +73,7 @@ export async function applyAgentConfig(params: {
   const builtinAgents = await createBuiltinAgents(
     migratedDisabledAgents,
     params.pluginConfig.agents,
+    params.pluginConfig.global_model,
     params.ctx.directory,
     undefined,
     params.pluginConfig.categories,
@@ -83,7 +84,6 @@ export async function applyAgentConfig(params: {
     disabledSkills,
     useTaskSystem,
   );
-
   const userAgents = loadUserAgents();
   const projectAgents = loadProjectAgents(params.ctx.directory);
 
@@ -143,6 +143,7 @@ export async function applyAgentConfig(params: {
         pluginOracleOverride: oracleOverride,
         userCategories: params.pluginConfig.categories,
         currentModel,
+        globalOverrideModel: params.pluginConfig.global_model,
       });
     }
 
