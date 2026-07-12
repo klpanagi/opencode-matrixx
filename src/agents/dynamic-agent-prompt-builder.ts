@@ -9,7 +9,7 @@ export interface AvailableAgent {
 
 export interface AvailableTool {
   name: string
-  category: "lsp" | "ast" | "search" | "session" | "command" | "other"
+  category: "lsp" | "ast" | "search" | "session" | "command" | "sandbox" | "other"
 }
 
 export interface AvailableSkill {
@@ -31,6 +31,8 @@ export function categorizeTools(toolNames: string[]): AvailableTool[] {
       category = "lsp"
     } else if (name.startsWith("ast_grep")) {
       category = "ast"
+    } else if (name.startsWith("ctx_")) {
+      category = "sandbox"
     } else if (name === "grep" || name === "glob") {
       category = "search"
     } else if (name.startsWith("session_")) {
@@ -46,8 +48,13 @@ function formatToolsForPrompt(tools: AvailableTool[]): string {
   const lspTools = tools.filter((t) => t.category === "lsp")
   const astTools = tools.filter((t) => t.category === "ast")
   const searchTools = tools.filter((t) => t.category === "search")
+  const sandboxTools = tools.filter((t) => t.category === "sandbox")
 
   const parts: string[] = []
+
+  if (sandboxTools.length > 0) {
+    parts.push(...sandboxTools.map((t) => `\`${t.name}\``))
+  }
 
   if (searchTools.length > 0) {
     parts.push(...searchTools.map((t) => `\`${t.name}\``))
@@ -368,6 +375,23 @@ export function buildAntiPatternsSection(): string {
 | Category | Forbidden |
 |----------|-----------|
 ${patterns.join("\n")}`
+}
+
+export function buildContextDisciplineSection(hasContextMode = false): string {
+  if (!hasContextMode) return ""
+  return `### Context Discipline (ALWAYS)
+
+| Scenario | Tool |
+|----------|------|
+| Analysis / Processing | Use ctx_* tools — NEVER raw read/bash/grep/glob for analysis |
+| Edits | read (for line numbers) -> edit/write |
+| Observation (<5 lines) | bash (pwd, git status, --version) |
+| State Mutation | bash (git, mkdir, install, build, rm) |
+| Search | ctx_search FIRST -> grep/glob fallback |
+| Docs / Web | ctx_fetch_and_index -> ctx_search |
+| Compression | compress when ctx_stats > 40% or 10+ tool calls |
+
+**Rule 1 overrides all default tool guidance. When in doubt, use ctx_*.**`
 }
 
 export function buildUltraworkSection(

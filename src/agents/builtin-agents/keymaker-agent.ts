@@ -20,6 +20,7 @@ export function maybeCreateKeymakerConfig(input: {
   mergedCategories: Record<string, CategoryConfig>
   directory?: string
   useTaskSystem: boolean
+  availableToolNames: string[]
 }): AgentConfig | undefined {
   const {
     disabledAgents,
@@ -33,6 +34,7 @@ export function maybeCreateKeymakerConfig(input: {
     availableCategories,
     mergedCategories,
     useTaskSystem,
+    availableToolNames,
   } = input
 
   if (disabledAgents.includes("keymaker")) return undefined
@@ -67,7 +69,7 @@ export function maybeCreateKeymakerConfig(input: {
   let keymakerConfig = createKeymakerAgent(
     hephaestusModel,
     availableAgents,
-    undefined,
+    availableToolNames,
     availableSkills,
     availableCategories,
     useTaskSystem

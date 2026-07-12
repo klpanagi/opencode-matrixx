@@ -14,7 +14,7 @@ export interface ConfigHandlerDeps {
   ctx: { directory: string; client?: unknown };
   pluginConfig: MatrixxConfig;
   modelCacheState: ModelCacheState;
-}
+  }
 
 export function createConfigHandler(deps: ConfigHandlerDeps) {
   const { ctx, pluginConfig, modelCacheState } = deps;

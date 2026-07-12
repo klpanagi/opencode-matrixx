@@ -8,6 +8,8 @@ import {
   buildCategorySkillsDelegationGuide,
   buildUltraworkSection,
   formatCustomSkillsBlock,
+  categorizeTools,
+  buildContextDisciplineSection,
 } from "../../src/agents/dynamic-agent-prompt-builder"
 
 describe("buildCategorySkillsDelegationGuide", () => {
@@ -201,5 +203,117 @@ describe("formatCustomSkillsBlock", () => {
     //#then: uses bold instead of h4
     expect(result).toContain("**User-Installed Skills (HIGH PRIORITY):**")
     expect(result).not.toContain("#### User-Installed Skills")
+  })
+})
+
+describe("categorizeTools", () => {
+
+  it("should categorize ctx_* tools as sandbox", () => {
+    //#given: ctx_* tool names
+    const toolNames = ["ctx_execute", "ctx_batch_execute", "ctx_execute_file", "ctx_search", "ctx_fetch_and_index"]
+
+    //#when: categorizing
+    const result = categorizeTools(toolNames)
+
+    //#then: all categorized as sandbox
+    expect(result.every((t) => t.category === "sandbox")).toBe(true)
+    expect(result).toHaveLength(5)
+  })
+
+  it("should categorize lsp_* tools as lsp", () => {
+    //#given: lsp tool names
+    const result = categorizeTools(["lsp_diagnostics", "lsp_rename"])
+
+    //#then: all lsp
+    expect(result.every((t) => t.category === "lsp")).toBe(true)
+  })
+
+  it("should categorize ast_grep tools as ast", () => {
+    //#given: ast_grep tools
+    const result = categorizeTools(["ast_grep_search", "ast_grep_replace"])
+
+    //#then: all ast
+    expect(result.every((t) => t.category === "ast")).toBe(true)
+  })
+
+  it("should categorize grep and glob as search", () => {
+    //#given: grep and glob
+    const result = categorizeTools(["grep", "glob"])
+
+    //#then: both search
+    expect(result.every((t) => t.category === "search")).toBe(true)
+  })
+
+  it("should categorize unknown tools as other", () => {
+    //#given: tools with no recognized prefix
+    const result = categorizeTools(["write", "read", "edit", "bash"])
+
+    //#then: all other
+    expect(result.every((t) => t.category === "other")).toBe(true)
+  })
+
+  it("should categorize mixed tool list correctly", () => {
+    //#given: mixed tools
+    const toolNames = [
+      "ctx_execute", "lsp_diagnostics", "grep", "ast_grep_search",
+      "write", "ctx_search", "glob", "unknown_tool",
+    ]
+
+    //#when
+    const result = categorizeTools(toolNames)
+
+    //#then: each has correct category
+    const byCategory = (cat: string) => result.filter((t) => t.category === cat).map((t) => t.name)
+    expect(byCategory("sandbox")).toEqual(["ctx_execute", "ctx_search"])
+    expect(byCategory("lsp")).toEqual(["lsp_diagnostics"])
+    expect(byCategory("search")).toEqual(["grep", "glob"])
+    expect(byCategory("ast")).toEqual(["ast_grep_search"])
+    expect(byCategory("other")).toEqual(["write", "unknown_tool"])
+  })
+})
+
+describe("buildContextDisciplineSection", () => {
+
+  it("should return empty string when context-mode not available", () => {
+    //#given: hasContextMode = false
+    const result = buildContextDisciplineSection(false)
+
+    //#then: empty
+    expect(result).toBe("")
+  })
+
+  it("should return empty string by default", () => {
+    //#given: default parameter
+    const result = buildContextDisciplineSection()
+
+    //#then: empty (defaults to false)
+    expect(result).toBe("")
+  })
+
+  it("should render discipline table when context-mode is available", () => {
+    //#given: hasContextMode = true
+    const result = buildContextDisciplineSection(true)
+
+    //#then: contains expected sections
+    expect(result).toContain("Context Discipline")
+    expect(result).toContain("ctx_* tools")
+    expect(result).toContain("ctx_search FIRST")
+    expect(result).toContain("ctx_fetch_and_index")
+    expect(result).toContain("compress when ctx_stats")
+    expect(result).toContain("Rule 1 overrides")
+  })
+
+  it("should mention all 7 scenarios in the table", () => {
+    //#given:
+    const result = buildContextDisciplineSection(true)
+
+    //#then: all 7 rows present
+    expect(result).toContain("Analysis / Processing")
+    expect(result).toContain("Edits")
+    expect(result).toContain("Observation")
+    expect(result).toContain("State Mutation")
+    expect(result).toContain("Search")
+    expect(result).toContain("Docs / Web")
+    expect(result).toContain("Compression")
   })
 })

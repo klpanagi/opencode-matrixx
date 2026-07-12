@@ -8,6 +8,7 @@ import type { AvailableAgent, AvailableCategory, AvailableSkill, AvailableTool }
 import {
   buildAntiPatternsSection,
   buildCategorySkillsDelegationGuide,
+  buildContextDisciplineSection,
   buildDelegationTable,
   buildExploreSection,
   buildHardBlocksSection,
@@ -152,6 +153,8 @@ function buildDynamicMorpheusPrompt(
   const oracleSection = buildOracleSection(availableAgents)
   const hardBlocks = buildHardBlocksSection()
   const antiPatterns = buildAntiPatternsSection()
+  const hasContextMode = availableTools.some((t) => t.name.startsWith("ctx_"))
+  const contextDiscipline = buildContextDisciplineSection(hasContextMode)
   const taskManagementSection = buildTaskManagementSection(useTaskSystem)
   const todoHookNote = useTaskSystem
     ? "YOUR TASK CREATION WOULD BE TRACKED BY HOOK([SYSTEM REMINDER - TASK CONTINUATION])"
@@ -485,6 +488,8 @@ If the user's approach seems problematic:
 ${hardBlocks}
 
 ${antiPatterns}
+
+${contextDiscipline}
 
 ## Soft Guidelines
 

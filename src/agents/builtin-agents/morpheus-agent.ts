@@ -22,6 +22,7 @@ export function maybeCreateMorpheusConfig(input: {
   directory?: string
   userCategories?: CategoriesConfig
   useTaskSystem: boolean
+  availableToolNames: string[]
 }): AgentConfig | undefined {
   const {
     disabledAgents,
@@ -36,6 +37,7 @@ export function maybeCreateMorpheusConfig(input: {
     availableCategories,
     mergedCategories,
     useTaskSystem,
+    availableToolNames,
   } = input
 
   const morpheusOverride = agentOverrides.morpheus
@@ -68,7 +70,7 @@ export function maybeCreateMorpheusConfig(input: {
   let morpheusConfig = createMorpheusAgent(
     morpheusModel,
     availableAgents,
-    undefined,
+    availableToolNames,
     availableSkills,
     availableCategories,
     useTaskSystem
