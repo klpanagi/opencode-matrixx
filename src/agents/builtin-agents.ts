@@ -23,7 +23,7 @@ import { createKeymakerAgent } from "./keymaker"
 import { createMerovingianAgent, ORACLE_PLAN_BUILDER_METADATA, ORACLE_PROMPT_METADATA } from "./merovingian"
 import { createMorpheusAgent } from "./morpheus"
 import { createLibrarianAgent, LIBRARIAN_PROMPT_METADATA } from "./operator"
-import { createSatiAgent, SATI_PROMPT_METADATA } from "./sati"
+import { createSatiAgent } from "./sati"
 import { createSentinelAgent, SENTINEL_PROMPT_METADATA } from "./sentinel"
 import { createSeraphAgent, seraphPromptMetadata } from "./seraph"
 import { createSmithAgent, smithPromptMetadata } from "./smith"
@@ -78,7 +78,8 @@ export async function createBuiltinAgents(
   browserProvider?: BrowserAutomationProvider,
   uiSelectedModel?: string,
   disabledSkills?: Set<string>,
-  useTaskSystem = false
+  useTaskSystem = false,
+  globalModel?: string,
 ): Promise<Record<string, AgentConfig>> {
   const connectedProviders = readConnectedProvidersCache()
   const providerModelsConnected = connectedProviders
@@ -99,6 +100,7 @@ export async function createBuiltinAgents(
   const result: Record<string, AgentConfig> = {}
 
   const mergedCategories = mergeCategories(categories)
+  const globalOverrideModel = globalModel
 
   const availableCategories: AvailableCategory[] = Object.entries(mergedCategories).map(([name]) => ({
     name,
@@ -113,6 +115,7 @@ export async function createBuiltinAgents(
     agentMetadata,
     disabledAgents,
     agentOverrides,
+    globalOverrideModel,
     directory,
     systemDefaultModel,
     mergedCategories,
@@ -142,6 +145,7 @@ export async function createBuiltinAgents(
   const morpheusConfig = maybeCreateMorpheusConfig({
     disabledAgents,
     agentOverrides,
+    globalOverrideModel,
     uiSelectedModel,
     availableModels,
     systemDefaultModel,
@@ -161,6 +165,7 @@ export async function createBuiltinAgents(
   const keymakerConfig = maybeCreateKeymakerConfig({
     disabledAgents,
     agentOverrides,
+    globalOverrideModel,
     availableModels,
     systemDefaultModel,
     isFirstRunNoCache,
@@ -183,6 +188,7 @@ export async function createBuiltinAgents(
   const architectConfig = maybeCreateArchitectConfig({
     disabledAgents,
     agentOverrides,
+    globalOverrideModel,
     uiSelectedModel,
     availableModels,
     systemDefaultModel,

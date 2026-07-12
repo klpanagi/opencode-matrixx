@@ -36,7 +36,7 @@ export async function resolveCategoryExecution(
   inheritedModel: string | undefined,
   systemDefaultModel: string | undefined
 ): Promise<CategoryResolutionResult> {
-  const { client, userCategories, mouseModel } = executorCtx
+  const { client, userCategories, mouseModel, globalModel } = executorCtx
 
   const availableModels = await getAvailableModelsForDelegateTask(client)
   const connectedProviders = readConnectedProvidersCache()
@@ -92,8 +92,7 @@ Available categories: ${allCategoryNames}`,
   let categoryModel: { providerID: string; modelID: string; variant?: string; temperature?: number } | undefined
 
   const overrideModel = mouseModel
-  const explicitCategoryModel = userCategories?.[args.category as string]?.model
-
+  const explicitCategoryModel = globalModel ?? userCategories?.[args.category as string]?.model
   if (!requirement) {
     // Precedence: explicit category model > category resolved model > mouse default
     // Category's resolved model (from defaults/system) wins over mouse model.
@@ -201,7 +200,7 @@ Available categories: ${allCategoryNames}`,
       if (parsed) {
         categoryModel = { ...parsed, temperature: resolved.config.temperature }
       }
-      _complexityNote = "Model auto-downgraded from " + previousModel + " to " + resolvedDowngrade.model + " (complexity: " + complexityLevel + ")"
+      _complexityNote = `Model auto-downgraded from ${previousModel} to ${resolvedDowngrade.model} (complexity: ${complexityLevel})`
     }
   }
 

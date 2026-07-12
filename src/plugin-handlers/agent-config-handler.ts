@@ -82,8 +82,8 @@ export async function applyAgentConfig(params: {
     currentModel,
     disabledSkills,
     useTaskSystem,
+    params.pluginConfig.global_model,
   );
-
   const userAgents = loadUserAgents();
   const projectAgents = loadProjectAgents(params.ctx.directory);
 
@@ -143,6 +143,7 @@ export async function applyAgentConfig(params: {
         pluginOracleOverride: oracleOverride,
         userCategories: params.pluginConfig.categories,
         currentModel,
+        globalOverrideModel: params.pluginConfig.global_model,
       });
     }
 

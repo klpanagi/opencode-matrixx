@@ -38,6 +38,7 @@ Meet the main agent: **Morpheus** (Claude Opus 4.6). Everything below is customi
 | **Seraph** | Pre-planning analysis | Claude Opus 4.6 |
 | **Smith** | Plan validation | Claude Sonnet 4.6 |
 | **Architect** | Plan execution orchestrator | Claude Sonnet 4.6 |
+|| **Mouse** | Category-spawned task executor (delegated worker) | Claude Sonnet 4.6 |
 | **Sati** | Frontend specialist (components, a11y, perf, testing) | Claude Sonnet 4.6 |
 
 ### Built-in Capabilities
@@ -240,3 +241,78 @@ Sati is the dedicated frontend specialist. Self-contained execution — Sati han
 | **Direct** | Select `@sati` in the agent menu | Full frontend sessions |
 | **Delegated** | Morpheus auto-detects frontend keywords and delegates | Seamless — just describe your UI work |
 | **Category** | Use `construct` category description hint | Routing to Sati for dedicated tasks |
+
+---
+
+## Mouse — The Task Executor
+
+*Small, fast, and disposable — the hands that do the work.*
+
+Mouse is the **category-spawned delegated executor** — the worker layer in Matrixx's 3-tier orchestration architecture. When Morpheus or Architect calls `task(category="source", ...)`, the category resolver automatically sets `subagent_type="mouse"`. Mouse executes the implementation directly, without spawning further sub-agents.
+
+### Why Mouse Exists
+
+The architecture separates concerns into three layers:
+
+1. **Planning Layer**: Oracle/Seraph/Smith — designs the work plan
+2. **Execution Layer**: Architect/Morpheus — orchestrates and coordinates
+3. **Worker Layer**: **Mouse** — executes individual tasks
+
+Workers must be **stateless and disposable**. The Architect remains in context and accumulates wisdom; Mouse receives a focused task, executes it, reports results, and is done. This preserves the Architect's context window and enables parallel execution of independent tasks.
+
+### Agent Characteristics
+
+| Property | Value |
+|----------|-------|
+| **Model** | Claude Sonnet 4.6 (configurable via `agents.mouse.model`) |
+| **Mode** | `subagent` — spawnable only, never appears in agent menu |
+| **Max Tokens** | 64,000 |
+| **Temperature** | 0.1 |
+| **Thinking** | Extended thinking enabled (32k budget) — for Claude and DeepSeek |
+| **Reasoning** | `medium` — for GPT models |
+| **Color** | `#20B2AA` (Light Sea Green) |
+| **Delegation** | `task` tool BLOCKED — cannot spawn sub-agents |
+
+### Prompt Variants
+
+Mouse has **5 model-specific prompt variants** auto-selected at runtime:
+
+| Variant | File | Target Models | Focus |
+|---------|------|---------------|-------|
+| **Default** | `default.ts` | Claude (Anthropic) | Extended reasoning, strong constraint enforcement for Claude's "helpful" tendency |
+| **GPT** | `gpt.ts` | GPT-5.2+ (OpenAI) | Verbosity limits, scope discipline, table-based specs, uncertainty handling |
+| **DeepSeek** | `deepseek.ts` | DeepSeek v4 flash | Structured XML, moderate verbosity, verification tables |
+| **Mimo** | `mimo.ts` | Mimo v2.5 | Extra concise, minimal prose, tool-first emphasis |
+| **Qwen** | `qwen.ts` | Qwen 3.7 Plus | Structured sections, reasoning-first, explicit output formatting |
+
+Routing is driven by model detection in `getMousePromptSource()`: GPT → gpt.ts, DeepSeek → deepseek.ts, Mimo → mimo.ts, Qwen → qwen.ts, everything else → default.ts.
+
+### Tool Restrictions
+
+| Tool | Status | Reason |
+|------|--------|--------|
+| `task` | BLOCKED | Mouse never delegates — executes implementation directly |
+| `delegate_agent` | ALLOWED | Research only — can spawn explore/librarian agents |
+
+### Mouse-Notepad Hook
+
+When the Architect spawns a Mouse task, the `mouse-notepad` hook automatically injects a work context directive. This tells Mouse to:
+
+- Record learnings to `.matrixx/notepads/{plan-name}/learnings.md`
+- Record issues, decisions, and problems encountered
+- NEVER modify the plan file (READ-ONLY)
+- Always APPEND to notepad files, never overwrite
+
+This ensures the Architect accumulates wisdom from each Mouse execution.
+
+### Invocation
+
+Mouse is **never invoked directly**. It is spawned automatically when you use a category:
+
+```typescript
+// Correct: Mouse is auto-selected
+task(category="source", load_skills=[...])
+
+// INCORRECT: Direct invocation is blocked
+// task(subagent_type="mouse")  →  Error: "Mouse is spawned automatically when you specify a category"
+```

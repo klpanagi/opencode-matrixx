@@ -1,15 +1,16 @@
 import { resolveModelPipeline } from "../../shared"
 
 export function applyModelResolution(input: {
+  globalOverrideModel?: string
   uiSelectedModel?: string
   userModel?: string
   requirement?: { fallbackChain?: { providers: string[]; model: string; variant?: string }[] }
   availableModels: Set<string>
   systemDefaultModel?: string
 }) {
-  const { uiSelectedModel, userModel, requirement, availableModels, systemDefaultModel } = input
+  const { globalOverrideModel, uiSelectedModel, userModel, requirement, availableModels, systemDefaultModel } = input
   return resolveModelPipeline({
-    intent: { uiSelectedModel, userModel },
+    intent: { globalOverrideModel, uiSelectedModel, userModel },
     constraints: { availableModels },
     policy: { fallbackChain: requirement?.fallbackChain, systemDefaultModel },
   })

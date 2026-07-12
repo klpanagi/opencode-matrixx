@@ -10,6 +10,7 @@ import { applyModelResolution, getFirstFallbackModel } from "./model-resolution"
 export function maybeCreateKeymakerConfig(input: {
   disabledAgents: string[]
   agentOverrides: AgentOverrides
+  globalOverrideModel?: string
   availableModels: Set<string>
   systemDefaultModel?: string
   isFirstRunNoCache: boolean
@@ -23,6 +24,7 @@ export function maybeCreateKeymakerConfig(input: {
   const {
     disabledAgents,
     agentOverrides,
+    globalOverrideModel,
     availableModels,
     systemDefaultModel,
     isFirstRunNoCache,
@@ -48,6 +50,7 @@ export function maybeCreateKeymakerConfig(input: {
   if (!hasRequiredProvider) return undefined
 
   let hephaestusResolution = applyModelResolution({
+    globalOverrideModel,
     userModel: keymakerOverride?.model,
     requirement: hephaestusRequirement,
     availableModels,

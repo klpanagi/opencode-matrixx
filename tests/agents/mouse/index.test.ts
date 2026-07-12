@@ -5,6 +5,17 @@ import {
   getMousePromptSource,
   MOUSE_DEFAULTS,
 } from "../../../src/agents/mouse/index"
+import {
+  buildConstraintsSection,
+  buildTodoDisciplineSection,
+  buildVerificationTable,
+} from "../../../src/agents/mouse/shared"
+import {
+  buildMousePrompt,
+  createMouseAgentWithOverrides,
+  getMousePromptSource,
+  MOUSE_DEFAULTS,
+} from "../../../src/agents/mouse/index"
 
 describe("createMouseAgentWithOverrides", () => {
   describe("honored fields", () => {
@@ -512,3 +523,194 @@ describe("buildMousePrompt", () => {
     expect(prompt).toContain("todowrite")
   })
 })
+
+describe("getMousePromptSource (new variants)", () => {
+  test("returns 'deepseek' for DeepSeek models", () => {
+    expect(getMousePromptSource("opencode-go/deepseek-v4-flash")).toBe("deepseek");
+  });
+
+  test("returns 'mimo' for Mimo models", () => {
+    expect(getMousePromptSource("opencode-go/mimo-v2.5")).toBe("mimo");
+  });
+
+  test("returns 'qwen' for Qwen models", () => {
+    expect(getMousePromptSource("opencode-go/qwen3.7-plus")).toBe("qwen");
+  });
+
+  test("GPT takes priority over DeepSeek when model matches GPT prefixes", () => {
+    expect(getMousePromptSource("opencode-go/gpt-5.2")).toBe("gpt");
+  });
+});
+
+describe("buildMousePrompt (new variants)", () => {
+  test("DeepSeek model prompt contains DeepSeek-specific sections", () => {
+    //#given
+    const model = "opencode-go/deepseek-v4-flash";
+
+    //#when
+    const prompt = buildMousePrompt(model, false);
+
+    //#then
+    expect(prompt).toContain("<Role>");
+    expect(prompt).toContain("<Critical_Constraints>");
+    expect(prompt).toContain("<Verification>");
+    expect(prompt).toContain("<Style>");
+    expect(prompt).not.toContain("you're too helpful");
+  });
+
+  test("Mimo model prompt contains Mimo-specific sections", () => {
+    //#given
+    const model = "opencode-go/mimo-v2.5";
+
+    //#when
+    const prompt = buildMousePrompt(model, false);
+
+    //#then
+    expect(prompt).toContain("<role>");
+    expect(prompt).toContain("<rules>");
+    expect(prompt).toContain("<verify>");
+    expect(prompt).toContain("<discipline>");
+    // Mimo uses lowercase tags (model-specific)
+    expect(prompt).not.toContain("<Role>");
+  });
+
+  test("Qwen model prompt contains Qwen-specific sections", () => {
+    //#given
+    const model = "opencode-go/qwen3.7-plus";
+
+    //#when
+    const prompt = buildMousePrompt(model, false);
+
+    //#then
+    expect(prompt).toContain("<identity>");
+    expect(prompt).toContain("<blocked_actions>");
+    expect(prompt).toContain("<scope_control>");
+    expect(prompt).toContain("<todo_discipline>");
+    expect(prompt).toContain("<verification>");
+    expect(prompt).toContain("<style>");
+  });
+
+  test("DeepSeek prompt with useTaskSystem=true uses Task_Discipline", () => {
+    //#given
+    const model = "opencode-go/deepseek-v4-flash";
+
+    //#when
+    const prompt = buildMousePrompt(model, true);
+
+    //#then
+    expect(prompt).toContain("<Task_Discipline>");
+    expect(prompt).toContain("<Critical_Constraints>");
+    expect(prompt).toContain("<Verification>");
+    expect(prompt).toContain("TaskCreate");
+  });
+
+  test("Mimo prompt with useTaskSystem=true uses Task reference", () => {
+    //#given
+    const model = "opencode-go/mimo-v2.5";
+
+    //#when
+    const prompt = buildMousePrompt(model, true);
+
+    //#then
+    expect(prompt).toContain("TaskCreate");
+    expect(prompt).toContain("TaskUpdate");
+  });
+
+  test("Mimo prompt with useTaskSystem=false uses todowrite reference", () => {
+    //#given
+    const model = "opencode-go/mimo-v2.5";
+
+    //#when
+    const prompt = buildMousePrompt(model, false);
+
+    //#then
+    expect(prompt).toContain("todowrite");
+    expect(prompt).not.toContain("TaskCreate");
+  });
+
+  test("Qwen prompt with useTaskSystem=true uses task_discipline", () => {
+    //#given
+    const model = "opencode-go/qwen3.7-plus";
+
+    //#when
+    const prompt = buildMousePrompt(model, true);
+
+    //#then
+    expect(prompt).toContain("<task_discipline>");
+    expect(prompt).toContain("TaskCreate");
+    expect(prompt).toContain("task_create");
+  });
+
+  test("Qwen prompt with useTaskSystem=false uses todo_discipline", () => {
+    //#given
+    const model = "opencode-go/qwen3.7-plus";
+
+    //#when
+    const prompt = buildMousePrompt(model, false);
+
+    //#then
+    expect(prompt).toContain("<todo_discipline>");
+    expect(prompt).toContain("todowrite");
+    expect(prompt).not.toContain("TaskCreate");
+  });
+});
+
+describe("createMouseAgentWithOverrides (DeepSeek thinking)", () => {
+  test("DeepSeek model gets thinking config (like Anthropic)", () => {
+    //#given
+    const override = { model: "opencode-go/deepseek-v4-flash" };
+
+    //#when
+    const result = createMouseAgentWithOverrides(override);
+
+    //#then
+    expect((result as AgentConfigWithModelConfig).thinking).toEqual({ type: "enabled", budgetTokens: 32000 });
+  });
+});
+
+describe("shared prompt utilities", () => {
+  test("buildConstraintsSection blocks task and allows delegate_agent", () => {
+    const constraints = buildConstraintsSection(false);
+    expect(constraints).toContain("BLOCKED");
+    expect(constraints).toContain("delegate_agent");
+    expect(constraints).toContain("You work ALONE");
+  });
+
+  test("buildConstraintsSection with useTaskSystem includes task management tools", () => {
+    const constraints = buildConstraintsSection(true);
+    expect(constraints).toContain("task_create");
+    expect(constraints).toContain("task_update");
+  });
+
+  test("buildTodoDisciplineSection with useTaskSystem uses Task_Discipline", () => {
+    const section = buildTodoDisciplineSection(true);
+    expect(section).toContain("<Task_Discipline>");
+    expect(section).toContain("TaskCreate");
+    expect(section).not.toContain("todowrite");
+  });
+
+  test("buildTodoDisciplineSection without useTaskSystem uses Todo_Discipline", () => {
+    const section = buildTodoDisciplineSection(false);
+    expect(section).toContain("<Todo_Discipline>");
+    expect(section).toContain("todowrite");
+  });
+
+  test("buildVerificationTable returns table with lsp_diagnostics check", () => {
+    const table = buildVerificationTable(false);
+    expect(table).toContain("lsp_diagnostics");
+    expect(table).toContain("Zero errors");
+    expect(table).toContain("No evidence = not complete.");
+  });
+
+  test("buildVerificationTable with useTaskSystem references TaskUpdate", () => {
+    const table = buildVerificationTable(true);
+    expect(table).toContain("TaskUpdate");
+    expect(table).toContain("All tasks marked completed");
+  });
+
+  test("buildVerificationTable without useTaskSystem references todowrite", () => {
+    const table = buildVerificationTable(false);
+    expect(table).toContain("todowrite");
+    expect(table).toContain("All todos marked completed");
+  });
+});

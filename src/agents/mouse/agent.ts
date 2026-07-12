@@ -6,7 +6,10 @@
  *
  * Routing:
  * 1. GPT models (openai/*, github-copilot/gpt-*) -> gpt.ts (GPT-5.2 optimized)
- * 2. Default (Claude, etc.) -> default.ts (Claude-optimized)
+ * 2. DeepSeek models (opencode-go/deepseek-*) -> deepseek.ts (DeepSeek-optimized)
+ * 3. Mimo models (opencode-go/mimo-*) -> mimo.ts (Mimo-optimized)
+ * 4. Qwen models (opencode-go/qwen-*) -> qwen.ts (Qwen-optimized)
+ * 5. Default (Anthropic/Claude, etc.) -> default.ts (Claude-optimized)
  */
 
 import type { AgentConfig } from "@opencode-ai/sdk"
@@ -16,10 +19,18 @@ import {
   type PermissionValue,
 } from "../../shared/permission-compat"
 import type { AgentMode } from "../types"
-import { isAnthropicModel, isGptModel } from "../types"
-
+import {
+  isAnthropicModel,
+  isDeepSeekModel,
+  isGptModel,
+  isMimoModel,
+  isQwenModel,
+} from "../types"
+import { buildDeepSeekMousePrompt } from "./deepseek"
 import { buildDefaultMousePrompt } from "./default"
 import { buildGptMousePrompt } from "./gpt"
+import { buildMimoMousePrompt } from "./mimo"
+import { buildQwenMousePrompt } from "./qwen"
 
 const MODE: AgentMode = "subagent"
 
@@ -32,15 +43,17 @@ export const MOUSE_DEFAULTS = {
   temperature: 0.1,
 } as const
 
-export type MousePromptSource = "default" | "gpt"
+export type MousePromptSource = "default" | "gpt" | "deepseek" | "mimo" | "qwen"
 
 /**
  * Determines which Mouse prompt to use based on model.
  */
 export function getMousePromptSource(model?: string): MousePromptSource {
-  if (model && isGptModel(model)) {
-    return "gpt"
-  }
+  if (!model) return "default"
+  if (isGptModel(model)) return "gpt"
+  if (isDeepSeekModel(model)) return "deepseek"
+  if (isMimoModel(model)) return "mimo"
+  if (isQwenModel(model)) return "qwen"
   return "default"
 }
 
@@ -50,13 +63,19 @@ export function getMousePromptSource(model?: string): MousePromptSource {
 export function buildMousePrompt(
   model: string | undefined,
   useTaskSystem: boolean,
-  promptAppend?: string
+  promptAppend?: string,
 ): string {
   const source = getMousePromptSource(model)
 
   switch (source) {
     case "gpt":
       return buildGptMousePrompt(useTaskSystem, promptAppend)
+    case "deepseek":
+      return buildDeepSeekMousePrompt(useTaskSystem, promptAppend)
+    case "mimo":
+      return buildMimoMousePrompt(useTaskSystem, promptAppend)
+    case "qwen":
+      return buildQwenMousePrompt(useTaskSystem, promptAppend)
     default:
       return buildDefaultMousePrompt(useTaskSystem, promptAppend)
   }
@@ -65,7 +84,7 @@ export function buildMousePrompt(
 export function createMouseAgentWithOverrides(
   override: AgentOverrideConfig | undefined,
   systemDefaultModel?: string,
-  useTaskSystem = false
+  useTaskSystem = false,
 ): AgentConfig {
   if (override?.disable) {
     override = undefined
@@ -105,11 +124,12 @@ export function createMouseAgentWithOverrides(
     base.top_p = override.top_p
   }
 
+  // Enable thinking for models that support it
   if (isGptModel(model)) {
     return { ...base, reasoningEffort: "medium" } as AgentConfig
   }
 
-  if (isAnthropicModel(model)) {
+  if (isAnthropicModel(model) || isDeepSeekModel(model)) {
     return {
       ...base,
       thinking: { type: "enabled", budgetTokens: 32000 },
