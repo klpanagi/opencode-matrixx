@@ -73,7 +73,6 @@ export async function applyAgentConfig(params: {
   const builtinAgents = await createBuiltinAgents(
     migratedDisabledAgents,
     params.pluginConfig.agents,
-    params.pluginConfig.global_model,
     params.ctx.directory,
     undefined,
     params.pluginConfig.categories,
@@ -83,6 +82,7 @@ export async function applyAgentConfig(params: {
     currentModel,
     disabledSkills,
     useTaskSystem,
+    params.pluginConfig.global_model,
   );
   const userAgents = loadUserAgents();
   const projectAgents = loadProjectAgents(params.ctx.directory);

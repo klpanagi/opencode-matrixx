@@ -5,8 +5,8 @@ export {
   getMousePromptSource,
   MOUSE_DEFAULTS,
 } from "./agent"
-export { buildDefaultMousePrompt } from "./default"
 export { buildDeepSeekMousePrompt } from "./deepseek"
+export { buildDefaultMousePrompt } from "./default"
 export { buildGptMousePrompt } from "./gpt"
 export { buildMimoMousePrompt } from "./mimo"
 export { buildQwenMousePrompt } from "./qwen"

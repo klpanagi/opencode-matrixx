@@ -26,9 +26,8 @@ import {
   isMimoModel,
   isQwenModel,
 } from "../types"
-
-import { buildDefaultMousePrompt } from "./default"
 import { buildDeepSeekMousePrompt } from "./deepseek"
+import { buildDefaultMousePrompt } from "./default"
 import { buildGptMousePrompt } from "./gpt"
 import { buildMimoMousePrompt } from "./mimo"
 import { buildQwenMousePrompt } from "./qwen"

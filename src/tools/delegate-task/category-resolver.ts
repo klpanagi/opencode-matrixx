@@ -200,7 +200,7 @@ Available categories: ${allCategoryNames}`,
       if (parsed) {
         categoryModel = { ...parsed, temperature: resolved.config.temperature }
       }
-      _complexityNote = "Model auto-downgraded from " + previousModel + " to " + resolvedDowngrade.model + " (complexity: " + complexityLevel + ")"
+      _complexityNote = `Model auto-downgraded from ${previousModel} to ${resolvedDowngrade.model} (complexity: ${complexityLevel})`
     }
   }
 

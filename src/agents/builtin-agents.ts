@@ -23,7 +23,7 @@ import { createKeymakerAgent } from "./keymaker"
 import { createMerovingianAgent, ORACLE_PLAN_BUILDER_METADATA, ORACLE_PROMPT_METADATA } from "./merovingian"
 import { createMorpheusAgent } from "./morpheus"
 import { createLibrarianAgent, LIBRARIAN_PROMPT_METADATA } from "./operator"
-import { createSatiAgent, SATI_PROMPT_METADATA } from "./sati"
+import { createSatiAgent } from "./sati"
 import { createSentinelAgent, SENTINEL_PROMPT_METADATA } from "./sentinel"
 import { createSeraphAgent, seraphPromptMetadata } from "./seraph"
 import { createSmithAgent, smithPromptMetadata } from "./smith"
@@ -70,7 +70,6 @@ const agentMetadata: Partial<Record<BuiltinAgentName, AgentPromptMetadata>> = {
 export async function createBuiltinAgents(
   disabledAgents: string[] = [],
   agentOverrides: AgentOverrides = {},
-  globalModel?: string,
   directory?: string,
   systemDefaultModel?: string,
   categories?: CategoriesConfig,
@@ -79,7 +78,8 @@ export async function createBuiltinAgents(
   browserProvider?: BrowserAutomationProvider,
   uiSelectedModel?: string,
   disabledSkills?: Set<string>,
-  useTaskSystem = false
+  useTaskSystem = false,
+  globalModel?: string,
 ): Promise<Record<string, AgentConfig>> {
   const connectedProviders = readConnectedProvidersCache()
   const providerModelsConnected = connectedProviders
