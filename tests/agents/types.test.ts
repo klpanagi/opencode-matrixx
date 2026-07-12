@@ -1,5 +1,5 @@
 import { describe, expect, test } from "bun:test";
-import { isGptModel } from "../../src/agents/types";
+import { isDeepSeekModel, isGptModel, isMimoModel, isQwenModel } from "../../src/agents/types";
 
 describe("isGptModel", () => {
   test("standard openai provider models", () => {
@@ -45,5 +45,92 @@ describe("isGptModel", () => {
 
   test("opencode provider is not gpt", () => {
     expect(isGptModel("opencode/claude-opus-4-6")).toBe(false);
+  });
+});
+
+describe("isDeepSeekModel", () => {
+  test("standard opencode-go deepseek models", () => {
+    expect(isDeepSeekModel("opencode-go/deepseek-v4-flash")).toBe(true);
+    expect(isDeepSeekModel("opencode-go/deepseek-v4")).toBe(true);
+    expect(isDeepSeekModel("opencode-go/deepseek-v3")).toBe(true);
+  });
+
+  test("openai provider deepseek models", () => {
+    expect(isDeepSeekModel("openai/deepseek-v4-flash")).toBe(true);
+  });
+
+  test("litellm proxied deepseek models", () => {
+    expect(isDeepSeekModel("litellm/deepseek-v4-flash")).toBe(true);
+  });
+
+  test("claude models are not deepseek", () => {
+    expect(isDeepSeekModel("anthropic/claude-opus-4-6")).toBe(false);
+  });
+
+  test("gpt models are not deepseek", () => {
+    expect(isDeepSeekModel("openai/gpt-5.2")).toBe(false);
+  });
+
+  test("qwen models are not deepseek", () => {
+    expect(isDeepSeekModel("opencode-go/qwen3.7-plus")).toBe(false);
+  });
+
+  test("mimo models are not deepseek", () => {
+    expect(isDeepSeekModel("opencode-go/mimo-v2.5")).toBe(false);
+  });
+});
+
+describe("isMimoModel", () => {
+  test("standard opencode-go mimo models", () => {
+    expect(isMimoModel("opencode-go/mimo-v2.5")).toBe(true);
+    expect(isMimoModel("opencode-go/mimo-v2")).toBe(true);
+  });
+
+  test("other provider mimo models", () => {
+    expect(isMimoModel("litellm/mimo-v2.5")).toBe(true);
+  });
+
+  test("claude models are not mimo", () => {
+    expect(isMimoModel("anthropic/claude-opus-4-6")).toBe(false);
+  });
+
+  test("deepseek models are not mimo", () => {
+    expect(isMimoModel("opencode-go/deepseek-v4-flash")).toBe(false);
+  });
+
+  test("qwen models are not mimo", () => {
+    expect(isMimoModel("opencode-go/qwen3.7-plus")).toBe(false);
+  });
+});
+
+describe("isQwenModel", () => {
+  test("standard opencode-go qwen models", () => {
+    expect(isQwenModel("opencode-go/qwen3.7-plus")).toBe(true);
+    expect(isQwenModel("opencode-go/qwen3.5")).toBe(true);
+    expect(isQwenModel("opencode-go/qwen-max")).toBe(true);
+  });
+
+  test("openai provider qwen models", () => {
+    expect(isQwenModel("openai/qwen3.7-plus")).toBe(true);
+  });
+
+  test("litellm proxied qwen models", () => {
+    expect(isQwenModel("litellm/qwen3.7-plus")).toBe(true);
+  });
+
+  test("claude models are not qwen", () => {
+    expect(isQwenModel("anthropic/claude-opus-4-6")).toBe(false);
+  });
+
+  test("deepseek models are not qwen", () => {
+    expect(isQwenModel("opencode-go/deepseek-v4-flash")).toBe(false);
+  });
+
+  test("mimo models are not qwen", () => {
+    expect(isQwenModel("opencode-go/mimo-v2.5")).toBe(false);
+  });
+
+  test("gpt models are not qwen", () => {
+    expect(isQwenModel("openai/gpt-5.2")).toBe(false);
   });
 });
