@@ -112,7 +112,7 @@ Built-in skills (this dir) are merged with project / user / Claude-Code skills i
 
 ## HOW TO REMOVE A BUILT-IN SKILL
 
-Remove from `skillLoaders` in `skills.ts`. Note: this affects all profiles; users with `disabled_skills: ["my-skill"]` will see a benign "not found" message.
+Remove from `skillLoaders` in `skills.ts`. Note: users with `disabled_skills: ["my-skill"]` will see a benign "not found" message.
 
 ## KNOWN HOTSPOTS
 

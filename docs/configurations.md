@@ -80,31 +80,6 @@ When both `matrixx.jsonc` and `matrixx.json` files exist, `.jsonc` takes priorit
 }
 ```
 
-## Profiles
-
-Profiles assign models to every agent and category — one setting, full model lineup.
-
-| Profile | Best For | Daily Cost |
-|---------|----------|------------|
-| **free** | Experimentation, prototyping | $0 |
-| **budget** | Personal projects, light use | ~$1–3 |
-| **economy** | Active development with cost control | ~$3–8 |
-| **balanced** | Professional development | ~$8–20 |
-| **performance** | Maximum capability | ~$20–50 |
-| **go** | OpenCode Go subscription | Go quota |
-| **go-duo** | Duo subscription, two users | Go Duo quota |
-| **go-trio** | Trio subscription, three users | Go Trio quota |
-| **go-ultimate** | Unlimited Go access | Go Ultimate quota |
-| **xiaomi-ultimate** | Xiaomi-optimized ultimate | Xiaomi quota |
-
-```json
-{
-  "profile": "balanced"
-}
-```
-
-Profile defaults merge first; any `agents` or `categories` override takes precedence.
-
 ## Google Auth
 
 **Recommended**: For Google Gemini authentication, install the [`opencode-antigravity-auth`](https://github.com/NoeFabris/opencode-antigravity-auth) plugin (`@latest`). It provides multi-account load balancing, variant-based thinking levels, dual quota system (Antigravity + Gemini CLI), and active maintenance. See [Installation > Google Gemini](docs/guide/installation.md#google-gemini-antigravity-oauth).

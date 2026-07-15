@@ -308,7 +308,6 @@ For full model/temp/fallback details see the per-agent file or `src/agents/AGENT
 - Project (`matrixx.json`/`.jsonc`) → User (`~/.config/opencode/matrixx.json`) → Defaults
 - JSONC: comments + trailing commas via `jsonc-parser` (use `src/shared/jsonc-parser.ts`, not raw `JSON.parse`)
 - Legacy config auto-migrated by `src/shared/migration/` (agent names, hook names, model versions)
-- Profiles: `free | budget | economy | balanced | performance | go | xiaomi-ultimate | go-ultimate | go-trio | go-duo`
 
 ## MCP ARCHITECTURE (3 tiers)
 

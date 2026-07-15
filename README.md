@@ -74,7 +74,7 @@ Create `matrixx.jsonc` in your project root:
 ```jsonc
 {
   "$schema": "https://raw.githubusercontent.com/klpanagi/opencode-matrixx/refs/heads/dev/dist/matrixx.schema.json",
-  "profile": "balanced"
+  "agents": {}
 }
 ```
 
@@ -92,25 +92,6 @@ https://raw.githubusercontent.com/klpanagi/opencode-matrixx/refs/heads/dev/docs/
 [Manual installation guide →](docs/guide/installation.md) · [Uninstall →](docs/guide/uninstallation.md)
 
 ---
-
-## Profiles
-
-Profiles assign models to every agent — one setting, full model lineup.
-
-| Profile | Best For | Daily Cost |
-|---------|----------|------------|
-| **free** | Experimentation, prototyping | $0 |
-| **budget** | Personal projects, light use | ~$1–3 |
-| **economy** | Active development with cost control | ~$3–8 |
-| **balanced** | Professional development | ~$8–20 |
-| **performance** | Maximum capability | ~$20–50 |
-| **go** | OpenCode Go subscription | Go quota |
-| **go-duo** | Duo subscription, two users | Go Duo quota |
-| **go-trio** | Trio subscription, three users | Go Trio quota |
-| **go-ultimate** | Unlimited Go access | Go Ultimate quota |
-| **xiaomi-ultimate** | Xiaomi-optimized ultimate | Xiaomi quota |
-
-Profile defaults merge first; any `agents` or `categories` override takes precedence.
 
 ---
 

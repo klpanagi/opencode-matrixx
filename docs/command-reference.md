@@ -18,7 +18,6 @@ Matrixx provides 15 built-in slash commands covering orchestration, research, re
 | `/handoff` | Create session handoff | — | — |
 | `/pickup` | Resume from handoff | — | — |
 | `/remove-deadcode` | Delete unused code (LSP-verified) | — | — |
-| `/profile` | View or change active profile | — | — |
 | `/end-ultrawork` | Deactivate ultrawork mode | ✅ | — |
 | `/research` | Saturation research (multi-round) | — | — |
 | `/assembly` | Toggle assembly tool at runtime | ✅ | — |
@@ -230,32 +229,7 @@ Find and remove unused code using LSP reference analysis. 5-phase workflow with 
 
 ---
 
-## 11. `/profile`
-
-View or change the active Matrixx profile. Profiles control model selection, temperature, and feature flags.
-
-```
-/profile
-/profile list
-/profile show
-/profile set balanced
-/profile set performance --global
-/profile set go --project
-```
-
-| Argument | Description |
-|----------|-------------|
-| `list` | Show all available profiles |
-| `show` | Show currently active profile |
-| `set <name>` | Activate a profile (`free`, `budget`, `economy`, `balanced`, `performance`, `go`) |
-| `--global` | Write to global config (`~/.config/opencode/matrixx.json`) |
-| `--project` | Write to project config (`matrixx.jsonc` in project root) |
-
-Without `--global` or `--project`, the change applies to the current session only.
-
----
-
-## 12. `/end-ultrawork`
+## 11. `/end-ultrawork`
 
 Deactivate ultrawork mode and return to default behavior.
 
@@ -272,7 +246,7 @@ This command has an **imperative intercept** — it calls `ultraworkState.disabl
 
 ---
 
-## 13. `/research`
+## 12. `/research`
 
 Execute a systematic multi-round research process. Spawns parallel swarms of explore + operator agents, then recursively follows leads until convergence.
 
@@ -306,7 +280,7 @@ Execute a systematic multi-round research process. Spawns parallel swarms of exp
 
 ---
 
-## 14. `/assembly`
+## 13. `/assembly`
 
 Enable or disable the multi-model assembly tool for the current session.
 
@@ -329,7 +303,7 @@ This command has an **imperative intercept** — it calls `assemblyState.disable
 
 ---
 
-## 15. `/ultrawork`
+## 14. `/ultrawork`
 
 Control ultrawork mode at runtime with three states: force-on, force-off, or default (keyword-triggered).
 

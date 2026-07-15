@@ -345,7 +345,7 @@ The cost tiers (free → cheap → normal → expensive) ensure agents are used 
 | **Code Review** | ✅ 5-agent parallel | ❌ | ❌ | ❌ | ❌ | ✅ code-review skill |
 | **Parallel Agents** | ✅ Background tasks | ✅ Team Mode (up to 8) | ✅ Background agents | ✅ Parallel | ❌ Sequential | N/A |
 | **Self-Loop** | Matrix Loop + todo continuation | Ralph Loop | Deepwork workflow | upup-loop | Mission Loop | N/A |
-| **Config System** | Zod v4 + JSONC + 10 profiles | Zod + JSONC | Presets | Zod + JSONC | JSON | None |
+| **Config System** | Zod v4 + JSONC | Zod + JSONC | Presets | Zod + JSONC | JSON | None |
 | **MCP Servers** | 4 (websearch, context7, grep_app, document-reader) | 5 (+codegraph, git_bash) | 5 | 5 | Unknown | None |
 | **Platform Packages** | 7 + 4 baseline | Multiple editions | ❌ | ❌ | ❌ | ❌ |
 | **Test Coverage** | 262 files (~144k LOC) | Unknown | Unknown | Unknown | Unknown | Unknown |
@@ -355,7 +355,7 @@ The cost tiers (free → cheap → normal → expensive) ensure agents are used 
 - **Only plugin with Sentinel** (security auditing) — no competitor has dedicated security
 - **Only plugin with Cipher** (DSL engineering) — specialized for language work
 - **Only plugin with Sati** (frontend specialist with bundled skills + browser verification)
-- **Most sophisticated config**: 8 profiles, JSONC, Zod v4, auto-migration
+- **Most sophisticated config**: JSONC, Zod v4, auto-migration
 - **BDD comments** (`//#given //#when //#then`) — no competitor enforces this
 - **Dead code removal** (`/remove-deadcode`) — unique command
 - **Skill-embedded MCPs** — skills can bring their own MCP servers

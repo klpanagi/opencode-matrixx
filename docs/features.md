@@ -89,26 +89,6 @@ Customize agent models, prompts, and permissions in `matrixx.json`. See [Configu
 
 ---
 
-## Profiles
-
-Profiles assign models to every agent — one setting, full model lineup.
-
-| Profile | Best For | Daily Cost |
-|---------|----------|------------|
-| **free** | Experimentation, prototyping | $0 |
-| **budget** | Personal projects, light use | ~$1–3 |
-| **economy** | Active development with cost control | ~$3–8 |
-| **balanced** | Professional development | ~$8–20 |
-| **performance** | Maximum capability | ~$20–50 |
-| **go** | OpenCode Go subscription | Go quota |
-| **go-duo** | Duo subscription, two users | Go Duo quota |
-| **go-trio** | Trio subscription, three users | Go Trio quota |
-| **go-ultimate** | Unlimited Go access | Go Ultimate quota |
-| **xiaomi-ultimate** | Xiaomi-optimized ultimate | Xiaomi quota |
-
-Profile defaults merge first; any `agents` or `categories` override takes precedence.
-
----
 
 ## Skills: Specialized Knowledge
 
@@ -175,8 +155,8 @@ The `delegate_task` tool accepts an optional `complexity` field (1-5 or `"auto"`
 
 **Cost impact:**
 
-- **Honest estimate: 15-25% cost reduction** on routable tasks for sessions on profiles with model headroom (e.g. `balanced`, `performance`, `go`).
-- **0% savings on `free` / `budget` profiles** — those profiles already pin agents to the cheapest tier; P3 has nowhere to downgrade from.
+- **Honest estimate: 15-25% cost reduction** on routable tasks for sessions with model headroom.
+- **0% savings on `free` / `budget` tiers** — those already pin agents to the cheapest tier; P3 has nowhere to downgrade from.
 - Quality impact: conservative default + explicit override + per-task logging means the pilotfish-validated 96% quality at 46% cost (Anthropic BrowseComp) is achievable in principle, but real-world Matrixx savings are lower because typical sessions have fewer routable tasks than the pilotfish benchmark.
 
 **100% backwards compatible:** omitting `complexity` from a `delegate_task` call leaves behavior identical to before. The tool schema adds the field as optional with default `"auto"`.
