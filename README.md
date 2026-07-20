@@ -401,6 +401,82 @@ Sentinel never modifies code — it reports findings with CWE IDs, exact locatio
 
 ---
 
+## RTK Integration — Token Compression
+
+Matrixx integrates [RTK](https://github.com/rtk-ai/rtk) for automatic bash command compression, reducing LLM token consumption by **60-90%** on tool outputs.
+
+### What is RTK?
+
+RTK is a Rust CLI binary that intelligently rewrites bash commands to compress their output before it reaches the LLM. It recognizes 70+ command patterns (git, npm, cargo, test runners, linters, build tools) and applies smart filtering, grouping, and deduplication strategies.
+
+```
+# Without RTK: 2000 tokens
+$ git status
+On branch main
+Changes not staged for commit:
+  modified:   src/config.ts
+  modified:   src/hooks/index.ts
+  ... (50 more lines)
+
+# With RTK: 200 tokens
+$ rtk git status
+2 files changed: src/config.ts, src/hooks/index.ts
+```
+
+### How It Works
+
+The RTK hook intercepts bash commands **before execution** and rewrites them to use RTK's compression:
+
+1. LLM requests: `git status`
+2. RTK hook rewrites to: `rtk git status`
+3. RTK binary executes and compresses output
+4. Compressed output (60-90% smaller) reaches the LLM
+
+The hook runs **silently** — no configuration needed beyond enabling it. RTK's pattern matching handles the rest.
+
+### Configuration
+
+RTK is **disabled by default** (opt-in). Enable it in `matrixx.jsonc`:
+
+```jsonc
+{
+  "rtk": {
+    "enabled": true,
+    "binary_path": "/usr/local/bin/rtk",  // optional — defaults to "rtk" in PATH
+    "timeout_ms": 5000                     // optional — subprocess timeout
+  }
+}
+```
+
+### Installation
+
+Install RTK from [rtk-ai/rtk](https://github.com/rtk-ai/rtk):
+
+```bash
+# macOS
+brew install rtk-ai/tap/rtk
+
+# Linux (curl)
+curl -fsSL https://raw.githubusercontent.com/rtk-ai/rtk/main/install.sh | bash
+
+# Verify installation
+rtk --version
+```
+
+### Performance Impact
+
+| Metric | Value |
+|--------|-------|
+| **Overhead** | ~10-20ms per bash command |
+| **Token savings** | 60-90% reduction on compressed commands |
+| **Net benefit** | Significant for projects with frequent bash commands |
+
+The 10-20ms subprocess overhead is negligible compared to command execution time and LLM context savings.
+
+
+---
+
+
 ## Documentation
 
 | | |
