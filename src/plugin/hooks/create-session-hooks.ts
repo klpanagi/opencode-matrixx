@@ -13,6 +13,7 @@ import {
   createOracleMdOnlyHook,
   createPreemptiveCompactionHook,
   createQuestionLabelTruncatorHook,
+  createRtkBashRewriterHook,
   createRuntimeFallbackHook,
   createSessionNotification,
   createSessionRecoveryHook,
@@ -51,6 +52,7 @@ export type SessionHooks = {
   taskResumeInfo: ReturnType<typeof createTaskResumeInfoHook>
   anthropicEffort: ReturnType<typeof createAnthropicEffortHook> | null
   runtimeFallback: ReturnType<typeof createRuntimeFallbackHook> | null
+  rtkBashRewriter: ReturnType<typeof createRtkBashRewriterHook> | null
 }
 
 export function createSessionHooks(args: {
@@ -162,6 +164,10 @@ export function createSessionHooks(args: {
         }))
     : null
 
+  const rtkBashRewriter = isHookEnabled("rtk-bash-rewriter") && pluginConfig.rtk?.enabled
+    ? safeHook("rtk-bash-rewriter", () => createRtkBashRewriterHook(ctx, pluginConfig))
+    : null
+
   return {
     contextWindowMonitor,
     preemptiveCompaction,
@@ -183,5 +189,6 @@ export function createSessionHooks(args: {
     taskResumeInfo,
     anthropicEffort,
     runtimeFallback,
+    rtkBashRewriter,
   }
 }

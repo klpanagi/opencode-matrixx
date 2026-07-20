@@ -161,7 +161,8 @@
           "tool-pair-validator",
           "quality-gate",
           "task-notepad",
-          "design-intent-preserver"
+          "design-intent-preserver",
+          "rtk-bash-rewriter"
         ]
       }
     },
@@ -4666,6 +4667,29 @@
       "required": [
         "enabled",
         "proactive"
+      ],
+      "additionalProperties": false
+    },
+    "rtk": {
+      "type": "object",
+      "properties": {
+        "enabled": {
+          "default": false,
+          "type": "boolean"
+        },
+        "binary_path": {
+          "type": "string"
+        },
+        "timeout_ms": {
+          "default": 5000,
+          "type": "integer",
+          "minimum": 1000,
+          "maximum": 30000
+        }
+      },
+      "required": [
+        "enabled",
+        "timeout_ms"
       ],
       "additionalProperties": false
     },

@@ -54,6 +54,7 @@ export function createToolExecuteBeforeHandler(args: {
   const questionLabelTruncatorHook = hooks.questionLabelTruncator?.["tool.execute.before"]
   const mouseNotepadHook = hooks.mouseNotepad?.["tool.execute.before"]
   const architectHookHook = hooks.architectHook?.["tool.execute.before"]
+const rtkBashRewriterHook = hooks.rtkBashRewriter?.["tool.execute.before"]
 
   return async (input, output): Promise<void> => {
     // ---------------------------------------------------------------------
@@ -98,7 +99,7 @@ export function createToolExecuteBeforeHandler(args: {
       prometheusMdOnlyHook?.(input, output),
     ])
 
-    // Wave 3 (5 hooks): MUTATOR — must run sequentially to preserve
+    // Wave 3 (7 hooks): MUTATOR — must run sequentially to preserve
     //   mutation order. Specifically:
   //   - 3 hooks CONCAT to output.args.prompt (prometheusMdOnly,
   //     mouseNotepad, architectHook). Parallel writes would stomp
@@ -132,6 +133,7 @@ export function createToolExecuteBeforeHandler(args: {
       }
     }
 
+    await rtkBashRewriterHook?.(input, output)
     await nonInteractiveEnvHook?.(input, output)
     await bashFileReadGuardHook?.(input, output)
     await questionLabelTruncatorHook?.(input, output)
