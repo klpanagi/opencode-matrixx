@@ -32,6 +32,7 @@ export { createOracleMdOnlyHook } from "./prometheus-md-only";
 export { createQualityGateHook } from "./quality-gate/hook"
 export { createQuestionLabelTruncatorHook } from "./question-label-truncator";
 export { createReadImageResizerHook } from "./read-image-resizer"
+export { createRtkBashRewriterHook } from "./rtk-bash-rewriter";
 export { createRulesInjectorHook } from "./rules-injector";
 export { createRuntimeFallbackHook, type RuntimeFallbackHook, type RuntimeFallbackOptions, SessionCategoryRegistry } from "./runtime-fallback"
 export { createSecretLeakGuardHook } from "./secret-leak-guard";

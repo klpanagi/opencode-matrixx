@@ -19,6 +19,7 @@ import { ModelCapabilitiesConfigSchema } from "./model-capabilities"
 import { MorpheusConfigSchema } from "./morpheus"
 import { MorpheusAgentConfigSchema } from "./morpheus-agent"
 import { NotificationConfigSchema } from "./notification"
+import { RtkConfigSchema } from "./rtk"
 import { RuntimeFallbackConfigSchema } from "./runtime-fallback"
 import { SecurityConfigSchema } from "./security"
 import { SkillsConfigSchema } from "./skills"
@@ -74,6 +75,8 @@ export const MatrixxConfigSchema = z.object({
   model_capabilities: ModelCapabilitiesConfigSchema.optional(),
   /** Enable matrixx-self-config skill (default: false - opt-in feature) */
   matrixx_self_config: MatrixxSelfConfigSkillConfigSchema.optional(),
+  /** RTK bash command rewriter configuration (default: disabled) */
+  rtk: RtkConfigSchema.optional(),
   /** Migration history to prevent re-applying migrations (e.g., model version upgrades) */
   _migrations: z.array(z.string()).optional(),
 })
