@@ -40,10 +40,12 @@ export function createRtkBashRewriterHook(_ctx: PluginInput, config: MatrixxConf
           stderr: "pipe",
         })
 
-        // Wait for exit with timeout
-        const exited = await proc.exited
-        if (exited !== 0) {
-          // Exit codes 1/2/3 = passthrough (no blocking)
+        // Wait for exit
+        const exitCode = await proc.exited
+        // Exit codes: 0=success, 1=no RTK equivalent, 2=deny, 3=rewrite available
+        // We accept both 0 and 3 as successful rewrites
+        if (exitCode !== 0 && exitCode !== 3) {
+          // Exit codes 1/2 = passthrough (no blocking)
           return
         }
 
