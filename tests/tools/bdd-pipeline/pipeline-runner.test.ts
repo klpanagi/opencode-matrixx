@@ -1,11 +1,13 @@
 import {
   afterAll,
   afterEach,
+  beforeAll,
   beforeEach,
   describe,
   expect,
   it,
   mock,
+  spyOn,
 } from "bun:test"
 import * as fs from "node:fs"
 import type { BddPipelineArgs } from "../../../src/tools/bdd-pipeline/types"
@@ -14,24 +16,23 @@ const callLog: string[] = []
 const writtenFiles = new Map<string, string>()
 const existingFiles = new Set<string>()
 
-const _originalFs = { ...fs }
-mock.module("node:fs", () => ({
-  ..._originalFs,
-  existsSync: (p: string) => existingFiles.has(p),
-  writeFileSync: (p: string, data: string) => {
-    writtenFiles.set(p, data)
-    callLog.push(`write:${p}`)
-  },
-  readFileSync: (p: string) => {
-    const v = writtenFiles.get(p) ?? ""
-    callLog.push(`read:${p}`)
-    return v
-  },
-}))
+describe("bdd-pipeline runner", () => {
+  beforeAll(() => {
+    spyOn(fs, "existsSync").mockImplementation((p: string) => existingFiles.has(p))
+    spyOn(fs, "writeFileSync").mockImplementation((p: string, data: string) => {
+      writtenFiles.set(p, data)
+      callLog.push(`write:${p}`)
+    })
+    spyOn(fs, "readFileSync").mockImplementation((p: string) => {
+      const v = writtenFiles.get(p) ?? ""
+      callLog.push(`read:${p}`)
+      return v
+    })
+  })
 
-afterAll(() => {
-  mock.restore()
-})
+  afterAll(() => {
+    mock.restore()
+  })
 
 // ---------------------------------------------------------------------------
 // Fixture factories
@@ -179,7 +180,6 @@ function buildDeps(recorder: DepsRecorder, overrides: Partial<{
 // Tests
 // ---------------------------------------------------------------------------
 
-describe("bdd-pipeline runner", () => {
   let recorder: DepsRecorder
   let runBddPipeline: typeof import("../../../src/tools/bdd-pipeline/pipeline-runner").runBddPipeline
 

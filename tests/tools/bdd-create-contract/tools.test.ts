@@ -1,4 +1,4 @@
-import { afterAll, afterEach, describe, expect, it, mock } from "bun:test"
+import { afterAll, beforeAll, afterEach, describe, expect, it, mock, spyOn } from "bun:test"
 import crypto from "node:crypto"
 import * as fs from "node:fs"
 import { generateMessages } from "@cucumber/gherkin"
@@ -80,19 +80,22 @@ const RULES_FEATURE = `Feature: Pagination
 const existingFiles = new Set<string>()
 const writtenFiles = new Map<string, string>()
 
-const _originalFs = { ...fs }
+describe("bdd_create_contract tool", () => {
+  beforeAll(() => {
+    spyOn(fs, "existsSync").mockImplementation((p: string) => existingFiles.has(p))
+    spyOn(fs, "writeFileSync").mockImplementation((p: string, data: string) => {
+      writtenFiles.set(p, data)
+    })
+  })
 
-mock.module("node:fs", () => ({
-  ..._originalFs,
-  existsSync: (p: string) => existingFiles.has(p),
-  writeFileSync: (p: string, data: string) => {
-    writtenFiles.set(p, data)
-  },
-}))
+  afterAll(() => {
+    mock.restore()
+  })
 
-afterAll(() => {
-  mock.restore()
-})
+  afterEach(() => {
+    existingFiles.clear()
+    writtenFiles.clear()
+  })
 
 const mockContext: ToolContext = {
   sessionID: "s",
@@ -109,11 +112,6 @@ const mockContext: ToolContext = {
 // Tests
 // ---------------------------------------------------------------------------
 
-describe("bdd_create_contract tool", () => {
-  afterEach(() => {
-    existingFiles.clear()
-    writtenFiles.clear()
-  })
 
   it("produces valid Contract JSON from valid AST and annotations", async () => {
     // given

@@ -1,4 +1,4 @@
-import { afterEach, beforeEach, describe, expect, mock, test } from "bun:test"
+import { afterAll, afterEach, beforeEach, describe, expect, mock, test } from "bun:test"
 import { randomUUID } from "node:crypto"
 import { mkdirSync, rmSync, writeFileSync } from "node:fs"
 import { tmpdir } from "node:os"
@@ -13,6 +13,10 @@ mock.module("../../../src/shared/opencode-storage-detection", () => ({
 
 const { createOracleMdOnlyHook } = await import("../../../src/hooks/oracle-md-only/index")
 const { MESSAGE_STORAGE } = await import("../../../src/features/hook-message-injector")
+
+afterAll(() => {
+  mock.restore()
+})
 
 describe("oracle-md-only", () => {
   const TEST_SESSION_ID = "ses_test-session-oracle"

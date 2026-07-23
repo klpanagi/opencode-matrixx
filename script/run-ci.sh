@@ -76,12 +76,14 @@ for test in \
   tests/hooks/compaction-todo-preserver/index.test.ts \
   tests/hooks/preemptive-compaction.test.ts \
   tests/tools/lsp/client.test.ts \
+  tests/tools/lsp/lsp-process.test.ts \
   tests/tools/skill/tools.test.ts \
   tests/hooks/anthropic-context-window-limit-recovery/empty-content-recovery-sdk.test.ts \
   tests/hooks/anthropic-context-window-limit-recovery/recovery-hook.test.ts \
   tests/hooks/anthropic-context-window-limit-recovery/storage.test.ts \
   tests/agents/utils.test.ts \
-  tests/hooks/task-notepad/hook.test.ts
+  tests/hooks/task-notepad/hook.test.ts \
+  tests/tools/bdd-parse-gherkin/tools.test.ts
 do
   label="$(basename "$(dirname "$test")")/$(basename "$test")"
   bun test "$test" && pass "$label" || fail "$label"
@@ -117,12 +119,14 @@ find tests script -name '*.test.ts' -type f \
     -e 'tests/hooks/compaction-todo-preserver/index.test.ts' \
     -e 'tests/hooks/preemptive-compaction.test.ts' \
     -e 'tests/tools/lsp/client.test.ts' \
+    -e 'tests/tools/lsp/lsp-process.test.ts' \
     -e 'tests/tools/skill/tools.test.ts' \
     -e 'tests/hooks/anthropic-context-window-limit-recovery/empty-content-recovery-sdk.test.ts' \
     -e 'tests/hooks/anthropic-context-window-limit-recovery/recovery-hook.test.ts' \
     -e 'tests/hooks/anthropic-context-window-limit-recovery/storage.test.ts' \
     -e 'tests/agents/utils.test.ts' \
     -e 'tests/hooks/task-notepad/hook.test.ts' \
+    -e 'tests/tools/bdd-parse-gherkin/tools.test.ts' \
   | xargs bun test && pass "Remaining tests" || fail "Remaining tests"
 
 # ------------------------------------------------------------------

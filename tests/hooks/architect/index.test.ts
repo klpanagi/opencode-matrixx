@@ -1,4 +1,4 @@
-import { afterEach, beforeEach, describe, expect, mock, test } from "bun:test"
+import { afterAll, afterEach, beforeEach, describe, expect, mock, test } from "bun:test"
 import { randomUUID } from "node:crypto"
 import { existsSync, mkdirSync, rmSync, writeFileSync } from "node:fs"
 import { tmpdir } from "node:os"
@@ -59,6 +59,10 @@ mock.module("/home/klpanagi/matrixx/src/shared/session-utils.ts", () => ({
 
 const { createArchitectHook } = await import("../../../src/hooks/architect/index")
 const { MESSAGE_STORAGE } = await import("../../../src/features/hook-message-injector")
+
+afterAll(() => {
+  mock.restore()
+})
 
 describe("architect hook", () => {
   let TEST_DIR: string

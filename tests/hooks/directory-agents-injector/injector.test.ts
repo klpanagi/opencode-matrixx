@@ -47,8 +47,7 @@ mock.module("../../../src/hooks/directory-agents-injector/storage", () => ({
 const { processFilePathForAgentsInjection } = await import("../../../src/hooks/directory-agents-injector/injector")
 
 afterAll(() => {
-  mock.module("node:fs/promises", () => realFsPromises)
-  mock.module("node:fs", () => realFs)
+  mock.restore()
 })
 
 describe("processFilePathForAgentsInjection", () => {

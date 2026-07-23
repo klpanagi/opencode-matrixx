@@ -32,6 +32,7 @@ afterAll(() => {
     ...require("../../src/shared"),
     resolveModelPipeline: realResolveModelPipeline,
   }))
+  mock.restore()
 })
 
 beforeEach(() => {

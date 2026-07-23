@@ -42,140 +42,96 @@ jobs:
 
       - name: Run mock-heavy tests (isolated)
         run: |
-          # These files use mock.module() which pollutes the module cache.
-          # Each runs in its own bun test invocation to prevent cross-contamination.
-
-          # --- Plugin handlers & original isolated ---
+          # These files use mock.module() which pollutes bun's module cache
+          # when run in parallel. Each invocation runs in a separate process.
+          #
+          # Directories (all test files within run together, isolated from other dirs)
           bun test tests/plugin-handlers
           bun test tests/hooks/compaction-context-injector
           bun test tests/features/tmux-subagent
+          #
+          # Individual files that use mock.module and cause cross-file pollution
           bun test tests/tools/delegate-agent/sync-executor.test.ts
           bun test tests/tools/delegate-agent/session-creator.test.ts
           bun test tests/features/opencode-skill-loader/loader.test.ts
-
-          # --- Hook directories that use mock.module() ---
-          bun test tests/hooks/architect
-          bun test tests/hooks/comment-checker
-          bun test tests/hooks/compaction-todo-preserver
-          bun test tests/hooks/directory-agents-injector
-          bun test tests/hooks/directory-readme-injector
-          bun test tests/hooks/prometheus-md-only
-          bun test tests/hooks/rules-injector
-
-          # --- Non-hook files that use mock.module() ---
-          bun test tests/shared/opencode-message-dir.test.ts
+          bun test tests/features/opencode-skill-loader/agents-skills-global.test.ts
+          bun test tests/tools/session-manager/storage.test.ts
+          bun test tests/hooks/prometheus-md-only/index.test.ts
+          bun test tests/hooks/architect/index.test.ts
+          bun test tests/hooks/matrix-loop/index.test.ts
+          bun test tests/hooks/start-work/index.test.ts
+          bun test tests/hooks/auto-update-checker/hook/background-update-check.test.ts
+          bun test tests/hooks/auto-update-checker/hook.test.ts
+          bun test tests/features/skill-mcp-manager/manager.test.ts
           bun test tests/features/background-agent/manager.test.ts
+          bun test tests/hooks/comment-checker/cli.test.ts
+          bun test tests/hooks/comment-checker/hook.apply-patch.test.ts
+          bun test tests/hooks/directory-agents-injector/injector.test.ts
+          bun test tests/hooks/directory-readme-injector/injector.test.ts
+          bun test tests/hooks/rules-injector/injector.test.ts
+          bun test tests/hooks/compaction-todo-preserver/index.test.ts
+          bun test tests/hooks/preemptive-compaction.test.ts
+          bun test tests/tools/lsp/client.test.ts
+          bun test tests/tools/lsp/lsp-process.test.ts
+          bun test tests/tools/skill/tools.test.ts
+          bun test tests/hooks/anthropic-context-window-limit-recovery/empty-content-recovery-sdk.test.ts
+          bun test tests/hooks/anthropic-context-window-limit-recovery/recovery-hook.test.ts
+          bun test tests/hooks/anthropic-context-window-limit-recovery/storage.test.ts
           bun test tests/tools/bdd-create-contract/tools.test.ts
           bun test tests/tools/bdd-parse-gherkin/tools.test.ts
           bun test tests/tools/bdd-pipeline/pipeline-runner.test.ts
+          # spyOn() leaks from earlier tests pollute these (pass in isolation, fail
+          # in batch)
+          bun test tests/agents/utils.test.ts
+          bun test tests/hooks/task-notepad/hook.test.ts
           bun test tests/plugin/tool-execute-before.test.ts
           bun test tests/features/mission-state/plan-storage.test.ts
-          # OPENCODE_CONFIG_DIR env var pollution — must run isolated to prevent
-          # parallel test interference from other files that modify this global var
+          bun test tests/shared/opencode-message-dir.test.ts
 
       - name: Run remaining tests
         run: |
-          # Only pure (non-mock.module) test files/dirs run together here.
-          # Excluded: mock.module files (run isolated above), pre-existing failures.
-          # Pre-existing failures excluded:
-          #   src/shared/model-requirements.test.ts (stale model expectations)
-          #   src/hooks/anthropic-context-window-limit-recovery (CI-only failures, bun version)
-          #   src/hooks/todo-continuation-enforcer (7 fail)
-          #   src/hooks/auto-update-checker (4 fail)
-          #   src/hooks/context-window-monitor.test.ts (2 fail)
-          #   src/hooks/preemptive-compaction.test.ts (3 fail)
-          #   src/agents/utils.test.ts (CI-only failures: stale model expectations after merovingian model refactor; passes locally)
-          bun test tests/config tests/mcp tests/index.test.ts \
-            tests/agents/builtin-agents/resolve-file-uri.test.ts \
-            tests/agents/cipher.test.ts \
-            tests/agents/dynamic-agent-prompt-builder.test.ts \
-            tests/agents/momus.test.ts \
-            tests/agents/mouse/index.test.ts \
-            tests/agents/oracle-prompt.test.ts \
-            tests/agents/types.test.ts \
-            tests/shared/agent-config-integration.test.ts \
-            tests/shared/agent-display-names.test.ts \
-            tests/shared/agent-variant.test.ts \
-            tests/shared/connected-providers-cache.test.ts \
-            tests/shared/deep-merge.test.ts \
-            tests/shared/external-plugin-detector.test.ts \
-            tests/shared/file-utils.test.ts \
-            tests/shared/first-message-variant.test.ts \
-            tests/shared/frontmatter.test.ts \
-            tests/shared/git-worktree \
-            tests/shared/jsonc-parser.test.ts \
-            tests/shared/merge-categories.test.ts \
-            tests/shared/migration.test.ts \
-            tests/shared/model-availability.test.ts \
-            tests/shared/model-resolver.test.ts \
-            tests/shared/model-suggestion-retry.test.ts \
-            tests/shared/normalize-sdk-response.test.ts \
-            tests/shared/opencode-config-dir.test.ts \
-            tests/shared/opencode-http-api.test.ts \
-            tests/shared/opencode-server-auth.test.ts \
-            tests/shared/opencode-storage-detection.test.ts \
-            tests/shared/opencode-version.test.ts \
-            tests/shared/permission-compat.test.ts \
-            tests/shared/port-utils.test.ts \
-            tests/shared/safe-create-hook.test.ts \
-            tests/shared/session-cursor.test.ts \
-            tests/shared/session-directory-resolver.test.ts \
-            tests/shared/session-tools-store.test.ts \
-            tests/shared/skill-path-resolver.test.ts \
-            tests/shared/system-directive.test.ts \
-            tests/shared/tmux \
-            tests/shared/truncate-description.test.ts \
-            tests/tools/ast-grep tests/tools/background-task tests/tools/delegate-task \
-            tests/tools/glob tests/tools/grep tests/tools/hashline-edit tests/tools/interactive-bash \
-            tests/tools/look-at \
-            tests/tools/lsp/lsp-process.test.ts \
-            tests/tools/lsp/server-config-loader.test.ts \
-            tests/tools/lsp/utils.test.ts \
-            tests/tools/lsp/config.test.ts \
-            tests/tools/session-manager/tools.test.ts \
-            tests/tools/session-manager/utils.test.ts \
-            tests/tools/skill-mcp tests/tools/slashcommand tests/tools/task \
-            tests/tools/delegate-agent/background-agent-executor.test.ts \
-            tests/tools/delegate-agent/background-executor.test.ts \
-            tests/tools/delegate-agent/subagent-session-creator.test.ts \
-            tests/hooks/anthropic-effort \
-            tests/hooks/auto-slash-command \
-            tests/hooks/category-skill-reminder \
-            tests/hooks/delegate-task-retry \
-            tests/hooks/edit-error-recovery \
-            tests/hooks/env-file-write-guard \
-            tests/hooks/handoff-injector \
-            tests/hooks/hashline-read-enhancer \
-            tests/hooks/keyword-detector \
-            tests/hooks/matrix-loop \
-            tests/hooks/non-interactive-env \
-            tests/hooks/question-label-truncator \
-            tests/hooks/secret-leak-guard \
-            tests/hooks/session-recovery \
-            tests/hooks/start-work \
-            tests/hooks/stop-continuation-guard \
-            tests/hooks/task-reminder \
-            tests/hooks/task-resume-info \
-            tests/hooks/tasks-todowrite-disabler \
-            tests/hooks/think-mode \
-            tests/hooks/unstable-agent-babysitter \
-            tests/hooks/write-existing-file-guard \
-            tests/hooks/session-notification.test.ts \
-            tests/hooks/tool-output-truncator.test.ts \
-            tests/features/background-agent/manager.polling.test.ts \
-            tests/features/background-agent/task-poller.test.ts \
-            tests/features/background-agent/parent-session-notifier.test.ts \
-            tests/features/background-agent/concurrency.test.ts \
-            tests/features/background-agent/task-history.test.ts \
-            tests/features/builtin-commands \
-            tests/features/builtin-skills \
-            tests/features/session-state \
-            tests/features/hook-message-injector \
-            tests/features/opencode-skill-loader/config-source-discovery.test.ts \
-            tests/features/opencode-skill-loader/merger.test.ts \
-            tests/features/opencode-skill-loader/skill-content.test.ts \
-            tests/features/opencode-skill-loader/blocking.test.ts \
-            tests/features/skill-mcp-manager/env-cleaner.test.ts
+          # Run all other tests together. The mock-heavy files above are excluded
+          # via --exclude patterns to prevent double-running and pollution.
+          find tests script -name '*.test.ts' -type f \
+            | grep -v -F \
+              -e 'tests/plugin-handlers/' \
+              -e 'tests/hooks/compaction-context-injector/' \
+              -e 'tests/features/tmux-subagent/' \
+              -e 'tests/tools/delegate-agent/sync-executor.test.ts' \
+              -e 'tests/tools/delegate-agent/session-creator.test.ts' \
+              -e 'tests/features/opencode-skill-loader/loader.test.ts' \
+              -e 'tests/features/opencode-skill-loader/agents-skills-global.test.ts' \
+              -e 'tests/tools/session-manager/storage.test.ts' \
+              -e 'tests/hooks/prometheus-md-only/index.test.ts' \
+              -e 'tests/hooks/architect/index.test.ts' \
+              -e 'tests/hooks/matrix-loop/index.test.ts' \
+              -e 'tests/hooks/start-work/index.test.ts' \
+              -e 'tests/hooks/auto-update-checker/hook/background-update-check.test.ts' \
+              -e 'tests/hooks/auto-update-checker/hook.test.ts' \
+              -e 'tests/features/skill-mcp-manager/manager.test.ts' \
+              -e 'tests/features/background-agent/manager.test.ts' \
+              -e 'tests/hooks/comment-checker/cli.test.ts' \
+              -e 'tests/hooks/comment-checker/hook.apply-patch.test.ts' \
+              -e 'tests/hooks/directory-agents-injector/injector.test.ts' \
+              -e 'tests/hooks/directory-readme-injector/injector.test.ts' \
+              -e 'tests/hooks/rules-injector/injector.test.ts' \
+              -e 'tests/hooks/compaction-todo-preserver/index.test.ts' \
+              -e 'tests/hooks/preemptive-compaction.test.ts' \
+              -e 'tests/tools/lsp/client.test.ts' \
+              -e 'tests/tools/lsp/lsp-process.test.ts' \
+              -e 'tests/tools/skill/tools.test.ts' \
+              -e 'tests/hooks/anthropic-context-window-limit-recovery/empty-content-recovery-sdk.test.ts' \
+              -e 'tests/hooks/anthropic-context-window-limit-recovery/recovery-hook.test.ts' \
+              -e 'tests/hooks/anthropic-context-window-limit-recovery/storage.test.ts' \
+              -e 'tests/agents/utils.test.ts' \
+              -e 'tests/hooks/task-notepad/hook.test.ts' \
+              -e 'tests/tools/bdd-create-contract/tools.test.ts' \
+              -e 'tests/tools/bdd-parse-gherkin/tools.test.ts' \
+              -e 'tests/tools/bdd-pipeline/pipeline-runner.test.ts' \
+              -e 'tests/plugin/tool-execute-before.test.ts' \
+              -e 'tests/features/mission-state/plan-storage.test.ts' \
+              -e 'tests/shared/opencode-message-dir.test.ts' \
+            | xargs bun test
 
   typecheck:
     runs-on: ubuntu-latest

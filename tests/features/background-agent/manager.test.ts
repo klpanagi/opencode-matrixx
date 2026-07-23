@@ -3980,6 +3980,7 @@ describe("findNearestMessageExcludingCompaction reads each file once", () => {
   })
 
   afterEach(() => {
+    mock.restore()
     try {
       rmSync(B2_TEST_STORAGE, { recursive: true, force: true })
     } catch {

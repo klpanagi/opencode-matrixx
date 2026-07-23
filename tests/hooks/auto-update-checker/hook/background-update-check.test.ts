@@ -1,4 +1,4 @@
-import { beforeEach, describe, expect, it, mock } from "bun:test"
+import { afterAll, beforeEach, describe, expect, it, mock } from "bun:test"
 
 const mockFindPluginEntry = mock(() => null)
 const mockGetCachedVersion = mock(() => null as string | null)
@@ -108,6 +108,10 @@ mock.module("../../../../src/hooks/auto-update-checker/hook/background-update-ch
   }
 
   return { runBackgroundUpdateCheck }
+})
+
+afterAll(() => {
+  mock.restore()
 })
 
 const { runBackgroundUpdateCheck } = await import("../../../../src/hooks/auto-update-checker/hook/background-update-check")

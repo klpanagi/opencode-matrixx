@@ -82,6 +82,7 @@ jobs:
           bun test tests/hooks/compaction-todo-preserver/index.test.ts
           bun test tests/hooks/preemptive-compaction.test.ts
           bun test tests/tools/lsp/client.test.ts
+          bun test tests/tools/lsp/lsp-process.test.ts
           bun test tests/tools/skill/tools.test.ts
           bun test tests/hooks/anthropic-context-window-limit-recovery/empty-content-recovery-sdk.test.ts
           bun test tests/hooks/anthropic-context-window-limit-recovery/recovery-hook.test.ts
@@ -127,6 +128,7 @@ jobs:
               -e 'tests/hooks/compaction-todo-preserver/index.test.ts' \
               -e 'tests/hooks/preemptive-compaction.test.ts' \
               -e 'tests/tools/lsp/client.test.ts' \
+              -e 'tests/tools/lsp/lsp-process.test.ts' \
               -e 'tests/tools/skill/tools.test.ts' \
               -e 'tests/hooks/anthropic-context-window-limit-recovery/empty-content-recovery-sdk.test.ts' \
               -e 'tests/hooks/anthropic-context-window-limit-recovery/recovery-hook.test.ts' \

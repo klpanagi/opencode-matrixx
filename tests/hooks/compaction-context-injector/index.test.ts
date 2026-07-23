@@ -1,4 +1,4 @@
-import { describe, expect, it, mock } from "bun:test"
+import { afterAll, describe, expect, it, mock } from "bun:test"
 
 mock.module("../../../src/shared/system-directive", () => ({
   createSystemDirective: (type: string) => `[DIRECTIVE:${type}]`,
@@ -13,6 +13,10 @@ mock.module("../../../src/shared/system-directive", () => ({
     ORACLE_READ_ONLY: "ORACLE READ-ONLY",
   },
 }))
+
+afterAll(() => {
+  mock.restore()
+})
 
 import { TaskHistory } from "../../../src/features/background-agent/task-history"
 import { createCompactionContextInjector } from "../../../src/hooks/compaction-context-injector/index"

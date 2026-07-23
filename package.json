@@ -24,7 +24,7 @@
     "lint": "biome check src/",
     "lint:fix": "biome check --write src/",
     "ci": "bash script/run-ci.sh",
-    "test": "bun test"
+    "test": "bash script/run-ci.sh"
   },
   "keywords": [
     "opencode",

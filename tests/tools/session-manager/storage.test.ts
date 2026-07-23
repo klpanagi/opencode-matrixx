@@ -1,4 +1,4 @@
-import { afterEach, beforeEach, describe, expect, mock, test } from "bun:test"
+import { afterAll, afterEach, beforeEach, describe, expect, mock, test } from "bun:test"
 import { randomUUID } from "node:crypto"
 import { existsSync, mkdirSync, readdirSync, rmSync, writeFileSync } from "node:fs"
 import { tmpdir } from "node:os"
@@ -59,6 +59,10 @@ mock.module("../../../src/shared/opencode-message-dir", () => ({
     return null
   },
 }))
+
+afterAll(() => {
+  mock.restore()
+})
 const { getAllSessions, getMessageDir, sessionExists, readSessionMessages, readSessionTodos, getSessionInfo } =
   await import("../../../src/tools/session-manager/storage")
 
@@ -510,5 +514,9 @@ describe("session-manager storage - SDK path (beta mode)", () => {
 
     //#then should return empty array since no client and no JSON fallback
     expect(messages).toEqual([])
+  })
+
+  afterAll(() => {
+    mock.restore()
   })
 })

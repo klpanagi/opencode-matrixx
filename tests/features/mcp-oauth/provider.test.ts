@@ -1,4 +1,4 @@
-import { afterEach, beforeEach, describe, expect, it, mock } from "bun:test"
+import { afterAll, afterEach, beforeEach, describe, expect, it, mock } from "bun:test"
 import { createHash } from "node:crypto"
 import type { OAuthTokenData } from "../../../src/features/mcp-oauth/storage"
 
@@ -224,4 +224,8 @@ describe("McpOAuthProvider", () => {
       expect(url).toBe("http://127.0.0.1:19877/callback")
     })
   })
+})
+
+afterAll(() => {
+  mock.restore()
 })

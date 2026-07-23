@@ -39,7 +39,7 @@ mock.module("../../../src/features/mcp-oauth/provider", () => ({
 }))
 
 afterAll(() => {
-  mock.module("../../../src/features/mcp-oauth/provider", () => realMcpOAuthProvider)
+  mock.restore()
 })
 
 
