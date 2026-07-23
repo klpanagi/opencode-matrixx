@@ -4,7 +4,7 @@ import type { AgentMode, AgentPromptMetadata } from "./types"
 
 const MODE: AgentMode = "subagent"
 
-export const EXPLORE_PROMPT_METADATA: AgentPromptMetadata = {
+export const TRINITY_PROMPT_METADATA: AgentPromptMetadata = {
   category: "exploration",
   cost: "FREE",
   promptAlias: "Explore",
@@ -24,7 +24,7 @@ export const EXPLORE_PROMPT_METADATA: AgentPromptMetadata = {
   ],
 }
 
-export function createExploreAgent(model: string): AgentConfig {
+export function createTrinityAgent(model: string): AgentConfig {
   const restrictions = createAgentToolRestrictions([
     "write",
     "edit",
@@ -121,4 +121,4 @@ Use the right tool for the job:
 Flood with parallel calls. Cross-validate findings across multiple tools.`,
   }
 }
-createExploreAgent.mode = MODE
+createTrinityAgent.mode = MODE

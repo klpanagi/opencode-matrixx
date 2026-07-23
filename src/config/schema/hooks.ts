@@ -33,7 +33,7 @@ export const HookNameSchema = z.enum([
   "auto-slash-command",
   "edit-error-recovery",
   "delegate-task-retry",
-  "prometheus-md-only",
+  "oracle-md-only",
   "plan-persister",
   "mouse-notepad",
   "mouse-notepad",

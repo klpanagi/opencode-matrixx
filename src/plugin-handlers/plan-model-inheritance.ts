@@ -11,13 +11,13 @@ const MODEL_SETTINGS_KEYS = [
 ] as const
 
 export function buildPlanDemoteConfig(
-  prometheusConfig: Record<string, unknown> | undefined,
+  oracleConfig: Record<string, unknown> | undefined,
   planOverride: Record<string, unknown> | undefined,
 ): Record<string, unknown> {
   const modelSettings: Record<string, unknown> = {}
 
   for (const key of MODEL_SETTINGS_KEYS) {
-    const value = planOverride?.[key] ?? prometheusConfig?.[key]
+    const value = planOverride?.[key] ?? oracleConfig?.[key]
     if (value !== undefined) {
       modelSettings[key] = value
     }

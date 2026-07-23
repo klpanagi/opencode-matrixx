@@ -16,18 +16,18 @@ import { collectPendingBuiltinAgents } from "./builtin-agents/general-agents"
 import { maybeCreateKeymakerConfig } from "./builtin-agents/keymaker-agent"
 import { maybeCreateMorpheusConfig } from "./builtin-agents/morpheus-agent"
 import { CIPHER_PROMPT_METADATA, createCipherAgent } from "./cipher"
-import { createMultimodalLookerAgent, MULTIMODAL_LOOKER_PROMPT_METADATA } from "./construct"
+import { CONSTRUCT_PROMPT_METADATA, createConstructAgent } from "./construct"
 import { buildCustomAgentMetadata, parseRegisteredAgentSummaries } from "./custom-agent-summaries"
 import type { AvailableCategory } from "./dynamic-agent-prompt-builder"
 import { createKeymakerAgent } from "./keymaker"
 import { createMerovingianAgent, ORACLE_PLAN_BUILDER_METADATA, ORACLE_PROMPT_METADATA } from "./merovingian"
 import { createMorpheusAgent } from "./morpheus"
-import { createLibrarianAgent, LIBRARIAN_PROMPT_METADATA } from "./operator"
+import { createOperatorAgent, OPERATOR_PROMPT_METADATA } from "./operator"
 import { createSatiAgent } from "./sati"
 import { createSentinelAgent, SENTINEL_PROMPT_METADATA } from "./sentinel"
 import { createSeraphAgent, seraphPromptMetadata } from "./seraph"
 import { createSmithAgent, smithPromptMetadata } from "./smith"
-import { createExploreAgent, EXPLORE_PROMPT_METADATA } from "./trinity"
+import { createTrinityAgent, TRINITY_PROMPT_METADATA } from "./trinity"
 import type { AgentFactory, AgentOverrides, AgentPromptMetadata, BuiltinAgentName } from "./types"
 
 type AgentSource = AgentFactory | AgentConfig
@@ -37,9 +37,9 @@ const agentSources: Partial<Record<BuiltinAgentName, AgentSource>> = {
   morpheus: createMorpheusAgent,
   keymaker: createKeymakerAgent,
   merovingian: createMerovingianAgent,
-  operator: createLibrarianAgent,
-  trinity: createExploreAgent,
-  construct: createMultimodalLookerAgent,
+  operator: createOperatorAgent,
+  trinity: createTrinityAgent,
+  construct: createConstructAgent,
   seraph: createSeraphAgent,
   smith: createSmithAgent,
   architect: createArchitectAgent as AgentFactory,
@@ -56,9 +56,9 @@ const agentSources: Partial<Record<BuiltinAgentName, AgentSource>> = {
 const agentMetadata: Partial<Record<BuiltinAgentName, AgentPromptMetadata>> = {
   merovingian: ORACLE_PROMPT_METADATA,
   oracle: ORACLE_PLAN_BUILDER_METADATA,
-  operator: LIBRARIAN_PROMPT_METADATA,
-  trinity: EXPLORE_PROMPT_METADATA,
-  construct: MULTIMODAL_LOOKER_PROMPT_METADATA,
+  operator: OPERATOR_PROMPT_METADATA,
+  trinity: TRINITY_PROMPT_METADATA,
+  construct: CONSTRUCT_PROMPT_METADATA,
   seraph: seraphPromptMetadata,
   smith: smithPromptMetadata,
   architect: architectPromptMetadata,

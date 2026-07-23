@@ -1,7 +1,7 @@
 import { afterEach, describe, expect, it, setSystemTime } from "bun:test"
 import { createKeymakerAgent } from "../../../src/agents/keymaker"
 import { createMorpheusAgent } from "../../../src/agents/morpheus"
-import { createLibrarianAgent } from "../../../src/agents/operator"
+import { createOperatorAgent } from "../../../src/agents/operator"
 
 import { createEnvContextInjectorHook } from "../../../src/hooks/env-context-injector/index"
 
@@ -244,7 +244,7 @@ describe("P2: prefix-cache stability — affected agents are clean", () => {
 
   it("Operator (Librarian) agent config does not contain embedded env-context strings", () => {
     //#given
-    const agent = createLibrarianAgent("claude-haiku-4-5")
+    const agent = createOperatorAgent("claude-haiku-4-5")
 
     //#then
     for (const token of envTokens) {

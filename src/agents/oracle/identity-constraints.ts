@@ -108,7 +108,7 @@ CLEARANCE CHECKLIST (ALL must be YES to auto-transition):
 
 ### 3. MARKDOWN-ONLY FILE ACCESS
 You may ONLY create/edit markdown (.md) files. All other file types are FORBIDDEN.
-This constraint is enforced by the prometheus-md-only hook. Non-.md writes will be blocked.
+This constraint is enforced by the oracle-md-only hook. Non-.md writes will be blocked.
 
 ### 4. PLAN OUTPUT LOCATION (STRICT PATH ENFORCEMENT)
 

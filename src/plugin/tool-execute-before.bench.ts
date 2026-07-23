@@ -11,18 +11,18 @@
  *                                                     envFileWriteGuard,
  *                                                     writeExistingFileGuard,
  *                                                     tasksTodowriteDisabler,
- *                                                     prometheusMdOnly (BLOCKING)
+ *                                                     oracleMdOnly (BLOCKING)
  *   Wave 3 (6 calls, sequential):                     nonInteractiveEnv,
  *                                                     bashFileReadGuard,
  *                                                     questionLabelTruncator,
- *                                                     prometheusMdOnly (MUTATOR),
+ *                                                     oracleMdOnly (MUTATOR),
  *                                                     mouseNotepad,
  *                                                     architectHook
  *
- * Total: 16 calls per iteration (prometheusMdOnly appears in both Wave 2 and
- * Wave 3; the handler calls `hooks.prometheusMdOnly?.["tool.execute.before"]`
+ * Total: 16 calls per iteration (oracleMdOnly appears in both Wave 2 and
+ * Wave 3; the handler calls `hooks.oracleMdOnly?.["tool.execute.before"]`
  * twice — once in Wave 2 and once in Wave 3 — so the bench must build a
- * SINGLE prometheusMdOnly hook that records both invocations).
+ * SINGLE oracleMdOnly hook that records both invocations).
  *
  * Assertions:
  *   - All 16 hook invocations per iteration.
@@ -37,7 +37,7 @@
  *     not assert that.
  *   - Per-iteration global counter increments by exactly 16 with no gaps
  *     or duplicates, across all ITERATIONS.
- *   - prometheusMdOnly is called exactly twice per iteration (one in Wave 2,
+ *   - oracleMdOnly is called exactly twice per iteration (one in Wave 2,
  *     one in Wave 3).
  *
  * Target: p99 < 0.0158ms (baseline 0.0226ms × 0.7, Task T1.1 spec).
@@ -66,14 +66,14 @@ const WAVE_2: HookName[] = [
   "envFileWriteGuard",
   "writeExistingFileGuard",
   "tasksTodowriteDisabler",
-  "prometheusMdOnly",
+  "oracleMdOnly",
 ]
 
 const WAVE_3: HookName[] = [
   "nonInteractiveEnv",
   "bashFileReadGuard",
   "questionLabelTruncator",
-  "prometheusMdOnly",
+  "oracleMdOnly",
   "mouseNotepad",
   "architectHook",
 ]
@@ -247,13 +247,13 @@ describe("tool.execute.before T1.1 (3-wave parallelized)", () => {
         }
       }
 
-      // prometheusMdOnly total = 2 * ITERATIONS
-      const prometheusIdx = NAME_TO_IDX.get("prometheusMdOnly") ?? 0
-      let prometheusTotal = 0
+      // oracleMdOnly total = 2 * ITERATIONS
+      const oracleIdx = NAME_TO_IDX.get("oracleMdOnly") ?? 0
+      let oracleTotal = 0
       for (let i = 0; i < TOTAL_CALLS; i++) {
-        if (storage.nameIdx[i] === prometheusIdx) prometheusTotal++
+        if (storage.nameIdx[i] === oracleIdx) oracleTotal++
       }
-      expect(prometheusTotal).toBe(2 * ITERATIONS)
+      expect(oracleTotal).toBe(2 * ITERATIONS)
 
       // Sanity
       expect(p99).toBeGreaterThanOrEqual(p50)

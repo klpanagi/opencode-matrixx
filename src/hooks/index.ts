@@ -26,9 +26,9 @@ export { createKeywordDetectorHook } from "./keyword-detector";
 export { createMatrixLoopHook, type MatrixLoopHook } from "./matrix-loop";
 export { createMouseNotepadHook } from "./mouse-notepad";
 export { createNonInteractiveEnvHook } from "./non-interactive-env";
+export { createOracleMdOnlyHook } from "./oracle-md-only";
 export { createPlanPersister } from "./plan-persister"
 export { createPreemptiveCompactionHook } from "./preemptive-compaction";
-export { createOracleMdOnlyHook } from "./prometheus-md-only";
 export { createQualityGateHook } from "./quality-gate/hook"
 export { createQuestionLabelTruncatorHook } from "./question-label-truncator";
 export { createReadImageResizerHook } from "./read-image-resizer"

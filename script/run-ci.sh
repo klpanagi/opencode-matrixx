@@ -60,7 +60,7 @@ for test in \
   tests/features/opencode-skill-loader/loader.test.ts \
   tests/features/opencode-skill-loader/agents-skills-global.test.ts \
   tests/tools/session-manager/storage.test.ts \
-  tests/hooks/prometheus-md-only/index.test.ts \
+  tests/hooks/oracle-md-only/index.test.ts \
   tests/hooks/architect/index.test.ts \
   tests/hooks/matrix-loop/index.test.ts \
   tests/hooks/start-work/index.test.ts \
@@ -101,7 +101,7 @@ find tests script -name '*.test.ts' -type f \
     -e 'tests/features/opencode-skill-loader/loader.test.ts' \
     -e 'tests/features/opencode-skill-loader/agents-skills-global.test.ts' \
     -e 'tests/tools/session-manager/storage.test.ts' \
-    -e 'tests/hooks/prometheus-md-only/index.test.ts' \
+    -e 'tests/hooks/oracle-md-only/index.test.ts' \
     -e 'tests/hooks/architect/index.test.ts' \
     -e 'tests/hooks/matrix-loop/index.test.ts' \
     -e 'tests/hooks/start-work/index.test.ts' \

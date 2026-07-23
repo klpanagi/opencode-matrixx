@@ -48,7 +48,7 @@ export function createToolExecuteBeforeHandler(args: {
   const envFileWriteGuardHook = hooks.envFileWriteGuard?.["tool.execute.before"]
   const writeExistingFileGuardHook = hooks.writeExistingFileGuard?.["tool.execute.before"]
   const tasksTodowriteDisablerHook = hooks.tasksTodowriteDisabler?.["tool.execute.before"]
-  const prometheusMdOnlyHook = hooks.prometheusMdOnly?.["tool.execute.before"]
+  const oracleMdOnlyHook = hooks.oracleMdOnly?.["tool.execute.before"]
   const nonInteractiveEnvHook = hooks.nonInteractiveEnv?.["tool.execute.before"]
   const bashFileReadGuardHook = hooks.bashFileReadGuard?.["tool.execute.before"]
   const questionLabelTruncatorHook = hooks.questionLabelTruncator?.["tool.execute.before"]
@@ -87,7 +87,7 @@ const rtkBashRewriterHook = hooks.rtkBashRewriter?.["tool.execute.before"]
     //   rejections. Switching from allSettled to all also drops the
     //   per-call result-array allocation.
     //
-    //   `prometheusMdOnly` is BOTH BLOCKING (Wave 2) AND MUTATOR (Wave 3).
+    //   `oracleMdOnly` is BOTH BLOCKING (Wave 2) AND MUTATOR (Wave 3).
     //   It runs here for the BLOCKING behavior, then again in Wave 3 for
     //   the output.args.prompt prepend. The first invocation never mutates
     //   the throw path (throws on BLOCKED_TOOLS usage).
@@ -96,20 +96,20 @@ const rtkBashRewriterHook = hooks.rtkBashRewriter?.["tool.execute.before"]
       envFileWriteGuardHook?.(input, output),
       writeExistingFileGuardHook?.(input, output),
       tasksTodowriteDisablerHook?.(input, output),
-      prometheusMdOnlyHook?.(input, output),
+      oracleMdOnlyHook?.(input, output),
     ])
 
     // Wave 3 (7 hooks): MUTATOR — must run sequentially to preserve
     //   mutation order. Specifically:
-  //   - 3 hooks CONCAT to output.args.prompt (prometheusMdOnly,
+  //   - 3 hooks CONCAT to output.args.prompt (oracleMdOnly,
   //     mouseNotepad, architectHook). Parallel writes would stomp
     //     each other (both read prompt from the same starting state).
     //   - nonInteractiveEnv REWRITES output.args.command (line 58) and
     //     REPLACES output.message; running it before other mutators is
     //     required so that downstream hooks see the rewritten command.
-    //   - The order prometheusMdOnly -> mouseNotepad -> architectHook
+    //   - The order oracleMdOnly -> mouseNotepad -> architectHook
     //     is critical: architectHook's prepended <system-reminder> must be
-    //     the outermost (closest to the model), prometheusMdOnly's
+    //     the outermost (closest to the model), oracleMdOnly's
     //     prepended PLANNING_CONSULT_WARNING the innermost (closest to the
     //     user prompt). Reversing the order would change semantics.
     // ---------------------------------------------------------------------
@@ -137,7 +137,7 @@ const rtkBashRewriterHook = hooks.rtkBashRewriter?.["tool.execute.before"]
     await nonInteractiveEnvHook?.(input, output)
     await bashFileReadGuardHook?.(input, output)
     await questionLabelTruncatorHook?.(input, output)
-    await prometheusMdOnlyHook?.(input, output)
+    await oracleMdOnlyHook?.(input, output)
     await mouseNotepadHook?.(input, output)
     await architectHookHook?.(input, output)
 

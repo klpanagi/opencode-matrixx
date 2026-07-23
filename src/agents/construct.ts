@@ -4,14 +4,14 @@ import type { AgentMode, AgentPromptMetadata } from "./types"
 
 const MODE: AgentMode = "subagent"
 
-export const MULTIMODAL_LOOKER_PROMPT_METADATA: AgentPromptMetadata = {
+export const CONSTRUCT_PROMPT_METADATA: AgentPromptMetadata = {
   category: "utility",
   cost: "CHEAP",
   promptAlias: "Multimodal Looker",
   triggers: [],
 }
 
-export function createMultimodalLookerAgent(model: string): AgentConfig {
+export function createConstructAgent(model: string): AgentConfig {
   const restrictions = createAgentToolAllowlist(["read"])
 
   return {
@@ -55,4 +55,4 @@ Response rules:
 Your output goes straight to the main agent for continued work.`,
   }
 }
-createMultimodalLookerAgent.mode = MODE
+createConstructAgent.mode = MODE

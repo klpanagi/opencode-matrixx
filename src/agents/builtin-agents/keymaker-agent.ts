@@ -40,34 +40,34 @@ export function maybeCreateKeymakerConfig(input: {
   if (disabledAgents.includes("keymaker")) return undefined
 
   const keymakerOverride = agentOverrides.keymaker
-  const hephaestusRequirement = AGENT_MODEL_REQUIREMENTS.keymaker
+  const keymakerRequirement = AGENT_MODEL_REQUIREMENTS.keymaker
   const hasKeymakerExplicitConfig = keymakerOverride !== undefined
 
   const hasRequiredProvider =
-    !hephaestusRequirement?.requiresProvider ||
+    !keymakerRequirement?.requiresProvider ||
     hasKeymakerExplicitConfig ||
     isFirstRunNoCache ||
-    isAnyProviderConnected(hephaestusRequirement.requiresProvider, availableModels)
+    isAnyProviderConnected(keymakerRequirement.requiresProvider, availableModels)
 
   if (!hasRequiredProvider) return undefined
 
-  let hephaestusResolution = applyModelResolution({
+  let keymakerResolution = applyModelResolution({
     globalOverrideModel,
     userModel: keymakerOverride?.model,
-    requirement: hephaestusRequirement,
+    requirement: keymakerRequirement,
     availableModels,
     systemDefaultModel,
   })
 
   if (isFirstRunNoCache && !keymakerOverride?.model) {
-    hephaestusResolution = getFirstFallbackModel(hephaestusRequirement)
+    keymakerResolution = getFirstFallbackModel(keymakerRequirement)
   }
 
-  if (!hephaestusResolution) return undefined
-  const { model: hephaestusModel, variant: hephaestusResolvedVariant } = hephaestusResolution
+  if (!keymakerResolution) return undefined
+  const { model: keymakerModel, variant: keymakerResolvedVariant } = keymakerResolution
 
   let keymakerConfig = createKeymakerAgent(
-    hephaestusModel,
+    keymakerModel,
     availableAgents,
     availableToolNames,
     availableSkills,
@@ -75,11 +75,11 @@ export function maybeCreateKeymakerConfig(input: {
     useTaskSystem
   )
 
-  keymakerConfig = { ...keymakerConfig, variant: hephaestusResolvedVariant ?? "medium" }
+  keymakerConfig = { ...keymakerConfig, variant: keymakerResolvedVariant ?? "medium" }
 
-  const hepOverrideCategory = (keymakerOverride as Record<string, unknown> | undefined)?.category as string | undefined
-  if (hepOverrideCategory) {
-    keymakerConfig = applyCategoryOverride(keymakerConfig, hepOverrideCategory, mergedCategories)
+  const keymakerOverrideCategory = (keymakerOverride as Record<string, unknown> | undefined)?.category as string | undefined
+  if (keymakerOverrideCategory) {
+    keymakerConfig = applyCategoryOverride(keymakerConfig, keymakerOverrideCategory, mergedCategories)
   }
 
 

@@ -10,9 +10,9 @@ import {
 import { log, migrateAgentConfig } from "../shared";
 import { AGENT_NAME_MAP } from "../shared/migration";
 import { reorderAgentsByPriority } from "./agent-priority-order";
+import { buildOracleAgentConfig } from "./oracle-agent-config-builder";
 import { buildPlanDemoteConfig } from "./plan-model-inheritance";
 import type { PluginComponents } from "./plugin-components-loader";
-import { buildOracleAgentConfig } from "./prometheus-agent-config-builder";
 
 // Module-level tool names cache, set once at startup by index.ts
 let _availableToolNames: string[] = []

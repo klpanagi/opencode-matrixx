@@ -5,6 +5,7 @@ export const HOOK_NAME_MAP: Record<string, string | null> = {
   "anthropic-auto-compact": "anthropic-context-window-limit-recovery",
   "sisyphus-orchestrator": "architect",
   "sisyphus-junior-notepad": "mouse-notepad",
+  "prometheus-md-only": "oracle-md-only",
 
   // Removed hooks (v3.0.0) - will be filtered out and user warned
   "empty-message-sanitizer": null,

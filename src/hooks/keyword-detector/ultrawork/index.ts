@@ -2,7 +2,7 @@
  * Ultrawork message module - routes to appropriate message based on agent/model.
  *
  * Routing:
- * 1. Planner agents (prometheus, plan) → planner.ts
+ * 1. Planner agents (oracle, plan) → planner.ts
  * 2. GPT 5.2 models → gpt5.2.ts
  * 3. Default (Claude, etc.) → default.ts (optimized for Claude series)
  */
