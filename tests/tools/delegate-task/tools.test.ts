@@ -3,7 +3,6 @@ const { describe, test, expect, beforeEach, afterEach, spyOn, mock } = require("
 
 import type { CategoryConfig } from "../../../src/config/schema"
 import type { LaunchInput } from "../../../src/features/background-agent/types"
-import { clearSkillCache } from "../../../src/features/opencode-skill-loader/skill-content"
 import * as connectedProvidersCache from "../../../src/shared/connected-providers-cache"
 import { __resetModelCache } from "../../../src/shared/model-availability"
 import { CATEGORY_DESCRIPTIONS, CATEGORY_PROMPT_APPENDS, DEFAULT_CATEGORIES, isPlanAgent, isPlanFamily, PLAN_AGENT_NAMES, PLAN_FAMILY_NAMES } from "../../../src/tools/delegate-task/constants"
@@ -55,7 +54,6 @@ describe("morpheus-task", () => {
   beforeEach(() => {
     mock.restore()
     __resetModelCache()
-    clearSkillCache()
     __setTimingConfig({
       POLL_INTERVAL_MS: 10,
       MIN_STABILITY_TIME_MS: 50,

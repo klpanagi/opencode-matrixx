@@ -2,7 +2,6 @@
 
 import { afterEach, beforeEach, describe, expect, spyOn, test } from "bun:test"
 import type { AgentConfig } from "@opencode-ai/sdk"
-import { clearSkillCache } from "../../src/features/opencode-skill-loader/skill-content"
 import * as shared from "../../src/shared"
 import * as connectedProvidersCache from "../../src/shared/connected-providers-cache"
 import * as modelAvailability from "../../src/shared/model-availability"
@@ -780,13 +779,6 @@ describe("buildAgent with category and skills", () => {
   const { buildAgent } = require("../../src/agents/agent-builder")
   const TEST_MODEL = "anthropic/claude-opus-4-6"
 
-  beforeEach(() => {
-    clearSkillCache()
-  })
-
-  afterEach(() => {
-    clearSkillCache()
-  })
 
   test("agent with category inherits category settings", () => {
     // #given - agent factory that sets category but no model

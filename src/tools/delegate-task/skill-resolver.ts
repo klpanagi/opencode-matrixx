@@ -1,21 +1,23 @@
 import type { BrowserAutomationProvider } from "../../config/schema"
-import { discoverSkills } from "../../features/opencode-skill-loader"
-import { resolveMultipleSkillsAsync } from "../../features/opencode-skill-loader/skill-content"
+import { createBuiltinSkills } from "../../features/builtin-skills"
 
-export async function resolveSkillContent(
+export function resolveSkillContent(
   skills: string[],
   options: { browserProvider?: BrowserAutomationProvider, disabledSkills?: Set<string> }
-): Promise<{ content: string | undefined; error: string | null }> {
+): { content: string | undefined; error: string | null } {
   if (skills.length === 0) {
     return { content: undefined, error: null }
   }
 
-  const { resolved, notFound } = await resolveMultipleSkillsAsync(skills, options)
+  const builtinSkills = createBuiltinSkills({ browserProvider: options.browserProvider, disabledSkills: options.disabledSkills })
+  const resolved = builtinSkills.filter(s => skills.includes(s.name))
+  const resolvedNames = new Set(resolved.map(s => s.name))
+  const notFound = skills.filter(name => !resolvedNames.has(name))
+
   if (notFound.length > 0) {
-    const allSkills = await discoverSkills({ includeClaudeCodePaths: true })
-    const available = allSkills.map(s => s.name).join(", ")
+    const available = builtinSkills.map(s => s.name).join(", ")
     return { content: undefined, error: `Skills not found: ${notFound.join(", ")}. Available: ${available}` }
   }
 
-  return { content: Array.from(resolved.values()).join("\n\n"), error: null }
+  return { content: resolved.map(s => s.template).join("\n\n"), error: null }
 }

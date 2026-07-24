@@ -1,6 +1,6 @@
 import type { AgentConfig } from "@opencode-ai/sdk"
 import type { BrowserAutomationProvider, CategoriesConfig, CategoryConfig } from "../config/schema"
-import { resolveMultipleSkills } from "../features/opencode-skill-loader/skill-content"
+import { createBuiltinSkills } from "../features/builtin-skills"
 import { mergeCategories } from "../shared/merge-categories"
 import type { AgentFactory } from "./types"
 
@@ -37,9 +37,10 @@ export function buildAgent(
   }
 
   if (agentWithCategory.skills?.length) {
-    const { resolved } = resolveMultipleSkills(agentWithCategory.skills, { browserProvider, disabledSkills })
-    if (resolved.size > 0) {
-      const skillContent = Array.from(resolved.values()).join("\n\n")
+    const builtinSkills = createBuiltinSkills({ browserProvider, disabledSkills })
+    const resolved = builtinSkills.filter(s => agentWithCategory.skills!.includes(s.name))
+    if (resolved.length > 0) {
+      const skillContent = resolved.map(s => s.template).join("\n\n")
       base.prompt = skillContent + (base.prompt ? `\n\n${base.prompt}` : "")
     }
   }
