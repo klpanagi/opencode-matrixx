@@ -1,15 +1,43 @@
 import { type ToolDefinition, tool } from "@opencode-ai/plugin"
-import { discoverAllSkills, type LoadedSkill } from "../../features/opencode-skill-loader"
+import type { createOpencodeClient } from "@opencode-ai/sdk"
+import { type BuiltinSkill, createBuiltinSkills } from "../../features/builtin-skills"
 import { discoverCommandsSync } from "./command-discovery"
 import { formatCommandList, formatLoadedCommand } from "./command-output-formatter"
 import { skillToCommandInfo } from "./skill-command-converter"
 import { buildDescriptionFromItems, TOOL_DESCRIPTION_PREFIX } from "./slashcommand-description"
+import { log } from "../../shared"
 import type { CommandInfo, SlashcommandToolOptions } from "./types"
+
+async function discoverPluginCommands(client?: ReturnType<typeof createOpencodeClient>): Promise<CommandInfo[]> {
+  if (!client) return []
+
+  try {
+    const result = await client.command.list()
+    const commands = result.data ?? []
+    return commands.map(cmd => ({
+      name: cmd.name,
+      metadata: {
+        name: cmd.name,
+        description: cmd.description || "",
+        model: typeof cmd.model === "string" ? cmd.model : undefined,
+        agent: cmd.agent,
+        subtask: cmd.subtask,
+      },
+      content: typeof cmd.template === "string" ? cmd.template : undefined,
+      scope: "plugin" as const,
+    }))
+  } catch (err) {
+    log(`[slashcommand] Failed to discover plugin commands:`, err)
+    return []
+  }
+}
 
 export function createSlashcommandTool(options: SlashcommandToolOptions = {}): ToolDefinition {
   let cachedCommands: CommandInfo[] | null = options.commands ?? null
-  let cachedSkills: LoadedSkill[] | null = options.skills ?? null
+  let cachedSkills: BuiltinSkill[] | null = options.skills ?? null
+  let cachedPluginCommands: CommandInfo[] | null = null
   let cachedDescription: string | null = null
+  const { client } = options
 
   const getCommands = (): CommandInfo[] => {
     if (cachedCommands) return cachedCommands
@@ -17,16 +45,23 @@ export function createSlashcommandTool(options: SlashcommandToolOptions = {}): T
     return cachedCommands
   }
 
-  const getSkills = async (): Promise<LoadedSkill[]> => {
+  const getSkills = (): BuiltinSkill[] => {
     if (cachedSkills) return cachedSkills
-    cachedSkills = await discoverAllSkills()
+    cachedSkills = createBuiltinSkills()
     return cachedSkills
+  }
+
+  const getPluginCommands = async (): Promise<CommandInfo[]> => {
+    if (cachedPluginCommands) return cachedPluginCommands
+    cachedPluginCommands = await discoverPluginCommands(client)
+    return cachedPluginCommands
   }
 
   const getAllItems = async (): Promise<CommandInfo[]> => {
     const commands = getCommands()
-    const skills = await getSkills()
-    return [...commands, ...skills.map(skillToCommandInfo)]
+    const skills = getSkills()
+    const pluginCommands = await getPluginCommands()
+    return [...commands, ...skills.map(skillToCommandInfo), ...pluginCommands]
   }
 
   const buildDescription = async (): Promise<string> => {
@@ -87,9 +122,7 @@ export function createSlashcommandTool(options: SlashcommandToolOptions = {}): T
         return `No exact match for "/${commandName}". Did you mean: ${matchList}?\n\n${formatCommandList(allItems)}`
       }
 
-      return commandName.includes(":") 
-        ? `Marketplace plugin commands like "/${commandName}" are not supported. Use .claude/commands/ for custom commands.\n\n${formatCommandList(allItems)}`
-        : `Command or skill "/${commandName}" not found.\n\n${formatCommandList(allItems)}\n\nTry a different name.`
+      return `Command "/${commandName}" not found. Use the slashcommand tool with just a command name to list available commands.\n\n${formatCommandList(allItems)}`
     },
   })
 }

@@ -5,7 +5,6 @@ import type {
 } from "../agents/dynamic-agent-prompt-builder"
 import type { MatrixxConfig } from "../config"
 import type { Managers } from "../create-managers"
-import { getMainSessionID } from "../features/session-state"
 import { log } from "../shared"
 import { filterDisabledTools } from "../shared/disabled-tools"
 import {
@@ -25,7 +24,6 @@ createDelegateAgent,
   createHashlineEditTool,
   createLookAt,
   createSessionManagerTools,
-  createSkillMcpTool,
   createSkillTool,
   createSlashcommandTool,
   createTaskCreateTool,
@@ -46,7 +44,7 @@ export type ToolRegistryResult = {
 export function createToolRegistry(args: {
   ctx: PluginContext
   pluginConfig: MatrixxConfig
-  managers: Pick<Managers, "backgroundManager" | "tmuxSessionManager" | "skillMcpManager">
+  managers: Pick<Managers, "backgroundManager" | "tmuxSessionManager">
   skillContext: SkillContext
   availableCategories: AvailableCategory[]
 }): ToolRegistryResult {
@@ -90,25 +88,17 @@ export function createToolRegistry(args: {
     },
   })
 
-  const getSessionIDForMcp = (): string => getMainSessionID() || ""
 
   const skillTool = createSkillTool({
-    skills: skillContext.mergedSkills,
-    mcpManager: managers.skillMcpManager,
-    getSessionID: getSessionIDForMcp,
+    skills: skillContext.builtinSkills,
     disabledSkills: skillContext.disabledSkills,
-  })
-
-  const skillMcpTool = createSkillMcpTool({
-    manager: managers.skillMcpManager,
-    getLoadedSkills: () => skillContext.mergedSkills,
-    getSessionID: getSessionIDForMcp,
   })
 
   const commands = discoverCommandsSync(ctx.directory)
   const slashcommandTool = createSlashcommandTool({
     commands,
-    skills: skillContext.mergedSkills,
+    skills: skillContext.builtinSkills,
+    client: ctx.client,
   })
 
   const taskSystemEnabled = pluginConfig.experimental?.task_system ?? false
@@ -146,7 +136,6 @@ const assemblyTool = assemblyEnabled
     ...(lookAt ? { look_at: lookAt } : {}),
     task: delegateTask,
     skill: skillTool,
-    skill_mcp: skillMcpTool,
     slashcommand: slashcommandTool,
     interactive_bash,
     ...taskToolsRecord,

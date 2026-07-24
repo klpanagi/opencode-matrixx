@@ -1,4 +1,4 @@
-import type { LoadedSkill } from "../../features/opencode-skill-loader"
+import type { BuiltinSkill } from "../../features/builtin-skills"
 import { log } from "../../shared"
 import {
   AUTO_SLASH_COMMAND_TAG_CLOSE,
@@ -21,12 +21,15 @@ const sessionProcessedCommands = new Set<string>()
 const sessionProcessedCommandExecutions = new Set<string>()
 
 export interface AutoSlashCommandHookOptions {
-  skills?: LoadedSkill[]
+  skills?: BuiltinSkill[]
+  /** OpenCode SDK client for discovering plugin-registered commands */
+  client?: ReturnType<typeof import("@opencode-ai/sdk").createOpencodeClient>
 }
 
 export function createAutoSlashCommandHook(options?: AutoSlashCommandHookOptions) {
   const executorOptions: ExecutorOptions = {
     skills: options?.skills,
+    client: options?.client,
   }
 
   return {

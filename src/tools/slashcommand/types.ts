@@ -1,6 +1,12 @@
-import type { LazyContentLoader, LoadedSkill } from "../../features/opencode-skill-loader"
+import type { BuiltinSkill } from "../../features/builtin-skills"
 
-export type CommandScope = "builtin" | "config" | "user" | "project" | "opencode" | "opencode-project"
+  export interface LazyContentLoader {
+  loaded: boolean
+  content?: string
+  load: () => Promise<string>
+}
+
+export type CommandScope = "builtin" | "config" | "user" | "project" | "opencode" | "opencode-project" | "plugin"
 
 export interface CommandMetadata {
   name: string
@@ -24,5 +30,7 @@ export interface SlashcommandToolOptions {
   /** Pre-loaded commands (skip discovery if provided) */
   commands?: CommandInfo[]
   /** Pre-loaded skills (skip discovery if provided) */
-  skills?: LoadedSkill[]
+  skills?: BuiltinSkill[]
+  /** OpenCode SDK client for discovering plugin-registered commands */
+  client?: ReturnType<typeof import("@opencode-ai/sdk").createOpencodeClient>
 }
