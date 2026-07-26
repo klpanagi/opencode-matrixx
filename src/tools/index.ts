@@ -22,7 +22,6 @@ export { interactive_bash, startBackgroundCheck as startTmuxCheck } from "./inte
 export { createSessionManagerTools } from "./session-manager"
 export { sessionExists } from "./session-manager/storage"
 export { createSkillTool } from "./skill"
-export { createSkillMcpTool } from "./skill-mcp"
 export { createSlashcommandTool, discoverCommandsSync } from "./slashcommand"
 export { lspManager }
 
@@ -39,6 +38,7 @@ import {
 type OpencodeClient = PluginInput["client"]
 
 export { createAssemblyTool } from "./assembly"
+export { createDcpSwitchProfileTool } from "./dcp-switch-profile"
 export { createDelegateAgent } from "./delegate-agent"
 export { createDelegateTask } from "./delegate-task"
 export { createHashlineEditTool } from "./hashline-edit"
