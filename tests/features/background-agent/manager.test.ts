@@ -3912,60 +3912,62 @@ describe("BackgroundManager regression fixes - resume and aborted notification",
 
 // ----- B4 regression: getMessageDir must cache results across calls -----
 //
-// The pre-fix getMessageDir did 3 + N sync IO ops per call (existsSync + readdirSync
-// + N × existsSync for subdir scan). With many sessions, the readdirSync + N
-// existsSync scan is expensive. B4 wraps the original body in a module-level
-// LRU cache so the 2nd call for the same sessionID makes 0 sync IO ops.
+// Behavioral test: after the first call caches null, creating the session dir
+// on disk should NOT change the cached result on the second call. This avoids
+// mock.module("node:fs") which has inconsistent behavior across Bun versions.
+// Instead, we mock opencode-storage-paths (same proven pattern as B2 below).
 describe("getMessageDir cached after first call", () => {
+  const testStorage = join(tmpdir(), `msgdir-b4-cache-${randomUUID()}`)
+  const testMessageStorage = join(testStorage, "message")
+  const sessionID = `ses_b4_${randomUUID()}`
+  const sessionDir = join(testMessageStorage, sessionID)
+
+  beforeEach(() => {
+    mkdirSync(testMessageStorage, { recursive: true })
+  })
+
+  afterEach(() => {
+    mock.restore()
+    try {
+      rmSync(testStorage, { recursive: true, force: true })
+    } catch {
+      // best-effort cleanup
+    }
+  })
+
   test("getMessageDir cached after first call", async () => {
     //#given
-    // Uses mock.module (like the B2 regression test below) so message-dir.ts
-    // picks up the wrapped fs functions via its own import binding.
-    const sessionID = `ses_b4_nonexistent_${randomUUID()}`
+    // Mock storage paths to point to our tmpdir (same pattern as B2)
+    mock.module("../../../src/shared/opencode-storage-paths", () => ({
+      OPENCODE_STORAGE: testStorage,
+      MESSAGE_STORAGE: testMessageStorage,
+      PART_STORAGE: join(testStorage, "part"),
+      SESSION_STORAGE: join(testStorage, "session"),
+    }))
 
-    // Capture real fs functions BEFORE mock so wrappers don't recurse.
-    const realFsNs = require("node:fs") as typeof import("node:fs")
-    const realExistsSync = realFsNs.existsSync
-    const realReaddirSync = realFsNs.readdirSync
-
-    let existsCallCount = 0
-    let readdirCallCount = 0
-
-    mock.module("node:fs", () => {
-      return {
-        ...realFsNs,
-        existsSync: (path: string) => {
-          existsCallCount++
-          return realExistsSync(path)
-        },
-        readdirSync: (path: string) => {
-          readdirCallCount++
-          return realReaddirSync(path)
-        },
-      } as typeof realFsNs
-    })
-
+    // Dynamic import with cache buster gets mocked storage paths
     const { getMessageDir: isolatedGetMessageDir } = await import(
       `../../../src/features/background-agent/message-dir?bust=${randomUUID()}`
     )
 
-    //#when
+    // Session dir does NOT exist yet
+    expect(fs.existsSync(sessionDir)).toBe(false)
+
+    //#when — first call: session not found, caches null
     const result1 = isolatedGetMessageDir(sessionID)
 
     //#then
     expect(result1).toBeNull()
-    const existsAfter1 = existsCallCount
-    const readdirAfter1 = readdirCallCount
-    expect(existsAfter1).toBeGreaterThan(0)
-    expect(readdirAfter1).toBeGreaterThan(0)
 
-    //#when
+    // Now create the session dir (simulates session appearing after first call)
+    mkdirSync(sessionDir, { recursive: true })
+
+    //#when — second call: should return cached null, NOT the new dir
     const result2 = isolatedGetMessageDir(sessionID)
 
-    //#then
+    //#then — if cache works, result2 is still null (cached from first call)
+    //        if cache is broken, result2 would be sessionDir
     expect(result2).toBeNull()
-    expect(existsCallCount).toBe(existsAfter1)
-    expect(readdirCallCount).toBe(readdirAfter1)
   })
 })
 
