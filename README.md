@@ -524,7 +524,6 @@ The 10-20ms subprocess overhead is negligible compared to command execution time
 
 ---
 
-[![Star History Chart](https://api.star-history.com/svg?repos=klpanagi/opencode-matrixx&type=Date)](https://star-history.com/#klpanagi/opencode-matrixx&Date)
 
 If this saves you time, a ⭐ goes a long way.
 
