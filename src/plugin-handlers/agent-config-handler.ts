@@ -1,18 +1,12 @@
 import { createBuiltinAgents } from "../agents";
 import { createMouseAgentWithOverrides } from "../agents/mouse";
 import type { MatrixxConfig } from "../config";
-import { loadProjectAgents, loadUserAgents } from "../features/agent-loader";
-import {
-  discoverConfigSourceSkills,
-  discoverOpencodeGlobalSkills,
-  discoverOpencodeProjectSkills,
-} from "../features/opencode-skill-loader";
 import { log, migrateAgentConfig } from "../shared";
 import { AGENT_NAME_MAP } from "../shared/migration";
 import { reorderAgentsByPriority } from "./agent-priority-order";
+import { buildOracleAgentConfig } from "./oracle-agent-config-builder";
 import { buildPlanDemoteConfig } from "./plan-model-inheritance";
 import type { PluginComponents } from "./plugin-components-loader";
-import { buildOracleAgentConfig } from "./prometheus-agent-config-builder";
 
 // Module-level tool names cache, set once at startup by index.ts
 let _availableToolNames: string[] = []
@@ -44,30 +38,7 @@ export async function applyAgentConfig(params: {
     },
   ) as typeof params.pluginConfig.disabled_agents;
 
-  const [
-    discoveredConfigSourceSkills,
-    discoveredUserSkills,
-    discoveredProjectSkills,
-    discoveredOpencodeGlobalSkills,
-    discoveredOpencodeProjectSkills,
-  ] = await Promise.all([
-    discoverConfigSourceSkills({
-      config: params.pluginConfig.skills,
-      configDir: params.ctx.directory,
-    }),
-    Promise.resolve([]),
-    Promise.resolve([]),
-    discoverOpencodeGlobalSkills(),
-    discoverOpencodeProjectSkills(params.ctx.directory),
-  ]);
-
-  const allDiscoveredSkills = [
-    ...discoveredConfigSourceSkills,
-    ...discoveredOpencodeProjectSkills,
-    ...discoveredProjectSkills,
-    ...discoveredOpencodeGlobalSkills,
-    ...discoveredUserSkills,
-  ];
+  const allDiscoveredSkills: never[] = [];
 
   const browserProvider =
     params.pluginConfig.browser_automation_engine?.provider ?? "playwright";
@@ -94,8 +65,6 @@ export async function applyAgentConfig(params: {
     params.pluginConfig.global_model,
     availableToolNames,
   );
-  const userAgents = loadUserAgents();
-  const projectAgents = loadProjectAgents(params.ctx.directory);
 
   const rawPluginAgents = params.pluginComponents.agents;
   const pluginAgents = Object.fromEntries(
@@ -189,8 +158,6 @@ export async function applyAgentConfig(params: {
       ...Object.fromEntries(
         Object.entries(builtinAgents).filter(([key]) => key !== "morpheus"),
       ),
-      ...userAgents,
-      ...projectAgents,
       ...pluginAgents,
       ...filteredConfigAgents,
       build: { ...migratedBuild, mode: "subagent", hidden: true },
@@ -199,8 +166,6 @@ export async function applyAgentConfig(params: {
   } else {
     params.config.agent = {
       ...builtinAgents,
-      ...userAgents,
-      ...projectAgents,
       ...pluginAgents,
       ...configAgent,
     };

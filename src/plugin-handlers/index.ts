@@ -4,7 +4,7 @@ export * from "./category-config-resolver";
 export * from "./command-config-handler";
 export { type ConfigHandlerDeps, createConfigHandler } from "./config-handler";
 export * from "./mcp-config-handler";
+export * from "./oracle-agent-config-builder";
 export * from "./plugin-components-loader";
-export * from "./prometheus-agent-config-builder";
 export * from "./provider-config-handler";
 export * from "./tool-config-handler";

@@ -12,7 +12,7 @@
  *      every invocation. This proves the refactor did not accidentally
  *      short-circuit any wave (e.g., an early return that skips Wave 3).
  *
- *   3. prometheusMdOnly dual-invocation: since this hook runs in BOTH
+ *   3. oracleMdOnly dual-invocation: since this hook runs in BOTH
  *      Wave 2 (BLOCKING) and Wave 3 (MUTATOR), it must be called exactly
  *      TWICE per invocation (200 total across 100 invocations).
  *
@@ -45,7 +45,7 @@ const FAST_FAIL_HOOK_NAMES = [
   "envFileWriteGuard",
   "writeExistingFileGuard",
   "tasksTodowriteDisabler",
-  "prometheusMdOnly",
+  "oracleMdOnly",
   // Wave 3: MUTATOR
   "nonInteractiveEnv",
   "bashFileReadGuard",
@@ -304,10 +304,10 @@ describe("tool.execute.before — T1.1 parallel safety", () => {
         expect(spies[name]?.mock.calls.length).toBe(N)
       }
 
-      //#then — 3: prometheusMdOnly dual-invocation (Wave 2 + Wave 3)
+      //#then — 3: oracleMdOnly dual-invocation (Wave 2 + Wave 3)
       // It must be called exactly 2N times across all invocations.
-      expect(spies.prometheusMdOnly).toBeDefined()
-      expect(spies.prometheusMdOnly?.mock.calls.length).toBe(N * 2)
+      expect(spies.oracleMdOnly).toBeDefined()
+      expect(spies.oracleMdOnly?.mock.calls.length).toBe(N * 2)
     },
     10_000,
   )

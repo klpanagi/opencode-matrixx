@@ -1,4 +1,4 @@
-import { afterEach, beforeEach, describe, expect, it, mock } from "bun:test";
+import { afterAll, afterEach, beforeEach, describe, expect, it, mock } from "bun:test";
 import { randomUUID } from "node:crypto";
 import * as fs from "node:fs";
 import { mkdirSync, rmSync, writeFileSync } from "node:fs";
@@ -17,6 +17,10 @@ mock.module("../../../src/hooks/rules-injector/matcher", () => ({
   createContentHash: (content: string) => `hash:${content}`,
   isDuplicateByContentHash: (hash: string, cache: Set<string>) => cache.has(hash),
 }));
+
+afterAll(() => {
+  mock.restore()
+})
 
 function createOutput(): { title: string; output: string; metadata: unknown } {
   return { title: "tool", output: "", metadata: {} };

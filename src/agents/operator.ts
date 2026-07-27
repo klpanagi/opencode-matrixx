@@ -4,7 +4,7 @@ import type { AgentMode, AgentPromptMetadata } from "./types"
 
 const MODE: AgentMode = "subagent"
 
-export const LIBRARIAN_PROMPT_METADATA: AgentPromptMetadata = {
+export const OPERATOR_PROMPT_METADATA: AgentPromptMetadata = {
   category: "exploration",
   cost: "CHEAP",
   promptAlias: "Librarian",
@@ -21,7 +21,7 @@ export const LIBRARIAN_PROMPT_METADATA: AgentPromptMetadata = {
   ],
 }
 
-export function createLibrarianAgent(model: string): AgentConfig {
+export function createOperatorAgent(model: string): AgentConfig {
   const restrictions = createAgentToolRestrictions([
     "write",
     "edit",
@@ -322,4 +322,4 @@ grep_app_searchGitHub(query: "useQuery")
 `,
   }
 }
-createLibrarianAgent.mode = MODE
+createOperatorAgent.mode = MODE

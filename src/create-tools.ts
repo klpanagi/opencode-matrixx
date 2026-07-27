@@ -2,7 +2,7 @@ import type { AvailableCategory, AvailableSkill } from "./agents/dynamic-agent-p
 import type { MatrixxConfig } from "./config"
 import type { BrowserAutomationProvider } from "./config/schema/browser-automation"
 import type { Managers } from "./create-managers"
-import type { LoadedSkill } from "./features/opencode-skill-loader/types"
+import type { BuiltinSkill } from "./features/builtin-skills"
 import { createAvailableCategories } from "./plugin/available-categories"
 import { createSkillContext } from "./plugin/skill-context"
 import { createToolRegistry } from "./plugin/tool-registry"
@@ -10,7 +10,7 @@ import type { PluginContext, ToolsRecord } from "./plugin/types"
 
 type CreateToolsResult = {
   filteredTools: ToolsRecord
-  mergedSkills: LoadedSkill[]
+  builtinSkills: BuiltinSkill[]
   availableSkills: AvailableSkill[]
   availableCategories: AvailableCategory[]
   browserProvider: BrowserAutomationProvider
@@ -21,7 +21,7 @@ type CreateToolsResult = {
 export async function createTools(args: {
   ctx: PluginContext
   pluginConfig: MatrixxConfig
-  managers: Pick<Managers, "backgroundManager" | "tmuxSessionManager" | "skillMcpManager">
+  managers: Pick<Managers, "backgroundManager" | "tmuxSessionManager">
 }): Promise<CreateToolsResult> {
   const { ctx, pluginConfig, managers } = args
 
@@ -42,7 +42,7 @@ export async function createTools(args: {
 
   return {
     filteredTools,
-    mergedSkills: skillContext.mergedSkills,
+    builtinSkills: skillContext.builtinSkills,
     availableSkills: skillContext.availableSkills,
     availableCategories,
     browserProvider: skillContext.browserProvider,

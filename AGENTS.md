@@ -124,7 +124,7 @@ matrixx/
 │   ├── agents/   → 14 agents (incl. Sati, Cipher, Sentinel) + AGENTS.md
 │   ├── hooks/    → ~52 hooks in 3 tiers
 │   ├── tools/    → 16 dirs (LSP, AST-grep, delegate-task, session, handoff, glob, grep, look-at, delegate-agent, background-task, interactive-bash, hashline-edit, skill, skill-mcp, slashcommand, task)
-│   ├── features/ → 20 dirs (background-agent, skills, commands, tasks, tmux, MCP, oauth, handoff, CC compat)
+│   ├── features/ → 19 dirs (background-agent, skills, commands, tasks, tmux, handoff, CC compat)
 │   ├── shared/   → 80+ utilities
 │   ├── mcp/      → 4 built-in MCPs (websearch, context7, grep_app, document-reader)
 │   ├── cli/      → CLI installer, doctor, config-manager
@@ -309,11 +309,10 @@ For full model/temp/fallback details see the per-agent file or `src/agents/AGENT
 - JSONC: comments + trailing commas via `jsonc-parser` (use `src/shared/jsonc-parser.ts`, not raw `JSON.parse`)
 - Legacy config auto-migrated by `src/shared/migration/` (agent names, hook names, model versions)
 
-## MCP ARCHITECTURE (3 tiers)
+## MCP ARCHITECTURE (2 tiers)
 
-1. **Built-in** (`src/mcp/`): websearch (Exa/Tavily), context7, grep_app, document-reader
-2. **Claude Code compat** (`features/claude-code-mcp-loader/`): `.mcp.json` with `${VAR}` expansion
-3. **Skill-embedded** (`features/opencode-skill-loader/`): YAML frontmatter in `SKILL.md`
+1. **Built-in** (`src/mcp/`): websearch, context7, grep_app, document-reader
+2. **Plugin-config / user-configured**: MCPs defined in plugin configuration
 
 ## KNOWN HOTSPOTS (largest files)
 

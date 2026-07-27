@@ -1,4 +1,4 @@
-import { beforeEach, describe, expect, mock, test } from 'bun:test'
+import { afterAll, beforeEach, describe, expect, mock, test } from 'bun:test'
 import type { TmuxConfig } from '../../../src/config/schema'
 import type { ActionResult, ExecuteContext } from '../../../src/features/tmux-subagent/action-executor'
 import type { TmuxUtilDeps } from '../../../src/features/tmux-subagent/manager'
@@ -716,4 +716,8 @@ describe('DecisionEngine', () => {
       expect(decision.reason).toContain('too small')
     })
   })
+})
+
+afterAll(() => {
+  mock.restore()
 })

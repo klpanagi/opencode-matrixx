@@ -4,21 +4,12 @@ import { afterEach, beforeEach, describe, expect, spyOn, test } from "bun:test"
 import type { MatrixxConfig } from "../../src/config"
 import * as builtinCommandsModule from "../../src/features/builtin-commands"
 import * as ccCommandLoaderModule from "../../src/features/command-loader"
-import * as opencodeSkillLoaderModule from "../../src/features/opencode-skill-loader"
-import * as skillDefinitionRecordModule from "../../src/features/opencode-skill-loader/skill-definition-record"
-import type { LoadedSkill } from "../../src/features/opencode-skill-loader/types"
 
 let loadBuiltinCommandsSpy: ReturnType<typeof spyOn>
 let loadUserCommandsSpy: ReturnType<typeof spyOn>
 let loadProjectCommandsSpy: ReturnType<typeof spyOn>
 let loadOpencodeGlobalCommandsSpy: ReturnType<typeof spyOn>
 let loadOpencodeProjectCommandsSpy: ReturnType<typeof spyOn>
-let discoverConfigSourceSkillsSpy: ReturnType<typeof spyOn>
-let loadUserSkillsSpy: ReturnType<typeof spyOn>
-let loadProjectSkillsSpy: ReturnType<typeof spyOn>
-let loadOpencodeGlobalSkillsSpy: ReturnType<typeof spyOn>
-let loadOpencodeProjectSkillsSpy: ReturnType<typeof spyOn>
-let skillsToCommandDefinitionRecordSpy: ReturnType<typeof spyOn>
 
 beforeEach(() => {
   loadBuiltinCommandsSpy = spyOn(builtinCommandsModule, "loadBuiltinCommands").mockReturnValue({})
@@ -26,12 +17,6 @@ beforeEach(() => {
   loadProjectCommandsSpy = spyOn(ccCommandLoaderModule, "loadProjectCommands").mockResolvedValue({})
   loadOpencodeGlobalCommandsSpy = spyOn(ccCommandLoaderModule, "loadOpencodeGlobalCommands").mockResolvedValue({})
   loadOpencodeProjectCommandsSpy = spyOn(ccCommandLoaderModule, "loadOpencodeProjectCommands").mockResolvedValue({})
-  discoverConfigSourceSkillsSpy = spyOn(opencodeSkillLoaderModule, "discoverConfigSourceSkills").mockResolvedValue([])
-  loadUserSkillsSpy = spyOn(opencodeSkillLoaderModule, "loadUserSkills").mockResolvedValue({})
-  loadProjectSkillsSpy = spyOn(opencodeSkillLoaderModule, "loadProjectSkills").mockResolvedValue({})
-  loadOpencodeGlobalSkillsSpy = spyOn(opencodeSkillLoaderModule, "loadOpencodeGlobalSkills").mockResolvedValue({})
-  loadOpencodeProjectSkillsSpy = spyOn(opencodeSkillLoaderModule, "loadOpencodeProjectSkills").mockResolvedValue({})
-  skillsToCommandDefinitionRecordSpy = spyOn(skillDefinitionRecordModule, "skillsToCommandDefinitionRecord").mockReturnValue({})
 })
 
 afterEach(() => {
@@ -40,12 +25,6 @@ afterEach(() => {
   loadProjectCommandsSpy.mockRestore()
   loadOpencodeGlobalCommandsSpy.mockRestore()
   loadOpencodeProjectCommandsSpy.mockRestore()
-  discoverConfigSourceSkillsSpy.mockRestore()
-  loadUserSkillsSpy.mockRestore()
-  loadProjectSkillsSpy.mockRestore()
-  loadOpencodeGlobalSkillsSpy.mockRestore()
-  loadOpencodeProjectSkillsSpy.mockRestore()
-  skillsToCommandDefinitionRecordSpy.mockRestore()
 })
 
 const EMPTY_PLUGIN_COMPONENTS = {
@@ -182,45 +161,5 @@ describe("applyCommandConfig", () => {
     //#then
     const result = config.command as Record<string, Record<string, unknown>>
     expect(result["empty-agent-cmd"].agent).toBe("")
-  })
-
-  test("does NOT remap agent field from skill sources", async () => {
-    //#given
-    const config: Record<string, unknown> = { command: {} }
-    const pluginConfig = createPluginConfig()
-    loadUserSkillsSpy.mockResolvedValue({})
-    discoverConfigSourceSkillsSpy.mockResolvedValue([{
-      name: "oracle-skill",
-      path: "/tmp/oracle-skill/SKILL.md",
-      resolvedPath: "/tmp/oracle-skill/SKILL.md",
-      definition: {
-        name: "oracle-skill",
-        description: "Oracle analysis skill",
-        agent: "oracle",
-        template: "template",
-      },
-      scope: "user",
-    } as LoadedSkill])
-    skillsToCommandDefinitionRecordSpy.mockReturnValue({
-      "oracle-skill": {
-        name: "oracle-skill",
-        description: "Oracle analysis skill",
-        agent: "oracle",
-        template: "template",
-      },
-    })
-
-    //#when
-    const { applyCommandConfig } = await import("../../src/plugin-handlers/command-config-handler")
-    await applyCommandConfig({
-      config,
-      pluginConfig,
-      ctx: { directory: "/tmp" },
-      pluginComponents: EMPTY_PLUGIN_COMPONENTS,
-    })
-
-    //#then
-    const result = config.command as Record<string, Record<string, unknown>>
-    expect(result["oracle-skill"].agent).toBe("oracle")
   })
 })

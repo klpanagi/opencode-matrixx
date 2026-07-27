@@ -37,7 +37,6 @@ src/
 6. `createManagers(...)` → 4 managers:
    - `TmuxSessionManager` — Multi-pane tmux sessions
    - `BackgroundManager` — Parallel subagent execution
-   - `SkillMcpManager` — MCP server lifecycle
    - `ConfigHandler` — Plugin config API to OpenCode
 7. `createTools(...)` → `createSkillContext()` + `createAvailableCategories()` + `createToolRegistry()`
 8. `createHooks(...)` → `createCoreHooks()` + `createContinuationHooks()` + `createSkillHooks()`

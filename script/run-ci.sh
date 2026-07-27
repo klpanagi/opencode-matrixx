@@ -60,13 +60,12 @@ for test in \
   tests/features/opencode-skill-loader/loader.test.ts \
   tests/features/opencode-skill-loader/agents-skills-global.test.ts \
   tests/tools/session-manager/storage.test.ts \
-  tests/hooks/prometheus-md-only/index.test.ts \
+  tests/hooks/oracle-md-only/index.test.ts \
   tests/hooks/architect/index.test.ts \
   tests/hooks/matrix-loop/index.test.ts \
   tests/hooks/start-work/index.test.ts \
   tests/hooks/auto-update-checker/hook/background-update-check.test.ts \
   tests/hooks/auto-update-checker/hook.test.ts \
-  tests/features/skill-mcp-manager/manager.test.ts \
   tests/features/background-agent/manager.test.ts \
   tests/hooks/comment-checker/cli.test.ts \
   tests/hooks/comment-checker/hook.apply-patch.test.ts \
@@ -76,12 +75,14 @@ for test in \
   tests/hooks/compaction-todo-preserver/index.test.ts \
   tests/hooks/preemptive-compaction.test.ts \
   tests/tools/lsp/client.test.ts \
+  tests/tools/lsp/lsp-process.test.ts \
   tests/tools/skill/tools.test.ts \
   tests/hooks/anthropic-context-window-limit-recovery/empty-content-recovery-sdk.test.ts \
   tests/hooks/anthropic-context-window-limit-recovery/recovery-hook.test.ts \
   tests/hooks/anthropic-context-window-limit-recovery/storage.test.ts \
   tests/agents/utils.test.ts \
-  tests/hooks/task-notepad/hook.test.ts
+  tests/hooks/task-notepad/hook.test.ts \
+  tests/tools/bdd-parse-gherkin/tools.test.ts
 do
   label="$(basename "$(dirname "$test")")/$(basename "$test")"
   bun test "$test" && pass "$label" || fail "$label"
@@ -101,13 +102,12 @@ find tests script -name '*.test.ts' -type f \
     -e 'tests/features/opencode-skill-loader/loader.test.ts' \
     -e 'tests/features/opencode-skill-loader/agents-skills-global.test.ts' \
     -e 'tests/tools/session-manager/storage.test.ts' \
-    -e 'tests/hooks/prometheus-md-only/index.test.ts' \
+    -e 'tests/hooks/oracle-md-only/index.test.ts' \
     -e 'tests/hooks/architect/index.test.ts' \
     -e 'tests/hooks/matrix-loop/index.test.ts' \
     -e 'tests/hooks/start-work/index.test.ts' \
     -e 'tests/hooks/auto-update-checker/hook/background-update-check.test.ts' \
     -e 'tests/hooks/auto-update-checker/hook.test.ts' \
-    -e 'tests/features/skill-mcp-manager/manager.test.ts' \
     -e 'tests/features/background-agent/manager.test.ts' \
     -e 'tests/hooks/comment-checker/cli.test.ts' \
     -e 'tests/hooks/comment-checker/hook.apply-patch.test.ts' \
@@ -117,12 +117,14 @@ find tests script -name '*.test.ts' -type f \
     -e 'tests/hooks/compaction-todo-preserver/index.test.ts' \
     -e 'tests/hooks/preemptive-compaction.test.ts' \
     -e 'tests/tools/lsp/client.test.ts' \
+    -e 'tests/tools/lsp/lsp-process.test.ts' \
     -e 'tests/tools/skill/tools.test.ts' \
     -e 'tests/hooks/anthropic-context-window-limit-recovery/empty-content-recovery-sdk.test.ts' \
     -e 'tests/hooks/anthropic-context-window-limit-recovery/recovery-hook.test.ts' \
     -e 'tests/hooks/anthropic-context-window-limit-recovery/storage.test.ts' \
     -e 'tests/agents/utils.test.ts' \
     -e 'tests/hooks/task-notepad/hook.test.ts' \
+    -e 'tests/tools/bdd-parse-gherkin/tools.test.ts' \
   | xargs bun test && pass "Remaining tests" || fail "Remaining tests"
 
 # ------------------------------------------------------------------

@@ -1,4 +1,4 @@
-import { describe, expect, mock, test } from "bun:test"
+import { afterAll, describe, expect, mock, test } from "bun:test"
 import { chmodSync, mkdtempSync, writeFileSync } from "node:fs"
 import { tmpdir } from "node:os"
 import { join } from "node:path"
@@ -200,6 +200,10 @@ exit 2
       await processWithCli({ tool: "write", sessionID: "ses-2", callID: "call-2" }, pendingCall, { output: "" }, "/fake", undefined, () => {})
       // then
       expect(callCount).toBe(2)
+    })
+
+    afterAll(() => {
+      mock.restore()
     })
   })
 })

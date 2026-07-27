@@ -1,4 +1,4 @@
-import { beforeEach, describe, expect, mock, test } from "bun:test"
+import { afterAll, beforeEach, describe, expect, mock, test } from "bun:test"
 import type { PluginInput } from "@opencode-ai/plugin"
 
 const executeCompactMock = mock(async () => {})
@@ -23,6 +23,10 @@ mock.module("../../../src/hooks/anthropic-context-window-limit-recovery/parser",
 mock.module("../../../src/shared/logger", () => ({
   log: () => {},
 }))
+
+afterAll(() => {
+  mock.restore()
+})
 
 function createMockContext(): PluginInput {
   return {

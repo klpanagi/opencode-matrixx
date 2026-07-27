@@ -48,6 +48,7 @@ const { createAutoUpdateCheckerHook } = await import("../../../src/hooks/auto-up
 afterAll(() => {
   mock.module("../../../src/hooks/auto-update-checker/hook/background-update-check", () => realBackgroundUpdateCheckModule)
   mock.module("../../../src/hooks/auto-update-checker/checker", () => realCheckerModule)
+  mock.restore()
 })
 
 describe("createAutoUpdateCheckerHook", () => {

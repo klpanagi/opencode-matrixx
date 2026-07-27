@@ -14,6 +14,10 @@ import { BackgroundManager } from "../../../src/features/background-agent/manage
 import { _resetMessageDirCacheForTesting, getMessageDir } from "../../../src/features/background-agent/message-dir"
 import type { BackgroundTask, ResumeInput } from "../../../src/features/background-agent/types"
 
+// Shared fs call counters for mock.module("node:fs")-based tests
+// (getMessageDir caching + B2 readFileSync regression).
+// Declared here so both describe blocks can reference the same counters.
+const mockCalls: { existsSync: number; readdirSync: number } = { existsSync: 0, readdirSync: 0 }
 
 const TASK_TTL_MS = 30 * 60 * 1000
 
@@ -3908,47 +3912,62 @@ describe("BackgroundManager regression fixes - resume and aborted notification",
 
 // ----- B4 regression: getMessageDir must cache results across calls -----
 //
-// The pre-fix getMessageDir did 3 + N sync IO ops per call (existsSync + readdirSync
-// + N × existsSync for subdir scan). With many sessions, the readdirSync + N
-// existsSync scan is expensive. B4 wraps the original body in a module-level
-// LRU cache so the 2nd call for the same sessionID makes 0 sync IO ops.
-//
-// Uses spyOn (NOT mock.module) on `fs.existsSync` and `fs.readdirSync`. This
-// works in bun because destructured `import { existsSync, readdirSync }` from
-// "node:fs" goes through a live property lookup at call time, so spyOn on
-// the namespace intercepts the call. This is bun-specific CJS interop behavior
-// also exploited in src/shared/git-worktree/collect-git-diff-stats.test.ts.
-//
-// MUST run BEFORE the B2 describe block below: B2 uses mock.module("node:fs", ...)
-// which is a global, process-wide mock that persists for the rest of the run. The
-// spy-based assertions in this test would see 0 readdirSync calls (the mock wrapper
-// is replaced by the spy in a way that confuses the live-binding chain).
-
+// Behavioral test: after the first call caches null, creating the session dir
+// on disk should NOT change the cached result on the second call. This avoids
+// mock.module("node:fs") which has inconsistent behavior across Bun versions.
+// Instead, we mock opencode-storage-paths (same proven pattern as B2 below).
 describe("getMessageDir cached after first call", () => {
-  test("getMessageDir cached after first call", () => {
-    //#given
-    _resetMessageDirCacheForTesting()
-    const sessionID = `ses_b4_nonexistent_${randomUUID()}`
-    const existsSpy = spyOn(fs, "existsSync")
-    const readdirSpy = spyOn(fs, "readdirSync")
+  const testStorage = join(tmpdir(), `msgdir-b4-cache-${randomUUID()}`)
+  const testMessageStorage = join(testStorage, "message")
+  const sessionID = `ses_b4_${randomUUID()}`
+  const sessionDir = join(testMessageStorage, sessionID)
 
-    //#when
-    const result1 = getMessageDir(sessionID)
+  beforeEach(() => {
+    mkdirSync(testMessageStorage, { recursive: true })
+  })
+
+  afterEach(() => {
+    mock.restore()
+    try {
+      rmSync(testStorage, { recursive: true, force: true })
+    } catch {
+      // best-effort cleanup
+    }
+  })
+
+  test("getMessageDir cached after first call", async () => {
+    //#given
+    // Mock storage paths to point to our tmpdir (same pattern as B2)
+    mock.module("../../../src/shared/opencode-storage-paths", () => ({
+      OPENCODE_STORAGE: testStorage,
+      MESSAGE_STORAGE: testMessageStorage,
+      PART_STORAGE: join(testStorage, "part"),
+      SESSION_STORAGE: join(testStorage, "session"),
+    }))
+
+    // Dynamic import with cache buster gets mocked storage paths
+    const { getMessageDir: isolatedGetMessageDir } = await import(
+      `../../../src/features/background-agent/message-dir?bust=${randomUUID()}`
+    )
+
+    // Session dir does NOT exist yet
+    expect(fs.existsSync(sessionDir)).toBe(false)
+
+    //#when — first call: session not found, caches null
+    const result1 = isolatedGetMessageDir(sessionID)
 
     //#then
     expect(result1).toBeNull()
-    const existsAfter1 = existsSpy.mock.calls.length
-    const readdirAfter1 = readdirSpy.mock.calls.length
-    expect(existsAfter1).toBeGreaterThan(0)
-    expect(readdirAfter1).toBeGreaterThan(0)
 
-    //#when
-    const result2 = getMessageDir(sessionID)
+    // Now create the session dir (simulates session appearing after first call)
+    mkdirSync(sessionDir, { recursive: true })
 
-    //#then
+    //#when — second call: should return cached null, NOT the new dir
+    const result2 = isolatedGetMessageDir(sessionID)
+
+    //#then — if cache works, result2 is still null (cached from first call)
+    //        if cache is broken, result2 would be sessionDir
     expect(result2).toBeNull()
-    expect(existsSpy.mock.calls.length).toBe(existsAfter1)
-    expect(readdirSpy.mock.calls.length).toBe(readdirAfter1)
   })
 })
 
@@ -3980,6 +3999,7 @@ describe("findNearestMessageExcludingCompaction reads each file once", () => {
   })
 
   afterEach(() => {
+    mock.restore()
     try {
       rmSync(B2_TEST_STORAGE, { recursive: true, force: true })
     } catch {

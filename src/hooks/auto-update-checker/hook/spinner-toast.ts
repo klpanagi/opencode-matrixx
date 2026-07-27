@@ -1,7 +1,7 @@
 import type { PluginInput } from "@opencode-ai/plugin"
 import { log } from "../../../shared/logger"
 
-const SISYPHUS_SPINNER = ["·", "•", "●", "○", "◌", "◦", " "]
+const MORPHEUS_SPINNER = ["·", "•", "●", "○", "◌", "◦", " "]
 
 export async function showSpinnerToast(ctx: PluginInput, version: string, message: string): Promise<void> {
   const totalDuration = 5000
@@ -9,7 +9,7 @@ export async function showSpinnerToast(ctx: PluginInput, version: string, messag
   const totalFrames = Math.floor(totalDuration / frameInterval)
 
   for (let i = 0; i < totalFrames; i++) {
-    const spinner = SISYPHUS_SPINNER[i % SISYPHUS_SPINNER.length]
+    const spinner = MORPHEUS_SPINNER[i % MORPHEUS_SPINNER.length]
     await ctx.client.tui
       .showToast({
         body: {

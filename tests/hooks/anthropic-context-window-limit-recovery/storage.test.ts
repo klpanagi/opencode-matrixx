@@ -13,6 +13,7 @@ mock.module("../../../src/hooks/anthropic-context-window-limit-recovery/storage"
 
 afterAll(() => {
   mock.module("../../../src/hooks/anthropic-context-window-limit-recovery/storage", () => storage)
+  mock.restore()
 })
 
 describe("truncateUntilTargetTokens", () => {

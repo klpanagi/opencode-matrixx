@@ -555,7 +555,7 @@ export function isPlanAgent(agentName: string | undefined): boolean {
 }
 
 /**
- * Plan family: plan + prometheus. Shares mutual delegation blocking and task tool permission.
+ * Plan family: plan + oracle. Shares mutual delegation blocking and task tool permission.
  * Does NOT share system prompt (only isPlanAgent controls that).
  */
 export const PLAN_FAMILY_NAMES = ["plan", "oracle"]

@@ -57,7 +57,7 @@ describe("Wave 3 hook ordering", () => {
       nonInteractiveEnv: { "tool.execute.before": async () => { callOrder.push("nonInteractiveEnv") } },
       bashFileReadGuard: { "tool.execute.before": async () => { callOrder.push("bashFileReadGuard") } },
       questionLabelTruncator: { "tool.execute.before": async () => { callOrder.push("questionLabelTruncator") } },
-      prometheusMdOnly: { "tool.execute.before": async () => { callOrder.push("prometheusMdOnly") } },
+      oracleMdOnly: { "tool.execute.before": async () => { callOrder.push("oracleMdOnly") } },
       mouseNotepad: { "tool.execute.before": async () => { callOrder.push("mouseNotepad") } },
       architectHook: { "tool.execute.before": async () => { callOrder.push("architectHook") } },
     }
@@ -72,15 +72,15 @@ describe("Wave 3 hook ordering", () => {
 
     //#then
     // Verify all 7 Wave 3 hooks executed in correct order
-    // prometheusMdOnly runs TWICE: once in Wave 2 (BLOCKING) before all Wave 3 hooks,
+    // oracleMdOnly runs TWICE: once in Wave 2 (BLOCKING) before all Wave 3 hooks,
     // and once in Wave 3e (MUTATOR) after questionLabelTruncator
     expect(callOrder).toEqual([
-      "prometheusMdOnly",  // Wave 2 (BLOCKING)
+      "oracleMdOnly",  // Wave 2 (BLOCKING)
       "rtkBashRewriter",   // Wave 3a
       "nonInteractiveEnv", // Wave 3b
       "bashFileReadGuard", // Wave 3c
       "questionLabelTruncator", // Wave 3d
-      "prometheusMdOnly",  // Wave 3e (MUTATOR)
+      "oracleMdOnly",  // Wave 3e (MUTATOR)
       "mouseNotepad",      // Wave 3f
       "architectHook",     // Wave 3g
     ])

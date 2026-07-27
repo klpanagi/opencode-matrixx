@@ -1,6 +1,6 @@
 import type { AvailableSkill } from "../../agents/dynamic-agent-prompt-builder"
 import type { HookName } from "../../config"
-import type { LoadedSkill } from "../../features/opencode-skill-loader/types"
+import type { BuiltinSkill } from "../../features/builtin-skills"
 import { createAutoSlashCommandHook, createCategorySkillReminderHook } from "../../hooks"
 import { safeCreateHook } from "../../shared/safe-create-hook"
 import type { PluginContext } from "../types"
@@ -14,10 +14,10 @@ export function createSkillHooks(args: {
   ctx: PluginContext
   isHookEnabled: (hookName: HookName) => boolean
   safeHookEnabled: boolean
-  mergedSkills: LoadedSkill[]
+  builtinSkills: BuiltinSkill[]
   availableSkills: AvailableSkill[]
 }): SkillHooks {
-  const { ctx, isHookEnabled, safeHookEnabled, mergedSkills, availableSkills } = args
+  const { ctx, isHookEnabled, safeHookEnabled, builtinSkills, availableSkills } = args
 
   const safeHook = <T>(hookName: HookName, factory: () => T): T | null =>
     safeCreateHook(hookName, factory, { enabled: safeHookEnabled })
@@ -29,7 +29,7 @@ export function createSkillHooks(args: {
 
   const autoSlashCommand = isHookEnabled("auto-slash-command")
     ? safeHook("auto-slash-command", () =>
-        createAutoSlashCommandHook({ skills: mergedSkills }))
+        createAutoSlashCommandHook({ skills: builtinSkills, client: ctx.client }))
     : null
 
   return { categorySkillReminder, autoSlashCommand }

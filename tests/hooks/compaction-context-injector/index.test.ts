@@ -1,4 +1,4 @@
-import { describe, expect, it, mock } from "bun:test"
+import { afterAll, describe, expect, it, mock } from "bun:test"
 
 mock.module("../../../src/shared/system-directive", () => ({
   createSystemDirective: (type: string) => `[DIRECTIVE:${type}]`,
@@ -10,9 +10,13 @@ mock.module("../../../src/shared/system-directive", () => ({
     SINGLE_TASK_ONLY: "SINGLE TASK ONLY",
     COMPACTION_CONTEXT: "COMPACTION CONTEXT",
     CONTEXT_WINDOW_MONITOR: "CONTEXT WINDOW MONITOR",
-    PROMETHEUS_READ_ONLY: "PROMETHEUS READ-ONLY",
+    ORACLE_READ_ONLY: "ORACLE READ-ONLY",
   },
 }))
+
+afterAll(() => {
+  mock.restore()
+})
 
 import { TaskHistory } from "../../../src/features/background-agent/task-history"
 import { createCompactionContextInjector } from "../../../src/hooks/compaction-context-injector/index"

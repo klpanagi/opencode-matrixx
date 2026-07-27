@@ -1,4 +1,4 @@
-import { afterEach, beforeEach, describe, expect, mock, test } from "bun:test"
+import { afterAll, afterEach, beforeEach, describe, expect, mock, test } from "bun:test"
 import { randomUUID } from "node:crypto"
 import { mkdirSync, rmSync, writeFileSync } from "node:fs"
 import { tmpdir } from "node:os"
@@ -11,8 +11,12 @@ mock.module("../../../src/shared/opencode-storage-detection", () => ({
   resetSqliteBackendCache: () => {},
 }))
 
-const { createOracleMdOnlyHook } = await import("../../../src/hooks/prometheus-md-only/index")
+const { createOracleMdOnlyHook } = await import("../../../src/hooks/oracle-md-only/index")
 const { MESSAGE_STORAGE } = await import("../../../src/features/hook-message-injector")
+
+afterAll(() => {
+  mock.restore()
+})
 
 describe("oracle-md-only", () => {
   const TEST_SESSION_ID = "ses_test-session-oracle"
@@ -225,10 +229,10 @@ describe("oracle-md-only", () => {
       await hook["tool.execute.before"](input, output)
 
       // then
-      expect(output.message).toContain("PROMETHEUS MANDATORY WORKFLOW REMINDER")
+      expect(output.message).toContain("ORACLE MANDATORY WORKFLOW REMINDER")
       expect(output.message).toContain("INTERVIEW")
-      expect(output.message).toContain("METIS CONSULTATION")
-      expect(output.message).toContain("MOMUS REVIEW")
+      expect(output.message).toContain("SERAPH CONSULTATION")
+      expect(output.message).toContain("SMITH REVIEW")
     })
 
     test("should NOT inject workflow reminder for .matrixx/drafts/", async () => {

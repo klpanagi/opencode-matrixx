@@ -1,7 +1,7 @@
 import { getAgentDisplayName } from "../../shared/agent-display-names"
 import { createSystemDirective, SystemDirectiveTypes } from "../../shared/system-directive"
 
-export const HOOK_NAME = "prometheus-md-only"
+export const HOOK_NAME = "oracle-md-only"
 
 export const ORACLE_AGENT = "oracle"
 
@@ -13,7 +13,7 @@ export const PLANNING_CONSULT_WARNING = `
 
 ---
 
-${createSystemDirective(SystemDirectiveTypes.PROMETHEUS_READ_ONLY)}
+${createSystemDirective(SystemDirectiveTypes.ORACLE_READ_ONLY)}
 
 You are being invoked by ${getAgentDisplayName("oracle")}, a READ-ONLY planning agent.
 
@@ -30,32 +30,32 @@ Return your findings and recommendations. The actual implementation will be hand
 
 `
 
-export const PROMETHEUS_WORKFLOW_REMINDER = `
+export const ORACLE_WORKFLOW_REMINDER = `
 
 ---
 
-${createSystemDirective(SystemDirectiveTypes.PROMETHEUS_READ_ONLY)}
+${createSystemDirective(SystemDirectiveTypes.ORACLE_READ_ONLY)}
 
-## PROMETHEUS MANDATORY WORKFLOW REMINDER
+## ORACLE MANDATORY WORKFLOW REMINDER
 
 **You are writing a work plan. STOP AND VERIFY you completed ALL steps:**
 
 ┌─────────────────────────────────────────────────────────────────────┐
-│                     PROMETHEUS WORKFLOW                             │
+│                     ORACLE WORKFLOW                               │
 ├──────┬──────────────────────────────────────────────────────────────┤
 │  1   │ INTERVIEW: Full consultation with user                       │
 │      │    - Gather ALL requirements                                 │
 │      │    - Clarify ambiguities                                     │
 │      │    - Record decisions to .matrixx/drafts/                   │
 ├──────┼──────────────────────────────────────────────────────────────┤
-│  2   │ METIS CONSULTATION: Pre-generation gap analysis              │
+│  2   │ SERAPH CONSULTATION: Pre-generation gap analysis            │
 │      │    - task(agent="Seraph (Plan Consultant)", ...)     │
 │      │    - Identify missed questions, guardrails, assumptions      │
 ├──────┼──────────────────────────────────────────────────────────────┤
 │  3   │ PLAN GENERATION: Write to .matrixx/plans/*.md               │
 │      │    <- YOU ARE HERE                                           │
 ├──────┼──────────────────────────────────────────────────────────────┤
-│  4   │ MOMUS REVIEW (if high accuracy requested)                    │
+│  4   │ SMITH REVIEW (if high accuracy requested)                   │
 │      │    - task(agent="Smith (Plan Reviewer)", ...)       │
 │      │    - Loop until OKAY verdict                                 │
 ├──────┼──────────────────────────────────────────────────────────────┤

@@ -2,7 +2,7 @@
  * Agent/model detection utilities for ultrawork message routing.
  *
  * Routing logic:
- * 1. Planner agents (prometheus, plan) → planner.ts
+ * 1. Planner agents (oracle, plan) → planner.ts
  * 2. GPT 5.2 models → gpt5.2.ts
  * 3. Everything else (Claude, etc.) → default.ts
  */

@@ -1,4 +1,15 @@
-import type { SkillMcpConfig } from "../skill-mcp-manager/types"
+export interface McpServerDefinition {
+  type?: "http" | "sse" | "stdio"
+  url?: string
+  command?: string
+  args?: string[]
+  env?: Record<string, string>
+  headers?: Record<string, string>
+  disabled?: boolean
+}
+
+export type SkillMcpConfig = Record<string, McpServerDefinition>
+
 
 export interface BuiltinSkill {
   name: string

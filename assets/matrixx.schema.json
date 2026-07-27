@@ -136,7 +136,7 @@
           "auto-slash-command",
           "edit-error-recovery",
           "delegate-task-retry",
-          "prometheus-md-only",
+          "oracle-md-only",
           "plan-persister",
           "mouse-notepad",
           "start-work",
@@ -4079,21 +4079,487 @@
           "default": true,
           "type": "boolean"
         },
-        "switch_script": {
-          "type": "string"
-        },
         "profiles": {
-          "type": "array",
-          "items": {
+          "default": {
+            "economy": {
+              "pruneNotification": "off",
+              "compress": {
+                "maxContextLimit": "30%",
+                "minContextLimit": "20%",
+                "nudgeFrequency": 2,
+                "nudgeForce": "strong",
+                "iterationNudgeThreshold": 7
+              },
+              "turnProtection": {
+                "enabled": false
+              },
+              "experimental": {
+                "allowSubAgents": false
+              },
+              "strategies": {
+                "purgeErrors": {
+                  "turns": 1
+                }
+              }
+            },
+            "balanced": {
+              "pruneNotification": "minimal",
+              "compress": {
+                "maxContextLimit": "60%",
+                "minContextLimit": "30%",
+                "nudgeFrequency": 3,
+                "nudgeForce": "strong",
+                "iterationNudgeThreshold": 10
+              },
+              "turnProtection": {
+                "enabled": true,
+                "turns": 2
+              },
+              "experimental": {
+                "allowSubAgents": true
+              },
+              "strategies": {
+                "purgeErrors": {
+                  "turns": 2
+                }
+              }
+            },
+            "performance": {
+              "pruneNotification": "minimal",
+              "compress": {
+                "maxContextLimit": "80%",
+                "minContextLimit": "35%",
+                "nudgeFrequency": 4,
+                "nudgeForce": "strong",
+                "iterationNudgeThreshold": 12
+              },
+              "turnProtection": {
+                "enabled": true,
+                "turns": 3
+              },
+              "experimental": {
+                "allowSubAgents": true
+              },
+              "strategies": {
+                "purgeErrors": {
+                  "turns": 2
+                }
+              }
+            },
+            "ultimate": {
+              "pruneNotification": "detailed",
+              "compress": {
+                "maxContextLimit": "85%",
+                "minContextLimit": "40%",
+                "nudgeFrequency": 5,
+                "nudgeForce": "strong",
+                "iterationNudgeThreshold": 15,
+                "protectTags": true
+              },
+              "turnProtection": {
+                "enabled": true,
+                "turns": 5
+              },
+              "experimental": {
+                "allowSubAgents": true
+              },
+              "strategies": {
+                "purgeErrors": {
+                  "turns": 4
+                }
+              }
+            }
+          },
+          "type": "object",
+          "propertyNames": {
             "type": "string"
+          },
+          "additionalProperties": {
+            "type": "object",
+            "properties": {
+              "pruneNotification": {
+                "type": "string",
+                "enum": [
+                  "off",
+                  "minimal",
+                  "detailed"
+                ]
+              },
+              "compress": {
+                "type": "object",
+                "properties": {
+                  "maxContextLimit": {
+                    "anyOf": [
+                      {
+                        "type": "number"
+                      },
+                      {
+                        "type": "string",
+                        "pattern": "^\\d+%$"
+                      }
+                    ]
+                  },
+                  "minContextLimit": {
+                    "anyOf": [
+                      {
+                        "type": "number"
+                      },
+                      {
+                        "type": "string",
+                        "pattern": "^\\d+%$"
+                      }
+                    ]
+                  },
+                  "nudgeFrequency": {
+                    "type": "integer",
+                    "minimum": 1,
+                    "maximum": 9007199254740991
+                  },
+                  "iterationNudgeThreshold": {
+                    "type": "integer",
+                    "minimum": 1,
+                    "maximum": 9007199254740991
+                  },
+                  "nudgeForce": {
+                    "type": "string",
+                    "enum": [
+                      "strong",
+                      "soft"
+                    ]
+                  },
+                  "protectTags": {
+                    "type": "boolean"
+                  },
+                  "protectedTools": {
+                    "type": "array",
+                    "items": {
+                      "type": "string"
+                    }
+                  },
+                  "protectUserMessages": {
+                    "type": "boolean"
+                  }
+                },
+                "additionalProperties": false
+              },
+              "turnProtection": {
+                "type": "object",
+                "properties": {
+                  "enabled": {
+                    "type": "boolean"
+                  },
+                  "turns": {
+                    "type": "integer",
+                    "minimum": 1,
+                    "maximum": 9007199254740991
+                  }
+                },
+                "additionalProperties": false
+              },
+              "experimental": {
+                "type": "object",
+                "properties": {
+                  "allowSubAgents": {
+                    "type": "boolean"
+                  }
+                },
+                "additionalProperties": false
+              },
+              "strategies": {
+                "type": "object",
+                "properties": {
+                  "purgeErrors": {
+                    "type": "object",
+                    "properties": {
+                      "turns": {
+                        "type": "integer",
+                        "minimum": 1,
+                        "maximum": 9007199254740991
+                      }
+                    },
+                    "additionalProperties": false
+                  }
+                },
+                "additionalProperties": false
+              }
+            },
+            "additionalProperties": false
           }
         },
         "default_profile": {
           "type": "string"
+        },
+        "base": {
+          "default": {
+            "autoUpdate": false,
+            "debug": false,
+            "pruneNotificationType": "chat",
+            "compress": {
+              "mode": "range",
+              "permission": "allow",
+              "showCompression": true,
+              "summaryBuffer": true,
+              "nudgeForce": "strong",
+              "iterationNudgeThreshold": 5,
+              "protectedTools": [],
+              "protectUserMessages": false
+            },
+            "strategies": {
+              "deduplication": {
+                "enabled": true,
+                "protectedTools": []
+              },
+              "purgeErrors": {
+                "enabled": true,
+                "protectedTools": []
+              }
+            },
+            "commands": {
+              "enabled": true,
+              "protectedTools": []
+            },
+            "manualMode": {
+              "enabled": false,
+              "automaticStrategies": true
+            },
+            "protectedFilePatterns": []
+          },
+          "type": "object",
+          "properties": {
+            "autoUpdate": {
+              "default": false,
+              "type": "boolean"
+            },
+            "debug": {
+              "default": false,
+              "type": "boolean"
+            },
+            "pruneNotificationType": {
+              "default": "chat",
+              "type": "string",
+              "enum": [
+                "chat",
+                "toast"
+              ]
+            },
+            "compress": {
+              "default": {
+                "mode": "range",
+                "permission": "allow",
+                "showCompression": true,
+                "summaryBuffer": true,
+                "nudgeForce": "strong",
+                "iterationNudgeThreshold": 5,
+                "protectedTools": [],
+                "protectUserMessages": false
+              },
+              "type": "object",
+              "properties": {
+                "mode": {
+                  "default": "range",
+                  "type": "string",
+                  "enum": [
+                    "range",
+                    "message"
+                  ]
+                },
+                "permission": {
+                  "default": "allow",
+                  "type": "string",
+                  "enum": [
+                    "ask",
+                    "allow",
+                    "deny"
+                  ]
+                },
+                "showCompression": {
+                  "default": true,
+                  "type": "boolean"
+                },
+                "summaryBuffer": {
+                  "default": true,
+                  "type": "boolean"
+                },
+                "nudgeForce": {
+                  "default": "strong",
+                  "type": "string",
+                  "enum": [
+                    "strong",
+                    "soft"
+                  ]
+                },
+                "iterationNudgeThreshold": {
+                  "default": 5,
+                  "type": "integer",
+                  "minimum": 1,
+                  "maximum": 9007199254740991
+                },
+                "protectedTools": {
+                  "default": [],
+                  "type": "array",
+                  "items": {
+                    "type": "string"
+                  }
+                },
+                "protectUserMessages": {
+                  "default": false,
+                  "type": "boolean"
+                }
+              },
+              "required": [
+                "mode",
+                "permission",
+                "showCompression",
+                "summaryBuffer",
+                "nudgeForce",
+                "iterationNudgeThreshold",
+                "protectedTools",
+                "protectUserMessages"
+              ],
+              "additionalProperties": false
+            },
+            "strategies": {
+              "default": {
+                "deduplication": {
+                  "enabled": true,
+                  "protectedTools": []
+                },
+                "purgeErrors": {
+                  "enabled": true,
+                  "protectedTools": []
+                }
+              },
+              "type": "object",
+              "properties": {
+                "deduplication": {
+                  "default": {
+                    "enabled": true,
+                    "protectedTools": []
+                  },
+                  "type": "object",
+                  "properties": {
+                    "enabled": {
+                      "default": true,
+                      "type": "boolean"
+                    },
+                    "protectedTools": {
+                      "default": [],
+                      "type": "array",
+                      "items": {
+                        "type": "string"
+                      }
+                    }
+                  },
+                  "required": [
+                    "enabled",
+                    "protectedTools"
+                  ],
+                  "additionalProperties": false
+                },
+                "purgeErrors": {
+                  "default": {
+                    "enabled": true,
+                    "protectedTools": []
+                  },
+                  "type": "object",
+                  "properties": {
+                    "enabled": {
+                      "default": true,
+                      "type": "boolean"
+                    },
+                    "protectedTools": {
+                      "default": [],
+                      "type": "array",
+                      "items": {
+                        "type": "string"
+                      }
+                    }
+                  },
+                  "required": [
+                    "enabled",
+                    "protectedTools"
+                  ],
+                  "additionalProperties": false
+                }
+              },
+              "required": [
+                "deduplication",
+                "purgeErrors"
+              ],
+              "additionalProperties": false
+            },
+            "commands": {
+              "default": {
+                "enabled": true,
+                "protectedTools": []
+              },
+              "type": "object",
+              "properties": {
+                "enabled": {
+                  "default": true,
+                  "type": "boolean"
+                },
+                "protectedTools": {
+                  "default": [],
+                  "type": "array",
+                  "items": {
+                    "type": "string"
+                  }
+                }
+              },
+              "required": [
+                "enabled",
+                "protectedTools"
+              ],
+              "additionalProperties": false
+            },
+            "manualMode": {
+              "default": {
+                "enabled": false,
+                "automaticStrategies": true
+              },
+              "type": "object",
+              "properties": {
+                "enabled": {
+                  "default": false,
+                  "type": "boolean"
+                },
+                "automaticStrategies": {
+                  "default": true,
+                  "type": "boolean"
+                }
+              },
+              "required": [
+                "enabled",
+                "automaticStrategies"
+              ],
+              "additionalProperties": false
+            },
+            "protectedFilePatterns": {
+              "default": [],
+              "type": "array",
+              "items": {
+                "type": "string"
+              }
+            }
+          },
+          "required": [
+            "autoUpdate",
+            "debug",
+            "pruneNotificationType",
+            "compress",
+            "strategies",
+            "commands",
+            "manualMode",
+            "protectedFilePatterns"
+          ],
+          "additionalProperties": false
         }
       },
       "required": [
-        "enabled"
+        "enabled",
+        "profiles",
+        "base"
       ],
       "additionalProperties": false
     },

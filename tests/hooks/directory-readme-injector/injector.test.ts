@@ -47,8 +47,7 @@ mock.module("../../../src/hooks/directory-readme-injector/storage", () => ({
 const { processFilePathForReadmeInjection } = await import("../../../src/hooks/directory-readme-injector/injector")
 
 afterAll(() => {
-  mock.module("node:fs/promises", () => realFsPromises)
-  mock.module("node:fs", () => realFs)
+  mock.restore()
 })
 
 describe("processFilePathForReadmeInjection", () => {

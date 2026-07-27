@@ -123,7 +123,6 @@ export function createEventHandler(args: {
         clearSessionAgent(sessionInfo.id)
         resetMessageCursor(sessionInfo.id)
         firstMessageVariantGate.clear(sessionInfo.id)
-        await managers.skillMcpManager.disconnectSession(sessionInfo.id)
         await lspManager.cleanupTempDirectoryClients()
         await managers.tmuxSessionManager.onSessionDeleted({
           sessionID: sessionInfo.id,

@@ -63,16 +63,12 @@ jobs:
           # Individual files that use mock.module and cause cross-file pollution
           bun test tests/tools/delegate-agent/sync-executor.test.ts
           bun test tests/tools/delegate-agent/session-creator.test.ts
-          bun test tests/features/opencode-skill-loader/loader.test.ts
-          bun test tests/features/opencode-skill-loader/agents-skills-global.test.ts
           bun test tests/tools/session-manager/storage.test.ts
-          bun test tests/hooks/prometheus-md-only/index.test.ts
           bun test tests/hooks/architect/index.test.ts
           bun test tests/hooks/matrix-loop/index.test.ts
           bun test tests/hooks/start-work/index.test.ts
           bun test tests/hooks/auto-update-checker/hook/background-update-check.test.ts
           bun test tests/hooks/auto-update-checker/hook.test.ts
-          bun test tests/features/skill-mcp-manager/manager.test.ts
           bun test tests/features/background-agent/manager.test.ts
           bun test tests/hooks/comment-checker/cli.test.ts
           bun test tests/hooks/comment-checker/hook.apply-patch.test.ts
@@ -82,6 +78,7 @@ jobs:
           bun test tests/hooks/compaction-todo-preserver/index.test.ts
           bun test tests/hooks/preemptive-compaction.test.ts
           bun test tests/tools/lsp/client.test.ts
+          bun test tests/tools/lsp/lsp-process.test.ts
           bun test tests/tools/skill/tools.test.ts
           bun test tests/hooks/anthropic-context-window-limit-recovery/empty-content-recovery-sdk.test.ts
           bun test tests/hooks/anthropic-context-window-limit-recovery/recovery-hook.test.ts
@@ -95,7 +92,12 @@ jobs:
           bun test tests/agents/utils.test.ts
           bun test tests/hooks/task-notepad/hook.test.ts
           bun test tests/plugin/tool-execute-before.test.ts
-          bun test tests/features/mission-state/plan-storage.test.ts
+          bun test tests/features/mission-state/
+          bun test tests/features/handoff/
+          bun test tests/features/task-storage/
+          bun test tests/hooks/session-recovery/
+          bun test tests/plugin/session-agent-resolver.test.ts
+          bun test tests/hooks/auto-update-checker/checker/pinned-version-updater.test.ts
 
       - name: Run remaining tests
         run: |
@@ -108,16 +110,12 @@ jobs:
               -e 'tests/features/tmux-subagent/' \
               -e 'tests/tools/delegate-agent/sync-executor.test.ts' \
               -e 'tests/tools/delegate-agent/session-creator.test.ts' \
-              -e 'tests/features/opencode-skill-loader/loader.test.ts' \
-              -e 'tests/features/opencode-skill-loader/agents-skills-global.test.ts' \
               -e 'tests/tools/session-manager/storage.test.ts' \
-              -e 'tests/hooks/prometheus-md-only/index.test.ts' \
               -e 'tests/hooks/architect/index.test.ts' \
               -e 'tests/hooks/matrix-loop/index.test.ts' \
               -e 'tests/hooks/start-work/index.test.ts' \
               -e 'tests/hooks/auto-update-checker/hook/background-update-check.test.ts' \
               -e 'tests/hooks/auto-update-checker/hook.test.ts' \
-              -e 'tests/features/skill-mcp-manager/manager.test.ts' \
               -e 'tests/features/background-agent/manager.test.ts' \
               -e 'tests/hooks/comment-checker/cli.test.ts' \
               -e 'tests/hooks/comment-checker/hook.apply-patch.test.ts' \
@@ -127,6 +125,7 @@ jobs:
               -e 'tests/hooks/compaction-todo-preserver/index.test.ts' \
               -e 'tests/hooks/preemptive-compaction.test.ts' \
               -e 'tests/tools/lsp/client.test.ts' \
+              -e 'tests/tools/lsp/lsp-process.test.ts' \
               -e 'tests/tools/skill/tools.test.ts' \
               -e 'tests/hooks/anthropic-context-window-limit-recovery/empty-content-recovery-sdk.test.ts' \
               -e 'tests/hooks/anthropic-context-window-limit-recovery/recovery-hook.test.ts' \
@@ -137,7 +136,12 @@ jobs:
               -e 'tests/tools/bdd-parse-gherkin/tools.test.ts' \
               -e 'tests/tools/bdd-pipeline/pipeline-runner.test.ts' \
               -e 'tests/plugin/tool-execute-before.test.ts' \
-              -e 'tests/features/mission-state/plan-storage.test.ts' \
+              -e 'tests/features/mission-state/' \
+              -e 'tests/features/handoff/' \
+              -e 'tests/features/task-storage/' \
+              -e 'tests/hooks/session-recovery/' \
+              -e 'tests/plugin/session-agent-resolver.test.ts' \
+              -e 'tests/hooks/auto-update-checker/checker/pinned-version-updater.test.ts' \
             | xargs bun test
 
   typecheck:

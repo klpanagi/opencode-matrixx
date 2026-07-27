@@ -4,7 +4,7 @@ import { log } from "../../shared/logger"
 import { SYSTEM_DIRECTIVE_PREFIX } from "../../shared/system-directive"
 import { isOracleAgent } from "./agent-matcher"
 import { getAgentFromSession } from "./agent-resolution"
-import { BLOCKED_TOOLS, HOOK_NAME, PLANNING_CONSULT_WARNING, PROMETHEUS_WORKFLOW_REMINDER } from "./constants"
+import { BLOCKED_TOOLS, HOOK_NAME, ORACLE_WORKFLOW_REMINDER, PLANNING_CONSULT_WARNING } from "./constants"
 import { isAllowedFile } from "./path-policy"
 
 const TASK_TOOLS = ["task", "delegate_agent"]
@@ -69,7 +69,7 @@ export function createOracleMdOnlyHook(ctx: PluginInput) {
           filePath,
           agent: agentName,
         })
-        output.message = (output.message || "") + PROMETHEUS_WORKFLOW_REMINDER
+        output.message = (output.message || "") + ORACLE_WORKFLOW_REMINDER
       }
 
       log(`[${HOOK_NAME}] Allowed: .matrixx/*.md write permitted`, {

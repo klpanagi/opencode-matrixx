@@ -134,41 +134,8 @@ bunx opencode-matrixx run [prompt]
 
 ---
 
-## 6. `mcp oauth` - MCP OAuth Management
 
-Manages OAuth 2.1 authentication for remote MCP servers.
-
-### Usage
-
-```bash
-# Login to an OAuth-protected MCP server
-bunx opencode-matrixx mcp oauth login <server-name> --server-url https://api.example.com
-
-# Login with explicit client ID and scopes
-bunx opencode-matrixx mcp oauth login my-api --server-url https://api.example.com --client-id my-client --scopes "read,write"
-
-# Remove stored OAuth tokens
-bunx opencode-matrixx mcp oauth logout <server-name>
-
-# Check OAuth token status
-bunx opencode-matrixx mcp oauth status [server-name]
-```
-
-### Options
-
-| Option | Description |
-|--------|-------------|
-| `--server-url <url>` | MCP server URL (required for login) |
-| `--client-id <id>` | OAuth client ID (optional if server supports Dynamic Client Registration) |
-| `--scopes <scopes>` | Comma-separated OAuth scopes |
-
-### Token Storage
-
-Tokens are stored in `~/.config/opencode/mcp-oauth.json` with `0600` permissions (owner read/write only). Key format: `{serverHost}/{resource}`.
-
----
-
-## 7. `auth` - Authentication Management
+## 6. `auth` - Authentication Management
 
 Manages Google Antigravity OAuth authentication. Required for using Gemini models.
 
@@ -187,7 +154,7 @@ bunx opencode-matrixx auth status
 
 ---
 
-## 8. In-Session Slash Commands
+## 7. In-Session Slash Commands
 
 These are slash commands used within OpenCode sessions during active conversations.
 

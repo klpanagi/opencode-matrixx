@@ -1,4 +1,4 @@
-import { afterEach, beforeEach, describe, expect, it, mock, spyOn } from "bun:test"
+import { afterAll, afterEach, beforeEach, describe, expect, it, mock, spyOn } from "bun:test"
 import { mkdtempSync, rmSync, writeFileSync } from "node:fs"
 import { tmpdir } from "node:os"
 import { join } from "node:path"
@@ -10,6 +10,10 @@ mock.module("vscode-jsonrpc/node", () => ({
   StreamMessageReader: function StreamMessageReader() {},
   StreamMessageWriter: function StreamMessageWriter() {},
 }))
+
+afterAll(() => {
+  mock.restore()
+})
 
 import { LSPClient, lspManager, validateCwd } from "../../../src/tools/lsp/client"
 import type { ResolvedServer } from "../../../src/tools/lsp/types"
