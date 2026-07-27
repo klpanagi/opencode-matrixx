@@ -98,6 +98,9 @@ jobs:
           bun test tests/hooks/session-recovery/
           bun test tests/plugin/session-agent-resolver.test.ts
           bun test tests/hooks/auto-update-checker/checker/pinned-version-updater.test.ts
+          bun test tests/tools/pdf-extract-figures/tools.test.ts
+          bun test tests/cli/doctor/checks.test.ts
+          bun test tests/cli/install/index.test.ts
 
       - name: Run remaining tests
         run: |
@@ -142,6 +145,9 @@ jobs:
               -e 'tests/hooks/session-recovery/' \
               -e 'tests/plugin/session-agent-resolver.test.ts' \
               -e 'tests/hooks/auto-update-checker/checker/pinned-version-updater.test.ts' \
+              -e 'tests/tools/pdf-extract-figures/tools.test.ts' \
+              -e 'tests/cli/doctor/checks.test.ts' \
+              -e 'tests/cli/install/index.test.ts' \
             | xargs bun test
 
   typecheck:
