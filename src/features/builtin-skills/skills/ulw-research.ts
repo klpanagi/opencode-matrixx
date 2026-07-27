@@ -60,11 +60,11 @@ All artifacts are written via the \`write\` tool. The next session can resume fr
 
 For each round, spawn 4 parallel background agents. Each agent gets ONLY its direction-specific query (not the full research state).
 
-### Direction 1: Local Code (explore agent)
+### Direction 1: Local Code (trinity agent)
 
 \`\`\`
 task(
-  subagent_type="explore",
+  subagent_type="trinity",
   run_in_background=true,
   description="Research code: <lead>",
   prompt="""
@@ -81,11 +81,11 @@ Flag any claims that seem contested or unverifiable by reading alone.
 """)
 \`\`\`
 
-### Direction 2: Documentation (explore agent)
+### Direction 2: Documentation (trinity agent)
 
 \`\`\`
 task(
-  subagent_type="explore",
+  subagent_type="trinity",
   run_in_background=true,
   description="Research docs: <lead>",
   prompt="""
@@ -176,7 +176,7 @@ If \`contested-claims.md\` is non-empty after convergence, verify each claim:
 
 \`\`\`
 task(
-  subagent_type="explore",
+  subagent_type="trinity",
   run_in_background=true,
   description="Verify claim: <summary>",
   prompt="""

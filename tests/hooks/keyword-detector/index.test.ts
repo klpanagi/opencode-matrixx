@@ -713,9 +713,9 @@ describe("keyword-detector agent-specific ultrawork messages", () => {
     // then - should contain mandatory acceptance criteria section
     const textPart = output.parts.find(p => p.type === "text")
     expect(textPart).toBeDefined()
-    expect(textPart?.text).toContain("MANDATORY: ACCEPTANCE CRITERIA DEFINITION")
-    expect(textPart?.text).toContain("BEFORE writing ANY code, you MUST output an Acceptance Criteria block")
-    expect(textPart?.text).toContain("FAILURE TO OUTPUT ACCEPTANCE CRITERIA")
+    expect(textPart?.text).toContain("MANDATORY: ACCEPTANCE CRITERIA + QA EXECUTION")
+    expect(textPart?.text).toContain("BEFORE writing ANY code, output an Acceptance Criteria block")
+    expect(textPart?.text).toContain("PASS or FAIL")
     expect(textPart?.text).toContain("Verification Commands")
   })
 
@@ -738,8 +738,8 @@ describe("keyword-detector agent-specific ultrawork messages", () => {
     // then - should contain mandatory QA execution section
     const textPart = output.parts.find(p => p.type === "text")
     expect(textPart).toBeDefined()
-    expect(textPart?.text).toContain("MANDATORY: QA EXECUTION")
-    expect(textPart?.text).toContain("AFTER implementation, you MUST execute ALL verification commands")
+    expect(textPart?.text).toContain("MANDATORY: ACCEPTANCE CRITERIA + QA EXECUTION")
+    expect(textPart?.text).toContain("Run every verification command")
     expect(textPart?.text).toContain("QA Report")
     expect(textPart?.text).toContain("NO EVIDENCE = NOT VERIFIED = NOT DONE")
   })

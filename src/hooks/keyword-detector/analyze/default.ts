@@ -16,12 +16,12 @@ export const ANALYZE_MESSAGE = `[analyze-mode]
 ANALYSIS MODE. Gather context before diving deep:
 
 CONTEXT GATHERING (parallel):
-- 1-2 explore agents (codebase patterns, implementations)
-- 1-2 librarian agents (if external library involved)
+- 1-2 trinity agents (codebase patterns, implementations)
+- 1-2 operator agents (if external library involved)
 - Direct tools: Grep, AST-grep, LSP for targeted searches
 
 IF COMPLEX - DO NOT STRUGGLE ALONE. Consult specialists:
 - **Oracle**: Conventional problems (architecture, debugging, complex logic)
-- **Artistry**: Non-conventional problems (different approach needed)
+- **Matrix-bend**: Non-conventional problems (different approach needed)
 
 SYNTHESIZE findings before proceeding.`
