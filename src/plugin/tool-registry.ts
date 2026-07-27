@@ -132,7 +132,7 @@ const assemblyTool = assemblyEnabled
     ...createAstGrepTools(ctx),
     ...createSessionManagerTools(ctx),
 ...createHandoffTools(ctx),
-    ...createDcpSwitchProfileTool(),
+    ...createDcpSwitchProfileTool({ pluginConfig }),
 ...backgroundTools,
     delegate_agent: delegateAgent,
     ...(lookAt ? { look_at: lookAt } : {}),

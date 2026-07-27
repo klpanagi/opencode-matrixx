@@ -1,7 +1,7 @@
 import type { AvailableSkill } from "./agents/dynamic-agent-prompt-builder"
 import type { HookName, MatrixxConfig } from "./config"
 import type { BackgroundManager } from "./features/background-agent"
-import type { LoadedSkill } from "./features/opencode-skill-loader/types"
+import type { BuiltinSkill } from "./features/builtin-skills"
 import { createContinuationHooks } from "./plugin/hooks/create-continuation-hooks"
 
 import { createCoreHooks } from "./plugin/hooks/create-core-hooks"
@@ -16,7 +16,7 @@ export function createHooks(args: {
   backgroundManager: BackgroundManager
   isHookEnabled: (hookName: HookName) => boolean
   safeHookEnabled: boolean
-  mergedSkills: LoadedSkill[]
+  builtinSkills: BuiltinSkill[]
   availableSkills: AvailableSkill[]
 }) {
   const {
@@ -25,7 +25,7 @@ export function createHooks(args: {
     backgroundManager,
     isHookEnabled,
     safeHookEnabled,
-    mergedSkills,
+    builtinSkills,
     availableSkills,
   } = args
 
@@ -49,7 +49,7 @@ export function createHooks(args: {
     ctx,
     isHookEnabled,
     safeHookEnabled,
-    mergedSkills,
+    builtinSkills,
     availableSkills,
   })
 

@@ -1,5 +1,5 @@
-import type { LoadedSkill, SkillScope } from "../../features/opencode-skill-loader/types"
-import type { SkillMcpManager } from "../../features/skill-mcp-manager"
+import type { BuiltinSkill } from "../../features/builtin-skills"
+
 export interface SkillArgs {
   name: string
 }
@@ -8,7 +8,6 @@ export interface SkillInfo {
   name: string
   description: string
   location?: string
-  scope: SkillScope
   license?: string
   compatibility?: string
   metadata?: Record<string, string>
@@ -16,12 +15,10 @@ export interface SkillInfo {
 }
 
 export interface SkillLoadOptions {
-  /** When true, only load from OpenCode paths (.opencode/skills/, ~/.config/opencode/skills/) */
-  opencodeOnly?: boolean
   /** Pre-merged skills to use instead of discovering */
-  skills?: LoadedSkill[]
+  skills?: BuiltinSkill[]
   /** MCP manager for querying skill-embedded MCP servers */
-  mcpManager?: SkillMcpManager
+  mcpManager?: never
   /** Session ID getter for MCP client identification */
   getSessionID?: () => string
   disabledSkills?: Set<string>

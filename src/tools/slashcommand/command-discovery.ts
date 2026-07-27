@@ -1,7 +1,6 @@
 import { existsSync, readdirSync, readFileSync } from "node:fs"
 import { basename, join } from "node:path"
 import { loadBuiltinCommands } from "../../features/builtin-commands"
-import type { CommandFrontmatter } from "../../features/command-loader/types"
 import { getOpenCodeConfigDir, parseFrontmatter, sanitizeModelField } from "../../shared"
 import { isMarkdownFile } from "../../shared/file-utils"
 import type { CommandInfo, CommandMetadata, CommandScope } from "./types"
@@ -20,7 +19,13 @@ function discoverCommandsFromDir(commandsDir: string, scope: CommandScope): Comm
 
     try {
       const content = readFileSync(commandPath, "utf-8")
-      const { data, body } = parseFrontmatter<CommandFrontmatter>(content)
+      const { data, body } = parseFrontmatter<{
+        description?: string
+        "argument-hint"?: string
+        agent?: string
+        model?: string
+        subtask?: boolean
+      }>(content)
 
       const isOpencodeSource = scope === "opencode" || scope === "opencode-project"
       const metadata: CommandMetadata = {

@@ -66,7 +66,6 @@ for test in \
   tests/hooks/start-work/index.test.ts \
   tests/hooks/auto-update-checker/hook/background-update-check.test.ts \
   tests/hooks/auto-update-checker/hook.test.ts \
-  tests/features/skill-mcp-manager/manager.test.ts \
   tests/features/background-agent/manager.test.ts \
   tests/hooks/comment-checker/cli.test.ts \
   tests/hooks/comment-checker/hook.apply-patch.test.ts \
@@ -109,7 +108,6 @@ find tests script -name '*.test.ts' -type f \
     -e 'tests/hooks/start-work/index.test.ts' \
     -e 'tests/hooks/auto-update-checker/hook/background-update-check.test.ts' \
     -e 'tests/hooks/auto-update-checker/hook.test.ts' \
-    -e 'tests/features/skill-mcp-manager/manager.test.ts' \
     -e 'tests/features/background-agent/manager.test.ts' \
     -e 'tests/hooks/comment-checker/cli.test.ts' \
     -e 'tests/hooks/comment-checker/hook.apply-patch.test.ts' \

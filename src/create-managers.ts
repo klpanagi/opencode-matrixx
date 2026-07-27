@@ -1,7 +1,6 @@
 import type { MatrixxConfig } from "./config"
 import type { SubagentSessionCreatedEvent } from "./features/background-agent"
 import { BackgroundManager } from "./features/background-agent"
-import { SkillMcpManager } from "./features/skill-mcp-manager"
 import { initTaskToastManager } from "./features/task-toast-manager"
 import { TmuxSessionManager } from "./features/tmux-subagent"
 import type { PluginContext, TmuxConfig } from "./plugin/types"
@@ -12,7 +11,6 @@ import { log } from "./shared"
 export type Managers = {
   tmuxSessionManager: TmuxSessionManager
   backgroundManager: BackgroundManager
-  skillMcpManager: SkillMcpManager
   configHandler: ReturnType<typeof createConfigHandler>
 }
 
@@ -63,8 +61,6 @@ export function createManagers(args: {
 
   initTaskToastManager(ctx.client)
 
-  const skillMcpManager = new SkillMcpManager()
-
   const configHandler = createConfigHandler({
     ctx: { directory: ctx.directory, client: ctx.client },
     pluginConfig,
@@ -74,7 +70,6 @@ export function createManagers(args: {
   return {
     tmuxSessionManager,
     backgroundManager,
-    skillMcpManager,
     configHandler,
   }
 }

@@ -1,6 +1,6 @@
 import type { AgentConfig } from "@opencode-ai/sdk"
 import type { BrowserAutomationProvider, CategoriesConfig } from "../config/schema"
-import type { LoadedSkill } from "../features/opencode-skill-loader/types"
+import type { BuiltinSkill } from "../features/builtin-skills"
 import {
   fetchAvailableModels,
   readConnectedProvidersCache,
@@ -73,7 +73,7 @@ export async function createBuiltinAgents(
   directory?: string,
   systemDefaultModel?: string,
   categories?: CategoriesConfig,
-  discoveredSkills: LoadedSkill[] = [],
+  discoveredSkills: BuiltinSkill[] = [],
   customAgentSummaries?: unknown,
   browserProvider?: BrowserAutomationProvider,
   uiSelectedModel?: string,

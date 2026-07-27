@@ -16,7 +16,6 @@ const TRUNCATABLE_TOOLS = [
   "ast_grep_search",
   "interactive_bash",
   "Interactive_bash",
-  "skill_mcp",
   "webfetch",
   "WebFetch",
 ]

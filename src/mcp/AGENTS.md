@@ -2,12 +2,11 @@
 
 ## OVERVIEW
 
-Tier 1 of three-tier MCP system: 4 built-in MCPs (3 remote HTTP + 1 local stdio).
+Tier 1 of two-tier MCP system: 4 built-in MCPs (3 remote HTTP + 1 local stdio).
 
-**Three-Tier System**:
+**Two-Tier System**:
 1. **Built-in** (this directory): websearch, context7, grep_app, document_reader
-2. **Claude Code compat** (`features/claude-code-mcp-loader/`): .mcp.json with `${VAR}` expansion
-3. **Skill-embedded** (`features/opencode-skill-loader/`): YAML frontmatter in SKILL.md
+2. **Plugin-config / user-configured**: MCPs defined in plugin configuration
 
 ## STRUCTURE
 ```

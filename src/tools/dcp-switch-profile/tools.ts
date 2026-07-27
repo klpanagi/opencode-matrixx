@@ -1,59 +1,17 @@
-import { existsSync, mkdirSync, readFileSync, unlinkSync, writeFileSync } from "node:fs"
+import { existsSync, writeFileSync } from "node:fs"
 import { homedir } from "node:os"
 import { join } from "node:path"
 import { type ToolDefinition, tool } from "@opencode-ai/plugin/tool"
+import type { DcpConfig } from "../../config/schema/dcp"
+import { BUILTIN_DCP_PROFILES } from "../../config/schema/dcp"
 
-const DCP_DIR = join(homedir(), ".myopencode", "dcp")
 const DCP_PLUGIN_DIR = join(homedir(), ".config", "opencode", "node_modules", "@tarquinen", "opencode-dcp")
 const DCP_SYMLINK = join(homedir(), ".config", "opencode", "dcp.jsonc")
 
 const VALID_PROFILES = ["economy", "balanced", "performance", "ultimate"] as const
 
-/**
- * Strip JSONC comments (single-line // and multi-line /* * /) from a string,
- * preserving string literals that may contain comment-like sequences.
- */
-function stripJsoncComments(raw: string): string {
-  let result = ""
-  let i = 0
-  while (i < raw.length) {
-    if (raw[i] === '"') {
-      // String literal — copy until closing quote (handle escapes)
-      result += raw[i++]
-      while (i < raw.length && raw[i] !== '"') {
-        if (raw[i] === "\\") result += raw[i++]
-        if (i < raw.length) result += raw[i++]
-      }
-      if (i < raw.length) result += raw[i++]
-    } else if (raw[i] === "/" && raw[i + 1] === "/") {
-      // Single-line comment — skip until newline
-      while (i < raw.length && raw[i] !== "\n") i++
-    } else if (raw[i] === "/" && raw[i + 1] === "*") {
-      // Multi-line comment — skip until */
-      i += 2
-      while (i < raw.length - 1 && !(raw[i] === "*" && raw[i + 1] === "/")) i++
-      i += 2
-    } else {
-      result += raw[i++]
-    }
-  }
-  return result
-}
-
-/**
- * Deep-merge two objects. Arrays and primitives from `source` replace those in `target`.
- * Nested objects are merged recursively.
- */
-function deepMerge(target: Record<string, unknown>, source: Record<string, unknown>): Record<string, unknown> {
-  const result = { ...target }
-  for (const key of Object.keys(source)) {
-    if (source[key] && typeof source[key] === "object" && !Array.isArray(source[key])) {
-      result[key] = deepMerge((result[key] as Record<string, unknown>) || {}, source[key] as Record<string, unknown>)
-    } else {
-      result[key] = source[key]
-    }
-  }
-  return result
+export interface DcpSwitchProfileOptions {
+  pluginConfig?: { dcp?: DcpConfig }
 }
 
 /**
@@ -67,22 +25,92 @@ function checkDcpInstalled(): string | null {
 }
 
 /**
- * Read and parse a JSONC config file.
+ * Build a full inline DCP PluginConfig object for the given profile.
+ * Starts with base values from dcpConfig.base, overlays profile-specific
+ * values from dcpConfig.profiles[profile], and falls back to built-in
+ * profile definitions when no Matrixx config is provided.
  */
-function readJsoncConfig(filePath: string): Record<string, unknown> {
-  const raw = readFileSync(filePath, "utf8")
-  const cleaned = stripJsoncComments(raw)
-  return JSON.parse(cleaned) as Record<string, unknown>
+function buildInlineConfig(profile: string, options?: DcpSwitchProfileOptions): Record<string, unknown> {
+  const dcpConfig = options?.pluginConfig?.dcp
+  const base = dcpConfig?.base ? (dcpConfig.base as Record<string, unknown>) : {}
+  const validProfiles = BUILTIN_DCP_PROFILES as unknown as Record<string, Record<string, unknown>>
+  const profileConfig = dcpConfig?.profiles?.[profile] ?? validProfiles[profile] ?? {}
+
+  // Extract sub-objects with proper typing
+  const compressBase = (base.compress as Record<string, unknown>) ?? {}
+  const strategiesBase = (base.strategies as Record<string, unknown>) ?? {}
+  const commandsCfg = (base.commands as Record<string, unknown>) ?? {}
+  const manualModeCfg = (base.manualMode as Record<string, unknown>) ?? {}
+  const profileCompress = (profileConfig.compress as Record<string, unknown>) ?? {}
+  const profileTurn = (profileConfig.turnProtection as Record<string, unknown>) ?? {}
+  const profileExp = (profileConfig.experimental as Record<string, unknown>) ?? {}
+  const profilePurge = ((profileConfig.strategies as Record<string, unknown>)?.purgeErrors as Record<string, unknown>) ?? {}
+  const basePurge = ((strategiesBase.purgeErrors as Record<string, unknown>)) ?? {}
+
+  return {
+    $schema:
+      "https://raw.githubusercontent.com/Opencode-DCP/opencode-dynamic-context-pruning/v3.1.14/dcp.schema.json",
+    enabled: true,
+    autoUpdate: (base.autoUpdate as boolean) ?? false,
+    debug: (base.debug as boolean) ?? false,
+    pruneNotification: (profileConfig.pruneNotification as string) ?? "minimal",
+    pruneNotificationType: (base.pruneNotificationType as string) ?? "chat",
+    compress: {
+      mode: (compressBase.mode as string) ?? "range",
+      permission: (compressBase.permission as string) ?? "allow",
+      showCompression: (compressBase.showCompression as boolean) ?? true,
+      summaryBuffer: (compressBase.summaryBuffer as boolean) ?? true,
+      maxContextLimit: (profileCompress.maxContextLimit as string | number) ?? "60%",
+      minContextLimit: (profileCompress.minContextLimit as string | number) ?? "30%",
+      nudgeFrequency: (profileCompress.nudgeFrequency as number) ?? 3,
+      iterationNudgeThreshold:
+        (profileCompress.iterationNudgeThreshold as number) ?? (compressBase.iterationNudgeThreshold as number) ?? 5,
+      nudgeForce: (profileCompress.nudgeForce as string) ?? (compressBase.nudgeForce as string) ?? "strong",
+      protectedTools:
+        (profileCompress.protectedTools as string[]) ?? (compressBase.protectedTools as string[]) ?? [],
+      protectTags: (profileCompress.protectTags as boolean) ?? false,
+      protectUserMessages:
+        (profileCompress.protectUserMessages as boolean) ?? (compressBase.protectUserMessages as boolean) ?? false,
+    },
+    turnProtection: {
+      enabled: (profileTurn.enabled as boolean) ?? true,
+      turns: (profileTurn.turns as number) ?? 2,
+    },
+    experimental: {
+      allowSubAgents: (profileExp.allowSubAgents as boolean) ?? true,
+      customPrompts: false,
+    },
+    protectedFilePatterns: (base.protectedFilePatterns as string[]) ?? [],
+    commands: {
+      enabled: (commandsCfg.enabled as boolean) ?? true,
+      protectedTools: (commandsCfg.protectedTools as string[]) ?? [],
+    },
+    manualMode: {
+      enabled: (manualModeCfg.enabled as boolean) ?? false,
+      automaticStrategies: (manualModeCfg.automaticStrategies as boolean) ?? true,
+    },
+    strategies: {
+      deduplication: {
+        enabled: ((strategiesBase.deduplication as Record<string, unknown>)?.enabled as boolean) ?? true,
+        protectedTools: ((strategiesBase.deduplication as Record<string, unknown>)?.protectedTools as string[]) ?? [],
+      },
+      purgeErrors: {
+        enabled: (basePurge.enabled as boolean) ?? true,
+        turns: (profilePurge.turns as number) ?? 2,
+        protectedTools: (basePurge.protectedTools as string[]) ?? [],
+      },
+    },
+  }
 }
 
 /**
  * Switch the active DCP profile.
- * Reads base + profile JSONC configs, deep-merges them, writes the generated config,
- * and updates the symlink.
+ * Reads profile parameters from the Matrixx plugin configuration and writes
+ * a full inline DCP config to ~/.config/opencode/dcp.jsonc.
  */
-function switchProfile(profile: string): string {
+function switchProfile(profile: string, options?: DcpSwitchProfileOptions): string {
   // Validate profile
-  if (!VALID_PROFILES.includes(profile as typeof VALID_PROFILES[number])) {
+  if (!VALID_PROFILES.includes(profile as (typeof VALID_PROFILES)[number])) {
     return `Error: Invalid profile "${profile}". Valid profiles: ${VALID_PROFILES.join(", ")}`
   }
 
@@ -90,73 +118,32 @@ function switchProfile(profile: string): string {
   const dcpError = checkDcpInstalled()
   if (dcpError) return dcpError
 
-  // Resolve file paths
-  const basePath = join(DCP_DIR, "dcp-base.jsonc")
-  const overridePath = join(DCP_DIR, `dcp-${profile}.jsonc`)
-  const outputPath = join(DCP_DIR, `dcp-generated-${profile}.jsonc`)
+  // Build the full inline config from Matrixx configuration
+  const inlineConfig = buildInlineConfig(profile, options)
 
-  // Verify config files exist
-  if (!existsSync(basePath)) {
-    return `Error: Base DCP config not found at ${basePath}`
-  }
-  if (!existsSync(overridePath)) {
-    return `Error: Profile config not found at ${overridePath}`
-  }
+  // Write directly to the DCP config symlink target
+  writeFileSync(DCP_SYMLINK, JSON.stringify(inlineConfig, null, 2) + "\n")
 
-  // Read and merge configs
-  let base: Record<string, unknown>
-  let override: Record<string, unknown>
-  try {
-    base = readJsoncConfig(basePath)
-    override = readJsoncConfig(overridePath)
-  } catch (err) {
-    return `Error: Failed to parse config files: ${err instanceof Error ? err.message : String(err)}`
-  }
-
-  const merged = deepMerge(base, override)
-
-  // Ensure output directory exists
-  mkdirSync(DCP_DIR, { recursive: true })
-
-  // Write generated config
-  writeFileSync(outputPath, JSON.stringify(merged, null, 2) + "\n")
-
-  // Update symlink — remove existing then recreate
-  try {
-    if (existsSync(DCP_SYMLINK)) {
-      unlinkSync(DCP_SYMLINK)
-    }
-  } catch {
-    // Ignore if symlink doesn't exist or can't be removed
-  }
-
-  try {
-    // Use relative symlink for portability
-    const relPath = join("..", ".myopencode", "dcp", `dcp-generated-${profile}.jsonc`)
-    writeFileSync(DCP_SYMLINK, `{"$schema": "https://raw.githubusercontent.com/Opencode-DCP/opencode-dynamic-context-pruning/v3.1.14/dcp.schema.json","extend": "${relPath}"}`)
-  } catch (err) {
-    return `Error: Failed to update symlink: ${err instanceof Error ? err.message : String(err)}`
-  }
-
-  return `Generated: ${outputPath}\n✓ Switched to DCP profile: ${profile}\n\nRestart OpenCode session for changes to take effect.`
+  return `\u2713 Switched to DCP profile: ${profile}\n\nRestart OpenCode session for changes to take effect.`
 }
 
-export function createDcpSwitchProfileTool(): Record<string, ToolDefinition> {
+export function createDcpSwitchProfileTool(options?: DcpSwitchProfileOptions): Record<string, ToolDefinition> {
   const dcp_switch_profile: ToolDefinition = tool({
     description:
       "Switch the active DCP (Dynamic Context Pruning) profile tier. " +
-      "Reads the base DCP config and profile-specific overrides from ~/.myopencode/dcp/, " +
-      "deep-merges them (base first, then profile overrides), writes the generated config, " +
-      "and updates the symlink at ~/.config/opencode/dcp.jsonc. " +
+      "Reads profile parameters from the Matrixx plugin configuration and writes a full inline DCP config " +
+      "to ~/.config/opencode/dcp.jsonc. No external files needed. " +
       "Call this with one of: economy, balanced, performance, ultimate.",
     args: {
       profile: tool.schema
         .enum(VALID_PROFILES)
-        .describe("Target DCP profile tier: economy (most aggressive), balanced, performance, ultimate (least aggressive)"),
+        .describe(
+          "Target DCP profile tier: economy (most aggressive), balanced, performance, ultimate (least aggressive)",
+        ),
     },
     async execute(args) {
       const profile = args.profile as string
-      return switchProfile(profile)
+      return switchProfile(profile, options)
     },
   })
 

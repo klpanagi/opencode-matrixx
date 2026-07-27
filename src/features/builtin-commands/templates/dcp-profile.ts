@@ -1,6 +1,6 @@
 export const DCP_PROFILE_TEMPLATE = `You are switching the active DCP (Dynamic Context Pruning) profile tier.
 
-This command is provided by the Matrixx plugin. It uses the built-in \`dcp_switch_profile\` tool to read, merge, and apply DCP profile configurations — no external scripts needed.
+This command is provided by the Matrixx plugin. It uses the built-in \`dcp_switch_profile\` tool to apply DCP profile configurations — no external scripts needed.
 
 ## Step 1: Verify DCP is installed
 
@@ -26,7 +26,7 @@ Parse the arguments passed to this command. The user invoked \`/dcp-profile <arg
 
 ## Step 3: Call the built-in \`dcp_switch_profile\` tool
 
-Use the \`dcp_switch_profile\` tool with the resolved profile name. This tool reads the base DCP config and profile-specific overrides from \`~/.myopencode/dcp/\`, deep-merges them, writes the generated config, and updates the symlink at \`~/.config/opencode/dcp.jsonc\`.
+Use the \`dcp_switch_profile\` tool with the resolved profile name. This tool reads profile parameters from the Matrixx plugin configuration and writes the full inline DCP config to \`~/.config/opencode/dcp.jsonc\`.
 
 The tool will handle all file operations — you do NOT need to run any external scripts or edit DCP config files directly.
 

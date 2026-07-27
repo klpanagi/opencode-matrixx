@@ -1,11 +1,11 @@
 import { type ToolDefinition, tool } from "@opencode-ai/plugin"
 import type { createOpencodeClient } from "@opencode-ai/sdk"
 import { type BuiltinSkill, createBuiltinSkills } from "../../features/builtin-skills"
+import { log } from "../../shared"
 import { discoverCommandsSync } from "./command-discovery"
 import { formatCommandList, formatLoadedCommand } from "./command-output-formatter"
 import { skillToCommandInfo } from "./skill-command-converter"
 import { buildDescriptionFromItems, TOOL_DESCRIPTION_PREFIX } from "./slashcommand-description"
-import { log } from "../../shared"
 import type { CommandInfo, SlashcommandToolOptions } from "./types"
 
 async function discoverPluginCommands(client?: ReturnType<typeof createOpencodeClient>): Promise<CommandInfo[]> {

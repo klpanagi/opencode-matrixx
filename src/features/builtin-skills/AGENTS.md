@@ -96,9 +96,9 @@ Returns `BuiltinSkill[]`. Disabled skills are filtered AFTER creation. The `disa
 }
 ```
 
-## SKILL LOADING PIPELINE (PLUGIN-WIDE)
+## SKILL LOADING
 
-Built-in skills (this dir) are merged with project / user / Claude-Code skills in `src/features/opencode-skill-loader/`. Priority (highest to lowest): opencode-project > opencode-user > builtin > project > user > claude-code-* compat.
+All skills are loaded from `src/features/builtin-skills/` via `createBuiltinSkills()`. No external skill directory loading.
 
 ## HOW TO ADD A NEW BUILT-IN SKILL
 

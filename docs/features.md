@@ -900,45 +900,6 @@ mcp:
 
 The `skill_mcp` tool invokes these operations with full schema discovery.
 
-#### OAuth-Enabled MCPs
-
-### Lazy MCP Initialization (websearch)
-
-The `websearch` MCP uses deferred initialization. Its config depends on env vars (`EXA_API_KEY`, `TAVILY_API_KEY`) and user-configured provider, so the `createWebsearchConfig(config?.websearch)` call is wrapped in an `Object.defineProperty` getter on the returned `mcps` record. The other three built-in MCPs (context7, grep_app, document_reader) have static configs and initialize eagerly.
-
-**Why:** The Exa/Tavily env var read happens only when OpenCode first introspects the websearch server, not at plugin init — matches the lazy skill pattern.
-
-**Files:** `src/mcp/index.ts` (the `websearch` lazy block).
-
-
-Skills can define OAuth-protected remote MCP servers. OAuth 2.1 with full RFC compliance (RFC 9728, 8414, 8707, 7591) is supported:
-
-```yaml
----
-description: My API skill
-mcp:
-  my-api:
-    url: https://api.example.com/mcp
-    oauth:
-      clientId: ${CLIENT_ID}
-      scopes: ["read", "write"]
----
-```
-
-When a skill MCP has `oauth` configured:
-- **Auto-discovery**: Fetches `/.well-known/oauth-protected-resource` (RFC 9728), falls back to `/.well-known/oauth-authorization-server` (RFC 8414)
-- **Dynamic Client Registration**: Auto-registers with servers supporting RFC 7591 (clientId becomes optional)
-- **PKCE**: Mandatory for all flows
-- **Resource Indicators**: Auto-generated from MCP URL per RFC 8707
-- **Token Storage**: Persisted in `~/.config/opencode/mcp-oauth.json` (chmod 0600)
-- **Auto-refresh**: Tokens refresh on 401; step-up authorization on 403 with `WWW-Authenticate`
-- **Dynamic Port**: OAuth callback server uses an auto-discovered available port
-
-Pre-authenticate via CLI:
-
-```bash
-bunx opencode-matrixx mcp oauth login <server-name> --server-url https://api.example.com
-```
 
 ---
 

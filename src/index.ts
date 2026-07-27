@@ -63,7 +63,7 @@ const MatrixxPlugin: Plugin = async (ctx) => {
     backgroundManager: managers.backgroundManager,
     isHookEnabled,
     safeHookEnabled,
-    mergedSkills: toolsResult.mergedSkills,
+    builtinSkills: toolsResult.builtinSkills,
     availableSkills: toolsResult.availableSkills,
   })
 
