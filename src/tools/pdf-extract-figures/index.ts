@@ -1,0 +1,1 @@
+export { createPdfExtractFiguresTool } from "./tools"
