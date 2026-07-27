@@ -53,16 +53,12 @@ jobs:
           # Individual files that use mock.module and cause cross-file pollution
           bun test tests/tools/delegate-agent/sync-executor.test.ts
           bun test tests/tools/delegate-agent/session-creator.test.ts
-          bun test tests/features/opencode-skill-loader/loader.test.ts
-          bun test tests/features/opencode-skill-loader/agents-skills-global.test.ts
           bun test tests/tools/session-manager/storage.test.ts
-          bun test tests/hooks/prometheus-md-only/index.test.ts
           bun test tests/hooks/architect/index.test.ts
           bun test tests/hooks/matrix-loop/index.test.ts
           bun test tests/hooks/start-work/index.test.ts
           bun test tests/hooks/auto-update-checker/hook/background-update-check.test.ts
           bun test tests/hooks/auto-update-checker/hook.test.ts
-          bun test tests/features/skill-mcp-manager/manager.test.ts
           bun test tests/features/background-agent/manager.test.ts
           bun test tests/hooks/comment-checker/cli.test.ts
           bun test tests/hooks/comment-checker/hook.apply-patch.test.ts
@@ -99,16 +95,12 @@ jobs:
               -e 'tests/features/tmux-subagent/' \
               -e 'tests/tools/delegate-agent/sync-executor.test.ts' \
               -e 'tests/tools/delegate-agent/session-creator.test.ts' \
-              -e 'tests/features/opencode-skill-loader/loader.test.ts' \
-              -e 'tests/features/opencode-skill-loader/agents-skills-global.test.ts' \
               -e 'tests/tools/session-manager/storage.test.ts' \
-              -e 'tests/hooks/prometheus-md-only/index.test.ts' \
               -e 'tests/hooks/architect/index.test.ts' \
               -e 'tests/hooks/matrix-loop/index.test.ts' \
               -e 'tests/hooks/start-work/index.test.ts' \
               -e 'tests/hooks/auto-update-checker/hook/background-update-check.test.ts' \
               -e 'tests/hooks/auto-update-checker/hook.test.ts' \
-              -e 'tests/features/skill-mcp-manager/manager.test.ts' \
               -e 'tests/features/background-agent/manager.test.ts' \
               -e 'tests/hooks/comment-checker/cli.test.ts' \
               -e 'tests/hooks/comment-checker/hook.apply-patch.test.ts' \
