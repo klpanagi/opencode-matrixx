@@ -92,7 +92,12 @@ jobs:
           bun test tests/agents/utils.test.ts
           bun test tests/hooks/task-notepad/hook.test.ts
           bun test tests/plugin/tool-execute-before.test.ts
-          bun test tests/features/mission-state/plan-storage.test.ts
+          bun test tests/features/mission-state/
+          bun test tests/features/handoff/
+          bun test tests/features/task-storage/
+          bun test tests/hooks/session-recovery/
+          bun test tests/plugin/session-agent-resolver.test.ts
+          bun test tests/hooks/auto-update-checker/checker/pinned-version-updater.test.ts
 
       - name: Run remaining tests
         run: |
@@ -131,7 +136,12 @@ jobs:
               -e 'tests/tools/bdd-parse-gherkin/tools.test.ts' \
               -e 'tests/tools/bdd-pipeline/pipeline-runner.test.ts' \
               -e 'tests/plugin/tool-execute-before.test.ts' \
-              -e 'tests/features/mission-state/plan-storage.test.ts' \
+              -e 'tests/features/mission-state/' \
+              -e 'tests/features/handoff/' \
+              -e 'tests/features/task-storage/' \
+              -e 'tests/hooks/session-recovery/' \
+              -e 'tests/plugin/session-agent-resolver.test.ts' \
+              -e 'tests/hooks/auto-update-checker/checker/pinned-version-updater.test.ts' \
             | xargs bun test
 
   typecheck:
