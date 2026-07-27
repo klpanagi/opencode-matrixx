@@ -8,6 +8,10 @@
   "files": [
     "dist"
   ],
+  "bin": {
+    "opencode-matrixx": "dist/cli.js",
+    "matrixx": "dist/cli.js"
+  },
   "exports": {
     ".": {
       "types": "./dist/index.d.ts",
@@ -16,7 +20,9 @@
     "./schema.json": "./dist/matrixx.schema.json"
   },
   "scripts": {
-    "build": "bun build src/index.ts --outdir dist --target bun --format esm --external @ast-grep/napi && tsc --emitDeclarationOnly && bun run build:schema",
+    "build": "bun run build:plugin && bun run build:cli && tsc --emitDeclarationOnly && bun run build:schema",
+    "build:plugin": "bun build src/index.ts --outdir dist --target bun --format esm --external @ast-grep/napi",
+    "build:cli": "bun build src/cli/index.ts --outfile dist/cli.js --target bun --format esm",
     "build:schema": "bun run script/build-schema.ts",
     "clean": "rm -rf dist",
     "prepublishOnly": "bun run clean && bun run build",
@@ -24,7 +30,8 @@
     "lint": "biome check src/",
     "lint:fix": "biome check --write src/",
     "ci": "bash script/run-ci.sh",
-    "test": "bash script/run-ci.sh"
+    "test": "bash script/run-ci.sh",
+    "matrixx": "bun run bin/matrixx.ts"
   },
   "keywords": [
     "opencode",

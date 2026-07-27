@@ -61,10 +61,22 @@ That's it. Parallel agents, background tasks, deep exploration, relentless execu
 
 ## Quick Start
 
-### Install
+### Install (Recommended)
 
 ```bash
-npm install -g opencode-matrixx
+bunx opencode-matrixx install
+```
+
+Or for non-interactive setup (CI/agents):
+
+```bash
+bunx opencode-matrixx install --no-tui --claude=yes --openai=yes --gemini=no --copilot=no
+```
+
+### Verify Installation
+
+```bash
+bunx opencode-matrixx doctor
 ```
 
 ### Configure
@@ -89,12 +101,33 @@ Install and configure matrixx by following the instructions here:
 https://raw.githubusercontent.com/klpanagi/opencode-matrixx/refs/heads/dev/docs/guide/installation.md
 ```
 
-[Manual installation guide →](docs/guide/installation.md) · [Uninstall →](docs/guide/uninstallation.md)
+[Installation guide →](docs/guide/installation.md) . [Uninstall →](docs/guide/uninstallation.md) . [CLI reference →](docs/cli-guide.md)
 
 ---
 
----
+## CLI Reference
 
+Matrixx includes a built-in CLI accessible via `bunx opencode-matrixx <command>`:
+
+| Command | Description |
+|---------|-------------|
+| `install` | Interactive setup wizard (or `--no-tui` for CI/CD) |
+| `doctor` | Environment diagnostics and health checks |
+| `version` | Display version information |
+
+### Doctor Checks
+
+| Category | What It Checks |
+|----------|----------------|
+| installation | Plugin registration, OpenCode version |
+| configuration | Config file validity (matrixx.jsonc) |
+| authentication | Provider API key status (Anthropic, OpenAI, Google) |
+| dependencies | Runtime deps: Bun, Node.js, Git, Python3 |
+| tools | Optional: ast-grep, Gitleaks, PyMuPDF, Playwright |
+
+Use `--json` for machine-readable output or `--category <name>` for a specific check.
+
+---
 ## The Agent Team
 
 ### 01. Morpheus — *The Orchestrator*
@@ -491,8 +524,7 @@ The 10-20ms subprocess overhead is negligible compared to command execution time
 
 ---
 
-If this saves you time, a ⭐ goes a long way.
 
-**Curious about the philosophy?** Read the [Ultrawork Manifesto](docs/ultrawork-manifesto.md) — originally authored by [code-yeongyu](https://github.com/code-yeongyu), the creator of oh-my-opencode.
+If this saves you time, a ⭐ goes a long way.
 
 <sub>Productivity might spike too hard. Don't let your coworker notice. Actually — let's see who wins.</sub>
