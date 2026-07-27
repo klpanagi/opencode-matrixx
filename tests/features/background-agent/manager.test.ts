@@ -14,6 +14,10 @@ import { BackgroundManager } from "../../../src/features/background-agent/manage
 import { _resetMessageDirCacheForTesting, getMessageDir } from "../../../src/features/background-agent/message-dir"
 import type { BackgroundTask, ResumeInput } from "../../../src/features/background-agent/types"
 
+// Shared fs call counters for mock.module("node:fs")-based tests
+// (getMessageDir caching + B2 readFileSync regression).
+// Declared here so both describe blocks can reference the same counters.
+const mockCalls: { existsSync: number; readdirSync: number } = { existsSync: 0, readdirSync: 0 }
 
 const TASK_TTL_MS = 30 * 60 * 1000
 
@@ -3912,43 +3916,56 @@ describe("BackgroundManager regression fixes - resume and aborted notification",
 // + N × existsSync for subdir scan). With many sessions, the readdirSync + N
 // existsSync scan is expensive. B4 wraps the original body in a module-level
 // LRU cache so the 2nd call for the same sessionID makes 0 sync IO ops.
-//
-// Uses spyOn (NOT mock.module) on `fs.existsSync` and `fs.readdirSync`. This
-// works in bun because destructured `import { existsSync, readdirSync }` from
-// "node:fs" goes through a live property lookup at call time, so spyOn on
-// the namespace intercepts the call. This is bun-specific CJS interop behavior
-// also exploited in src/shared/git-worktree/collect-git-diff-stats.test.ts.
-//
-// MUST run BEFORE the B2 describe block below: B2 uses mock.module("node:fs", ...)
-// which is a global, process-wide mock that persists for the rest of the run. The
-// spy-based assertions in this test would see 0 readdirSync calls (the mock wrapper
-// is replaced by the spy in a way that confuses the live-binding chain).
-
 describe("getMessageDir cached after first call", () => {
-  test("getMessageDir cached after first call", () => {
+  test("getMessageDir cached after first call", async () => {
     //#given
-    _resetMessageDirCacheForTesting()
+    // Uses mock.module (like the B2 regression test below) so message-dir.ts
+    // picks up the wrapped fs functions via its own import binding.
     const sessionID = `ses_b4_nonexistent_${randomUUID()}`
-    const existsSpy = spyOn(fs, "existsSync")
-    const readdirSpy = spyOn(fs, "readdirSync")
+
+    // Capture real fs functions BEFORE mock so wrappers don't recurse.
+    const realFsNs = require("node:fs") as typeof import("node:fs")
+    const realExistsSync = realFsNs.existsSync
+    const realReaddirSync = realFsNs.readdirSync
+
+    let existsCallCount = 0
+    let readdirCallCount = 0
+
+    mock.module("node:fs", () => {
+      return {
+        ...realFsNs,
+        existsSync: (path: string) => {
+          existsCallCount++
+          return realExistsSync(path)
+        },
+        readdirSync: (path: string) => {
+          readdirCallCount++
+          return realReaddirSync(path)
+        },
+      } as typeof realFsNs
+    })
+
+    const { getMessageDir: isolatedGetMessageDir } = await import(
+      `../../../src/features/background-agent/message-dir?bust=${randomUUID()}`
+    )
 
     //#when
-    const result1 = getMessageDir(sessionID)
+    const result1 = isolatedGetMessageDir(sessionID)
 
     //#then
     expect(result1).toBeNull()
-    const existsAfter1 = existsSpy.mock.calls.length
-    const readdirAfter1 = readdirSpy.mock.calls.length
+    const existsAfter1 = existsCallCount
+    const readdirAfter1 = readdirCallCount
     expect(existsAfter1).toBeGreaterThan(0)
     expect(readdirAfter1).toBeGreaterThan(0)
 
     //#when
-    const result2 = getMessageDir(sessionID)
+    const result2 = isolatedGetMessageDir(sessionID)
 
     //#then
     expect(result2).toBeNull()
-    expect(existsSpy.mock.calls.length).toBe(existsAfter1)
-    expect(readdirSpy.mock.calls.length).toBe(readdirAfter1)
+    expect(existsCallCount).toBe(existsAfter1)
+    expect(readdirCallCount).toBe(readdirAfter1)
   })
 })
 
