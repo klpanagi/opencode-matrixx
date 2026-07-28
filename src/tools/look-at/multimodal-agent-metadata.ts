@@ -1,5 +1,6 @@
 import type { PluginInput } from "@opencode-ai/plugin"
-import { isObject, log } from "../../shared"
+import { log } from "../../shared"
+import { isRecord } from "../../shared/record-type-guard"
 import { CONSTRUCT_AGENT } from "./constants"
 
 type AgentModel = { providerID: string; modelID: string }
@@ -16,12 +17,12 @@ type AgentInfo = {
 }
 
 function toAgentInfo(value: unknown): AgentInfo | null {
-  if (!isObject(value)) return null
+  if (!isRecord(value)) return null
   const name = typeof value.name === "string" ? value.name : undefined
   const variant = typeof value.variant === "string" ? value.variant : undefined
   const modelValue = value.model
   const model =
-    isObject(modelValue) &&
+    isRecord(modelValue) &&
     typeof modelValue.providerID === "string" &&
     typeof modelValue.modelID === "string"
       ? { providerID: modelValue.providerID, modelID: modelValue.modelID }
@@ -34,7 +35,7 @@ export async function resolveMultimodalLookerAgentMetadata(
 ): Promise<ResolvedAgentMetadata> {
   try {
     const agentsResult = await ctx.client.app?.agents?.()
-    const agentsRaw = isObject(agentsResult) ? agentsResult.data : undefined
+    const agentsRaw = isRecord(agentsResult) ? agentsResult.data : undefined
     const agents = Array.isArray(agentsRaw) ? agentsRaw.map(toAgentInfo).filter(Boolean) : []
 
     const matched = agents.find(

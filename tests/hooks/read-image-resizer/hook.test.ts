@@ -2,7 +2,7 @@
 
 import { afterEach, beforeEach, describe, expect, it, mock, spyOn } from "bun:test"
 import type { PluginInput } from "@opencode-ai/plugin"
-import * as sessionModelState from "../../../src/shared/session-model-state"
+import * as sessionModelState from "../../../src/shared/session-state"
 import { createReadImageResizerHook } from "../../../src/hooks/read-image-resizer/hook"
 import * as imageDimensions from "../../../src/hooks/read-image-resizer/image-dimensions"
 import * as imageResizer from "../../../src/hooks/read-image-resizer/image-resizer"

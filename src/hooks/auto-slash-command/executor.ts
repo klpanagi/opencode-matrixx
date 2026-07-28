@@ -10,9 +10,9 @@ import {
   parseFrontmatter,
   resolveCommandsInText,
   resolveFileReferencesInText,
-  sanitizeModelField,
 } from "../../shared"
 import { isMarkdownFile } from "../../shared/file-utils"
+import { sanitizeModelField } from "../../shared/model-sanitizer"
 import type { ParsedSlashCommand } from "./types"
 
 interface CommandScope {

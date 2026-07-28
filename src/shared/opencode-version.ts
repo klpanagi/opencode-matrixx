@@ -1,4 +1,5 @@
 import { execSync } from "node:child_process"
+import { NOT_CACHED } from "./sentinels"
 
 /**
  * Minimum OpenCode version required for this plugin.
@@ -21,7 +22,6 @@ export const OPENCODE_NATIVE_AGENTS_INJECTION_VERSION = "1.1.37"
  */
 export const OPENCODE_SQLITE_VERSION = "1.1.53"
 
-const NOT_CACHED = Symbol("NOT_CACHED")
 let cachedVersion: string | null | typeof NOT_CACHED = NOT_CACHED
 
 export function parseVersion(version: string): number[] {

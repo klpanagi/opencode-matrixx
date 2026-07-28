@@ -1,4 +1,5 @@
 import type { BackgroundManager } from "../../features/background-agent/manager"
+import { delay } from "../../shared/delay"
 import { POLL_INTERVAL_MS } from "./constants"
 import type { SynthesisResult, VoterResult } from "./types"
 
@@ -137,6 +138,3 @@ function parseSynthesis(
   return { round, consensus, confidence, disagreements }
 }
 
-function delay(ms: number): Promise<void> {
-  return new Promise((resolve) => setTimeout(resolve, ms))
-}

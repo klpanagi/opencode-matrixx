@@ -2,9 +2,8 @@ import { existsSync } from "node:fs"
 import { join } from "node:path"
 import { getDataDir } from "./data-path"
 import { isOpenCodeVersionAtLeast, OPENCODE_SQLITE_VERSION } from "./opencode-version"
+import { FALSE_PENDING_RETRY, NOT_CACHED } from "./sentinels"
 
-const NOT_CACHED = Symbol("NOT_CACHED")
-const FALSE_PENDING_RETRY = Symbol("FALSE_PENDING_RETRY")
 let cachedResult: true | false | typeof NOT_CACHED | typeof FALSE_PENDING_RETRY = NOT_CACHED
 
 export function isSqliteBackend(): boolean {

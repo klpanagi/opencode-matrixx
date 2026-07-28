@@ -1,5 +1,5 @@
 import { storeToolMetadata } from "../../features/tool-metadata-store"
-import { getSessionTools } from "../../shared/session-tools-store"
+import { getSessionTools } from "../../shared/session-state"
 import { formatDetailedError } from "./error-formatting"
 import type { ExecutorContext, ParentContext } from "./executor-types"
 import type { DelegateTaskArgs, ToolContextWithMetadata } from "./types"

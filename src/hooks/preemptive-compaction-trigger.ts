@@ -17,23 +17,7 @@ const PREEMPTIVE_COMPACTION_COOLDOWN_MS = 60_000
 declare function setTimeout(handler: () => void, timeout?: number): unknown
 declare function clearTimeout(timeoutID: unknown): void
 
-async function withTimeout<TValue>(
-  promise: Promise<TValue>,
-  timeoutMs: number,
-  errorMessage: string,
-): Promise<TValue> {
-  let timeoutID: unknown
-
-  const timeoutPromise = new Promise<never>((_, reject) => {
-    timeoutID = setTimeout(() => {
-      reject(new Error(errorMessage))
-    }, timeoutMs)
-  })
-
-  return await Promise.race([promise, timeoutPromise]).finally(() => {
-    clearTimeout(timeoutID)
-  })
-}
+import { withTimeout } from "../shared/with-timeout"
 
 export async function runPreemptiveCompactionIfNeeded(args: {
   ctx: PreemptiveCompactionContext

@@ -1,4 +1,5 @@
 import { log } from "../../shared"
+import { getErrorMessage } from "../../shared/error-formatting"
 import { extractBase64Data } from "../../tools/look-at/mime-type-inference"
 import { resizeImageFallback } from "./png-fallback-resizer"
 import type { ImageDimensions, ResizeResult } from "./types"
@@ -75,9 +76,6 @@ async function renderResizedBuffer(args: {
     .toBuffer()
 }
 
-function getErrorMessage(error: unknown): string {
-  return error instanceof Error ? error.message : String(error)
-}
 
 function loadSharpModule(): Promise<unknown | null> {
   return Function('return import("sharp").catch(() => null)')() as Promise<unknown | null>

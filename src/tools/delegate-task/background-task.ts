@@ -1,6 +1,6 @@
 import { storeToolMetadata } from "../../features/tool-metadata-store"
 import { formatDetailedError } from "../../shared/error-formatting"
-import { getSessionTools } from "../../shared/session-tools-store"
+import { getSessionTools } from "../../shared/session-state"
 import type { ExecutorContext, ParentContext } from "./executor-types"
 import { getTimingConfig } from "./timing"
 import type { DelegateTaskArgs, ToolContextWithMetadata } from "./types"

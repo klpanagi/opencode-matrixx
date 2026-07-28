@@ -2,6 +2,7 @@ import type { MatrixxConfig } from "../config"
 import type { BackgroundManager } from "../features/background-agent"
 
 import { createUnstableAgentBabysitterHook } from "../hooks"
+import { isRecord } from "../shared/record-type-guard"
 import type { PluginContext } from "./types"
 
 export function createUnstableAgentBabysitter(args: {
@@ -19,7 +20,7 @@ export function createUnstableAgentBabysitter(args: {
           messages: async ({ path }) => {
             const result = await ctx.client.session.messages({ path })
             if (Array.isArray(result)) return result
-            if (typeof result === "object" && result !== null) {
+            if (isRecord(result)) {
               return result
             }
             return []

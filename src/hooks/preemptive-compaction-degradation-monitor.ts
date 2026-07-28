@@ -45,23 +45,7 @@ export interface AssistantCompactionMessageInfo {
   id?: string
 }
 
-async function withTimeout<TValue>(
-  promise: Promise<TValue>,
-  timeoutMs: number,
-  errorMessage: string,
-): Promise<TValue> {
-  let timeoutID: unknown
-
-  const timeoutPromise = new Promise<never>((_, reject) => {
-    timeoutID = setTimeout(() => {
-      reject(new Error(errorMessage))
-    }, timeoutMs)
-  })
-
-  return await Promise.race([promise, timeoutPromise]).finally(() => {
-    clearTimeout(timeoutID)
-  })
-}
+import { withTimeout } from "../shared/with-timeout"
 
 export function createPostCompactionDegradationMonitor(args: {
   client: ClientLike
