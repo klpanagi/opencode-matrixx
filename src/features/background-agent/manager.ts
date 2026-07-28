@@ -3,8 +3,7 @@
 import type { PluginInput } from "@opencode-ai/plugin"
 import type { BackgroundTaskConfig, TmuxConfig } from "../../config/schema"
 import { getAgentToolRestrictions, log, normalizeSDKResponse, promptWithModelSuggestionRetry } from "../../shared"
-import { setSessionTemperature } from "../../shared/session-temperature-store"
-import { setSessionTools } from "../../shared/session-tools-store"
+import { setSessionTemperature, setSessionTools } from "../../shared/session-state"
 import { isInsideTmux } from "../../shared/tmux"
 import { subagentSessions } from "../session-state"
 

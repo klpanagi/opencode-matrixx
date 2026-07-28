@@ -58,7 +58,7 @@ function isChatParamsOutput(raw: unknown): raw is ChatParamsOutput {
   return isRecord(raw.options)
 }
 
-import { clearSessionTemperature, getSessionTemperature } from "../shared/session-temperature-store"
+import { clearSessionTemperature, getSessionTemperature } from "../shared/session-state"
 
 export function createChatParamsHandler(args: {
   anthropicEffort: { "chat.params"?: (input: ChatParamsInput, output: ChatParamsOutput) => Promise<void> } | null

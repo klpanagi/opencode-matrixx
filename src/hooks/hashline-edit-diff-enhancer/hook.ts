@@ -1,4 +1,5 @@
-import { isWriteTool, log } from "../../shared"
+import { log } from "../../shared"
+import { isWriteTool } from "../../shared/tool-guards"
 import { countLineDiffs, generateUnifiedDiff } from "../../tools/hashline-edit/diff-utils"
 
 interface HashlineEditDiffEnhancerConfig {

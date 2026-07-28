@@ -1,6 +1,6 @@
 import { storeToolMetadata } from "../../features/tool-metadata-store"
 import { formatDuration, normalizeSDKResponse } from "../../shared"
-import { getSessionTools } from "../../shared/session-tools-store"
+import { getSessionTools } from "../../shared/session-state"
 import { formatDetailedError } from "./error-formatting"
 import type { ExecutorContext, ParentContext, SessionMessage } from "./executor-types"
 import { getTimingConfig } from "./timing"

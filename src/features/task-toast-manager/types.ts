@@ -1,11 +1,11 @@
-import type { ModelSource } from "../../shared/model-resolver"
+import type { ModelResolutionProvenance } from "../../shared/model-resolution-pipeline"
 
 export type TaskStatus = "running" | "queued" | "completed" | "error"
 
 export interface ModelFallbackInfo {
   model: string
   type: "user-defined" | "inherited" | "category-default" | "system-default"
-  source?: ModelSource
+  source?: ModelResolutionProvenance
 }
 
 export interface TrackedTask {

@@ -1,4 +1,4 @@
-export { CODE_BLOCK_PATTERN, INLINE_CODE_PATTERN } from "../../shared"
+export { CODE_BLOCK_PATTERN, INLINE_CODE_PATTERN } from "../../shared/code-patterns"
 export { ANALYZE_MESSAGE, ANALYZE_PATTERN } from "./analyze"
 export { SEARCH_MESSAGE, SEARCH_PATTERN } from "./search"
 // Re-export from submodules

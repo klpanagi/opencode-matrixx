@@ -4,7 +4,7 @@ import { resolveMessageContext } from "../../features/hook-message-injector"
 import { getSessionAgent } from "../../features/session-state"
 import { log } from "../../shared"
 import { formatDetailedError } from "../../shared/error-formatting"
-import { getSessionTools } from "../../shared/session-tools-store"
+import { getSessionTools } from "../../shared/session-state"
 import { getMessageDir } from "./message-dir"
 import type { DelegateAgentArgs } from "./types"
 

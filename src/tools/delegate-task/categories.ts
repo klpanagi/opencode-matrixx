@@ -2,7 +2,7 @@ import type { CategoriesConfig, CategoryConfig } from "../../config/schema"
 import { log } from "../../shared/logger"
 import { isModelAvailable } from "../../shared/model-availability"
 import { CATEGORY_MODEL_REQUIREMENTS } from "../../shared/model-requirements"
-import { resolveModel } from "../../shared/model-resolver"
+import { normalizeModel } from "../../shared/model-resolution-pipeline"
 import type { TierResolverContext } from "../../shared/tier-resolver"
 import { resolveTier } from "../../shared/tier-resolver"
 import { CATEGORY_PROMPT_APPENDS, DEFAULT_CATEGORIES } from "./constants"
@@ -64,11 +64,10 @@ export function resolveCategoryConfig(
 
   // Model priority for categories: user override > category default > system default
   // Categories have explicit models - no inheritance from parent session
-  const model = resolveModel({
-    userModel: effectiveUserModel ?? userConfig?.model,
-    inheritedModel: effectiveDefaultModel ?? defaultConfig?.model, // Category's built-in model takes precedence over system default
-    systemDefault: systemDefaultModel,
-  })
+  const model =
+    normalizeModel(effectiveUserModel ?? userConfig?.model) ??
+    normalizeModel(effectiveDefaultModel ?? defaultConfig?.model) ??
+    systemDefaultModel
   const hasUserModelOverride = (effectiveUserModel ?? userConfig?.model) !== undefined
   const config: CategoryConfig = {
     ...defaultConfig,

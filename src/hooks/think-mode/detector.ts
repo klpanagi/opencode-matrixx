@@ -1,4 +1,4 @@
-import { CODE_BLOCK_PATTERN, INLINE_CODE_PATTERN } from "../../shared"
+import { CODE_BLOCK_PATTERN, INLINE_CODE_PATTERN } from "../../shared/code-patterns"
 
 const ENGLISH_PATTERNS = [
   /\bultrathink\b/i,

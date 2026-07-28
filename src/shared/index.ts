@@ -1,8 +1,6 @@
 export * from "./agent-tool-restrictions"
 export * from "./agent-variant"
 export * from "./binary-downloader"
-export * from "./code-patterns"
-export * from "./code-patterns"
 export * from "./command-executor"
 export * from "./config-errors"
 export * from "./connected-providers-cache"
@@ -15,28 +13,21 @@ export * from "./file-utils"
 export * from "./format-duration"
 export * from "./frontmatter"
 export * from "./git-worktree"
-export * from "./is-object"
 export * from "./jsonc-parser"
 export * from "./logger"
 export * from "./migration"
 export * from "./model-availability"
 export * from "./model-requirements"
-export { resolveModelPipeline } from "./model-resolution-pipeline"
-export type {
-  ModelResolutionProvenance,
-  ModelResolutionRequest,
-  ModelResolutionResult,
-} from "./model-resolution-types"
-export * from "./model-resolver"
-export * from "./model-sanitizer"
+export {
+  resolveModelPipeline,
+  normalizeModel,
+  type ModelResolutionRequest,
+  type ModelResolutionResult,
+  type ModelResolutionProvenance,
+} from "./model-resolution-pipeline"
 export * from "./model-suggestion-retry"
 export * from "./normalize-sdk-response"
 export * from "./opencode-config-dir"
-export type {
-  OpenCodeBinaryType,
-  OpenCodeConfigDirOptions,
-  OpenCodeConfigPaths,
-} from "./opencode-config-dir-types"
 export * from "./opencode-http-api"
 export * from "./opencode-message-dir"
 export * from "./opencode-server-auth"
@@ -53,7 +44,6 @@ export * from "./shell-env"
 export * from "./system-directive"
 export * from "./tmux"
 export * from "./token-cache"
-export * from "./tool-guards"
 export * from "./transcript-path"
 export * from "./truncate-description"
 export * from "./zip-extractor"

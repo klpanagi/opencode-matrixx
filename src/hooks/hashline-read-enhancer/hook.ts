@@ -1,5 +1,5 @@
 import type { PluginInput } from "@opencode-ai/plugin"
-import { isReadTool, isWriteTool } from "../../shared"
+import { isReadTool, isWriteTool } from "../../shared/tool-guards"
 import { computeLineHash } from "../../tools/hashline-edit/hash-computation"
 
 const WRITE_SUCCESS_MARKER = "File written successfully."
