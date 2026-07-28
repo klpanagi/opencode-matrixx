@@ -14,7 +14,7 @@ export const SEARCH_PATTERN =
 
 export const SEARCH_MESSAGE = `[search-mode]
 MAXIMIZE SEARCH EFFORT. Launch multiple background agents IN PARALLEL:
-- explore agents (codebase patterns, file structures, ast-grep)
-- librarian agents (remote repos, official docs, GitHub examples)
+- trinity agents (codebase patterns, file structures, ast-grep)
+- operator agents (remote repos, official docs, GitHub examples)
 Plus direct tools: Grep, ripgrep (rg), ast-grep (sg)
 NEVER stop at first result - be exhaustive.`

@@ -713,9 +713,9 @@ describe("keyword-detector agent-specific ultrawork messages", () => {
     // then - should contain mandatory acceptance criteria section
     const textPart = output.parts.find(p => p.type === "text")
     expect(textPart).toBeDefined()
-    expect(textPart?.text).toContain("MANDATORY: ACCEPTANCE CRITERIA DEFINITION")
-    expect(textPart?.text).toContain("BEFORE writing ANY code, you MUST output an Acceptance Criteria block")
-    expect(textPart?.text).toContain("FAILURE TO OUTPUT ACCEPTANCE CRITERIA")
+    expect(textPart?.text).toContain("MANDATORY: ACCEPTANCE CRITERIA + QA EXECUTION")
+    expect(textPart?.text).toContain("BEFORE writing ANY code, output an Acceptance Criteria block")
+    expect(textPart?.text).toContain("PASS or FAIL")
     expect(textPart?.text).toContain("Verification Commands")
   })
 
@@ -738,8 +738,8 @@ describe("keyword-detector agent-specific ultrawork messages", () => {
     // then - should contain mandatory QA execution section
     const textPart = output.parts.find(p => p.type === "text")
     expect(textPart).toBeDefined()
-    expect(textPart?.text).toContain("MANDATORY: QA EXECUTION")
-    expect(textPart?.text).toContain("AFTER implementation, you MUST execute ALL verification commands")
+    expect(textPart?.text).toContain("MANDATORY: ACCEPTANCE CRITERIA + QA EXECUTION")
+    expect(textPart?.text).toContain("Run every verification command")
     expect(textPart?.text).toContain("QA Report")
     expect(textPart?.text).toContain("NO EVIDENCE = NOT VERIFIED = NOT DONE")
   })
@@ -824,4 +824,88 @@ describe("keyword-detector agent-specific ultrawork messages", () => {
     expect(textPart?.text).toBe("ultrawork plan this")
     expect(textPart?.text).not.toContain("YOU ARE A PLANNER, NOT AN IMPLEMENTER")
   })
+
+  // ─── Model variant routing tests ─────────────────────────────────────
+
+  test("should inject DeepSeek ultrawork variant for deepseek model", async () => {
+    const collector = new ContextCollector()
+    const hook = createKeywordDetectorHook(createMockPluginInput(), collector)
+    const sessionID = "deepseek-session"
+    const output = {
+      message: {} as Record<string, unknown>,
+      parts: [{ type: "text", text: "ultrawork implement feature" }],
+    }
+    await hook["chat.message"](
+      { sessionID, model: { providerID: "deepseek", modelID: "deepseek/deepseek-v4-flash" } },
+      output
+    )
+    const textPart = output.parts.find(p => p.type === "text")
+    expect(textPart).toBeDefined()
+    expect(textPart?.text).toContain("<thinking_mode>")
+    expect(textPart?.text).toContain("Thinking mode is ON by default on DeepSeek V4 Flash")
+    expect(textPart?.text).toContain("Never strip reasoning_content")
+    expect(textPart?.text).toContain("Goal Registration")
+    expect(textPart?.text).toContain("Scenario Contract")
+  })
+
+  test("should inject Mimo ultrawork variant for mimo model", async () => {
+    const collector = new ContextCollector()
+    const hook = createKeywordDetectorHook(createMockPluginInput(), collector)
+    const sessionID = "mimo-session"
+    const output = {
+      message: {} as Record<string, unknown>,
+      parts: [{ type: "text", text: "ultrawork implement feature" }],
+    }
+    await hook["chat.message"](
+      { sessionID, model: { providerID: "xiaomi", modelID: "opencode-go/mimo-v2.5" } },
+      output
+    )
+    const textPart = output.parts.find(p => p.type === "text")
+    expect(textPart).toBeDefined()
+    expect(textPart?.text).toContain("Set mission")
+    expect(textPart?.text).toContain("Register with todowrite")
+    expect(textPart?.text).toContain("Scenarios: 3+ binary pass/fail")
+    expect(textPart?.text).toContain("TDD Workflow")
+  })
+
+  test("should inject Gemini ultrawork variant for gemini model", async () => {
+    const collector = new ContextCollector()
+    const hook = createKeywordDetectorHook(createMockPluginInput(), collector)
+    const sessionID = "gemini-session"
+    const output = {
+      message: {} as Record<string, unknown>,
+      parts: [{ type: "text", text: "ultrawork implement feature" }],
+    }
+    await hook["chat.message"](
+      { sessionID, model: { providerID: "google", modelID: "gemini-2.5-pro" } },
+      output
+    )
+    const textPart = output.parts.find(p => p.type === "text")
+    expect(textPart).toBeDefined()
+    expect(textPart?.text).toContain("GEMINI_INTENT_GATE")
+    expect(textPart?.text).toContain("CLASSIFY INTENT")
+    expect(textPart?.text).toContain("TOOL_CALL_MANDATE")
+    expect(textPart?.text).toContain("DELEGATION IS MANDATORY")
+  })
+
+  test("should inject GLM ultrawork variant for glm model", async () => {
+    const collector = new ContextCollector()
+    const hook = createKeywordDetectorHook(createMockPluginInput(), collector)
+    const sessionID = "glm-session"
+    const output = {
+      message: {} as Record<string, unknown>,
+      parts: [{ type: "text", text: "ultrawork implement feature" }],
+    }
+    await hook["chat.message"](
+      { sessionID, model: { providerID: "zhipu", modelID: "glm-5" } },
+      output
+    )
+    const textPart = output.parts.find(p => p.type === "text")
+    expect(textPart).toBeDefined()
+    expect(textPart?.text).toContain("output_verbosity_spec")
+    expect(textPart?.text).toContain("GLM CALIBRATION")
+    expect(textPart?.text).toContain("DECISION FRAMEWORK: SELF VS DELEGATE")
+    expect(textPart?.text).toContain("VERIFICATION GUARANTEE")
+  })
+
 })
