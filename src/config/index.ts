@@ -12,7 +12,6 @@ export type {
   MatrixLoopConfig,
   MatrixxConfig,
   McpName,
-  ModelCapabilitiesConfig,
   MorpheusAgentConfig,
   MorpheusConfig,
   MorpheusTasksConfig,

@@ -15,7 +15,6 @@ import { ExperimentalConfigSchema } from "./experimental"
 import { HookNameSchema } from "./hooks"
 import { MatrixLoopConfigSchema } from "./matrix-loop"
 import { MatrixxSelfConfigSkillConfigSchema } from "./matrixx-self-config"
-import { ModelCapabilitiesConfigSchema } from "./model-capabilities"
 import { MorpheusConfigSchema } from "./morpheus"
 import { MorpheusAgentConfigSchema } from "./morpheus-agent"
 import { NotificationConfigSchema } from "./notification"
@@ -71,8 +70,6 @@ export const MatrixxConfigSchema = z.object({
   runtime_fallback: RuntimeFallbackConfigSchema.optional(),
   /** Paths to external agent definition files */
   agent_definitions: AgentDefinitionsConfigSchema.optional(),
-  /** Dynamic model capabilities refresh configuration */
-  model_capabilities: ModelCapabilitiesConfigSchema.optional(),
   /** Enable matrixx-self-config skill (default: false - opt-in feature) */
   matrixx_self_config: MatrixxSelfConfigSkillConfigSchema.optional(),
   /** RTK bash command rewriter configuration (default: disabled) */
