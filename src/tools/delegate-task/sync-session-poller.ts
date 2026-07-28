@@ -9,6 +9,7 @@ const NON_TERMINAL_FINISH_REASONS = new Set(["tool-calls", "unknown"])
 const STALL_NO_RESPONSE_POLLS = 15
 const STALL_TOOL_CALLS_POLLS = 10
 const STALL_ORPHANED_TOOL_CALL_POLLS = 20
+const STALE_RUNNING_TIMEOUT_MS = 120_000  // 2 min — fail-safe for stale status API
 
 export function isSessionComplete(messages: SessionMessage[]): boolean {
   let lastUser: SessionMessage | undefined
@@ -23,7 +24,19 @@ export function isSessionComplete(messages: SessionMessage[]): boolean {
 
   if (!lastAssistant?.info?.finish) return false
   if (NON_TERMINAL_FINISH_REASONS.has(lastAssistant.info.finish)) return false
-  if (!lastUser?.info?.id || !lastAssistant?.info?.id) return false
+
+  // Both user and assistant messages required for chronological ordering
+  if (!lastUser) return false
+
+  // Prefer timestamp comparison (chronologically reliable over string ID ordering)
+  const userTime = lastUser.info?.time?.created
+  const assistantTime = lastAssistant.info?.time?.created
+  if (userTime !== undefined && assistantTime !== undefined) {
+    return userTime < assistantTime
+  }
+
+  // Fall back to string ID comparison when timestamps unavailable
+  if (!lastUser.info?.id || !lastAssistant.info?.id) return false
   return lastUser.info.id < lastAssistant.info.id
 }
 
@@ -38,7 +51,17 @@ export function hasToolResultAfterAssistant(messages: SessionMessage[]): boolean
     if (lastUser && lastAssistant) break
   }
 
-  if (!lastAssistant?.info?.id || !lastUser?.info?.id) return false
+  if (!lastAssistant || !lastUser) return false
+
+  // Prefer timestamp comparison (chronologically reliable)
+  const assistantTime = lastAssistant.info?.time?.created
+  const userTime = lastUser.info?.time?.created
+  if (userTime !== undefined && assistantTime !== undefined) {
+    return userTime > assistantTime
+  }
+
+  // Fall back to string ID comparison when timestamps unavailable
+  if (!lastAssistant.info?.id || !lastUser.info?.id) return false
   return lastUser.info.id > lastAssistant.info.id
 }
 
@@ -115,6 +138,26 @@ export async function pollSyncSession(
       idleStallCount = 0
       lastMsgCount = 0
       stableIdlePolls = 0
+
+      // Fallback: if session has been "running" for too long without transitioning
+      // to idle, check messages directly. This handles cases where OpenCode's
+      // status API is stale/cached and the session actually completed.
+      if (Date.now() - pollStart >= STALE_RUNNING_TIMEOUT_MS) {
+        const staleMsgs = await client.session.messages({ path: { id: input.sessionID } }).catch(() => undefined)
+        if (staleMsgs) {
+          const parsed = normalizeSDKResponse(staleMsgs, [] as SessionMessage[], {
+            preferResponseOnMissingData: true,
+          })
+          if (isSessionComplete(parsed)) {
+            log("[task] Poll complete - stale running status, messages show completion", {
+              sessionID: input.sessionID,
+              pollCount,
+            })
+            break
+          }
+        }
+      }
+
       continue
     }
 

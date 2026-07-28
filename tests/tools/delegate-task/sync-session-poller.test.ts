@@ -408,8 +408,8 @@ describe("pollSyncSession", () => {
       //#when
       const result = isSessionComplete(messages)
 
-      //#then - should return false (missing assistant id)
-      expect(result).toBe(false)
+      //#then - should return true (timestamps available: 1000 < 2000)
+      expect(result).toBe(true)
     })
 
     test("returns false when user message has missing info.id field", () => {
@@ -427,8 +427,8 @@ describe("pollSyncSession", () => {
       //#when
       const result = isSessionComplete(messages)
 
-       //#then - should return false (missing user id)
-      expect(result).toBe(false)
+       //#then - should return true (timestamps available: 1000 < 2000)
+      expect(result).toBe(true)
   })
 })
 
@@ -638,7 +638,7 @@ describe("pollSyncSession", () => {
 
   describe("stability-based completion", () => {
     test("completes when message count stabilizes with assistant content", async () => {
-      //#given - assistant responded, finish set but IDs missing (isSessionComplete fails at ID check)
+      //#given - assistant responded, finish set but IDs missing (uses timestamp now)
       const { pollSyncSession } = require("../../../src/tools/delegate-task/sync-session-poller")
 
       __setTimingConfig({
@@ -711,8 +711,7 @@ describe("pollSyncSession", () => {
     })
 
     test("resets stability counter when message count changes", async () => {
-      //#given - messages grow (IDs omitted so isSessionComplete fails at ID check,
-      //         finish set so fallback text check doesn't trigger — only stability works)
+      //#given - messages grow (no timestamps, no IDs so isSessionComplete fails)
       const { pollSyncSession } = require("../../../src/tools/delegate-task/sync-session-poller")
 
       __setTimingConfig({
@@ -730,9 +729,9 @@ describe("pollSyncSession", () => {
             if (callCount <= 2) {
               return {
                 data: [
-                  { info: { role: "user", time: { created: 1000 } } },
+                  { info: { role: "user" } },
                   {
-                    info: { role: "assistant", time: { created: 2000 }, finish: "end_turn" },
+                    info: { role: "assistant", finish: "end_turn" },
                     parts: [{ type: "text", text: "Partial" }],
                   },
                 ],
@@ -741,14 +740,14 @@ describe("pollSyncSession", () => {
             if (callCount <= 4) {
               return {
                 data: [
-                  { info: { role: "user", time: { created: 1000 } } },
+                  { info: { role: "user" } },
                   {
-                    info: { role: "assistant", time: { created: 2000 }, finish: "end_turn" },
+                    info: { role: "assistant", finish: "end_turn" },
                     parts: [{ type: "text", text: "Partial" }],
                   },
-                  { info: { role: "user", time: { created: 3000 } } },
+                  { info: { role: "user" } },
                   {
-                    info: { role: "assistant", time: { created: 4000 }, finish: "end_turn" },
+                    info: { role: "assistant", finish: "end_turn" },
                     parts: [{ type: "text", text: "More" }],
                   },
                 ],
@@ -756,16 +755,16 @@ describe("pollSyncSession", () => {
             }
             return {
               data: [
-                { info: { role: "user", time: { created: 1000 } } },
-                {
-                  info: { role: "assistant", time: { created: 2000 }, finish: "end_turn" },
-                  parts: [{ type: "text", text: "Partial" }],
-                },
-                { info: { role: "user", time: { created: 3000 } } },
-                {
-                  info: { role: "assistant", time: { created: 4000 }, finish: "end_turn" },
-                  parts: [{ type: "text", text: "More" }],
-                },
+                  { info: { role: "user" } },
+                  {
+                    info: { role: "assistant", finish: "end_turn" },
+                    parts: [{ type: "text", text: "Partial" }],
+                  },
+                  { info: { role: "user" } },
+                  {
+                    info: { role: "assistant", finish: "end_turn" },
+                    parts: [{ type: "text", text: "More" }],
+                  },
               ],
             }
           },
@@ -783,7 +782,7 @@ describe("pollSyncSession", () => {
 
       //#then - should complete via stability after messages stop growing
       expect(result).toBeNull()
-      expect(callCount).toBeGreaterThan(4)
+      expect(callCount).toBeGreaterThanOrEqual(5)
     })
   })
 
