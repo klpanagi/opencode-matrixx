@@ -1,4 +1,5 @@
 import type { BackgroundManager } from "../../features/background-agent/manager"
+import { delay } from "../../shared/delay"
 import { POLL_INTERVAL_MS, VOTER_TIMEOUT_MS } from "./constants"
 import type { ProviderModel, VoterResult } from "./types"
 
@@ -95,6 +96,3 @@ Output your analysis in this format:
   return results
 }
 
-function delay(ms: number): Promise<void> {
-  return new Promise((resolve) => setTimeout(resolve, ms))
-}

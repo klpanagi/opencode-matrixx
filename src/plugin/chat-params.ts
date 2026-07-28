@@ -1,3 +1,5 @@
+import { isRecord } from "../shared/record-type-guard"
+
 type ChatParamsInput = {
   sessionID: string
   agent: { name?: string }
@@ -13,9 +15,6 @@ type ChatParamsOutput = {
   options: Record<string, unknown>
 }
 
-function isRecord(value: unknown): value is Record<string, unknown> {
-  return typeof value === "object" && value !== null
-}
 
 function buildChatParamsInput(raw: unknown): ChatParamsInput | null {
   if (!isRecord(raw)) return null

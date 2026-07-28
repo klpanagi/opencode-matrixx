@@ -20,12 +20,7 @@ import type { SearchResult, SessionInfoArgs, SessionListArgs, SessionReadArgs, S
 const SEARCH_TIMEOUT_MS = 60_000
 const MAX_SESSIONS_TO_SCAN = 50
 
-function withTimeout<T>(promise: Promise<T>, ms: number, operation: string): Promise<T> {
-  return Promise.race([
-    promise,
-    new Promise<T>((_, reject) => setTimeout(() => reject(new Error(`${operation} timed out after ${ms}ms`)), ms)),
-  ])
-}
+import { withTimeout } from "../../shared/with-timeout"
 
 export function createSessionManagerTools(ctx: PluginInput): Record<string, ToolDefinition> {
   // Initialize storage client for SDK-based operations (beta mode)

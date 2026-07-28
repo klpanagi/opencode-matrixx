@@ -1,5 +1,7 @@
 import type { createOpencodeClient } from "@opencode-ai/sdk"
+import { getErrorMessage } from "./error-formatting"
 import { log } from "./logger"
+import { isRecord } from "./record-type-guard"
 
 type Client = ReturnType<typeof createOpencodeClient>
 
@@ -9,25 +11,11 @@ interface ModelSuggestionInfo {
   suggestion: string
 }
 
-function extractMessage(error: unknown): string {
-  if (typeof error === "string") return error
-  if (error instanceof Error) return error.message
-  if (typeof error === "object" && error !== null) {
-    const obj = error as Record<string, unknown>
-    if (typeof obj.message === "string") return obj.message
-    try {
-      return JSON.stringify(error)
-    } catch {
-      return ""
-    }
-  }
-  return String(error)
-}
 
 export function parseModelSuggestion(error: unknown): ModelSuggestionInfo | null {
   if (!error) return null
 
-  if (typeof error === "object") {
+  if (isRecord(error)) {
     const errObj = error as Record<string, unknown>
 
     if (errObj.name === "ProviderModelNotFoundError" && typeof errObj.data === "object" && errObj.data !== null) {
@@ -45,14 +33,14 @@ export function parseModelSuggestion(error: unknown): ModelSuggestionInfo | null
 
     for (const key of ["data", "error", "cause"] as const) {
       const nested = errObj[key]
-      if (nested && typeof nested === "object") {
+      if (isRecord(nested)) {
         const result = parseModelSuggestion(nested)
         if (result) return result
       }
     }
   }
 
-  const message = extractMessage(error)
+  const message = getErrorMessage(error)
   if (!message) return null
 
   const modelMatch = message.match(/model not found:\s*([^/\s]+)\s*\/\s*([^.\s]+)/i)

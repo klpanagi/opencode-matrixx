@@ -1,3 +1,4 @@
+import { isRecord } from "../../shared/record-type-guard"
 import type { extractAutoRetrySignal } from "./error-classifier"
 import type { SessionMessage, SessionMessagePart } from "./session-messages"
 import { extractSessionMessages } from "./session-messages"
@@ -55,7 +56,7 @@ export function hasVisibleAssistantResponse(extractAutoRetrySignalFn: typeof ext
 
         const infoParts = message.info?.parts
         const infoMessageParts = Array.isArray(infoParts)
-          ? infoParts.filter((part): part is SessionMessagePart => typeof part === "object" && part !== null)
+          ? infoParts.filter((part): part is SessionMessagePart => isRecord(part))
           : undefined
         const parts = message.parts && message.parts.length > 0
           ? message.parts

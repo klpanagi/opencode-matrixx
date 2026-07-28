@@ -6,24 +6,27 @@ export * from "./config-errors"
 export * from "./connected-providers-cache"
 export * from "./data-path"
 export * from "./deep-merge"
+export * from "./delay"
 export * from "./dynamic-truncator"
 export * from "./external-plugin-detector"
 export * from "./file-reference-resolver"
 export * from "./file-utils"
+export * from "./format-bytes"
 export * from "./format-duration"
 export * from "./frontmatter"
 export * from "./git-worktree"
+export * from "./is-abort-error"
 export * from "./jsonc-parser"
 export * from "./logger"
 export * from "./migration"
 export * from "./model-availability"
 export * from "./model-requirements"
 export {
-  resolveModelPipeline,
-  normalizeModel,
+  type ModelResolutionProvenance,
   type ModelResolutionRequest,
   type ModelResolutionResult,
-  type ModelResolutionProvenance,
+  normalizeModel,
+  resolveModelPipeline,
 } from "./model-resolution-pipeline"
 export * from "./model-suggestion-retry"
 export * from "./normalize-sdk-response"
@@ -37,13 +40,16 @@ export * from "./opencode-version"
 export * from "./permission-compat"
 export * from "./port-utils"
 export * from "./safe-create-hook"
+export * from "./sentinels"
 export * from "./session-cursor"
 export * from "./session-directory-resolver"
 export * from "./session-utils"
 export * from "./shell-env"
+export * from "./status-types"
 export * from "./system-directive"
 export * from "./tmux"
 export * from "./token-cache"
 export * from "./transcript-path"
 export * from "./truncate-description"
+export * from "./with-timeout"
 export * from "./zip-extractor"

@@ -1,3 +1,4 @@
+import type { TaskStatus } from "../../shared/status-types"
 export interface StoredToolPart {
 	id: string
 	sessionID: string
@@ -6,7 +7,7 @@ export interface StoredToolPart {
 	callID: string
 	tool: string
 	state: {
-		status: "pending" | "running" | "completed" | "error"
+		status: TaskStatus
 		input: Record<string, unknown>
 		output?: string
 		error?: string

@@ -1,10 +1,8 @@
 import { spawn } from "bun"
 import { getTmuxPath } from "../../../tools/interactive-bash/tmux-path-resolver"
+import { delay } from "../../delay"
 import { isInsideTmux } from "./environment"
 
-function delay(milliseconds: number): Promise<void> {
-	return new Promise((resolve) => setTimeout(resolve, milliseconds))
-}
 
 export async function closeTmuxPane(paneId: string): Promise<boolean> {
 	const { log } = await import("../../logger")

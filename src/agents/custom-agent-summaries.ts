@@ -1,3 +1,4 @@
+import { isRecord } from "../shared/record-type-guard"
 import { truncateDescription } from "../shared/truncate-description"
 import type { AgentPromptMetadata } from "./types"
 
@@ -14,9 +15,6 @@ function sanitizeMarkdownTableCell(value: string): string {
     .trim()
 }
 
-function isRecord(value: unknown): value is Record<string, unknown> {
-  return typeof value === "object" && value !== null
-}
 
 export function parseRegisteredAgentSummaries(input: unknown): RegisteredAgentSummary[] {
   if (!Array.isArray(input)) return []

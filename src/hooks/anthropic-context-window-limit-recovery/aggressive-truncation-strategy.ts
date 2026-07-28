@@ -1,6 +1,6 @@
+import { formatBytes } from "../../shared/format-bytes"
 import { log } from "../../shared/logger"
 import type { Client } from "./client"
-import { formatBytes } from "./message-builder"
 import { clearSessionState } from "./state"
 import { truncateUntilTargetTokens } from "./storage"
 import type { AutoCompactState } from "./types"

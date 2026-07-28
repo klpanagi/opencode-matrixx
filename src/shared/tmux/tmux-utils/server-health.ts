@@ -1,9 +1,8 @@
+import { delay } from "../../delay"
+
 let serverAvailable: boolean | null = null
 let serverCheckUrl: string | null = null
 
-function delay(milliseconds: number): Promise<void> {
-	return new Promise((resolve) => setTimeout(resolve, milliseconds))
-}
 
 export async function isServerRunning(serverUrl: string): Promise<boolean> {
 	if (serverCheckUrl === serverUrl && serverAvailable === true) {

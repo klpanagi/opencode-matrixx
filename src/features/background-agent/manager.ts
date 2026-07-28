@@ -3,10 +3,10 @@
 import type { PluginInput } from "@opencode-ai/plugin"
 import type { BackgroundTaskConfig, TmuxConfig } from "../../config/schema"
 import { getAgentToolRestrictions, log, normalizeSDKResponse, promptWithModelSuggestionRetry } from "../../shared"
+import { formatDuration } from "../../shared/format-duration"
 import { setSessionTemperature, setSessionTools } from "../../shared/session-state"
 import { isInsideTmux } from "../../shared/tmux"
 import { subagentSessions } from "../session-state"
-
 import { getTaskToastManager } from "../task-toast-manager"
 import { ConcurrencyManager } from "./concurrency"
 import {
@@ -20,10 +20,9 @@ import {
   TASK_TTL_MS,
 } from "./constants"
 import {
-  formatDuration,
   getSessionErrorMessage,
   isAbortedSessionError,
-} from "./error-helpers"
+  } from "./error-helpers"
 import {
   type CircuitBreakerSettings,
   detectRepetitiveToolUse,
