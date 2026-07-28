@@ -62,7 +62,16 @@ export function formatDetailedError(error: unknown, ctx: ErrorContext): string {
 }
 
 export function getErrorMessage(error: unknown): string {
-  if (error instanceof Error) return error.message
   if (typeof error === "string") return error
+  if (error instanceof Error) return error.message
+  if (typeof error === "object" && error !== null) {
+    const obj = error as Record<string, unknown>
+    if (typeof obj.message === "string") return obj.message
+    try {
+      return JSON.stringify(error)
+    } catch {
+      return ""
+    }
+  }
   return String(error)
 }
