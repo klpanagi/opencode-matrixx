@@ -91,6 +91,7 @@ jobs:
           bun test tests/tools/pdf-extract-figures/tools.test.ts
           bun test tests/cli/doctor/checks.test.ts
           bun test tests/cli/install/index.test.ts
+          bun test tests/hooks/mcp-startup-notification/index.test.ts
 
       - name: Run remaining tests
         run: |
@@ -139,6 +140,7 @@ jobs:
               -e 'tests/tools/pdf-extract-figures/tools.test.ts' \
               -e 'tests/cli/doctor/checks.test.ts' \
               -e 'tests/cli/install/index.test.ts' \
+              -e 'tests/hooks/mcp-startup-notification/index.test.ts' \
             | xargs bun test
 
   typecheck:

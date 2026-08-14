@@ -44,6 +44,7 @@ export function createEventHandler(args: {
     await Promise.resolve(hooks.categorySkillReminder?.event?.(input))
     await Promise.resolve(hooks.interactiveBashSession?.event?.(input))
     await Promise.resolve(hooks.matrixLoop?.event?.(input))
+    await Promise.resolve(hooks.mcpStartupNotification?.event?.(input))
     await Promise.resolve(hooks.stopContinuationGuard?.event?.(input))
     await Promise.resolve(hooks.compactionTodoPreserver?.event?.(input))
     await Promise.resolve(hooks.architectHook?.handler?.(input))

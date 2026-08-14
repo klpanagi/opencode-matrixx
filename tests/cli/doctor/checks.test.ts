@@ -71,6 +71,7 @@ import { configValidationCheck } from "../../../src/cli/doctor/checks/config"
 import { authCheck } from "../../../src/cli/doctor/checks/auth"
 import { runtimeDepsCheck } from "../../../src/cli/doctor/checks/runtime"
 import { optionalToolsCheck } from "../../../src/cli/doctor/checks/optional"
+import { mcpPrerequisitesCheck } from "../../../src/cli/doctor/checks/mcp"
 import { ALL_CHECKS, getChecksByCategory, getCategories } from "../../../src/cli/doctor/checks"
 
 // ---------------------------------------------------------------------------
@@ -78,8 +79,8 @@ import { ALL_CHECKS, getChecksByCategory, getCategories } from "../../../src/cli
 // ---------------------------------------------------------------------------
 
 describe("check registry", () => {
-  test("ALL_CHECKS has 5 entries", () => {
-    expect(ALL_CHECKS.length).toBe(5)
+  test("ALL_CHECKS has 6 entries", () => {
+    expect(ALL_CHECKS.length).toBe(6)
   })
 
   test("getCategories returns 5 unique categories", () => {
@@ -239,7 +240,6 @@ describe("optionalToolsCheck", () => {
     expect(result.status).toBe("warn")
     expect(result.message).toContain("Missing")
   })
-
   test("reports all tools present when queued", async () => {
     mockBunSpawnSyncResults = [
       { exitCode: 0, stdout: "Python 3.11.0", stderr: "" },
@@ -255,3 +255,47 @@ describe("optionalToolsCheck", () => {
     expect(result.message).toContain("PyMuPDF")
   })
 })
+
+describe("mcpPrerequisitesCheck", () => {
+  test("fails when uvx not installed (default mock fails)", async () => {
+    //#given - mocked spawnSync fails by default
+
+    //#when
+    const result = await mcpPrerequisitesCheck.check()
+
+    //#then
+    expect(result.status).toBe("fail")
+    expect(result.message).toContain("uvx")
+  })
+
+  test("passes when uvx installed and package resolves", async () => {
+    //#given
+    mockBunSpawnSyncResults = [
+      { exitCode: 0, stdout: "uvx 0.12.4", stderr: "" },
+      { exitCode: 0, stdout: "usage: markitdown-mcp [-h] [--http]", stderr: "" },
+    ]
+
+    //#when
+    const result = await mcpPrerequisitesCheck.check()
+
+    //#then
+    expect(result.status).toBe("pass")
+    expect(result.message).toContain("uvx")
+  })
+
+  test("warns when uvx installed but markitdown-mcp cannot be resolved", async () => {
+    //#given
+    mockBunSpawnSyncResults = [
+      { exitCode: 0, stdout: "uvx 0.12.4", stderr: "" },
+      { exitCode: 1, stdout: "", stderr: "error: package not found" },
+    ]
+
+    //#when
+    const result = await mcpPrerequisitesCheck.check()
+
+    //#then
+    expect(result.status).toBe("warn")
+    expect(result.message).toContain("uvx")
+  })
+})
+

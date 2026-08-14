@@ -10,7 +10,10 @@ let createBuiltinMcpsSpy: ReturnType<typeof spyOn>
 let logSpy: ReturnType<typeof spyOn>
 
 beforeEach(() => {
-  createBuiltinMcpsSpy = spyOn(mcpModule, "createBuiltinMcps").mockReturnValue({})
+  createBuiltinMcpsSpy = spyOn(mcpModule, "createBuiltinMcps").mockReturnValue({
+    mcps: {},
+    failures: [],
+  })
   logSpy = spyOn(shared, "log").mockImplementation(() => {})
 })
 
@@ -60,7 +63,8 @@ describe("applyMcpConfig", () => {
   test("applies disabled_mcps to MCPs from all sources", async () => {
     //#given
     createBuiltinMcpsSpy.mockReturnValue({
-      websearch: { type: "remote", url: "https://mcp.exa.ai/mcp", enabled: true },
+      mcps: { websearch: { type: "remote", url: "https://mcp.exa.ai/mcp", enabled: true } },
+      failures: [],
     })
 
     const config: Record<string, unknown> = { mcp: {} }
@@ -127,5 +131,25 @@ describe("applyMcpConfig", () => {
     //#then
     const mergedMcp = config.mcp as Record<string, Record<string, unknown>>
     expect(mergedMcp).not.toHaveProperty("plugin:custom")
+  })
+  test("logs failures when createBuiltinMcps reports them", async () => {
+    //#given
+    createBuiltinMcpsSpy.mockReturnValue({
+      mcps: { context7: { type: "remote", url: "https://mcp.context7.com/mcp", enabled: true } },
+      failures: [{ name: "websearch", error: "TAVILY_API_KEY missing" }],
+    })
+
+    const config: Record<string, unknown> = { mcp: {} }
+    const pluginConfig = createPluginConfig()
+
+    //#when
+    const { applyMcpConfig } = await import("../../src/plugin-handlers/mcp-config-handler")
+    await applyMcpConfig({ config, pluginConfig, pluginComponents: EMPTY_PLUGIN_COMPONENTS })
+
+    //#then
+    expect(logSpy).toHaveBeenCalled()
+    const logged = logSpy.mock.calls.map((c) => c[0]).join(" ")
+    expect(logged).toContain("MCP")
+    expect(logged).toContain("websearch")
   })
 })

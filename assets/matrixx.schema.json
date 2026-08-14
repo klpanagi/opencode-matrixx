@@ -162,7 +162,8 @@
           "quality-gate",
           "task-notepad",
           "design-intent-preserver",
-          "rtk-bash-rewriter"
+          "rtk-bash-rewriter",
+          "mcp-startup-notification"
         ]
       }
     },

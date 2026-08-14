@@ -60,6 +60,7 @@ export const HookNameSchema = z.enum([
   "task-notepad",
   "design-intent-preserver",
   "rtk-bash-rewriter",
+  "mcp-startup-notification",
 ])
 
 export type HookName = z.infer<typeof HookNameSchema>
