@@ -8,6 +8,7 @@ import {
   createEditErrorRecoveryHook,
   createInteractiveBashSessionHook,
   createMatrixLoopHook,
+  createMcpStartupNotificationHook,
   createMouseNotepadHook,
   createNonInteractiveEnvHook,
   createOracleMdOnlyHook,
@@ -53,6 +54,7 @@ export type SessionHooks = {
   anthropicEffort: ReturnType<typeof createAnthropicEffortHook> | null
   runtimeFallback: ReturnType<typeof createRuntimeFallbackHook> | null
   rtkBashRewriter: ReturnType<typeof createRtkBashRewriterHook> | null
+  mcpStartupNotification: ReturnType<typeof createMcpStartupNotificationHook> | null
 }
 
 export function createSessionHooks(args: {
@@ -168,6 +170,10 @@ export function createSessionHooks(args: {
     ? safeHook("rtk-bash-rewriter", () => createRtkBashRewriterHook(ctx, pluginConfig))
     : null
 
+  const mcpStartupNotification = isHookEnabled("mcp-startup-notification")
+    ? safeHook("mcp-startup-notification", () => createMcpStartupNotificationHook(ctx))
+    : null
+
   return {
     contextWindowMonitor,
     preemptiveCompaction,
@@ -190,5 +196,6 @@ export function createSessionHooks(args: {
     anthropicEffort,
     runtimeFallback,
     rtkBashRewriter,
+    mcpStartupNotification,
   }
 }

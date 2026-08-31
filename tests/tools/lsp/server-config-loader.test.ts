@@ -1,4 +1,4 @@
-import { describe, expect, it } from "bun:test"
+import { describe, expect, it, spyOn } from "bun:test"
 import { mkdirSync, rmSync, unlinkSync, writeFileSync } from "node:fs"
 import { tmpdir } from "node:os"
 import { join } from "node:path"
@@ -96,8 +96,8 @@ describe("loadJsonFile", () => {
   })
 
   it("discovers JSONC-only project config (.opencode/matrixx.jsonc)", () => {
-    const originalCwd = process.cwd()
     const tempProject = join(tmpdir(), `matrixx-test-project-jsonc-${Date.now()}-${Math.random().toString(36).slice(2)}`)
+    const cwdSpy = spyOn(process, "cwd").mockReturnValue(tempProject)
     try {
       mkdirSync(join(tempProject, ".opencode"), { recursive: true })
       const projectJsonc = `{
@@ -112,12 +112,11 @@ describe("loadJsonFile", () => {
       const projectPath = join(tempProject, ".opencode", "matrixx.jsonc")
       writeFileSync(projectPath, projectJsonc, "utf-8")
 
-      process.chdir(tempProject)
       const servers = getMergedServers()
       const found = servers.find(s => s.id === "project-jsonc" && s.source === "project")
       expect(found !== undefined).toBe(true)
     } finally {
-      process.chdir(originalCwd)
+      cwdSpy.mockRestore()
       rmSync(tempProject, { recursive: true, force: true })
     }
   })

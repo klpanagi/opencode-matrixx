@@ -33,7 +33,7 @@ jobs:
 
       - uses: oven-sh/setup-bun@v2
         with:
-          bun-version: latest
+          bun-version: 1.4.0
 
       - name: Install dependencies
         run: bun install
@@ -91,6 +91,8 @@ jobs:
           bun test tests/tools/pdf-extract-figures/tools.test.ts
           bun test tests/cli/doctor/checks.test.ts
           bun test tests/cli/install/index.test.ts
+          bun test tests/hooks/mcp-startup-notification/index.test.ts
+          bun test tests/tools/dcp-switch-profile/tools.test.ts
 
       - name: Run remaining tests
         run: |
@@ -139,6 +141,8 @@ jobs:
               -e 'tests/tools/pdf-extract-figures/tools.test.ts' \
               -e 'tests/cli/doctor/checks.test.ts' \
               -e 'tests/cli/install/index.test.ts' \
+              -e 'tests/hooks/mcp-startup-notification/index.test.ts' \
+              -e 'tests/tools/dcp-switch-profile/tools.test.ts' \
             | xargs bun test
 
   typecheck:
@@ -148,7 +152,7 @@ jobs:
 
       - uses: oven-sh/setup-bun@v2
         with:
-          bun-version: latest
+          bun-version: 1.4.0
 
       - name: Install dependencies
         run: bun install
@@ -174,7 +178,7 @@ jobs:
 
       - uses: oven-sh/setup-bun@v2
         with:
-          bun-version: latest
+          bun-version: 1.4.0
 
       - uses: actions/setup-node@v4
         with:

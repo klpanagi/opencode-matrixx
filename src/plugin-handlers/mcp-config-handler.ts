@@ -1,5 +1,7 @@
 import type { MatrixxConfig } from "../config";
 import { createBuiltinMcps } from "../mcp";
+import { setMcpStartupFailures } from "../mcp/mcp-startup-state";
+import { log } from "../shared";
 import type { PluginComponents } from "./plugin-components-loader";
 
 type McpEntry = Record<string, unknown>;
@@ -33,8 +35,13 @@ export async function applyMcpConfig(params: {
   const userMcp = params.config.mcp as Record<string, unknown> | undefined;
   const userDisabledMcps = captureUserDisabledMcps(userMcp);
 
+  const { mcps: builtinMcps, failures } = createBuiltinMcps(
+    disabledMcps,
+    params.pluginConfig,
+  );
+
   const merged = {
-    ...createBuiltinMcps(disabledMcps, params.pluginConfig),
+    ...builtinMcps,
     ...(userMcp ?? {}),
     ...params.pluginComponents.mcpServers,
   } as Record<string, McpEntry>;
@@ -48,6 +55,14 @@ export async function applyMcpConfig(params: {
   const disabledSet = new Set(disabledMcps);
   for (const name of disabledSet) {
     delete merged[name];
+  }
+
+  if (failures.length > 0) {
+    const summary = failures
+      .map((f) => `${f.name}: ${f.error}`)
+      .join("; ");
+    log(`[mcp-config] MCP startup issues detected: ${summary}`, failures);
+    setMcpStartupFailures(failures);
   }
 
   params.config.mcp = merged;

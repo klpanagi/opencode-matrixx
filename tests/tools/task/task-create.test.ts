@@ -1,17 +1,10 @@
 import { afterEach, beforeEach, describe, expect, test } from "bun:test"
 import { existsSync, mkdirSync, rmSync } from "node:fs"
+import { tmpdir } from "node:os"
 import { join } from "node:path"
 import { createTaskCreateTool } from "../../../src/tools/task/task-create"
 
 const TEST_STORAGE = ".test-task-create-tool"
-const TEST_DIR = join(process.cwd(), TEST_STORAGE)
-const TEST_CONFIG = {
-  morpheus: {
-    tasks: {
-      storage_path: TEST_STORAGE,
-    },
-  },
-}
 const TEST_SESSION_ID = "test-session-123"
 const TEST_ABORT_CONTROLLER = new AbortController()
 const TEST_CONTEXT = {
@@ -23,18 +16,27 @@ const TEST_CONTEXT = {
 
 describe("task_create tool", () => {
   let tool: ReturnType<typeof createTaskCreateTool>
+  let testDir: string
+  let testConfig: { morpheus: { tasks: { storage_path: string } } }
 
   beforeEach(() => {
-    if (existsSync(TEST_STORAGE)) {
-      rmSync(TEST_STORAGE, { recursive: true, force: true })
+    // Create unique temp directory for each test to avoid batch conflicts
+    testDir = join(tmpdir(), `task-create-test-${Date.now()}-${Math.random().toString(36).slice(2)}`)
+    const storagePath = join(testDir, TEST_STORAGE)
+    mkdirSync(storagePath, { recursive: true })
+    testConfig = {
+      morpheus: {
+        tasks: {
+          storage_path: storagePath,
+        },
+      },
     }
-    mkdirSync(TEST_DIR, { recursive: true })
-    tool = createTaskCreateTool(TEST_CONFIG)
+    tool = createTaskCreateTool(testConfig)
   })
 
   afterEach(() => {
-    if (existsSync(TEST_STORAGE)) {
-      rmSync(TEST_STORAGE, { recursive: true, force: true })
+    if (existsSync(testDir)) {
+      rmSync(testDir, { recursive: true, force: true })
     }
   })
 
@@ -81,7 +83,7 @@ describe("task_create tool", () => {
       const taskId = result.task.id
 
       //#then
-      const taskFile = join(TEST_DIR, `${taskId}.json`)
+      const taskFile = join(testDir, TEST_STORAGE, `${taskId}.json`)
       expect(existsSync(taskFile)).toBe(true)
       const taskContent = JSON.parse(await Bun.file(taskFile).text())
       expect(taskContent.threadID).toBe(TEST_SESSION_ID)
@@ -99,7 +101,7 @@ describe("task_create tool", () => {
       const taskId = result.task.id
 
       //#then
-      const taskFile = join(TEST_DIR, `${taskId}.json`)
+      const taskFile = join(testDir, TEST_STORAGE, `${taskId}.json`)
       const taskContent = JSON.parse(await Bun.file(taskFile).text())
       expect(taskContent.status).toBe("pending")
     })
@@ -116,7 +118,7 @@ describe("task_create tool", () => {
       const taskId = result.task.id
 
       //#then
-      const taskFile = join(TEST_DIR, `${taskId}.json`)
+      const taskFile = join(testDir, TEST_STORAGE, `${taskId}.json`)
       const taskContent = JSON.parse(await Bun.file(taskFile).text())
       expect(taskContent.blocks).toEqual([])
       expect(taskContent.blockedBy).toEqual([])
@@ -135,7 +137,7 @@ describe("task_create tool", () => {
       const taskId = result.task.id
 
       //#then
-      const taskFile = join(TEST_DIR, `${taskId}.json`)
+      const taskFile = join(testDir, TEST_STORAGE, `${taskId}.json`)
       const taskContent = JSON.parse(await Bun.file(taskFile).text())
       expect(taskContent.description).toBe("This is a test description")
     })
@@ -153,7 +155,7 @@ describe("task_create tool", () => {
       const taskId = result.task.id
 
       //#then
-      const taskFile = join(TEST_DIR, `${taskId}.json`)
+      const taskFile = join(testDir, TEST_STORAGE, `${taskId}.json`)
       const taskContent = JSON.parse(await Bun.file(taskFile).text())
       expect(taskContent.activeForm).toBe("Implementing authentication")
     })
@@ -171,7 +173,7 @@ describe("task_create tool", () => {
       const taskId = result.task.id
 
       //#then
-      const taskFile = join(TEST_DIR, `${taskId}.json`)
+      const taskFile = join(testDir, TEST_STORAGE, `${taskId}.json`)
       const taskContent = JSON.parse(await Bun.file(taskFile).text())
       expect(taskContent.metadata).toEqual({ priority: "high", tags: ["urgent"] })
     })
@@ -189,7 +191,7 @@ describe("task_create tool", () => {
       const taskId = result.task.id
 
       //#then
-      const taskFile = join(TEST_DIR, `${taskId}.json`)
+      const taskFile = join(testDir, TEST_STORAGE, `${taskId}.json`)
       const taskContent = JSON.parse(await Bun.file(taskFile).text())
       expect(taskContent.blockedBy).toEqual(["T-123", "T-456"])
     })
@@ -207,7 +209,7 @@ describe("task_create tool", () => {
       const taskId = result.task.id
 
       //#then
-      const taskFile = join(TEST_DIR, `${taskId}.json`)
+      const taskFile = join(testDir, TEST_STORAGE, `${taskId}.json`)
       const taskContent = JSON.parse(await Bun.file(taskFile).text())
       expect(taskContent.blocks).toEqual(["T-789", "T-101"])
     })
@@ -225,7 +227,7 @@ describe("task_create tool", () => {
       const taskId = result.task.id
 
       //#then
-      const taskFile = join(TEST_DIR, `${taskId}.json`)
+      const taskFile = join(testDir, TEST_STORAGE, `${taskId}.json`)
       const taskContent = JSON.parse(await Bun.file(taskFile).text())
       expect(taskContent.repoURL).toBe("https://github.com/example/repo")
     })
@@ -243,7 +245,7 @@ describe("task_create tool", () => {
       const taskId = result.task.id
 
       //#then
-      const taskFile = join(TEST_DIR, `${taskId}.json`)
+      const taskFile = join(testDir, TEST_STORAGE, `${taskId}.json`)
       const taskContent = JSON.parse(await Bun.file(taskFile).text())
       expect(taskContent.parentID).toBe("T-parent-123")
     })
@@ -289,7 +291,7 @@ describe("task_create tool", () => {
       const taskId = result.task.id
 
       //#then
-      const taskFile = join(TEST_DIR, `${taskId}.json`)
+      const taskFile = join(testDir, TEST_STORAGE, `${taskId}.json`)
       expect(existsSync(taskFile)).toBe(true)
       const taskContent = JSON.parse(await Bun.file(taskFile).text())
       expect(taskContent.id).toBe(taskId)

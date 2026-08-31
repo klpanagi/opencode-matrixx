@@ -24,6 +24,7 @@ export { createInteractiveBashSessionHook } from "./interactive-bash-session";
 export { createJsonErrorRecoveryHook } from "./json-error-recovery"
 export { createKeywordDetectorHook } from "./keyword-detector";
 export { createMatrixLoopHook, type MatrixLoopHook } from "./matrix-loop";
+export { createMcpStartupNotificationHook } from "./mcp-startup-notification"
 export { createMouseNotepadHook } from "./mouse-notepad";
 export { createNonInteractiveEnvHook } from "./non-interactive-env";
 export { createOracleMdOnlyHook } from "./oracle-md-only";

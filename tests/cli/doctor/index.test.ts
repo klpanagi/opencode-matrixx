@@ -34,7 +34,7 @@ describe("runDoctor", () => {
     expect(report).toHaveProperty("checks")
     expect(report).toHaveProperty("summary")
     expect(Array.isArray(report.checks)).toBe(true)
-    expect(report.checks.length).toBe(5)
+    expect(report.checks.length).toBe(6)
   })
 
   test("report has correct summary totals", async () => {

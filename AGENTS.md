@@ -167,6 +167,14 @@ Local-dev install into OpenCode: `bun run build`, then in `~/.config/opencode/op
 BUN_INSTALL_ALLOW_SCRIPTS="@ast-grep/napi" bun install
 ```
 
+### Bun version MUST be pinned
+
+Bun version is pinned to `1.4.0` in `.bun-version` and in all CI workflows. **Never use `bun-version: latest` in workflows** — it causes nondeterministic failures when CI and local run different versions.
+
+If you need to upgrade bun:
+1. Update `.bun-version` to the new version
+2. Update **all** `bun-version:` entries in `.github/workflows/ci.yml`, `.github/workflows/publish.yml`, and `.github/workflows/morpheus-agent.yml`
+3. Test locally with the new version before pushing
 ### Tests that MUST be isolated (CI runs them in separate `bun test` invocations)
 
 ~30 test files use `mock.module()` which pollutes bun's module cache. Running them in parallel with other tests causes cross-file pollution. They are listed in `.github/workflows/ci.yml` and `.github/workflows/publish.yml`. The exact list drifts — when adding a new test that uses `mock.module()`, add it to **both** workflows in the "mock-heavy" list **and** the `--exclude` patterns in the catch-all `find … | xargs bun test` block.
@@ -190,6 +198,69 @@ This runs the same two-phase CI test pipeline:
 2. **Remaining tests** — all non-mock-heavy tests run together via `find … | xargs bun test`
 
 Run this before pushing to verify your changes don't introduce new `mock.module()` pollution patterns.
+
+### MANDATORY: Run CI locally after code modifications
+
+After completing ANY code modification task (bug fix, feature, refactor), you MUST run the CI test pipeline locally before considering the task complete. This catches test failures that only manifest in the batch test environment.
+
+```bash
+# Full CI pipeline (both phases):
+act pull_request -j test -P ubuntu-latest=catthehacker/ubuntu:act-latest
+
+# Or run Phase 2 directly (the batch test phase where most failures occur).
+# The exclusion list must match .github/workflows/ci.yml exactly:
+bun install && find tests script -name '*.test.ts' -type f \
+  | grep -v -F \
+    -e 'tests/plugin-handlers/' \
+    -e 'tests/hooks/compaction-context-injector/' \
+    -e 'tests/features/tmux-subagent/' \
+    -e 'tests/tools/delegate-agent/sync-executor.test.ts' \
+    -e 'tests/tools/delegate-agent/session-creator.test.ts' \
+    -e 'tests/tools/session-manager/storage.test.ts' \
+    -e 'tests/hooks/architect/index.test.ts' \
+    -e 'tests/hooks/matrix-loop/index.test.ts' \
+    -e 'tests/hooks/start-work/index.test.ts' \
+    -e 'tests/hooks/auto-update-checker/hook/background-update-check.test.ts' \
+    -e 'tests/hooks/auto-update-checker/hook.test.ts' \
+    -e 'tests/features/background-agent/manager.test.ts' \
+    -e 'tests/hooks/comment-checker/cli.test.ts' \
+    -e 'tests/hooks/comment-checker/hook.apply-patch.test.ts' \
+    -e 'tests/hooks/directory-agents-injector/injector.test.ts' \
+    -e 'tests/hooks/directory-readme-injector/injector.test.ts' \
+    -e 'tests/hooks/rules-injector/injector.test.ts' \
+    -e 'tests/hooks/compaction-todo-preserver/index.test.ts' \
+    -e 'tests/hooks/preemptive-compaction.test.ts' \
+    -e 'tests/tools/lsp/client.test.ts' \
+    -e 'tests/tools/lsp/lsp-process.test.ts' \
+    -e 'tests/tools/skill/tools.test.ts' \
+    -e 'tests/hooks/anthropic-context-window-limit-recovery/empty-content-recovery-sdk.test.ts' \
+    -e 'tests/hooks/anthropic-context-window-limit-recovery/recovery-hook.test.ts' \
+    -e 'tests/hooks/anthropic-context-window-limit-recovery/storage.test.ts' \
+    -e 'tests/agents/utils.test.ts' \
+    -e 'tests/hooks/task-notepad/hook.test.ts' \
+    -e 'tests/tools/bdd-create-contract/tools.test.ts' \
+    -e 'tests/tools/bdd-parse-gherkin/tools.test.ts' \
+    -e 'tests/tools/bdd-pipeline/pipeline-runner.test.ts' \
+    -e 'tests/plugin/tool-execute-before.test.ts' \
+    -e 'tests/features/mission-state/' \
+    -e 'tests/features/handoff/' \
+    -e 'tests/features/task-storage/' \
+    -e 'tests/hooks/session-recovery/' \
+    -e 'tests/plugin/session-agent-resolver.test.ts' \
+    -e 'tests/hooks/auto-update-checker/checker/pinned-version-updater.test.ts' \
+    -e 'tests/tools/pdf-extract-figures/tools.test.ts' \
+    -e 'tests/cli/doctor/checks.test.ts' \
+    -e 'tests/cli/install/index.test.ts' \
+    -e 'tests/hooks/mcp-startup-notification/index.test.ts' \
+    -e 'tests/tools/dcp-switch-profile/tools.test.ts' \
+  | xargs bun test
+```
+
+**Verification checklist:**
+- [ ] Phase 1 (mock-heavy): 0 failures
+- [ ] Phase 2 (remaining tests): 0 failures
+- [ ] Typecheck passes: `bun run typecheck`
+- [ ] Lint passes: `bun run lint`
 
 ## PLUGIN INITIALIZATION (10 steps, `src/index.ts`)
 
