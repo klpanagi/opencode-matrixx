@@ -167,6 +167,14 @@ Local-dev install into OpenCode: `bun run build`, then in `~/.config/opencode/op
 BUN_INSTALL_ALLOW_SCRIPTS="@ast-grep/napi" bun install
 ```
 
+### Bun version MUST be pinned
+
+Bun version is pinned to `1.4.0` in `.bun-version` and in all CI workflows. **Never use `bun-version: latest` in workflows** — it causes nondeterministic failures when CI and local run different versions.
+
+If you need to upgrade bun:
+1. Update `.bun-version` to the new version
+2. Update **all** `bun-version:` entries in `.github/workflows/ci.yml`, `.github/workflows/publish.yml`, and `.github/workflows/morpheus-agent.yml`
+3. Test locally with the new version before pushing
 ### Tests that MUST be isolated (CI runs them in separate `bun test` invocations)
 
 ~30 test files use `mock.module()` which pollutes bun's module cache. Running them in parallel with other tests causes cross-file pollution. They are listed in `.github/workflows/ci.yml` and `.github/workflows/publish.yml`. The exact list drifts — when adding a new test that uses `mock.module()`, add it to **both** workflows in the "mock-heavy" list **and** the `--exclude` patterns in the catch-all `find … | xargs bun test` block.
