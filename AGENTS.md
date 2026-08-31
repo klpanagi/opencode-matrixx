@@ -191,6 +191,69 @@ This runs the same two-phase CI test pipeline:
 
 Run this before pushing to verify your changes don't introduce new `mock.module()` pollution patterns.
 
+### MANDATORY: Run CI locally after code modifications
+
+After completing ANY code modification task (bug fix, feature, refactor), you MUST run the CI test pipeline locally before considering the task complete. This catches test failures that only manifest in the batch test environment.
+
+```bash
+# Full CI pipeline (both phases):
+act pull_request -j test -P ubuntu-latest=catthehacker/ubuntu:act-latest
+
+# Or run Phase 2 directly (the batch test phase where most failures occur).
+# The exclusion list must match .github/workflows/ci.yml exactly:
+bun install && find tests script -name '*.test.ts' -type f \
+  | grep -v -F \
+    -e 'tests/plugin-handlers/' \
+    -e 'tests/hooks/compaction-context-injector/' \
+    -e 'tests/features/tmux-subagent/' \
+    -e 'tests/tools/delegate-agent/sync-executor.test.ts' \
+    -e 'tests/tools/delegate-agent/session-creator.test.ts' \
+    -e 'tests/tools/session-manager/storage.test.ts' \
+    -e 'tests/hooks/architect/index.test.ts' \
+    -e 'tests/hooks/matrix-loop/index.test.ts' \
+    -e 'tests/hooks/start-work/index.test.ts' \
+    -e 'tests/hooks/auto-update-checker/hook/background-update-check.test.ts' \
+    -e 'tests/hooks/auto-update-checker/hook.test.ts' \
+    -e 'tests/features/background-agent/manager.test.ts' \
+    -e 'tests/hooks/comment-checker/cli.test.ts' \
+    -e 'tests/hooks/comment-checker/hook.apply-patch.test.ts' \
+    -e 'tests/hooks/directory-agents-injector/injector.test.ts' \
+    -e 'tests/hooks/directory-readme-injector/injector.test.ts' \
+    -e 'tests/hooks/rules-injector/injector.test.ts' \
+    -e 'tests/hooks/compaction-todo-preserver/index.test.ts' \
+    -e 'tests/hooks/preemptive-compaction.test.ts' \
+    -e 'tests/tools/lsp/client.test.ts' \
+    -e 'tests/tools/lsp/lsp-process.test.ts' \
+    -e 'tests/tools/skill/tools.test.ts' \
+    -e 'tests/hooks/anthropic-context-window-limit-recovery/empty-content-recovery-sdk.test.ts' \
+    -e 'tests/hooks/anthropic-context-window-limit-recovery/recovery-hook.test.ts' \
+    -e 'tests/hooks/anthropic-context-window-limit-recovery/storage.test.ts' \
+    -e 'tests/agents/utils.test.ts' \
+    -e 'tests/hooks/task-notepad/hook.test.ts' \
+    -e 'tests/tools/bdd-create-contract/tools.test.ts' \
+    -e 'tests/tools/bdd-parse-gherkin/tools.test.ts' \
+    -e 'tests/tools/bdd-pipeline/pipeline-runner.test.ts' \
+    -e 'tests/plugin/tool-execute-before.test.ts' \
+    -e 'tests/features/mission-state/' \
+    -e 'tests/features/handoff/' \
+    -e 'tests/features/task-storage/' \
+    -e 'tests/hooks/session-recovery/' \
+    -e 'tests/plugin/session-agent-resolver.test.ts' \
+    -e 'tests/hooks/auto-update-checker/checker/pinned-version-updater.test.ts' \
+    -e 'tests/tools/pdf-extract-figures/tools.test.ts' \
+    -e 'tests/cli/doctor/checks.test.ts' \
+    -e 'tests/cli/install/index.test.ts' \
+    -e 'tests/hooks/mcp-startup-notification/index.test.ts' \
+    -e 'tests/tools/dcp-switch-profile/tools.test.ts' \
+  | xargs bun test
+```
+
+**Verification checklist:**
+- [ ] Phase 1 (mock-heavy): 0 failures
+- [ ] Phase 2 (remaining tests): 0 failures
+- [ ] Typecheck passes: `bun run typecheck`
+- [ ] Lint passes: `bun run lint`
+
 ## PLUGIN INITIALIZATION (10 steps, `src/index.ts`)
 
 ```
