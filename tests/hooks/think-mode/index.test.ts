@@ -456,6 +456,68 @@ describe("createThinkModeHook integration", () => {
       expect(message.providerOptions).toBeDefined()
     })
   })
+
+  describe("Tool choice guard", () => {
+    it("skips thinking injection when tool_choice present even if think keyword detected", async () => {
+      const hook = createThinkModeHook()
+      const input: ThinkModeInput = {
+        parts: [{ type: "text", text: "think deeply about this" }],
+        message: {
+          model: { providerID: "anthropic", modelID: "claude-sonnet-4-5" },
+          tool_choice: { type: "tool", name: "bash" },
+        },
+      }
+
+      await hook["chat.params"](input, sessionID)
+
+      expect(input.message.model?.modelID).toBe("claude-sonnet-4-5-high")
+      const message = input.message as MessageWithInjectedProps
+      expect(message.thinking).toBeUndefined()
+      const state = getThinkModeState(sessionID)
+      expect(state?.requested).toBe(true)
+      expect(state?.modelSwitched).toBe(true)
+      expect(state?.thinkingConfigInjected).toBe(false)
+    })
+
+    it("skips thinking injection when toolChoice camelCase present", async () => {
+      const hook = createThinkModeHook()
+      const input: ThinkModeInput = {
+        parts: [{ type: "text", text: "ultrathink" }],
+        message: {
+          model: { providerID: "anthropic", modelID: "claude-opus-4-6" },
+          toolChoice: { type: "any" },
+        },
+      }
+
+      await hook["chat.params"](input, sessionID)
+
+      expect(input.message.model?.modelID).toBe("claude-opus-4-6-high")
+      const message = input.message as MessageWithInjectedProps
+      expect(message.thinking).toBeUndefined()
+      const state = getThinkModeState(sessionID)
+      expect(state?.modelSwitched).toBe(true)
+      expect(state?.thinkingConfigInjected).toBe(false)
+    })
+
+    it("still injects thinking when only tools present without tool_choice", async () => {
+      const hook = createThinkModeHook()
+      const input: ThinkModeInput = {
+        parts: [{ type: "text", text: "think deeply about this" }],
+        message: {
+          model: { providerID: "anthropic", modelID: "claude-sonnet-4-5" },
+          tools: [{ type: "function", name: "bash" }],
+        },
+      }
+
+      await hook["chat.params"](input, sessionID)
+
+      const message = input.message as MessageWithInjectedProps
+      expect((message.thinking as Record<string, unknown>)?.type).toBe("enabled")
+      const state = getThinkModeState(sessionID)
+      expect(state?.requested).toBe(true)
+      expect(state?.thinkingConfigInjected).toBe(true)
+    })
+  })
 })
 
 function makeThinkModeState(): ThinkModeState {
