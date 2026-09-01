@@ -572,6 +572,9 @@ Hooks intercept and modify behavior at key points in the agent lifecycle.
 |------|-------|-------------|
 | **grep-output-truncator** | PostToolUse | Dynamically truncates grep output based on context window. Keeps 50% headroom, caps at 50k tokens. |
 | **tool-output-truncator** | PostToolUse | Truncates output from Grep, Glob, LSP, AST-grep tools. |
+| **headroom-integration** | Opt-in | Network-proxy compression (L4) via `headroom wrap opencode` — CacheAligner->ContentRouter->CCR, 60-95% JSON reduction. Matrixx bridge: `headroom: {enabled, proxyUrl?, project?, backend?}` + `hasHeadroom` discipline. Headroom owns `headroom_retrieve`/transport; Matrixx detects only. |
+
+> **Note:** "headroom" in `grep-output-truncator` above is generic token-budget phrasing (50% safety margin). For the network-proxy plugin `headroomlabs-ai/headroom`, see **Headroom Integration** in README.
 
 #### Notifications & UX
 

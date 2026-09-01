@@ -7,6 +7,7 @@ import {
   buildDelegationTable,
   buildExploreSection,
   buildHardBlocksSection,
+  buildHeadroomSection,
   buildKeyTriggersSection,
   buildLibrarianSection,
   buildOracleSection,
@@ -125,6 +126,8 @@ function buildKeymakerPrompt(
   const antiPatterns = buildAntiPatternsSection()
   const hasContextMode = availableTools.some((t) => t.name.startsWith("ctx_"))
   const contextDiscipline = buildContextDisciplineSection(hasContextMode)
+  const hasHeadroom = availableTools.some((t) => t.name.startsWith("headroom_"))
+  const headroomDiscipline = buildHeadroomSection(hasHeadroom)
   const todoDiscipline = buildTodoDisciplineSection(useTaskSystem)
 
   return `You are Keymaker, an autonomous deep worker for software engineering.
@@ -164,6 +167,8 @@ ${hardBlocks}
 
 ${antiPatterns}
 ${contextDiscipline}
+
+${headroomDiscipline}
 
 
 ## Success Criteria (COMPLETION DEFINITION)
