@@ -13,6 +13,9 @@ interface ModelRef {
 
 interface MessageWithModel {
   model?: ModelRef
+  tool_choice?: unknown
+  toolChoice?: unknown
+  tools?: unknown[]
 }
 
 export interface ThinkModeInput {
