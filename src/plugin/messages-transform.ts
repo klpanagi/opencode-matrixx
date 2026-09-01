@@ -75,6 +75,10 @@ export function createMessagesTransformHandler(args: {
       await args.hooks.thinkingBlockValidator?.[
         "experimental.chat.messages.transform"
       ]?.(input, output)
+
+      await args.hooks.evolutionHitl?.[
+        "experimental.chat.messages.transform"
+      ]?.(input, output)
       return
     }
 
@@ -90,6 +94,10 @@ export function createMessagesTransformHandler(args: {
     ]?.(input, output)
 
     await args.hooks.thinkingBlockValidator?.[
+      "experimental.chat.messages.transform"
+    ]?.(input, output)
+
+    await args.hooks.evolutionHitl?.[
       "experimental.chat.messages.transform"
     ]?.(input, output)
     setCachedTransform(sessionID, messagesHash, output.messages)

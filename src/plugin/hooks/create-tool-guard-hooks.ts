@@ -6,6 +6,7 @@ import {
   createDirectoryReadmeInjectorHook,
   createEmptyTaskResponseDetectorHook,
   createEnvFileWriteGuardHook,
+  createEvolutionWatcherHook,
   createHashlineEditDiffEnhancerHook,
   createHashlineReadEnhancerHook,
   createJsonErrorRecoveryHook,
@@ -49,6 +50,7 @@ export type ToolGuardHooks = {
   hashlineEditDiffEnhancer: ReturnType<typeof createHashlineEditDiffEnhancerHook> | null
   qualityGate: ReturnType<typeof createQualityGateHook> | null
   taskNotepad: ReturnType<typeof createTaskNotepadHook> | null
+  evolutionWatcher: ReturnType<typeof createEvolutionWatcherHook> | null
 }
 
 export function createToolGuardHooks(args: {
@@ -151,6 +153,10 @@ export function createToolGuardHooks(args: {
     ? safeHook("task-notepad", () => createTaskNotepadHook(ctx))
     : null
 
+  const evolutionWatcher = isHookEnabled("evolution-watcher")
+    ? safeHook("evolution-watcher", () => createEvolutionWatcherHook(ctx, pluginConfig.evolution))
+    : null
+
   return {
     commentChecker,
     toolOutputTruncator,
@@ -171,5 +177,6 @@ export function createToolGuardHooks(args: {
     hashlineEditDiffEnhancer,
     qualityGate,
     taskNotepad,
+    evolutionWatcher,
   }
 }
