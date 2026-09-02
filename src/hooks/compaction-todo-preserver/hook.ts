@@ -24,19 +24,21 @@ function extractTodos(response: unknown): TodoSnapshot[] {
 }
 
 async function resolveTodoWriter(): Promise<TodoWriter | null> {
-  try {
-    const loader = "opencode/session/todo"
-    const mod = (await import(loader)) as {
-      Todo?: { update?: TodoWriter }
+  const loaders = ["opencode/session/todo", "@opencode-ai/core/session/todo"];
+  for (const loader of loaders) {
+    try {
+      const mod = (await import(loader)) as {
+        Todo?: { update?: TodoWriter }
+      };
+      const update = mod.Todo?.update;
+      if (typeof update === "function") {
+        return update;
+      }
+    } catch (err) {
+      log(`[${HOOK_NAME}] Failed to resolve Todo.update`, { loader, error: String(err) });
     }
-    const update = mod.Todo?.update
-    if (typeof update === "function") {
-      return update
-    }
-  } catch (err) {
-    log(`[${HOOK_NAME}] Failed to resolve Todo.update`, { error: String(err) })
   }
-  return null
+  return null;
 }
 
 function resolveSessionID(props?: Record<string, unknown>): string | undefined {

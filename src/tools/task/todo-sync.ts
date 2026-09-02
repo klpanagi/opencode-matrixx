@@ -1,3 +1,6 @@
+import { existsSync } from "node:fs";
+import { homedir } from "node:os";
+import { join } from "node:path";
 import type { PluginInput } from "@opencode-ai/plugin";
 import { getMainSessionID } from "../../features/session-state/state";
 import type { Task } from "../../features/task-storage/types";
@@ -71,17 +74,94 @@ export function syncTaskToTodo(task: Task): TodoInfo | null {
 }
 
 async function resolveTodoWriter(): Promise<TodoWriter | null> {
-  try {
-    const loader = "opencode/session/todo";
-    const mod = await import(loader);
-    const update = (mod as { Todo?: { update?: unknown } }).Todo?.update;
-    if (typeof update === "function") {
-      return update as TodoWriter;
+  const loaders = ["opencode/session/todo", "@opencode-ai/core/session/todo"];
+  for (const loader of loaders) {
+    try {
+      const mod = await import(loader);
+      const update = (mod as { Todo?: { update?: unknown } }).Todo?.update;
+      if (typeof update === "function") {
+        return update as TodoWriter;
+      }
+    } catch (err) {
+      log("[todo-sync] Failed to resolve Todo.update", { loader, error: String(err) });
     }
-  } catch (err) {
-    log("[todo-sync] Failed to resolve Todo.update", { error: String(err) });
   }
   return null;
+}
+
+function getOpencodeDbPath(): string | null {
+  const candidates: string[] = [];
+  if (process.env.XDG_DATA_HOME) {
+    candidates.push(join(process.env.XDG_DATA_HOME, "opencode", "opencode.db"));
+  }
+  candidates.push(join(homedir(), ".local", "share", "opencode", "opencode.db"));
+  candidates.push(join(homedir(), ".config", "opencode", "opencode.db"));
+  for (const p of candidates) {
+    if (existsSync(p)) return p;
+  }
+  return candidates[1] ?? null;
+}
+
+async function directDbWrite(sessionID: string, todos: TodoInfo[]): Promise<boolean> {
+  const dbPath = getOpencodeDbPath();
+  if (!dbPath || !existsSync(dbPath)) {
+    log("[todo-sync] directDbWrite no db", { dbPath });
+    return false;
+  }
+  try {
+    const mod = await import("bun:sqlite");
+    const Database = (mod as unknown as { Database: new (path: string) => unknown }).Database as new (path: string) => {
+      exec: (sql: string) => unknown;
+      prepare: (sql: string) => { run: (...args: unknown[]) => unknown }
+      close: () => void
+    };
+    const db = new Database(dbPath);
+    const now = Date.now();
+    try {
+      db.exec("BEGIN IMMEDIATE");
+      db.prepare("DELETE FROM todo WHERE session_id = ?").run(sessionID);
+      const stmt = db.prepare(
+        "INSERT INTO todo (session_id, content, status, priority, position, time_created, time_updated) VALUES (?, ?, ?, ?, ?, ?, ?)",
+      );
+      todos.forEach((t, idx) => {
+        stmt.run(sessionID, t.content, t.status, t.priority ?? "medium", idx, now, now);
+      });
+      db.exec("COMMIT");
+    } catch (inner) {
+      try {
+        db.exec("ROLLBACK");
+      } catch {
+        // ignore
+      }
+      throw inner;
+    } finally {
+      db.close();
+    }
+    log("[todo-sync] directDbWrite ok", { sessionID, count: todos.length });
+    return true;
+  } catch (err) {
+    log("[todo-sync] directDbWrite failed", { error: String(err) });
+    return false;
+  }
+}
+
+async function writeTodosWithFallback(
+  sessionID: string,
+  todos: TodoInfo[],
+  writer: TodoWriter | null,
+): Promise<void> {
+  if (writer) {
+    try {
+      await writer({ sessionID, todos });
+      return;
+    } catch (err) {
+      log("[todo-sync] writer failed, fallback to direct DB", { error: String(err) });
+    }
+  }
+  const ok = await directDbWrite(sessionID, todos);
+  if (!ok) {
+    log("[todo-sync] fallback also failed", { sessionID });
+  }
 }
 
 function extractTodos(response: unknown): TodoInfo[] {
@@ -134,8 +214,10 @@ async function syncSingleSession(
     if (taskTodo) {
       nextTodos.push(taskTodo);
     }
-    if (!writer) return;
-    await writer({ sessionID, todos: nextTodos });
+    if (taskTodo) {
+      nextTodos.push(taskTodo);
+    }
+    await writeTodosWithFallback(sessionID, nextTodos, writer);
   } catch (err) {
     log("[todo-sync] Failed to sync task todo", {
       error: String(err),
@@ -205,8 +287,8 @@ export async function syncAllTasksToTodos(
     finalTodos.push(...newTodos);
 
     const resolvedWriter = writer ?? (await resolveTodoWriter());
-    if (resolvedWriter && sessionID) {
-      await resolvedWriter({ sessionID, todos: finalTodos });
+    if (sessionID) {
+      await writeTodosWithFallback(sessionID, finalTodos, resolvedWriter);
     }
 
     log("[todo-sync] Synced todos", {
