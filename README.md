@@ -335,7 +335,7 @@ Every agent, model, temperature, and permission is fully customizable. [**Meet t
 
 | | |
 |---|---|
-|| **Agent Orchestration** | 15 agents (incl. **Mouse** dedicated executor, **Sati** frontend specialist, **Sentinel** security auditor, **Cipher** DSL expert), parallel background execution, category-based routing, session continuity |
+| **Agent Orchestration** | 15 agents (incl. **Mouse** dedicated executor, **Sati** frontend specialist, **Sentinel** security auditor, **Cipher** DSL expert), parallel background execution, category-based routing, session continuity |
 | **Developer Tools** | LSP (goto def, rename, diagnostics), AST-Grep (search & replace), Tmux terminal |
 | **~52 Lifecycle Hooks** | Context injection, think mode, comment checking, todo enforcement, error recovery, quality gate |
 || **33 Built-in Skills** | DSL engineering (11), security (9), browser, git, frontend (7 via **Sati**), saturation research, AI slop detection, software dev pipeline |
@@ -344,7 +344,8 @@ Every agent, model, temperature, and permission is fully customizable. [**Meet t
 | **Software Dev Pipeline** | 6-phase TDD workflow (PLAN→BUILD→VERIFY→REVIEW→SECURE→SHIP), 5 team roles, adaptive phases |
 ||| **Assembly Tool** | Multi-model debate that spawns 3-5 parallel voters from different providers, collects independent reasoning, and synthesizes unified decisions with confidence scoring |
 || **Saturation Research** | Multi-round (/research) spawning parallel explore/librarian swarms across code, docs, web, and OSS with adaptive novelty-based convergence (max 5 rounds) |
-|| **AI Slop Detection** | remove-ai-slops skill detects and removes 7 categories of AI-generated code smells — verbose comments, redundant error handling, over-engineered patterns, generic AI phrasing, cargo-cult boilerplate |
+| **AI Slop Detection** | remove-ai-slops skill detects and removes 7 categories of AI-generated code smells — verbose comments, redundant error handling, over-engineered patterns, generic AI phrasing, cargo-cult boilerplate |
+| **Context Management (L0-L4)** | 5-layer stack: Native + [RTK](https://github.com/rtk-ai/rtk) + [context-mode](https://github.com/tarquinen/context-mode) + [DCP](https://github.com/tarquinen/opencode-dcp) + [Headroom](https://github.com/headroomlabs-ai/headroom) — zero overlap, <10ms Matrixx bridge, 60-95% JSON via `CacheAligner→CCR` |
 
 [**Full feature list →**](docs/features.md) · [**Configuration guide →**](docs/configurations.md) · [**Architecture diagram →**](docs/agent-architecture.md)
 
@@ -511,6 +512,8 @@ The 10-20ms subprocess overhead is negligible compared to command execution time
 
 ## Headroom Integration — Network-Proxy Compression
 
+> **Deep dive:** [Context Management → 2.4 Headroom](docs/context-management.md#24-headroom--network-proxy-compression) — full 5-layer guide with config reference, verification and troubleshooting.
+
 Matrixx integrates [Headroom](https://github.com/headroomlabs-ai/headroom) for network-proxy-level token compression, reducing context by **60-95%** on JSON, **15-20%** on coding agents via `CacheAligner→ContentRouter→CCR` pipeline.
 
 ### What is Headroom?
@@ -526,6 +529,8 @@ $ headroom wrap opencode
 # CCR compresses; agents retrieve via headroom_retrieve on demand
 ```
 
+Headroom is ideal for JSON-heavy sessions, long histories, and multi-project reuse where the same compressed context (CCR) can be shared.
+
 ### How It Works
 
 1. User runs `headroom wrap opencode` (starts proxy at `http://127.0.0.1:8787`)
@@ -533,20 +538,30 @@ $ headroom wrap opencode
 3. Matrixx detects `hasHeadroom = availableTools.some(t => t.name.startsWith("headroom_"))` and injects Headroom discipline into agent prompts
 4. Proxy's `CacheAligner→ContentRouter→CCR` compresses; agents retrieve via `headroom_retrieve` on demand
 
+Matrixx does not vendor Headroom. It provides a thin config bridge in `src/config/schema/headroom.ts` plus runtime detection. Native transport `headroom-opencode` is deferred to Phase 2.
+
 ### Configuration
 
 Headroom is **disabled by default** (opt-in). Enable it in `matrixx.jsonc`:
 
 ```jsonc
 {
+  "$schema": "https://raw.githubusercontent.com/klpanagi/opencode-matrixx/refs/heads/dev/dist/matrixx.schema.json",
   "headroom": {
-    "enabled": true,
-    "proxyUrl": "http://127.0.0.1:8787",  // optional — defaults to proxy default
-    "project": "my-project",              // optional — CCR scoping
-    "backend": "openai"                   // optional — HEADROOM_BACKEND
+    "enabled": true,                        // default: false — opt-in
+    "proxyUrl": "http://127.0.0.1:8787",     // optional — defaults to proxy default
+    "project": "my-project",                // optional — CCR scoping
+    "backend": "openai"                     // optional — HEADROOM_BACKEND
   }
 }
 ```
+
+| Option | Type | Default | Notes |
+|--------|------|---------|-------|
+| `enabled` | boolean | `false` | Opt-in — no proxy/discipline unless `true` |
+| `proxyUrl` | string (url) | `http://127.0.0.1:8787` | Proxy URL (`HEADROOM_PROXY_URL` override) |
+| `project` | string | `undefined` | CCR scoping per project |
+| `backend` | string | `undefined` | Maps to `HEADROOM_BACKEND` |
 
 ### Installation
 
@@ -564,12 +579,39 @@ headroom doctor
 
 # Run via proxy (recommended)
 headroom wrap opencode
+# alternative — env wrapping
+# HEADROOM_WRAP=1 headroom wrap -- opencode
 
 # Dashboard
 headroom dashboard
 ```
 
+Package versions: `npm: headroom-ai@0.37.0`, `PyPI: headroom-ai[all]`. Docs at [headroom-docs.vercel.app](https://headroom-docs.vercel.app).
+
 > **Note:** Native TypeScript plugin `headroom-opencode` is deferred to **Phase 2** due to [#2798](https://github.com/sst/opencode/issues/2798) global `fetch` patch collision and [#76](https://github.com/headroomlabs-ai/headroom/issues/76) compaction not yet stable. Prefer `wrap` for now.
+
+### Verification
+
+After install, confirm Matrixx sees Headroom:
+
+```bash
+headroom doctor          # proxy health
+headroom wrap opencode # should show: proxy http://127.0.0.1:8787
+```
+
+- In OpenCode TUI, run `headroom_stats` (or `headroom dashboard`) — if the tool is listed, Matrixx injected Headroom discipline into Morpheus/Keymaker prompts.
+- Agents will use `headroom_retrieve` / `headroom_search` automatically — you don't call them manually. If `headroom_*` tools are absent, check `matrixx.jsonc` has `headroom.enabled: true` and restart OpenCode.
+
+### Usage
+
+No code changes needed. Once `headroom wrap opencode` is running and `headroom.enabled: true`:
+
+- **You** keep using OpenCode normally (`ultrawork`, etc.).
+- **Proxy** compresses history out-of-process via `CacheAligner→ContentRouter→CCR` before it reaches the LLM.
+- **Agents** retrieve compressed slices on demand via `headroom_retrieve` (never re-read full history) and check stats via `headroom_stats`.
+- **CCR** is shared across projects — ideal for repeated JSON-heavy sessions.
+
+To disable, set `headroom.enabled: false` or run OpenCode without `headroom wrap`.
 
 ### Performance Impact
 
@@ -589,7 +631,6 @@ headroom dashboard
 | L2 context-mode | context-mode plugin | FTS5 sandbox `ctx_*` | 98% sandbox |
 | L3 DCP | `@tarquinen/opencode-dcp` | Pruning tiers `economy→ultimate` | Tiered pruning |
 | L4 Headroom | headroom proxy | `CacheAligner→ContentRouter→CCR` | 60-95% JSON |
-
 ---
 
 ## Documentation
@@ -603,6 +644,7 @@ headroom dashboard
 | [Configuration](docs/configurations.md) | All config options, agent overrides, hooks, categories |
 | [Orchestration](docs/orchestration-guide.md) | How agents coordinate, delegate, and recover |
 | [Categories & Skills](docs/category-skill-guide.md) | Task categories, skill injection, delegation patterns |
+| [Context Management](docs/context-management.md) | 5-layer context stack (Native, RTK, context-mode, DCP, Headroom) — setup, config, verification |
 
 ---
 
