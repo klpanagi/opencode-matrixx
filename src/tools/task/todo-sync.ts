@@ -1,5 +1,6 @@
 import type { PluginInput } from "@opencode-ai/plugin";
-import type { Task } from "../../features/task-storage/types.ts";
+import { getMainSessionID } from "../../features/session-state/state";
+import type { Task } from "../../features/task-storage/types";
 import { log } from "../../shared/logger";
 
 export interface TodoInfo {
@@ -101,7 +102,20 @@ export async function syncTaskTodoUpdate(
   writer?: TodoWriter,
 ): Promise<void> {
   if (!ctx) return;
+  const resolvedWriter = writer ?? (await resolveTodoWriter());
+  await syncSingleSession(ctx, task, sessionID, resolvedWriter);
+  const mainSessionID = safeGetMainSessionID();
+  if (mainSessionID && mainSessionID !== sessionID) {
+    await syncSingleSession(ctx, task, mainSessionID, resolvedWriter);
+  }
+}
 
+async function syncSingleSession(
+  ctx: PluginInput,
+  task: Task,
+  sessionID: string,
+  writer: TodoWriter | null,
+): Promise<void> {
   try {
     const response = await ctx.client.session.todo({
       path: { id: sessionID },
@@ -112,26 +126,29 @@ export async function syncTaskTodoUpdate(
       if (taskTodo) {
         return !todosMatch(todo, taskTodo);
       }
-      // Deleted task: match by id if present, otherwise by content
       if (todo.id) {
         return todo.id !== task.id;
       }
       return todo.content !== task.subject;
     });
-    const todo = taskTodo;
-
-    if (todo) {
-      nextTodos.push(todo);
+    if (taskTodo) {
+      nextTodos.push(taskTodo);
     }
-
-    const resolvedWriter = writer ?? (await resolveTodoWriter());
-    if (!resolvedWriter) return;
-    await resolvedWriter({ sessionID, todos: nextTodos });
+    if (!writer) return;
+    await writer({ sessionID, todos: nextTodos });
   } catch (err) {
     log("[todo-sync] Failed to sync task todo", {
       error: String(err),
       sessionID,
     });
+  }
+}
+
+function safeGetMainSessionID(): string | undefined {
+  try {
+    return getMainSessionID();
+  } catch {
+    return undefined;
   }
 }
 

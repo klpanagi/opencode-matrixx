@@ -14,6 +14,7 @@ import {
   createRulesInjectorHook,
   createSecretLeakGuardHook,
   createTaskNotepadHook,
+  createTaskTodoMirrorHook,
   createTasksTodowriteDisablerHook,
   createTodoDescriptionOverrideHook,
   createToolOutputTruncatorHook,
@@ -49,6 +50,7 @@ export type ToolGuardHooks = {
   hashlineEditDiffEnhancer: ReturnType<typeof createHashlineEditDiffEnhancerHook> | null
   qualityGate: ReturnType<typeof createQualityGateHook> | null
   taskNotepad: ReturnType<typeof createTaskNotepadHook> | null
+  taskTodoMirror: ReturnType<typeof createTaskTodoMirrorHook> | null
 }
 
 export function createToolGuardHooks(args: {
@@ -151,6 +153,10 @@ export function createToolGuardHooks(args: {
     ? safeHook("task-notepad", () => createTaskNotepadHook(ctx))
     : null
 
+  const taskTodoMirror = isHookEnabled("task-todo-mirror")
+    ? safeHook("task-todo-mirror", () => createTaskTodoMirrorHook(ctx, pluginConfig))
+    : null
+
   return {
     commentChecker,
     toolOutputTruncator,
@@ -171,5 +177,6 @@ export function createToolGuardHooks(args: {
     hashlineEditDiffEnhancer,
     qualityGate,
     taskNotepad,
+    taskTodoMirror,
   }
 }

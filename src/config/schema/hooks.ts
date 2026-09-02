@@ -58,6 +58,7 @@ export const HookNameSchema = z.enum([
   "tool-pair-validator",
   "quality-gate",
   "task-notepad",
+  "task-todo-mirror",
   "design-intent-preserver",
   "rtk-bash-rewriter",
   "mcp-startup-notification",
