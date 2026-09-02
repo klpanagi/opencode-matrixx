@@ -1,26 +1,24 @@
 import { afterEach, beforeEach, describe, expect, it } from "bun:test"
-import { existsSync, rmSync } from "node:fs"
+import { mkdirSync, rmSync } from "node:fs"
+import { mkdtempSync } from "node:fs"
+import { tmpdir } from "node:os"
 import { join } from "node:path"
 import { writeJsonAtomic } from "../../../src/features/task-storage/storage"
 import { createTaskList } from "../../../src/tools/task/task-list"
 import type { TaskObject } from "../../../src/tools/task/types"
 
-const testProjectDir = "/tmp/task-list-test"
-
 describe("createTaskList", () => {
+  let testProjectDir: string
   let taskDir: string
 
   beforeEach(() => {
+    testProjectDir = mkdtempSync(join(tmpdir(), "task-list-test-"))
     taskDir = join(testProjectDir, ".matrixx/tasks")
-    if (existsSync(taskDir)) {
-      rmSync(taskDir, { recursive: true })
-    }
+    mkdirSync(taskDir, { recursive: true })
   })
 
   afterEach(() => {
-    if (existsSync(taskDir)) {
-      rmSync(taskDir, { recursive: true })
-    }
+    rmSync(testProjectDir, { recursive: true, force: true })
   })
 
   it("returns empty array when no tasks exist", async () => {
@@ -120,10 +118,10 @@ describe("createTaskList", () => {
      }
      const tool = createTaskList(config)
 
-     //#when
+    //#when
      const result = await tool.execute({}, { sessionID: "test-session" })
 
-     //#then
+    //#then
      const parsed = JSON.parse(result)
      expect(parsed.tasks).toHaveLength(1)
      expect(parsed.tasks[0].id).toBe("T-1")
@@ -154,10 +152,10 @@ describe("createTaskList", () => {
      }
      const tool = createTaskList(config)
 
-     //#when
+    //#when
      const result = await tool.execute({}, { sessionID: "test-session" })
 
-     //#then
+    //#then
      const parsed = JSON.parse(result)
      expect(parsed.tasks).toHaveLength(1)
      const summary = parsed.tasks[0]
@@ -218,10 +216,10 @@ describe("createTaskList", () => {
      }
      const tool = createTaskList(config)
 
-     //#when
+    //#when
      const result = await tool.execute({}, { sessionID: "test-session" })
 
-     //#then
+    //#then
      const parsed = JSON.parse(result)
      const mainTaskSummary = parsed.tasks.find((t: { id: string }) => t.id === "T-main")
     expect(mainTaskSummary.blockedBy).toEqual(["T-blocker-pending"])
@@ -238,7 +236,7 @@ describe("createTaskList", () => {
        blockedBy: [],
        threadID: "test-session",
      }
-     const task2: TaskObject = {
+    const task2: TaskObject = {
        id: "T-2",
        subject: "In progress task",
        description: "",
@@ -261,10 +259,10 @@ describe("createTaskList", () => {
      }
      const tool = createTaskList(config)
 
-     //#when
+    //#when
      const result = await tool.execute({}, { sessionID: "test-session" })
 
-     //#then
+    //#then
      const parsed = JSON.parse(result)
      expect(parsed.tasks).toHaveLength(2)
    })
@@ -293,10 +291,10 @@ describe("createTaskList", () => {
      }
      const tool = createTaskList(config)
 
-     //#when
+    //#when
      const result = await tool.execute({}, { sessionID: "test-session" })
 
-     //#then
+    //#then
      const parsed = JSON.parse(result)
      expect(parsed.tasks[0].blockedBy).toEqual([])
    })
@@ -325,10 +323,10 @@ describe("createTaskList", () => {
      }
      const tool = createTaskList(config)
 
-     //#when
+    //#when
      const result = await tool.execute({}, { sessionID: "test-session" })
 
-     //#then
+    //#then
      const parsed = JSON.parse(result)
      expect(parsed.tasks[0].blockedBy).toEqual(["T-missing"])
    })

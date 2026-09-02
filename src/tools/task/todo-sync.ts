@@ -214,9 +214,6 @@ async function syncSingleSession(
     if (taskTodo) {
       nextTodos.push(taskTodo);
     }
-    if (taskTodo) {
-      nextTodos.push(taskTodo);
-    }
     await writeTodosWithFallback(sessionID, nextTodos, writer);
   } catch (err) {
     log("[todo-sync] Failed to sync task todo", {

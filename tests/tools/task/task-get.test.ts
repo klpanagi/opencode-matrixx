@@ -1,18 +1,11 @@
 import { afterEach, beforeEach, describe, expect, test } from "bun:test"
-import { existsSync, mkdirSync, rmSync, writeFileSync } from "node:fs"
+import { mkdirSync, rmSync, writeFileSync } from "node:fs"
+import { mkdtempSync } from "node:fs"
+import { tmpdir } from "node:os"
 import { join } from "node:path"
 import { createTaskGetTool } from "../../../src/tools/task/task-get"
 import type { TaskObject } from "../../../src/tools/task/types"
 
-const TEST_STORAGE = ".test-task-get-tool"
-const TEST_DIR = join(process.cwd(), TEST_STORAGE)
-const TEST_CONFIG = {
-  morpheus: {
-    tasks: {
-      storage_path: TEST_STORAGE,
-    },
-  },
-}
 const TEST_SESSION_ID = "test-session-123"
 const TEST_ABORT_CONTROLLER = new AbortController()
 const TEST_CONTEXT = {
@@ -24,19 +17,25 @@ const TEST_CONTEXT = {
 
 describe("task_get tool", () => {
   let tool: ReturnType<typeof createTaskGetTool>
+  let testDir: string
+  let testStorage: string
 
   beforeEach(() => {
-    if (existsSync(TEST_STORAGE)) {
-      rmSync(TEST_STORAGE, { recursive: true, force: true })
+    testDir = mkdtempSync(join(tmpdir(), "task-get-test-"))
+    testStorage = join(testDir, ".test-task-get-tool")
+    mkdirSync(testStorage, { recursive: true })
+    const testConfig = {
+      morpheus: {
+        tasks: {
+          storage_path: testStorage,
+        },
+      },
     }
-    mkdirSync(TEST_DIR, { recursive: true })
-    tool = createTaskGetTool(TEST_CONFIG)
+    tool = createTaskGetTool(testConfig)
   })
 
   afterEach(() => {
-    if (existsSync(TEST_STORAGE)) {
-      rmSync(TEST_STORAGE, { recursive: true, force: true })
-    }
+    rmSync(testDir, { recursive: true, force: true })
   })
 
   describe("get action", () => {
@@ -52,7 +51,7 @@ describe("task_get tool", () => {
         blockedBy: [],
         threadID: TEST_SESSION_ID,
       }
-      const taskFile = join(TEST_DIR, `${taskId}.json`)
+      const taskFile = join(testStorage, `${taskId}.json`)
       writeFileSync(taskFile, JSON.stringify(taskData, null, 2))
 
       //#when
@@ -97,7 +96,7 @@ describe("task_get tool", () => {
         parentID: "T-parent-123",
         threadID: TEST_SESSION_ID,
       }
-      const taskFile = join(TEST_DIR, `${taskId}.json`)
+      const taskFile = join(testStorage, `${taskId}.json`)
       writeFileSync(taskFile, JSON.stringify(taskData, null, 2))
 
       //#when
@@ -127,7 +126,7 @@ describe("task_get tool", () => {
     test("returns null for malformed task file", async () => {
       //#given
       const taskId = "T-malformed-789"
-      const taskFile = join(TEST_DIR, `${taskId}.json`)
+      const taskFile = join(testStorage, `${taskId}.json`)
       writeFileSync(taskFile, "{ invalid json }")
 
       //#when
@@ -141,7 +140,7 @@ describe("task_get tool", () => {
     test("returns null for task file with invalid schema", async () => {
       //#given
       const taskId = "T-invalid-schema-101"
-      const taskFile = join(TEST_DIR, `${taskId}.json`)
+      const taskFile = join(testStorage, `${taskId}.json`)
       const invalidData = {
         id: taskId,
         subject: "Missing required fields",
@@ -181,7 +180,7 @@ describe("task_get tool", () => {
         blockedBy: [],
         threadID: TEST_SESSION_ID,
       }
-      const taskFile = join(TEST_DIR, `${taskId}.json`)
+      const taskFile = join(testStorage, `${taskId}.json`)
       writeFileSync(taskFile, JSON.stringify(taskData, null, 2))
 
       //#when
@@ -205,7 +204,7 @@ describe("task_get tool", () => {
         blockedBy: [],
         threadID: TEST_SESSION_ID,
       }
-      const taskFile = join(TEST_DIR, `${taskId}.json`)
+      const taskFile = join(testStorage, `${taskId}.json`)
       writeFileSync(taskFile, JSON.stringify(taskData, null, 2))
 
       //#when
