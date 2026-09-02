@@ -1,4 +1,9 @@
 import { createBuiltinAgents } from "../agents";
+import {
+  buildCompactContextDisciplineSection,
+  buildExploreDisciplineSection,
+  buildHeadroomSection,
+} from "../agents/dynamic-agent-prompt-builder";
 import { createMouseAgentWithOverrides } from "../agents/mouse";
 import type { MatrixxConfig } from "../config";
 import { log, migrateAgentConfig } from "../shared";
@@ -175,6 +180,29 @@ export async function applyAgentConfig(params: {
     params.config.agent = reorderAgentsByPriority(
       params.config.agent as Record<string, unknown>,
     );
+  }
+
+  const hasContextMode = availableToolNames.some((n) => n.startsWith("ctx_"));
+  const hasHeadroom = availableToolNames.some((n) => n.startsWith("headroom_"));
+  if ((hasContextMode || hasHeadroom) && params.config.agent) {
+    const exploreAgents = new Set(["trinity", "operator", "seraph", "smith", "merovingian", "construct", "bdd-contract"]);
+    for (const [name, cfg] of Object.entries(params.config.agent as Record<string, Record<string, unknown>>)) {
+      if (name === "morpheus" || name === "keymaker") continue;
+      if (!cfg || typeof cfg.prompt !== "string") continue;
+      if (cfg.prompt.includes("Context Discipline")) continue;
+      const normalized = name.toLowerCase();
+      let discipline = "";
+      if (exploreAgents.has(normalized) || normalized === "oracle") {
+        discipline = buildExploreDisciplineSection(hasContextMode, hasHeadroom);
+      } else {
+        const compact = buildCompactContextDisciplineSection(hasContextMode);
+        const headroom = buildHeadroomSection(hasHeadroom);
+        discipline = [compact, headroom].filter(Boolean).join("\n\n");
+      }
+      if (discipline) {
+        (cfg as { prompt: string }).prompt = `${cfg.prompt}\n\n${discipline}`;
+      }
+    }
   }
 
   const agentResult = params.config.agent as Record<string, unknown>;
