@@ -164,7 +164,11 @@
           "task-todo-mirror",
           "design-intent-preserver",
           "rtk-bash-rewriter",
-          "mcp-startup-notification"
+          "mcp-startup-notification",
+          "evolution-watcher",
+          "evolution-compressor",
+          "evolution-quality-gate",
+          "evolution-hitl"
         ]
       }
     },
@@ -5160,6 +5164,240 @@
       "required": [
         "enabled",
         "timeout_ms"
+      ],
+      "additionalProperties": false
+    },
+    "evolution": {
+      "type": "object",
+      "properties": {
+        "enabled": {
+          "default": false,
+          "type": "boolean"
+        },
+        "watcher": {
+          "default": {
+            "maxArgChars": 4000,
+            "maxOutputChars": 8000,
+            "skipTools": [
+              "evolution-watcher",
+              "evolution-compressor"
+            ]
+          },
+          "type": "object",
+          "properties": {
+            "maxArgChars": {
+              "default": 4000,
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 9007199254740991
+            },
+            "maxOutputChars": {
+              "default": 8000,
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 9007199254740991
+            },
+            "skipTools": {
+              "default": [
+                "evolution-watcher",
+                "evolution-compressor"
+              ],
+              "type": "array",
+              "items": {
+                "type": "string"
+              }
+            }
+          },
+          "required": [
+            "maxArgChars",
+            "maxOutputChars",
+            "skipTools"
+          ],
+          "additionalProperties": false
+        },
+        "compressor": {
+          "default": {
+            "provider": "llm",
+            "minTraces": 5,
+            "maxInputTokens": 32000,
+            "trigger": "both"
+          },
+          "type": "object",
+          "properties": {
+            "provider": {
+              "default": "llm",
+              "type": "string",
+              "enum": [
+                "llm",
+                "dspy-gepa"
+              ]
+            },
+            "model": {
+              "type": "string"
+            },
+            "minTraces": {
+              "default": 5,
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 9007199254740991
+            },
+            "maxInputTokens": {
+              "default": 32000,
+              "type": "integer",
+              "minimum": 1000,
+              "maximum": 9007199254740991
+            },
+            "trigger": {
+              "default": "both",
+              "type": "string",
+              "enum": [
+                "compacting",
+                "idle",
+                "both"
+              ]
+            }
+          },
+          "required": [
+            "provider",
+            "minTraces",
+            "maxInputTokens",
+            "trigger"
+          ],
+          "additionalProperties": false
+        },
+        "writer": {
+          "default": {
+            "outputDir": ".matrixx/evolution/skills",
+            "globalSkills": false,
+            "allowToolGeneration": false,
+            "allowAgentGeneration": false
+          },
+          "type": "object",
+          "properties": {
+            "outputDir": {
+              "default": ".matrixx/evolution/skills",
+              "type": "string"
+            },
+            "globalSkills": {
+              "default": false,
+              "type": "boolean"
+            },
+            "allowToolGeneration": {
+              "default": false,
+              "type": "boolean"
+            },
+            "allowAgentGeneration": {
+              "default": false,
+              "type": "boolean"
+            }
+          },
+          "required": [
+            "outputDir",
+            "globalSkills",
+            "allowToolGeneration",
+            "allowAgentGeneration"
+          ],
+          "additionalProperties": false
+        },
+        "governance": {
+          "default": {
+            "requireApproval": true,
+            "autoPromote": false,
+            "autoPromoteThreshold": 0.85,
+            "minConfidence": 0.7
+          },
+          "type": "object",
+          "properties": {
+            "requireApproval": {
+              "default": true,
+              "type": "boolean"
+            },
+            "autoPromote": {
+              "default": false,
+              "type": "boolean"
+            },
+            "autoPromoteThreshold": {
+              "default": 0.85,
+              "type": "number",
+              "minimum": 0,
+              "maximum": 1
+            },
+            "minConfidence": {
+              "default": 0.7,
+              "type": "number",
+              "minimum": 0,
+              "maximum": 1
+            }
+          },
+          "required": [
+            "requireApproval",
+            "autoPromote",
+            "autoPromoteThreshold",
+            "minConfidence"
+          ],
+          "additionalProperties": false
+        },
+        "retention": {
+          "default": {
+            "traceDays": 30,
+            "maxPending": 50
+          },
+          "type": "object",
+          "properties": {
+            "traceDays": {
+              "default": 30,
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 9007199254740991
+            },
+            "maxPending": {
+              "default": 50,
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 9007199254740991
+            }
+          },
+          "required": [
+            "traceDays",
+            "maxPending"
+          ],
+          "additionalProperties": false
+        },
+        "budget": {
+          "default": {
+            "maxCompressionsPerHour": 10,
+            "maxCostCentsPerDay": 100
+          },
+          "type": "object",
+          "properties": {
+            "maxCompressionsPerHour": {
+              "default": 10,
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 9007199254740991
+            },
+            "maxCostCentsPerDay": {
+              "default": 100,
+              "type": "integer",
+              "minimum": 0,
+              "maximum": 9007199254740991
+            }
+          },
+          "required": [
+            "maxCompressionsPerHour",
+            "maxCostCentsPerDay"
+          ],
+          "additionalProperties": false
+        }
+      },
+      "required": [
+        "enabled",
+        "watcher",
+        "compressor",
+        "writer",
+        "governance",
+        "retention",
+        "budget"
       ],
       "additionalProperties": false
     },

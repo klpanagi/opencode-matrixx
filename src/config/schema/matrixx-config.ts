@@ -11,6 +11,7 @@ import { CategoriesConfigSchema } from "./categories"
 import { BuiltinCommandNameSchema } from "./commands"
 import { CommentCheckerConfigSchema } from "./comment-checker"
 import { DcpConfigSchema } from "./dcp"
+import { EvolutionConfigSchema } from "./evolution"
 import { ExperimentalConfigSchema } from "./experimental"
 import { HeadroomConfigSchema } from "./headroom"
 import { HookNameSchema } from "./hooks"
@@ -78,6 +79,8 @@ export const MatrixxConfigSchema = z.object({
   /** RTK bash command rewriter configuration (default: disabled) */
   /** RTK bash command rewriter configuration (default: disabled) */
   rtk: RtkConfigSchema.optional(),
+  /** Self-evolution loop configuration (default: disabled) */
+  evolution: EvolutionConfigSchema.optional(),
   /** Migration history to prevent re-applying migrations (e.g., model version upgrades) */
   _migrations: z.array(z.string()).optional(),
 })

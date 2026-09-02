@@ -5,6 +5,8 @@ import {
   createBackgroundNotificationHook,
   createCompactionContextInjector,
   createCompactionTodoPreserverHook,
+  createEvolutionCompressorHook,
+  createEvolutionHitlHook,
   createPlanPersister,
   createStopContinuationGuardHook,
   createTodoContinuationEnforcer,
@@ -22,6 +24,8 @@ export type ContinuationHooks = {
   backgroundNotificationHook: ReturnType<typeof createBackgroundNotificationHook> | null
   architectHook: ReturnType<typeof createArchitectHook> | null
   planPersister: ReturnType<typeof createPlanPersister> | null
+  evolutionCompressor: ReturnType<typeof createEvolutionCompressorHook> | null
+  evolutionHitl: ReturnType<typeof createEvolutionHitlHook> | null
 }
 
 type SessionRecovery = {
@@ -83,7 +87,6 @@ export function createContinuationHooks(args: {
       onRecoveryCompleteCallbacks.push(todoContinuationEnforcer.markRecoveryComplete)
     }
 
-
     if (onAbortCallbacks.length > 0) {
       sessionRecovery.setOnAbortCallback((sessionID: string) => {
         for (const callback of onAbortCallbacks) callback(sessionID)
@@ -117,6 +120,14 @@ export function createContinuationHooks(args: {
         createPlanPersister(ctx, { directory: ctx.directory }))
     : null
 
+  const evolutionCompressor = isHookEnabled("evolution-compressor")
+    ? safeHook("evolution-compressor", () => createEvolutionCompressorHook(ctx, pluginConfig.evolution))
+    : null
+
+  const evolutionHitl = isHookEnabled("evolution-hitl")
+    ? safeHook("evolution-hitl", () => createEvolutionHitlHook(ctx, pluginConfig.evolution))
+    : null
+
   return {
     stopContinuationGuard,
     compactionContextInjector,
@@ -126,6 +137,7 @@ export function createContinuationHooks(args: {
     backgroundNotificationHook,
     architectHook,
     planPersister,
-}
-
+    evolutionCompressor,
+    evolutionHitl,
+  }
 }

@@ -3,6 +3,7 @@ import * as z from "zod"
 import { MatrixxConfigSchema } from "../src/config/schema"
 
 const OUTPUT_PATH = "assets/matrixx.schema.json"
+const DIST_OUTPUT_PATH = "dist/matrixx.schema.json"
 
 function buildSchema(targetId: string) {
   const jsonSchema = z.toJSONSchema(MatrixxConfigSchema, {
@@ -26,8 +27,10 @@ async function main() {
     "https://raw.githubusercontent.com/klpanagi/opencode-matrixx/dev/assets/matrixx.schema.json",
   )
   await Bun.write(OUTPUT_PATH, JSON.stringify(matrixxSchema, null, 2))
+  await Bun.write(DIST_OUTPUT_PATH, JSON.stringify(matrixxSchema, null, 2))
 
   console.log(`✓ ${OUTPUT_PATH} regenerated`)
+  console.log(`✓ ${DIST_OUTPUT_PATH} regenerated`)
 }
 
 main()

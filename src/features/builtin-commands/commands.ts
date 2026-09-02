@@ -7,6 +7,7 @@ import { BDD_PIPELINE_TEMPLATE } from "./templates/bdd-pipeline"
 import { BDD_TESTS_TEMPLATE } from "./templates/bdd-tests"
 import { DCP_PROFILE_TEMPLATE } from "./templates/dcp-profile"
 import { END_ULTRAWORK_TEMPLATE } from "./templates/end-ultrawork"
+import { EVOLUTION_TEMPLATE } from "./templates/evolution"
 import { HANDOFF_TEMPLATE } from "./templates/handoff"
 import { INIT_DEEP_TEMPLATE } from "./templates/init-deep"
 import { CANCEL_LOOP_TEMPLATE, MATRIX_LOOP_TEMPLATE } from "./templates/matrix-loop"
@@ -248,6 +249,17 @@ ${DCP_PROFILE_TEMPLATE}
 $ARGUMENTS
 </user-request>`,
     argumentHint: "<profile-name>",
+  },
+  evolution: {
+    description: "(builtin) Manage self-evolution proposals: approve, reject, list, audit pending skills",
+    template: `<command-instruction>
+${EVOLUTION_TEMPLATE}
+</command-instruction>
+
+<user-request>
+$ARGUMENTS
+</user-request>`,
+    argumentHint: "[list|approve <slug>|reject <slug>|audit]",
   },
 }
 
