@@ -1,7 +1,7 @@
 /// <reference types="bun-types" />
 
 import { afterEach, beforeEach, describe, expect, it } from "bun:test"
-import { getAvailableToolNames, setAvailableToolNames } from "../../src/plugin-handlers/agent-config-handler"
+import { applyAgentConfig, setAvailableToolNames } from "../../src/plugin-handlers/agent-config-handler"
 
 const EMPTY_PLUGIN_COMPONENTS = {
   commands: {},
@@ -39,7 +39,6 @@ describe("agent-config-handler central ctx discipline injector", () => {
     setAvailableToolNames(["grep", "glob", "read", "bash", "lsp_diagnostics"])
 
     //#when
-    const { applyAgentConfig } = await import("../../src/plugin-handlers/agent-config-handler")
     const config: Record<string, unknown> = {}
     await applyAgentConfig({
       config,
@@ -62,7 +61,6 @@ describe("agent-config-handler central ctx discipline injector", () => {
     setAvailableToolNames(["ctx_search", "ctx_batch_execute", "grep", "read"])
 
     //#when
-    const { applyAgentConfig } = await import("../../src/plugin-handlers/agent-config-handler")
     const config: Record<string, unknown> = {}
     await applyAgentConfig({
       config,
@@ -88,7 +86,6 @@ describe("agent-config-handler central ctx discipline injector", () => {
     setAvailableToolNames(["ctx_search", "ctx_batch_execute"])
 
     //#when
-    const { applyAgentConfig } = await import("../../src/plugin-handlers/agent-config-handler")
     const config: Record<string, unknown> = {}
     await applyAgentConfig({
       config,
@@ -113,7 +110,6 @@ describe("agent-config-handler central ctx discipline injector", () => {
     setAvailableToolNames(["ctx_search"])
 
     //#when
-    const { applyAgentConfig } = await import("../../src/plugin-handlers/agent-config-handler")
     const config: Record<string, unknown> = {}
     await applyAgentConfig({
       config,
@@ -137,7 +133,6 @@ describe("agent-config-handler central ctx discipline injector", () => {
     setAvailableToolNames(["headroom_retrieve", "headroom_search"])
 
     //#when
-    const { applyAgentConfig } = await import("../../src/plugin-handlers/agent-config-handler")
     const config: Record<string, unknown> = {}
     await applyAgentConfig({
       config,
@@ -157,7 +152,6 @@ describe("agent-config-handler central ctx discipline injector", () => {
     setAvailableToolNames(["ctx_search", "headroom_retrieve"])
 
     //#when
-    const { applyAgentConfig } = await import("../../src/plugin-handlers/agent-config-handler")
     const config: Record<string, unknown> = {}
     await applyAgentConfig({
       config,
@@ -181,7 +175,6 @@ describe("agent-config-handler central ctx discipline injector", () => {
     setAvailableToolNames(["ctx_search", "ctx_batch_execute"])
 
     //#when
-    const { applyAgentConfig } = await import("../../src/plugin-handlers/agent-config-handler")
     const config: Record<string, unknown> = {}
     await applyAgentConfig({
       config,
@@ -207,7 +200,6 @@ describe("agent-config-handler central ctx discipline injector", () => {
     setAvailableToolNames(["ctx_search"])
 
     //#when
-    const { applyAgentConfig } = await import("../../src/plugin-handlers/agent-config-handler")
     const config: Record<string, unknown> = {}
     await applyAgentConfig({
       config,
@@ -233,7 +225,6 @@ describe("agent-config-handler central ctx discipline injector", () => {
     setAvailableToolNames(["ctx_search"])
 
     //#when
-    const { applyAgentConfig } = await import("../../src/plugin-handlers/agent-config-handler")
     const config: Record<string, unknown> = {}
     await applyAgentConfig({
       config,
@@ -259,7 +250,6 @@ describe("agent-config-handler central ctx discipline injector", () => {
     setAvailableToolNames(["ctx_search"])
 
     //#when
-    const { applyAgentConfig } = await import("../../src/plugin-handlers/agent-config-handler")
     const config: Record<string, unknown> = {}
     await applyAgentConfig({
       config,
@@ -283,7 +273,6 @@ describe("agent-config-handler central ctx discipline injector", () => {
     setAvailableToolNames(["ctx_search"])
 
     //#when
-    const { applyAgentConfig } = await import("../../src/plugin-handlers/agent-config-handler")
     const config: Record<string, unknown> = {}
     await applyAgentConfig({
       config,
@@ -303,7 +292,6 @@ describe("agent-config-handler central ctx discipline injector", () => {
     setAvailableToolNames(["ctx_search"])
 
     //#when
-    const { applyAgentConfig } = await import("../../src/plugin-handlers/agent-config-handler")
     const config: Record<string, unknown> = {}
     await applyAgentConfig({
       config,
