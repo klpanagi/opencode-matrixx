@@ -38,7 +38,7 @@ export function buildAgent(
 
   if (agentWithCategory.skills?.length) {
     const builtinSkills = createBuiltinSkills({ browserProvider, disabledSkills })
-    const resolved = builtinSkills.filter(s => agentWithCategory.skills!.includes(s.name))
+    const resolved = builtinSkills.filter(s => agentWithCategory.skills?.includes(s.name))
     if (resolved.length > 0) {
       const skillContent = resolved.map(s => s.template).join("\n\n")
       base.prompt = skillContent + (base.prompt ? `\n\n${base.prompt}` : "")

@@ -122,7 +122,7 @@ function switchProfile(profile: string, options?: DcpSwitchProfileOptions): stri
   const inlineConfig = buildInlineConfig(profile, options)
 
   // Write directly to the DCP config symlink target
-  writeFileSync(DCP_SYMLINK, JSON.stringify(inlineConfig, null, 2) + "\n")
+  writeFileSync(DCP_SYMLINK, `${JSON.stringify(inlineConfig, null, 2)}\n`)
 
   return `\u2713 Switched to DCP profile: ${profile}\n\nRestart OpenCode session for changes to take effect.`
 }
