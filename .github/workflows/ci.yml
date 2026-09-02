@@ -103,6 +103,7 @@ jobs:
           bun test tests/cli/install/index.test.ts
           bun test tests/hooks/mcp-startup-notification/index.test.ts
           bun test tests/tools/dcp-switch-profile/tools.test.ts
+          bun test tests/shared/agent-config-handler.test.ts
 
       - name: Run remaining tests
         run: |
@@ -152,6 +153,7 @@ jobs:
               -e 'tests/cli/install/index.test.ts' \
               -e 'tests/hooks/mcp-startup-notification/index.test.ts' \
               -e 'tests/tools/dcp-switch-profile/tools.test.ts' \
+              -e 'tests/shared/agent-config-handler.test.ts' \
             | xargs bun test
 
   typecheck:

@@ -16,6 +16,7 @@ import {
   createSecretLeakGuardHook,
   createTaskNotepadHook,
   createTasksTodowriteDisablerHook,
+  createTaskTodoMirrorHook,
   createTodoDescriptionOverrideHook,
   createToolOutputTruncatorHook,
   createWebFetchRedirectGuardHook,
@@ -51,6 +52,7 @@ export type ToolGuardHooks = {
   qualityGate: ReturnType<typeof createQualityGateHook> | null
   taskNotepad: ReturnType<typeof createTaskNotepadHook> | null
   evolutionWatcher: ReturnType<typeof createEvolutionWatcherHook> | null
+  taskTodoMirror: ReturnType<typeof createTaskTodoMirrorHook> | null
 }
 
 export function createToolGuardHooks(args: {
@@ -157,6 +159,10 @@ export function createToolGuardHooks(args: {
     ? safeHook("evolution-watcher", () => createEvolutionWatcherHook(ctx, pluginConfig.evolution))
     : null
 
+  const taskTodoMirror = isHookEnabled("task-todo-mirror")
+    ? safeHook("task-todo-mirror", () => createTaskTodoMirrorHook(ctx, pluginConfig))
+    : null
+
   return {
     commentChecker,
     toolOutputTruncator,
@@ -178,5 +184,6 @@ export function createToolGuardHooks(args: {
     qualityGate,
     taskNotepad,
     evolutionWatcher,
+    taskTodoMirror,
   }
 }

@@ -10,6 +10,9 @@ import {
   formatCustomSkillsBlock,
   categorizeTools,
   buildContextDisciplineSection,
+  buildHeadroomSection,
+  buildCompactContextDisciplineSection,
+  buildExploreDisciplineSection,
 } from "../../src/agents/dynamic-agent-prompt-builder"
 
 describe("buildCategorySkillsDelegationGuide", () => {
@@ -315,5 +318,182 @@ describe("buildContextDisciplineSection", () => {
     expect(result).toContain("Search")
     expect(result).toContain("Docs / Web")
     expect(result).toContain("Compression")
+  })
+})
+
+describe("buildHeadroomSection", () => {
+  it("should return empty string when headroom not available", () => {
+    //#given: hasHeadroom false
+    const result = buildHeadroomSection(false)
+    //#then: empty
+    expect(result).toBe("")
+  })
+
+  it("should return empty string by default", () => {
+    //#given: default param
+    const result = buildHeadroomSection()
+    //#then: empty
+    expect(result).toBe("")
+  })
+
+  it("should render headroom table when available", () => {
+    //#given: hasHeadroom true
+    const result = buildHeadroomSection(true)
+    //#then: contains expected parts
+    expect(result).toContain("Headroom Proxy Discipline")
+    expect(result).toContain("headroom_retrieve")
+    expect(result).toContain("headroom_search")
+    expect(result).toContain("headroom_stats")
+    expect(result).toContain("HEADROOM_PROXY_URL")
+    expect(result).toContain("127.0.0.1:8787")
+    expect(result).toContain("L4")
+  })
+
+  it("should mention transport-level complement note", () => {
+    //#given
+    const result = buildHeadroomSection(true)
+    //#then
+    expect(result).toContain("CacheAligner")
+    expect(result).toContain("L1 RTK")
+  })
+})
+
+describe("buildCompactContextDisciplineSection", () => {
+  it("should return empty string when not available", () => {
+    //#given: false
+    expect(buildCompactContextDisciplineSection(false)).toBe("")
+    //#then: empty
+  })
+
+  it("should return empty string by default", () => {
+    //#given: default
+    expect(buildCompactContextDisciplineSection()).toBe("")
+    //#then: empty
+  })
+
+  it("should render compact table when available", () => {
+    //#given: true
+    const result = buildCompactContextDisciplineSection(true)
+    //#then: tiered compact header
+    expect(result).toContain("when ctx_* available")
+    expect(result).toContain("Context Discipline")
+    expect(result).not.toContain("ALWAYS")
+  })
+
+  it("should contain 4 compact scenarios", () => {
+    //#given
+    const result = buildCompactContextDisciplineSection(true)
+    //#then: 4 rows
+    expect(result).toContain("Analysis / Aggregation / Counting")
+    expect(result).toContain("ctx_batch_execute")
+    expect(result).toContain("ctx_execute")
+    expect(result).toContain("Search")
+    expect(result).toContain("ctx_search FIRST")
+    expect(result).toContain("grep/glob fallback")
+    expect(result).toContain("Docs / Web")
+    expect(result).toContain("ctx_fetch_and_index")
+    expect(result).toContain("Compression")
+    expect(result).toContain("ctx_stats")
+  })
+
+  it("should mention read→edit chain exempt", () => {
+    //#given
+    const result = buildCompactContextDisciplineSection(true)
+    //#then
+    expect(result).toContain("LINE#ID")
+    expect(result).toContain("read→edit")
+    expect(result).toContain("When in doubt, use ctx_*")
+  })
+
+  it("should not contain full-table rows", () => {
+    //#given
+    const result = buildCompactContextDisciplineSection(true)
+    //#then: compact omits Edits/Observation/State Mutation distinctions
+    expect(result).not.toContain("Analysis / Processing")
+    expect(result).not.toContain("Observation")
+    expect(result).not.toContain("State Mutation")
+  })
+})
+
+describe("buildExploreDisciplineSection", () => {
+  it("should return empty when neither available", () => {
+    //#given
+    expect(buildExploreDisciplineSection(false, false)).toBe("")
+    expect(buildExploreDisciplineSection()).toBe("")
+    //#then: empty
+  })
+
+  it("should render ctx part when ctx available", () => {
+    //#given: ctx only
+    const result = buildExploreDisciplineSection(true, false)
+    //#then
+    expect(result).toContain("when available")
+    expect(result).toContain("ctx_search")
+    expect(result).toContain("grep/glob fallback")
+    expect(result).toContain("ctx_batch_execute")
+    expect(result).toContain("ctx_fetch_and_index")
+    expect(result).not.toContain("headroom_")
+  })
+
+  it("should render headroom part when headroom available", () => {
+    //#given: headroom only
+    const result = buildExploreDisciplineSection(false, true)
+    //#then
+    expect(result).toContain("headroom_retrieve")
+    expect(result).toContain("headroom_search")
+    expect(result).not.toContain("ctx_search")
+  })
+
+  it("should render both parts when both available", () => {
+    //#given: both
+    const result = buildExploreDisciplineSection(true, true)
+    //#then: contains both
+    expect(result).toContain("ctx_search")
+    expect(result).toContain("ctx_batch_execute")
+    expect(result).toContain("ctx_fetch_and_index")
+    expect(result).toContain("headroom_retrieve")
+    expect(result).toContain("NEVER re-read full history")
+  })
+
+  it("should always mention fallback semantics for explore", () => {
+    //#given
+    const result = buildExploreDisciplineSection(true, false)
+    //#then: explore tier emphasizes fallback not NEVER",
+    expect(result).toContain("→ grep/glob fallback")
+    expect(result).not.toContain("NEVER raw")
+  })
+})
+
+describe("categorizeTools extended", () => {
+  it("should categorize headroom_* as sandbox", () => {
+    //#given: headroom tools
+    const result = categorizeTools(["headroom_retrieve", "headroom_search", "headroom_stats"])
+    //#then: sandbox
+    expect(result.every((t) => t.category === "sandbox")).toBe(true)
+  })
+
+  it("should categorize ctx_stats and ctx_index as sandbox", () => {
+    //#given
+    const result = categorizeTools(["ctx_stats", "ctx_index"])
+    //#then
+    expect(result.every((t) => t.category === "sandbox")).toBe(true)
+  })
+
+  it("should categorize session_* as session and slashcommand as command", () => {
+    //#given
+    const result = categorizeTools(["session_list", "session_get", "slashcommand"])
+    //#then
+    expect(result.find((t) => t.name === "session_list")?.category).toBe("session")
+    expect(result.find((t) => t.name === "slashcommand")?.category).toBe("command")
+  })
+
+  it("should keep ctx and headroom mixed as sandbox in mixed list", () => {
+    //#given: mixed ctx/headroom plus plain
+    const result = categorizeTools(["ctx_search", "headroom_retrieve", "grep", "read"])
+    //#then
+    const byCategory = (c: string) => result.filter((t) => t.category === c).map((t) => t.name)
+    expect(byCategory("sandbox")).toEqual(["ctx_search", "headroom_retrieve"])
+    expect(byCategory("search")).toEqual(["grep"])
+    expect(byCategory("other")).toEqual(["read"])
   })
 })

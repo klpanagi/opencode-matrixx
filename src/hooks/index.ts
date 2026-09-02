@@ -51,6 +51,7 @@ export { createStartWorkHook } from "./start-work";
 export { createStopContinuationGuardHook, type StopContinuationGuard } from "./stop-continuation-guard";
 export { createTaskNotepadHook } from "./task-notepad"
 export { createTaskResumeInfoHook } from "./task-resume-info";
+export { createTaskTodoMirrorHook } from "./task-todo-mirror";
 export { createTasksTodowriteDisablerHook } from "./tasks-todowrite-disabler";
 export { createThinkModeHook } from "./think-mode";
 export { createThinkingBlockValidatorHook } from "./thinking-block-validator";

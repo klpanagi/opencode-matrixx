@@ -1,4 +1,9 @@
 import { createBuiltinAgents } from "../agents";
+import {
+  buildCompactContextDisciplineSection,
+  buildExploreDisciplineSection,
+  buildHeadroomSection,
+} from "../agents/dynamic-agent-prompt-builder";
 import { createMouseAgentWithOverrides } from "../agents/mouse";
 import type { MatrixxConfig } from "../config";
 import { log, migrateAgentConfig } from "../shared";
@@ -16,6 +21,34 @@ export function setAvailableToolNames(names: string[]) {
 export function getAvailableToolNames(): string[] {
   return _availableToolNames
 }
+
+export function injectContextDiscipline(
+  availableToolNames: string[],
+  agents: Record<string, Record<string, unknown>>,
+): void {
+  const hasContextMode = availableToolNames.some((n) => n.startsWith("ctx_"));
+  const hasHeadroom = availableToolNames.some((n) => n.startsWith("headroom_"));
+  if (!(hasContextMode || hasHeadroom)) return;
+  const exploreAgents = new Set(["trinity", "operator", "seraph", "smith", "merovingian", "construct", "bdd-contract"]);
+  for (const [name, cfg] of Object.entries(agents)) {
+    if (name === "morpheus" || name === "keymaker") continue;
+    if (!cfg || typeof cfg.prompt !== "string") continue;
+    if (cfg.prompt.includes("Context Discipline")) continue;
+    const normalized = name.toLowerCase();
+    let discipline = "";
+    if (exploreAgents.has(normalized) || normalized === "oracle") {
+      discipline = buildExploreDisciplineSection(hasContextMode, hasHeadroom);
+    } else {
+      const compact = buildCompactContextDisciplineSection(hasContextMode);
+      const headroom = buildHeadroomSection(hasHeadroom);
+      discipline = [compact, headroom].filter(Boolean).join("\n\n");
+    }
+    if (discipline) {
+      (cfg as { prompt: string }).prompt = `${cfg.prompt}\n\n${discipline}`;
+    }
+  }
+}
+
 type AgentConfigRecord = Record<string, Record<string, unknown> | undefined> & {
   build?: Record<string, unknown>;
   plan?: Record<string, unknown>;
@@ -175,6 +208,10 @@ export async function applyAgentConfig(params: {
     params.config.agent = reorderAgentsByPriority(
       params.config.agent as Record<string, unknown>,
     );
+  }
+
+  if (params.config.agent) {
+    injectContextDiscipline(availableToolNames, params.config.agent as Record<string, Record<string, unknown>>);
   }
 
   const agentResult = params.config.agent as Record<string, unknown>;

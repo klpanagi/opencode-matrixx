@@ -13,6 +13,7 @@ import { CommentCheckerConfigSchema } from "./comment-checker"
 import { DcpConfigSchema } from "./dcp"
 import { EvolutionConfigSchema } from "./evolution"
 import { ExperimentalConfigSchema } from "./experimental"
+import { HeadroomConfigSchema } from "./headroom"
 import { HookNameSchema } from "./hooks"
 import { MatrixLoopConfigSchema } from "./matrix-loop"
 import { MatrixxSelfConfigSkillConfigSchema } from "./matrixx-self-config"
@@ -73,6 +74,9 @@ export const MatrixxConfigSchema = z.object({
   agent_definitions: AgentDefinitionsConfigSchema.optional(),
   /** Enable matrixx-self-config skill (default: false - opt-in feature) */
   matrixx_self_config: MatrixxSelfConfigSkillConfigSchema.optional(),
+  /** Headroom network-proxy compression configuration (default: disabled) */
+  headroom: HeadroomConfigSchema.optional(),
+  /** RTK bash command rewriter configuration (default: disabled) */
   /** RTK bash command rewriter configuration (default: disabled) */
   rtk: RtkConfigSchema.optional(),
   /** Self-evolution loop configuration (default: disabled) */

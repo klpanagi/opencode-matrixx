@@ -12,6 +12,7 @@ import {
   buildDelegationTable,
   buildExploreSection,
   buildHardBlocksSection,
+  buildHeadroomSection,
   buildKeyTriggersSection,
   buildLibrarianSection,
   buildOracleSection,
@@ -155,6 +156,8 @@ function buildDynamicMorpheusPrompt(
   const antiPatterns = buildAntiPatternsSection()
   const hasContextMode = availableTools.some((t) => t.name.startsWith("ctx_"))
   const contextDiscipline = buildContextDisciplineSection(hasContextMode)
+  const hasHeadroom = availableTools.some((t) => t.name.startsWith("headroom_"))
+  const headroomDiscipline = buildHeadroomSection(hasHeadroom)
   const taskManagementSection = buildTaskManagementSection(useTaskSystem)
   const todoHookNote = useTaskSystem
     ? "YOUR TASK CREATION WOULD BE TRACKED BY HOOK([SYSTEM REMINDER - TASK CONTINUATION])"
@@ -490,6 +493,8 @@ ${hardBlocks}
 ${antiPatterns}
 
 ${contextDiscipline}
+
+${headroomDiscipline}
 
 ## Soft Guidelines
 

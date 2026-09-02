@@ -133,7 +133,12 @@ export function createThinkModeHook() {
         const agentDisabledThinking = agentThinking?.type === "disabled"
         const agentHasCustomProviderOptions = Boolean(agentProviderOptions)
 
-        if (agentDisabledThinking) {
+        if (output.message.tool_choice != null || output.message.toolChoice != null) {
+          log("Think mode: skipping - tool_choice present (Console Go incompat)", {
+            sessionID,
+            provider: currentModel.providerID,
+          })
+        } else if (agentDisabledThinking) {
           log("Think mode: skipping - agent has thinking disabled", {
             sessionID,
             provider: currentModel.providerID,
