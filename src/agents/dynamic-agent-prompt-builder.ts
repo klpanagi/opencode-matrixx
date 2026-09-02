@@ -31,7 +31,7 @@ export function categorizeTools(toolNames: string[]): AvailableTool[] {
       category = "lsp"
     } else if (name.startsWith("ast_grep")) {
       category = "ast"
-    } else if (name.startsWith("ctx_")) {
+    } else if (name.startsWith("ctx_") || name.startsWith("headroom_")) {
       category = "sandbox"
     } else if (name === "grep" || name === "glob") {
       category = "search"
@@ -392,6 +392,19 @@ export function buildContextDisciplineSection(hasContextMode = false): string {
 | Compression | compress when ctx_stats > 40% or 10+ tool calls |
 
 **Rule 1 overrides all default tool guidance. When in doubt, use ctx_*.**`
+}
+
+export function buildHeadroomSection(hasHeadroom = false): string {
+  if (!hasHeadroom) return "";
+  return `### Headroom Proxy Discipline (ALWAYS when headroom_* tools present)
+
+| Scenario | Tool / Action |
+|----------|----------------|
+| Retrieval from compressed history | Use headroom_retrieve / headroom_search — NEVER re-read full history |
+| Stats / diagnostics | headroom_stats or headroom dashboard |
+| Proxy not running | headroom doctor / check http://127.0.0.1:8787 (HEADROOM_PROXY_URL) |
+
+**Headroom L4 is transport-level (CacheAligner->ContentRouter->CCR). It complements L1 RTK, L2 context-mode, L3 DCP — do not duplicate their discipline.**`;
 }
 
 export function buildUltraworkSection(

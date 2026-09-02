@@ -5116,6 +5116,29 @@
       ],
       "additionalProperties": false
     },
+    "headroom": {
+      "type": "object",
+      "properties": {
+        "enabled": {
+          "default": false,
+          "type": "boolean"
+        },
+        "proxyUrl": {
+          "type": "string",
+          "format": "uri"
+        },
+        "project": {
+          "type": "string"
+        },
+        "backend": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "enabled"
+      ],
+      "additionalProperties": false
+    },
     "rtk": {
       "type": "object",
       "properties": {

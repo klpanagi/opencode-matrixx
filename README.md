@@ -509,6 +509,88 @@ The 10-20ms subprocess overhead is negligible compared to command execution time
 
 ---
 
+## Headroom Integration — Network-Proxy Compression
+
+Matrixx integrates [Headroom](https://github.com/headroomlabs-ai/headroom) for network-proxy-level token compression, reducing context by **60-95%** on JSON, **15-20%** on coding agents via `CacheAligner→ContentRouter→CCR` pipeline.
+
+### What is Headroom?
+
+Headroom is a proxy + MCP provider that compresses history before it reaches the LLM. It intercepts the OpenAI-compatible provider `headroom` via `@ai-sdk/openai-compatible` and serves retrieval via `headroom_retrieve`.
+
+```
+# Without headroom: 50k tokens history
+# Every turn ships full JSON + tool outputs
+
+# With headroom wrap: 8k tokens (CCR + retrieval)
+$ headroom wrap opencode
+# CCR compresses; agents retrieve via headroom_retrieve on demand
+```
+
+### How It Works
+
+1. User runs `headroom wrap opencode` (starts proxy at `http://127.0.0.1:8787`)
+2. Headroom MCP registers `headroom_retrieve` / `headroom_stats`
+3. Matrixx detects `hasHeadroom = availableTools.some(t => t.name.startsWith("headroom_"))` and injects Headroom discipline into agent prompts
+4. Proxy's `CacheAligner→ContentRouter→CCR` compresses; agents retrieve via `headroom_retrieve` on demand
+
+### Configuration
+
+Headroom is **disabled by default** (opt-in). Enable it in `matrixx.jsonc`:
+
+```jsonc
+{
+  "headroom": {
+    "enabled": true,
+    "proxyUrl": "http://127.0.0.1:8787",  // optional — defaults to proxy default
+    "project": "my-project",              // optional — CCR scoping
+    "backend": "openai"                   // optional — HEADROOM_BACKEND
+  }
+}
+```
+
+### Installation
+
+Install Headroom from [headroomlabs-ai/headroom](https://github.com/headroomlabs-ai/headroom):
+
+```bash
+# Install (pick one)
+uv tool install headroom-ai[all]
+# or
+pipx install headroom-ai[all]
+
+# Verify
+headroom --version
+headroom doctor
+
+# Run via proxy (recommended)
+headroom wrap opencode
+
+# Dashboard
+headroom dashboard
+```
+
+> **Note:** Native TypeScript plugin `headroom-opencode` is deferred to **Phase 2** due to [#2798](https://github.com/sst/opencode/issues/2798) global `fetch` patch collision and [#76](https://github.com/headroomlabs-ai/headroom/issues/76) compaction not yet stable. Prefer `wrap` for now.
+
+### Performance Impact
+
+| Metric | Value |
+|--------|-------|
+| **Matrixx bridge overhead** | ~0ms (prompt-only; proxy out-of-process) |
+| **Proxy token savings** | 60-95% JSON, 15-20% coding agents |
+| **Complementarity** | L4 orthogonal to L1 RTK + L2 context-mode + L3 DCP + L0 native (zero overlap) |
+| **Net benefit** | Retrieval-on-demand reduces per-turn context; CCR shared across projects |
+
+### 5-Layer Complementarity
+
+| Layer | Owner | Mechanism | Reduction |
+|-------|-------|-----------|-----------|
+| L0 Native | Matrixx | 70% warn, preemptive-compaction, anthropic-recovery | Prevents OOM |
+| L1 RTK | RTK hook | Bash output compression | 60-90% bash |
+| L2 context-mode | context-mode plugin | FTS5 sandbox `ctx_*` | 98% sandbox |
+| L3 DCP | `@tarquinen/opencode-dcp` | Pruning tiers `economy→ultimate` | Tiered pruning |
+| L4 Headroom | headroom proxy | `CacheAligner→ContentRouter→CCR` | 60-95% JSON |
+
+---
 
 ## Documentation
 

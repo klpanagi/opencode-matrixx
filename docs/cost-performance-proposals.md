@@ -220,6 +220,16 @@ Total: 15 proposals across 3 tiers, plus a recommended implementation sequence a
 - **Where:** `src/hooks/anthropic-context-window-limit-recovery/` (~2232 LOC)
 - **Source:** Internal hotspot analysis
 
+### P16. Headroom Network-Proxy Compression (headroomlabs-ai/headroom)
+
+- **What:** Network-proxy-level token compression via `headroom wrap opencode` with CacheAligner→ContentRouter→CCR pipeline. Provider `headroom` via @ai-sdk/openai-compatible, MCP `headroom_retrieve`, proxy default `http://127.0.0.1:8787`.
+- **Cost impact:** **60–95% on JSON, 15–20% on coding agents** (Headroom benchmarks); orthogonal to L1 RTK, L2 context-mode, L3 DCP.
+- **Performance impact:** Minimal per-turn overhead (proxy out-of-process; retrieval on-demand); complements prefix-cache and RTK.
+- **Complexity:** **Low** (Matrixx bridge: ~120 LOC) — minimal opt-in schema + detection + prompt discipline; proxy owns compression. No Matrixx hook/tool in Phase 1.
+- **Where:** `src/config/schema/headroom.ts`, `src/agents/dynamic-agent-prompt-builder.ts`, `src/agents/morpheus.ts`, `docs/` + `README`
+- **Source:** headroomlabs-ai/headroom (wrap path recommended; native `headroom-opencode` deferred due to #2798 fetch patch + #76 compaction not stable)
+- **Complementarity:** 5-layer matrix L0 native (70% warn/preemptive/anthropic-recovery) + L1 RTK + L2 context-mode + L3 DCP + L4 Headroom — zero overlap, <10ms bridge overhead
+
 ---
 
 ## 6. Quick-Win Matrix (Recommended Order)
@@ -241,6 +251,7 @@ Total: 15 proposals across 3 tiers, plus a recommended implementation sequence a
 | 13 | P13: Cost Dashboard | claude-hud | Low | Medium | Medium | ⭐⭐ |
 | 14 | P12: Cross-Model Review | cavekit | Medium | Low | High | ⭐ |
 | 15 | P14: Approval Gates | humanlayer | Medium | Low | High | ⭐ |
+| 16 | P16: Headroom | headroom | High | Medium | Low | ⭐⭐⭐⭐ |
 
 ---
 
@@ -266,7 +277,7 @@ If Tier 2 (P6–P8, P10) is also added: **~60–80% reduction on tool-heavy sess
 
 1. **Sprint 1 (low risk, immediate):** P1 (lazy load), P2 (prefix-cache), P4 (SDO audit), P15 (recovery cap)
 2. **Sprint 2 (medium effort):** P3 (per-task routing), P5 (plan-as-file)
-3. **Sprint 3 (architectural):** P6 (output compression), P8 (progress ledger), P10 (conflict detection)
+3. **Sprint 3 (architectural):** P6 (output compression), P16 (Headroom proxy — Sprint 1 if `headroom wrap` already installed), P8 (progress ledger), P10 (conflict detection)
 4. **Sprint 4 (deeper):** P7 (output sandboxing), P9 (task-brief)
 5. **Backlog:** P11–P14 (experimental, validate with real usage data first)
 
