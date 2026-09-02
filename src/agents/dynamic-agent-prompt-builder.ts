@@ -407,6 +407,32 @@ export function buildHeadroomSection(hasHeadroom = false): string {
 **Headroom L4 is transport-level (CacheAligner->ContentRouter->CCR). It complements L1 RTK, L2 context-mode, L3 DCP — do not duplicate their discipline.**`;
 }
 
+export function buildCompactContextDisciplineSection(hasContextMode = false): string {
+  if (!hasContextMode) return "";
+  return `### Context Discipline (when ctx_* available)
+
+| Scenario | Tool |
+|----------|------|
+| Analysis / Aggregation / Counting | ctx_batch_execute / ctx_execute(_file) — NEVER raw read/grep for analysis |
+| Search | ctx_search FIRST (indexed KB) → grep/glob fallback (raw FS) |
+| Docs / Web | ctx_fetch_and_index -> ctx_search |
+| Compression | compress when ctx_stats > 40% or 10+ tool calls |
+
+Edits need prior read for LINE#ID — read→edit chain exempt. When in doubt, use ctx_*.`;
+}
+
+export function buildExploreDisciplineSection(hasContextMode = false, hasHeadroom = false): string {
+  if (!hasContextMode && !hasHeadroom) return "";
+  const parts: string[] = [];
+  if (hasContextMode) {
+    parts.push("Prefer ctx_search for indexed hits → grep/glob fallback for raw FS; use ctx_batch_execute / ctx_execute for multi-file analysis; use ctx_fetch_and_index for docs/web → ctx_search.");
+  }
+  if (hasHeadroom) {
+    parts.push("Use headroom_retrieve / headroom_search for compressed history — NEVER re-read full history.");
+  }
+  return `### Context Discipline (when available)\n\n${parts.join(" ")}`;
+}
+
 export function buildUltraworkSection(
   agents: AvailableAgent[],
   categories: AvailableCategory[],
