@@ -3,9 +3,53 @@ import { homedir } from "node:os"
 import { join } from "node:path"
 import type { CheckResult, DoctorCheck } from "../types"
 
-const OPECODE_CONFIG_PATH = join(homedir(), ".config", "opencode", "opencode.json")
+const OPENCODE_CONFIG_PATHS = [
+  join(homedir(), ".config", "opencode", "opencode.json"),
+  join(homedir(), ".config", "opencode", "opencode.jsonc"),
+]
+
+const AUTH_JSON_PATHS = [
+  join(homedir(), ".local", "share", "opencode", "auth.json"),
+  join(homedir(), ".config", "opencode", "auth.json"),
+]
 
 type ProviderStatus = { provider: string; configured: boolean; detail?: string }
+
+function stripJsonComments(text: string): string {
+  return text.replace(/\/\/.*$/gm, "").replace(/\/\*[\s\S]*?\*\//g, "")
+}
+
+function collectConfigText(): string {
+  let combined = ""
+  for (const p of OPENCODE_CONFIG_PATHS) {
+    if (!existsSync(p)) continue
+    try {
+      const raw = readFileSync(p, "utf-8")
+      combined += ` ${stripJsonComments(raw)}`
+    } catch {}
+  }
+  return combined.toLowerCase()
+}
+
+function collectAuthText(): string {
+  let combined = ""
+  for (const p of AUTH_JSON_PATHS) {
+    if (!existsSync(p)) continue
+    try {
+      const raw = readFileSync(p, "utf-8")
+      combined += ` ${raw}`
+    } catch {}
+  }
+  try {
+    const result = Bun.spawnSync(["opencode", "auth", "list", "--json"], { stdout: "pipe", stderr: "pipe" })
+    if (result.exitCode === 0) combined += ` ${result.stdout.toString()}`
+  } catch {}
+  return combined.toLowerCase()
+}
+
+function hasProvider(haystack: string, keywords: string[]): boolean {
+  return keywords.some((k) => haystack.includes(k))
+}
 
 function getProviderStatuses(): ProviderStatus[] {
   const results: ProviderStatus[] = [
@@ -14,30 +58,36 @@ function getProviderStatuses(): ProviderStatus[] {
     { provider: "Google", configured: false },
   ]
 
-  if (!existsSync(OPECODE_CONFIG_PATH)) {
-    return results.map((r) => ({ ...r, detail: "opencode.json not found" }))
-  }
+  const configText = collectConfigText()
+  const authText = collectAuthText()
+  const combinedAuthConfig = `${configText} ${authText}`
+  const hasAnyConfigFile = OPENCODE_CONFIG_PATHS.some(existsSync) || AUTH_JSON_PATHS.some(existsSync)
 
-  let config: Record<string, unknown>
-  try {
-    config = JSON.parse(readFileSync(OPECODE_CONFIG_PATH, "utf-8"))
-  } catch {
-    return results.map((r) => ({ ...r, detail: "opencode.json parse error" }))
-  }
-
-  const configStr = JSON.stringify(config).toLowerCase()
-
-  for (const r of results) {
-    const providerLower = r.provider.toLowerCase()
-    if (configStr.includes(providerLower)) {
-      r.configured = true
-      r.detail = "Provider found in opencode.json"
+  if (!hasAnyConfigFile && !combinedAuthConfig.trim()) {
+    if (process.env.ANTHROPIC_API_KEY || process.env.OPENAI_API_KEY || process.env.GOOGLE_API_KEY || process.env.GEMINI_API_KEY) {
     } else {
-      r.detail = "Provider not configured in opencode.json"
+      return results.map((r) => ({ ...r, detail: "No opencode config or auth storage found — run `opencode auth login`" }))
     }
   }
 
-  // Check environment variables as fallback
+  const providerChecks: Record<string, string[]> = {
+    Anthropic: ["anthropic", "claude"],
+    OpenAI: ["openai"],
+    Google: ["google", "gemini", "vertex"],
+  }
+
+  for (const r of results) {
+    const keywords = providerChecks[r.provider] ?? [r.provider.toLowerCase()]
+    const inConfig = hasProvider(configText, keywords)
+    const inAuth = hasProvider(authText, keywords)
+    if (inConfig || inAuth) {
+      r.configured = true
+      r.detail = inAuth ? "Provider found in auth storage" : "Provider found in opencode config"
+    } else {
+      r.detail = "Provider not configured — run `opencode auth login` or set env var"
+    }
+  }
+
   if (process.env.ANTHROPIC_API_KEY) {
     results[0].configured = true
     results[0].detail = "ANTHROPIC_API_KEY env var set"
@@ -67,9 +117,7 @@ export const authCheck: DoctorCheck = {
         name: "authentication",
         status: "fail",
         message: "No API providers configured",
-        detail: providers
-          .map((p) => `  ${p.provider}: ${p.detail ?? "not configured"}`)
-          .join("\n"),
+        detail: providers.map((p) => `  ${p.provider}: ${p.detail ?? "not configured"}`).join("\n"),
       }
     }
 

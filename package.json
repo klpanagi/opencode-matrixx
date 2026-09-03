@@ -1,6 +1,6 @@
 {
   "name": "opencode-matrixx",
-  "version": "2.5.0",
+  "version": "2.5.1",
   "description": "The Best AI Agent Harness - Batteries-Included OpenCode Plugin with Multi-Model Orchestration, Parallel Background Agents, and Crafted LSP/AST Tools",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
@@ -22,7 +22,7 @@
   "scripts": {
     "build": "bun run build:plugin && bun run build:cli && tsc --emitDeclarationOnly && bun run build:schema",
     "build:plugin": "bun build src/index.ts --outdir dist --target bun --format esm --external @ast-grep/napi --external \"opencode/*\" --external \"@opencode-ai/core/*\"",
-    "build:cli": "bun build src/cli/index.ts --outfile dist/cli.js --target bun --format esm",
+    "build:cli": "bun build src/cli/index.ts --outfile dist/cli.js --target bun --format esm && chmod +x dist/cli.js",
     "build:schema": "bun run script/build-schema.ts",
     "clean": "rm -rf dist",
     "prepublishOnly": "bun run clean && bun run build",

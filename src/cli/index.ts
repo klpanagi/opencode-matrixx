@@ -9,10 +9,32 @@
  *   help      - Display help information
  */
 
+import { readFileSync } from "node:fs"
+import { dirname, join } from "node:path"
+import { fileURLToPath } from "node:url"
 import { executeDoctor } from "./doctor"
 import { executeInstall } from "./install"
 
-const VERSION = "2.4.0"
+function getVersion(): string {
+  try {
+    const thisDir = dirname(fileURLToPath(import.meta.url))
+    const candidates = [
+      join(thisDir, "../../package.json"),
+      join(thisDir, "../package.json"),
+      "package.json",
+    ]
+    for (const p of candidates) {
+      try {
+        const raw = readFileSync(p, "utf-8")
+        const pkg = JSON.parse(raw)
+        if (pkg.version && typeof pkg.version === "string") return pkg.version
+      } catch {}
+    }
+  } catch {}
+  return "2.5.1"
+}
+
+const VERSION = getVersion()
 
 function printHelp(): void {
   console.log(`
@@ -31,6 +53,7 @@ Options:
   --json        (doctor) Output results as JSON
   --category    (doctor) Check specific category only
   --no-tui      (install) Run in non-interactive mode (CI/CD)
+  --local       (install) Use local repo file:// path (dev only)
   --verbose     (install) Display detailed logs
 
 Doctor categories:
@@ -57,6 +80,7 @@ interface ParsedArgs {
   category?: string
   noTui: boolean
   verbose: boolean
+  local: boolean
   claude?: "yes" | "no" | "max20"
   openai?: "yes" | "no"
   gemini?: "yes" | "no"
@@ -73,10 +97,11 @@ function parseArgs(argv: string[]): ParsedArgs {
     json: false,
     noTui: false,
     verbose: false,
+    local: false,
     extra: [],
   }
 
-  let args = argv.slice(2) // skip bun + script
+  let args = argv.slice(2)
   if (args.length === 0) {
     result.help = true
     return result
@@ -93,6 +118,8 @@ function parseArgs(argv: string[]): ParsedArgs {
       result.json = true
     } else if (a === "--no-tui") {
       result.noTui = true
+    } else if (a === "--local") {
+      result.local = true
     } else if (a === "--verbose") {
       result.verbose = true
     } else if (a.startsWith("--category=")) {
@@ -151,6 +178,7 @@ async function main(): Promise<void> {
     const output = await executeInstall({
       noTui: args.noTui,
       verbose: args.verbose,
+      local: args.local,
       claude: args.claude,
       openai: args.openai,
       gemini: args.gemini,
@@ -170,7 +198,6 @@ async function main(): Promise<void> {
 export { main }
 export default main
 
-// Allow direct execution
 if (import.meta.main) {
   main().catch((err) => {
     console.error("Fatal error:", err)

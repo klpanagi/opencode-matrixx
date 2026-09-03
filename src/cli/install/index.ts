@@ -11,15 +11,28 @@ export interface InstallOptions {
   opencodeZen?: "yes" | "no"
   zaiCodingPlan?: "yes" | "no"
   verbose?: boolean
+  local?: boolean
 }
 
 function getOpenCodeConfigPath(): string {
   const configDir = join(homedir(), ".config", "opencode")
   const jsonPath = join(configDir, "opencode.json")
   const jsoncPath = join(configDir, "opencode.jsonc")
-
   if (existsSync(jsoncPath)) return jsoncPath
   return jsonPath
+}
+
+function stripJsonComments(text: string): string {
+  return text.replace(/\/\/.*$/gm, "").replace(/\/\*[\s\S]*?\*\//g, "")
+}
+
+function parseOpenCodeConfig(content: string): { plugin?: string[] } {
+  try {
+    const stripped = stripJsonComments(content)
+    return JSON.parse(stripped)
+  } catch {
+    return {}
+  }
 }
 
 function hasExistingPluginRegistration(configPath: string): boolean {
@@ -32,21 +45,17 @@ function hasExistingPluginRegistration(configPath: string): boolean {
   }
 }
 
-function generatePluginEntry(absolutePath: string): string {
-  // Try common install locations
-  const possibleLocations = [
-    absolutePath,
-    join(absolutePath, "dist", "index.js"),
-    join(homedir(), ".bun", "install", "global", "node_modules", "opencode-matrixx", "dist", "index.js"),
-  ]
+function isLocalRepoCheckout(dir: string): boolean {
+  return existsSync(join(dir, "src", "index.ts")) && existsSync(join(dir, "package.json"))
+}
 
-  for (const loc of possibleLocations) {
-    if (existsSync(loc)) {
-      return `file://${loc}`
-    }
+function generatePluginEntry(absolutePath: string, forceLocal?: boolean): string {
+  const looksLocal = forceLocal || isLocalRepoCheckout(absolutePath)
+  if (looksLocal) {
+    const distEntry = join(absolutePath, "dist", "index.js")
+    if (existsSync(distEntry)) return `file://${distEntry}`
+    if (existsSync(absolutePath)) return `file://${absolutePath}`
   }
-
-  // Fallback: assume bunx-able
   return "opencode-matrixx"
 }
 
@@ -54,26 +63,22 @@ export async function executeInstall(options: InstallOptions): Promise<string> {
   const configDir = join(homedir(), ".config", "opencode")
   const configPath = getOpenCodeConfigPath()
 
-  // Ensure config directory exists
   if (!existsSync(configDir)) {
     mkdirSync(configDir, { recursive: true })
   }
 
-  // Check if already registered
   if (hasExistingPluginRegistration(configPath)) {
     return `✓ Plugin already registered in ${configPath}`
   }
 
-  // Generate plugin entry
   const cwd = process.cwd()
-  const pluginEntry = generatePluginEntry(cwd)
+  const pluginEntry = generatePluginEntry(cwd, options.local)
 
-  // Create or update opencode.json
   let config: { plugin?: string[] }
   if (existsSync(configPath)) {
     try {
       const content = readFileSync(configPath, "utf-8")
-      config = JSON.parse(content)
+      config = parseOpenCodeConfig(content)
     } catch {
       config = {}
     }
@@ -84,11 +89,12 @@ export async function executeInstall(options: InstallOptions): Promise<string> {
   if (!config.plugin) {
     config.plugin = []
   }
-  config.plugin.push(pluginEntry)
+  if (!config.plugin.includes(pluginEntry)) {
+    config.plugin.push(pluginEntry)
+  }
 
   writeFileSync(configPath, `${JSON.stringify(config, null, 2)}\n`)
 
-  // Build subscription flags info
   const flags: string[] = []
   if (options.claude) flags.push(`Claude: ${options.claude}`)
   if (options.openai) flags.push(`OpenAI: ${options.openai}`)
@@ -119,6 +125,11 @@ export async function executeInstall(options: InstallOptions): Promise<string> {
   parts.push("  Next steps:")
   parts.push("    1. Configure authentication via `opencode auth login`")
   parts.push("    2. Verify with `bunx opencode-matrixx doctor`")
+  if (pluginEntry === "opencode-matrixx") {
+    parts.push("    3. Restart OpenCode to load the plugin")
+  } else {
+    parts.push("    3. Run `bun run build` in the repo, then restart OpenCode")
+  }
   parts.push("")
 
   return parts.join("\n")

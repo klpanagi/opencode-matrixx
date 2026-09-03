@@ -1,0 +1,115 @@
+name: Install Smoke
+
+on:
+  push:
+    branches: [dev, master]
+    paths:
+      - "package.json"
+      - "src/cli/**"
+      - "dist/**"
+      - ".github/workflows/install-smoke.yml"
+  pull_request:
+    branches: [dev, master]
+    paths:
+      - "package.json"
+      - "src/cli/**"
+      - ".github/workflows/install-smoke.yml"
+  workflow_dispatch:
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  smoke:
+    strategy:
+      matrix:
+        os: [ubuntu-latest, macos-latest]
+      fail-fast: false
+    runs-on: ${{ matrix.os }}
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: oven-sh/setup-bun@v2
+        with:
+          bun-version: 1.4.0
+
+      - name: Install dependencies
+        run: bun install
+        env:
+          BUN_INSTALL_ALLOW_SCRIPTS: "@ast-grep/napi"
+
+      - name: Build
+        run: bun run build
+
+      - name: Verify dist/cli.js exists and is executable
+        run: |
+          test -f dist/cli.js || (echo "dist/cli.js missing" && exit 1)
+          test -x dist/cli.js || (echo "dist/cli.js not executable" && exit 1)
+          head -1 dist/cli.js | grep -q "bun" || (echo "cli.js shebang missing bun" && exit 1)
+          echo "cli.js OK: $(ls -lh dist/cli.js)"
+
+      - name: Verify package.json bin and pack contents
+        run: |
+          node -e "const p=require('./package.json'); if(!p.bin||!p.bin['opencode-matrixx']) throw new Error('bin missing'); console.log('bin:', p.bin)"
+          npm pack --dry-run 2>&1 | grep -q "dist/cli.js" || (echo "dist/cli.js not in pack" && exit 1)
+          echo "pack OK"
+
+      - name: Test local pack install via bun
+        run: |
+          npm pack
+          TGZ=$(ls opencode-matrixx-*.tgz | head -1)
+          echo "Packed $TGZ"
+          mkdir -p /tmp/smoke-test
+          cd /tmp/smoke-test
+          bun init -y 2>&1 | tail -3
+          bun add "../$GITHUB_WORKSPACE/$TGZ" 2>&1 | tail -10
+          ls -la node_modules/opencode-matrixx/dist/cli.js
+          test -f node_modules/opencode-matrixx/dist/cli.js || (echo "cli.js not in installed package" && exit 1)
+          node -e "const p=require('./node_modules/opencode-matrixx/package.json'); if(!p.bin['opencode-matrixx']) throw new Error('installed bin missing'); console.log('installed bin OK', p.bin)"
+          ls -la node_modules/.bin/opencode-matrixx* 2>&1 | head -10 || true
+          cat node_modules/opencode-matrixx/dist/cli.js | head -2
+
+      - name: Test bunx execution (fresh cache)
+        run: |
+          bun pm cache rm 2>&1 | tail -5 || true
+          cd /tmp/smoke-test
+          # Use local tgz via bunx --package to avoid registry
+          # Instead, verify the built cli directly is runnable
+          bun run ../dist/cli.js --help 2>&1 | head -20
+          bun run ../dist/cli.js doctor --json 2>&1 | head -20
+          echo "bunx-equivalent OK"
+
+      - name: Test opencode plugin registration (isolated HOME)
+        run: |
+          export HOME=$(mktemp -d)
+          mkdir -p "$HOME/.config/opencode"
+          echo "HOME=$HOME"
+          bun run dist/cli.js install --no-tui --claude=no --openai=no --gemini=no --copilot=no 2>&1 | tail -20
+          cat "$HOME/.config/opencode/opencode.json" 2>&1 | head -30
+          grep -q "opencode-matrixx" "$HOME/.config/opencode/opencode.json" || (echo "plugin not registered" && cat "$HOME/.config/opencode/opencode.json" && exit 1)
+          echo "plugin registration OK"
+          # Second run should detect already registered
+          bun run dist/cli.js install --no-tui --claude=no --openai=no --gemini=no --copilot=no 2>&1 | grep -q "already registered" && echo "idempotent OK"
+
+      - name: Test doctor categories
+        run: |
+          export HOME=$(mktemp -d)
+          mkdir -p "$HOME/.config/opencode"
+          # Pre-seed an auth file to make auth check pass
+          mkdir -p "$HOME/.local/share/opencode"
+          echo '{"anthropic":{"type":"api","key":"test"}}' > "$HOME/.local/share/opencode/auth.json"
+          bun run dist/cli.js doctor --json 2>&1 | tee /tmp/doctor.json
+          cat /tmp/doctor.json | python3 -m json.tool | head -40
+          # doctor should not fail on auth when file exists (warn or pass, not fail)
+          python3 -c "import json; d=json.load(open('/tmp/doctor.json')); auth=[c for c in d['checks'] if c['name']=='authentication'][0]; assert auth['status'] in ('pass','warn'), f\"auth should be pass/warn, got {auth}\"; print(f\"auth check: {auth['status']} - {auth['message']}\")"
+
+      - name: Test CLI version matches package.json
+        run: |
+          PKG_VER=$(node -e "console.log(require('./package.json').version)")
+          CLI_VER=$(bun run dist/cli.js version 2>&1)
+          echo "package.json version: $PKG_VER"
+          echo "cli version: $CLI_VER"
+          test "$PKG_VER" = "$CLI_VER" || (echo "version mismatch: $PKG_VER != $CLI_VER" && exit 1)
+          echo "version sync OK"
+

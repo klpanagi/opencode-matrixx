@@ -61,6 +61,12 @@ That's it. Parallel agents, background tasks, deep exploration, relentless execu
 
 ## Quick Start
 
+### Prerequisites
+
+- **Bun** 1.4.0 — `curl -fsSL https://bun.sh/install | bash`
+- **OpenCode** ≥ 1.0.150 — https://opencode.ai/docs
+- Verify: `bun --version && opencode --version`
+
 ### Install (Recommended)
 
 ```bash
@@ -77,7 +83,11 @@ bunx opencode-matrixx install --no-tui --claude=yes --openai=yes --gemini=no --c
 
 ```bash
 bunx opencode-matrixx doctor
+# No "fail" = good. "warn" for missing optional providers is expected.
+# If doctor reports auth failures after login, update to latest: bunx opencode-matrixx@latest doctor
 ```
+
+Troubleshooting installation issues? See [Installation guide →](docs/guide/installation.md#troubleshooting).
 
 ### Configure
 
@@ -88,6 +98,13 @@ Create `matrixx.jsonc` in your project root:
   "$schema": "https://raw.githubusercontent.com/klpanagi/opencode-matrixx/refs/heads/dev/dist/matrixx.schema.json",
   "agents": {}
 }
+```
+
+### Authenticate
+
+```bash
+opencode auth login   # follow prompts for each provider you have
+bunx opencode-matrixx doctor --category authentication  # verify
 ```
 
 ### Use
