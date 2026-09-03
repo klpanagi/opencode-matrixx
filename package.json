@@ -101,5 +101,9 @@
     "@ast-grep/cli",
     "@ast-grep/napi",
     "@code-yeongyu/comment-checker"
-  ]
+  ],
+  "publishConfig": {
+    "access": "public",
+    "provenance": true
+  }
 }
