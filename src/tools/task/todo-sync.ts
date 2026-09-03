@@ -73,76 +73,88 @@ export function syncTaskToTodo(task: Task): TodoInfo | null {
   };
 }
 
+let cachedWriter: TodoWriter | null | undefined
+
 async function resolveTodoWriter(): Promise<TodoWriter | null> {
-  const loaders = ["opencode/session/todo", "@opencode-ai/core/session/todo"];
+  if (cachedWriter !== undefined) return cachedWriter
+  const loaders = ["opencode/session/todo", "@opencode-ai/core/session/todo"]
   for (const loader of loaders) {
     try {
-      const mod = await import(loader);
-      const update = (mod as { Todo?: { update?: unknown } }).Todo?.update;
+      const mod = await import(loader)
+      const update = (mod as { Todo?: { update?: unknown } }).Todo?.update
       if (typeof update === "function") {
-        return update as TodoWriter;
+        cachedWriter = update as TodoWriter
+        return cachedWriter
       }
-    } catch (err) {
-      log("[todo-sync] Failed to resolve Todo.update", { loader, error: String(err) });
+    } catch {
     }
   }
-  return null;
+  cachedWriter = null
+  return null
 }
 
 function getOpencodeDbPath(): string | null {
-  const candidates: string[] = [];
+  const candidates: string[] = []
   if (process.env.XDG_DATA_HOME) {
-    candidates.push(join(process.env.XDG_DATA_HOME, "opencode", "opencode.db"));
+    candidates.push(join(process.env.XDG_DATA_HOME, "opencode", "opencode.db"))
   }
-  candidates.push(join(homedir(), ".local", "share", "opencode", "opencode.db"));
-  candidates.push(join(homedir(), ".config", "opencode", "opencode.db"));
+  candidates.push(join(homedir(), ".local", "share", "opencode", "opencode.db"))
+  candidates.push(join(homedir(), ".config", "opencode", "opencode.db"))
   for (const p of candidates) {
-    if (existsSync(p)) return p;
+    if (existsSync(p)) return p
   }
-  return candidates[1] ?? null;
+  return null
 }
 
 async function directDbWrite(sessionID: string, todos: TodoInfo[]): Promise<boolean> {
-  const dbPath = getOpencodeDbPath();
+  const dbPath = getOpencodeDbPath()
   if (!dbPath || !existsSync(dbPath)) {
-    log("[todo-sync] directDbWrite no db", { dbPath });
-    return false;
+    log("[todo-sync] directDbWrite no db", { dbPath })
+    return false
   }
-  try {
-    const mod = await import("bun:sqlite");
-    const Database = (mod as unknown as { Database: new (path: string) => unknown }).Database as new (path: string) => {
-      exec: (sql: string) => unknown;
-      prepare: (sql: string) => { run: (...args: unknown[]) => unknown }
-      close: () => void
-    };
-    const db = new Database(dbPath);
-    const now = Date.now();
+  for (let attempt = 0; attempt < 3; attempt++) {
     try {
-      db.exec("BEGIN IMMEDIATE");
-      db.prepare("DELETE FROM todo WHERE session_id = ?").run(sessionID);
-      const stmt = db.prepare(
-        "INSERT INTO todo (session_id, content, status, priority, position, time_created, time_updated) VALUES (?, ?, ?, ?, ?, ?, ?)",
-      );
-      todos.forEach((t, idx) => {
-        stmt.run(sessionID, t.content, t.status, t.priority ?? "medium", idx, now, now);
-      });
-      db.exec("COMMIT");
-    } catch (inner) {
-      try {
-        db.exec("ROLLBACK");
-      } catch {
-        // ignore
+      const mod = await import("bun:sqlite")
+      const Database = (mod as unknown as { Database: new (path: string) => unknown }).Database as new (path: string) => {
+        exec: (sql: string) => unknown
+        prepare: (sql: string) => { run: (...args: unknown[]) => unknown }
+        close: () => void
       }
-      throw inner;
-    } finally {
-      db.close();
+      const db = new Database(dbPath)
+      const now = Date.now()
+      try {
+        db.exec("BEGIN IMMEDIATE")
+        db.prepare("DELETE FROM todo WHERE session_id = ?").run(sessionID)
+        const stmt = db.prepare(
+          "INSERT INTO todo (session_id, content, status, priority, position, time_created, time_updated) VALUES (?, ?, ?, ?, ?, ?, ?)",
+        )
+        todos.forEach((t, idx) => {
+          stmt.run(sessionID, t.content, t.status, t.priority ?? "medium", idx, now, now)
+        })
+        db.exec("COMMIT")
+      } catch (inner) {
+        try {
+          db.exec("ROLLBACK")
+        } catch {
+        }
+        throw inner
+      } finally {
+        db.close()
+      }
+      log("[todo-sync] directDbWrite ok", { sessionID, count: todos.length })
+      return true
+    } catch (err) {
+      const msg = String(err)
+      const busy = msg.includes("BUSY") || msg.includes("busy") || msg.includes("locked")
+      if (busy && attempt < 2) {
+        await new Promise<void>((r) => setTimeout(r, 25 * (attempt + 1)))
+        continue
+      }
+      log("[todo-sync] directDbWrite failed", { error: msg })
+      return false
     }
-    log("[todo-sync] directDbWrite ok", { sessionID, count: todos.length });
-    return true;
-  } catch (err) {
-    log("[todo-sync] directDbWrite failed", { error: String(err) });
-    return false;
   }
+  return false
 }
 
 async function writeTodosWithFallback(

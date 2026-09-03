@@ -3,11 +3,11 @@ import type { PluginInput } from "@opencode-ai/plugin";
 import { type ToolDefinition, tool } from "@opencode-ai/plugin/tool";
 import type { MatrixxConfig } from "../../config/schema";
 import {
-  acquireLock,
+  acquireLockWithRetry,
   generateTaskId,
   getTaskDir,
   writeJsonAtomic,
-} from "../../features/task-storage/storage";
+} from "../../features/task-storage/storage"
 import { syncTaskTodoUpdate } from "./todo-sync";
 import type { TaskObject } from "./types";
 import { TaskCreateInputSchema, TaskObjectSchema } from "./types";
@@ -63,12 +63,12 @@ async function handleCreate(
   context: { sessionID: string },
 ): Promise<string> {
   try {
-    const validatedArgs = TaskCreateInputSchema.parse(args);
-    const taskDir = getTaskDir(config);
-    const lock = acquireLock(taskDir);
+    const validatedArgs = TaskCreateInputSchema.parse(args)
+    const taskDir = getTaskDir(config)
+    const lock = await acquireLockWithRetry(taskDir)
 
     if (!lock.acquired) {
-      return JSON.stringify({ error: "task_lock_unavailable" });
+      return JSON.stringify({ error: "task_lock_unavailable" })
     }
 
     try {
