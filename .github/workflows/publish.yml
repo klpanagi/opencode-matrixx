@@ -167,7 +167,7 @@ jobs:
   publish-main:
     runs-on: ubuntu-latest
     needs: [test, typecheck]
-    if: github.repository == 'klpanagi/opencode-matrixx'
+    if: github.repository == 'klpanagi/opencode-matrixx' && github.actor == 'klpanagi'
     outputs:
       version: ${{ steps.version.outputs.version }}
       dist_tag: ${{ steps.version.outputs.dist_tag }}
@@ -248,13 +248,7 @@ jobs:
           if [ -n "${{ steps.version.outputs.dist_tag }}" ]; then
             TAG_ARG="--tag ${{ steps.version.outputs.dist_tag }}"
           fi
-          # Use provenance via OIDC when NODE_AUTH_TOKEN is not a classic token;
-          # fallback without --provenance uses classic token auth. Keep both
-          # supported via conditional: npm will auto-detect OIDC when id-token
-          # is available, --provenance flag enables it. No duplicate env needed.
-          npm publish --access public $TAG_ARG
-        env:
-          NODE_AUTH_TOKEN: ${{ secrets.NODE_AUTH_TOKEN }}
+          npm publish --access public --provenance $TAG_ARG
 
       - name: Git commit and tag
         if: steps.check.outputs.skip != 'true'
@@ -273,6 +267,7 @@ jobs:
   release:
     runs-on: ubuntu-latest
     needs: publish-main
+    if: github.repository == 'klpanagi/opencode-matrixx' && github.actor == 'klpanagi'
     steps:
       - uses: actions/checkout@v4
         with:
