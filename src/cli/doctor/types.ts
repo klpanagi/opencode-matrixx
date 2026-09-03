@@ -13,6 +13,7 @@ export type CheckCategory =
   | "authentication"
   | "dependencies"
   | "tools"
+  | "integrations"
   | "updates"
 
 export interface DoctorCheck {
