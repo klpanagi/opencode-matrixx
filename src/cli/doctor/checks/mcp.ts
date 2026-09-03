@@ -1,11 +1,10 @@
 import type { CheckResult, DoctorCheck } from "../types"
 
 function checkUvxVersion(): string | null {
-  if (!Bun.which("uvx")) return null
   try {
     const r = Bun.spawnSync(["uvx", "--version"], { stdout: "pipe", stderr: "pipe" })
     if (r.exitCode === 0) return r.stdout.toString().trim().split("\n")[0]?.replace(/^uvx\s+/i, "") || "unknown"
-  } catch { void 0 }
+  } catch {}
   return null
 }
 
