@@ -15,8 +15,8 @@ function loadTmuxEnabled(): boolean | null {
         const c = readFileSync(p, "utf-8")
         const parsed = parseJsoncSafe<Record<string, unknown>>(c)
         if (!parsed.data || parsed.errors.length > 0) continue
-        const tmux = parsed.data["tmux"] as Record<string, unknown> | undefined
-        if (tmux && typeof tmux["enabled"] === "boolean") return tmux["enabled"] as boolean
+        const tmux = parsed.data.tmux as Record<string, unknown> | undefined
+        if (tmux && typeof tmux.enabled === "boolean") return tmux.enabled as boolean
       } catch {}
     }
   }

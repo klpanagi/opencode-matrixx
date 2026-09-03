@@ -15,8 +15,8 @@ function loadRtkConfig(): { enabled: boolean; binary_path?: string } | null {
         const c = readFileSync(p, "utf-8")
         const parsed = parseJsoncSafe<Record<string, unknown>>(c)
         if (!parsed.data || parsed.errors.length > 0) continue
-        const rtk = parsed.data["rtk"] as Record<string, unknown> | undefined
-        if (rtk && typeof rtk["enabled"] === "boolean") return { enabled: rtk["enabled"] as boolean, binary_path: rtk["binary_path"] as string | undefined }
+        const rtk = parsed.data.rtk as Record<string, unknown> | undefined
+        if (rtk && typeof rtk.enabled === "boolean") return { enabled: rtk.enabled as boolean, binary_path: rtk.binary_path as string | undefined }
       } catch {}
     }
   }
@@ -28,7 +28,7 @@ export const rtkCheck: DoctorCheck = {
   category: "integrations",
   check: (): CheckResult => {
     const cfg = loadRtkConfig()
-    if (!cfg || !cfg.enabled) {
+    if (!cfg?.enabled) {
       return {
         name: "rtk-integration",
         status: "pass",

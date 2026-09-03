@@ -15,8 +15,8 @@ function loadHeadroomConfig(): { enabled: boolean; proxyUrl?: string } | null {
         const c = readFileSync(p, "utf-8")
         const parsed = parseJsoncSafe<Record<string, unknown>>(c)
         if (!parsed.data || parsed.errors.length > 0) continue
-        const hr = parsed.data["headroom"] as Record<string, unknown> | undefined
-        if (hr && typeof hr["enabled"] === "boolean") return { enabled: hr["enabled"] as boolean, proxyUrl: hr["proxyUrl"] as string | undefined }
+        const hr = parsed.data.headroom as Record<string, unknown> | undefined
+        if (hr && typeof hr.enabled === "boolean") return { enabled: hr.enabled as boolean, proxyUrl: hr.proxyUrl as string | undefined }
       } catch {}
     }
   }
@@ -28,7 +28,7 @@ export const headroomCheck: DoctorCheck = {
   category: "integrations",
   check: (): CheckResult => {
     const cfg = loadHeadroomConfig()
-    if (!cfg || !cfg.enabled) {
+    if (!cfg?.enabled) {
       return {
         name: "headroom-integration",
         status: "pass",
@@ -48,7 +48,7 @@ export const headroomCheck: DoctorCheck = {
           name: "headroom-integration",
           status: "warn",
           message: "Headroom enabled but headroom binary not found",
-          detail: "Install via uv tool install headroom-ai[all] or pipx install headroom-ai[all]\nProxy expected at " + (cfg.proxyUrl ?? "http://127.0.0.1:8787"),
+          detail: `Install via uv tool install headroom-ai[all] or pipx install headroom-ai[all]\nProxy expected at ${cfg.proxyUrl ?? "http://127.0.0.1:8787"}`,
         }
       }
       version = which

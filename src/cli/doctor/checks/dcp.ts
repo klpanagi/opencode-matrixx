@@ -15,8 +15,8 @@ function loadDcpEnabled(): boolean | null {
         const c = readFileSync(p, "utf-8")
         const parsed = parseJsoncSafe<Record<string, unknown>>(c)
         if (!parsed.data || parsed.errors.length > 0) continue
-        const dcp = parsed.data["dcp"] as Record<string, unknown> | undefined
-        if (dcp && typeof dcp["enabled"] === "boolean") return dcp["enabled"] as boolean
+        const dcp = parsed.data.dcp as Record<string, unknown> | undefined
+        if (dcp && typeof dcp.enabled === "boolean") return dcp.enabled as boolean
       } catch {}
     }
   }

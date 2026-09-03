@@ -14,7 +14,7 @@ function hasContextModePlugin(): boolean {
       const c = readFileSync(p, "utf-8")
       const parsed = parseJsoncSafe<Record<string, unknown>>(c)
       if (!parsed.data || parsed.errors.length > 0) continue
-      const plugin = parsed.data["plugin"]
+      const plugin = parsed.data.plugin
       if (!Array.isArray(plugin)) continue
       for (const entry of plugin) {
         if (typeof entry !== "string") continue
