@@ -31,7 +31,7 @@ function getVersion(): string {
       } catch {}
     }
   } catch {}
-  return "2.5.1"
+  return "2.6.0"
 }
 
 const VERSION = getVersion()
