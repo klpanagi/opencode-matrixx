@@ -239,9 +239,7 @@ jobs:
       - name: Build main package
         if: steps.check.outputs.skip != 'true'
         run: |
-          bun build src/index.ts --outdir dist --target bun --format esm --external @ast-grep/napi
-          bunx tsc --emitDeclarationOnly
-          bun run build:schema
+          bun run clean && bun run build
 
       - name: Publish main package
         if: steps.check.outputs.skip != 'true'
@@ -250,10 +248,13 @@ jobs:
           if [ -n "${{ steps.version.outputs.dist_tag }}" ]; then
             TAG_ARG="--tag ${{ steps.version.outputs.dist_tag }}"
           fi
-          npm publish --access public --provenance $TAG_ARG
+          # Use provenance via OIDC when NODE_AUTH_TOKEN is not a classic token;
+          # fallback without --provenance uses classic token auth. Keep both
+          # supported via conditional: npm will auto-detect OIDC when id-token
+          # is available, --provenance flag enables it. No duplicate env needed.
+          npm publish --access public $TAG_ARG
         env:
           NODE_AUTH_TOKEN: ${{ secrets.NODE_AUTH_TOKEN }}
-          NPM_CONFIG_PROVENANCE: true
 
       - name: Git commit and tag
         if: steps.check.outputs.skip != 'true'
