@@ -1,22 +1,19 @@
 import { afterAll, beforeEach, describe, expect, mock, test } from "bun:test"
 
-// ---------------------------------------------------------------------------
-// Mock Bun.spawnSync (default: fail)
-// ---------------------------------------------------------------------------
 const origSpawnSync = Bun.spawnSync
 
 let mockResults: Array<{ exitCode: number; stdout: string; stderr: string }> = []
 
 beforeEach(() => {
   mockResults = []
-  Bun.spawnSync = mock((_cmd: string[], _opts?: any) => {
+  Bun.spawnSync = mock((_cmd: string[], _opts?: unknown) => {
     const result = mockResults.shift() ?? { exitCode: 1, stdout: "", stderr: "" }
     return {
       exitCode: result.exitCode,
       stdout: Buffer.from(result.stdout),
       stderr: Buffer.from(result.stderr),
     }
-  }) as any
+  }) as unknown as typeof Bun.spawnSync
 })
 
 afterAll(() => {
@@ -24,33 +21,35 @@ afterAll(() => {
   mock.restore()
 })
 
-import { runDoctor, executeDoctor } from "../../../src/cli/doctor"
+import { executeDoctor, runDoctor } from "../../../src/cli/doctor"
 import type { DoctorReport } from "../../../src/cli/doctor/types"
 
 describe("runDoctor", () => {
-  test("returns a report structure with 5 checks", async () => {
+  test("returns a report structure with 12 checks", async () => {
     const report = await runDoctor()
     expect(report).toHaveProperty("timestamp")
     expect(report).toHaveProperty("checks")
     expect(report).toHaveProperty("summary")
     expect(Array.isArray(report.checks)).toBe(true)
-    expect(report.checks.length).toBe(6)
+    expect(report.checks.length).toBe(12)
   })
 
   test("report has correct summary totals", async () => {
     const report = await runDoctor()
     expect(report.summary.total).toBe(report.checks.length)
-    expect(report.summary.passed + report.summary.warnings + report.summary.failed).toBe(
-      report.summary.total,
-    )
+    expect(report.summary.passed + report.summary.warnings + report.summary.failed).toBe(report.summary.total)
   })
 
   test("category filter returns subset with correct category", async () => {
     const report = await runDoctor({ category: "configuration" })
     expect(report.checks.length).toBeGreaterThanOrEqual(1)
-    for (const c of report.checks) {
-      expect(c.category).toBe("configuration")
-    }
+    for (const c of report.checks) expect(c.category).toBe("configuration")
+  })
+
+  test("integrations category filter returns 6 checks", async () => {
+    const report = await runDoctor({ category: "integrations" })
+    expect(report.checks.length).toBe(6)
+    for (const c of report.checks) expect(c.category).toBe("integrations")
   })
 
   test("category filter with unknown category returns empty", async () => {
@@ -62,8 +61,7 @@ describe("runDoctor", () => {
   test("handles check exceptions gracefully", async () => {
     Bun.spawnSync = mock(() => {
       throw new Error("unexpected error")
-    }) as any
-
+    }) as unknown as typeof Bun.spawnSync
     const report = await runDoctor()
     const failedChecks = report.checks.filter((c) => c.status === "fail")
     expect(failedChecks.length).toBeGreaterThan(0)

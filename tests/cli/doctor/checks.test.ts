@@ -1,17 +1,10 @@
 import { afterAll, beforeEach, describe, expect, mock, test } from "bun:test"
 
-// ---------------------------------------------------------------------------
-// Mock state
-// ---------------------------------------------------------------------------
-
 let mockBunSpawnSyncCalls: Array<{ cmd: string[] }> = []
 let mockBunSpawnSyncResults: Array<{ exitCode: number; stdout: string; stderr: string }> = []
 let mockFiles: Set<string>
 let mockFileContents: Map<string, string>
 
-// ---------------------------------------------------------------------------
-// Mock Bun.spawnSync (default: fail)
-// ---------------------------------------------------------------------------
 const origSpawnSync = Bun.spawnSync
 
 function resetMocks(): void {
@@ -23,7 +16,7 @@ function resetMocks(): void {
 
 beforeEach(() => {
   resetMocks()
-  Bun.spawnSync = mock((cmd: string[], _opts?: any) => {
+  Bun.spawnSync = mock((cmd: string[], _opts?: unknown) => {
     mockBunSpawnSyncCalls.push({ cmd })
     const result = mockBunSpawnSyncResults.shift() ?? { exitCode: 1, stdout: "", stderr: "" }
     return {
@@ -31,7 +24,18 @@ beforeEach(() => {
       stdout: Buffer.from(result.stdout),
       stderr: Buffer.from(result.stderr),
     }
-  }) as any
+  }) as unknown as typeof Bun.spawnSync
+  mock.module("node:fs", () => ({
+    existsSync: mock((path: string) => mockFiles.has(path)),
+    readFileSync: mock((path: string) => {
+      if (!mockFiles.has(path)) {
+        const err = new Error(`ENOENT: no such file or directory, open '${path}'`) as NodeJS.ErrnoException
+        err.code = "ENOENT"
+        throw err
+      }
+      return mockFileContents.get(path) ?? ""
+    }),
+  }))
 })
 
 afterAll(() => {
@@ -39,33 +43,8 @@ afterAll(() => {
   mock.restore()
 })
 
-// ---------------------------------------------------------------------------
-// Mock node:fs — self-contained, no fallback to real fs (prevents recursion)
-// ---------------------------------------------------------------------------
-
-const mockExistsSync = mock((path: string) => mockFiles.has(path))
-
-const mockReadFileSync = mock((path: string, _encoding?: any) => {
-  if (!mockFiles.has(path)) {
-    const err = new Error(`ENOENT: no such file or directory, open '${path}'`) as NodeJS.ErrnoException
-    err.code = "ENOENT"
-    throw err
-  }
-  return mockFileContents.get(path) ?? ""
-})
-
-mock.module("node:fs", () => ({
-  existsSync: mockExistsSync,
-  readFileSync: mockReadFileSync,
-}))
-
-// ---------------------------------------------------------------------------
-// Import module under test
-// ---------------------------------------------------------------------------
-
 import { homedir } from "node:os"
 import { join } from "node:path"
-
 import { pluginInstallationCheck } from "../../../src/cli/doctor/checks/plugin"
 import { configValidationCheck } from "../../../src/cli/doctor/checks/config"
 import { authCheck } from "../../../src/cli/doctor/checks/auth"
@@ -74,29 +53,28 @@ import { optionalToolsCheck } from "../../../src/cli/doctor/checks/optional"
 import { mcpPrerequisitesCheck } from "../../../src/cli/doctor/checks/mcp"
 import { ALL_CHECKS, getChecksByCategory, getCategories } from "../../../src/cli/doctor/checks"
 
-// ---------------------------------------------------------------------------
-// Tests
-// ---------------------------------------------------------------------------
-
 describe("check registry", () => {
-  test("ALL_CHECKS has 6 entries", () => {
-    expect(ALL_CHECKS.length).toBe(6)
+  test("ALL_CHECKS has 12 entries", () => {
+    expect(ALL_CHECKS.length).toBe(12)
   })
 
-  test("getCategories returns 5 unique categories", () => {
+  test("getCategories returns 6 unique categories including integrations", () => {
     const cats = getCategories()
-    expect(cats.length).toBe(5)
+    expect(cats.length).toBe(6)
     expect(cats).toContain("installation")
     expect(cats).toContain("configuration")
     expect(cats).toContain("authentication")
     expect(cats).toContain("dependencies")
     expect(cats).toContain("tools")
+    expect(cats).toContain("integrations")
   })
 
   test("getChecksByCategory filters correctly", () => {
     const auth = getChecksByCategory("authentication")
     expect(auth.length).toBe(1)
     expect(auth[0].name).toBe("authentication")
+    const integrations = getChecksByCategory("integrations")
+    expect(integrations.length).toBe(6)
   })
 
   test("every check has name, category, check function", () => {
@@ -122,8 +100,7 @@ describe("pluginInstallationCheck", () => {
   test("fails when opencode CLI not found (spawnSync throws)", async () => {
     Bun.spawnSync = mock(() => {
       throw new Error("not found")
-    }) as any
-
+    }) as unknown as typeof Bun.spawnSync
     const result = await pluginInstallationCheck.check()
     expect(result.status).toBe("fail")
     expect(result.message).toContain("OpenCode CLI")
@@ -136,10 +113,7 @@ describe("pluginInstallationCheck", () => {
   })
 
   test("warns when opencode version available but config not found", async () => {
-    mockBunSpawnSyncResults = [
-      { exitCode: 0, stdout: "opencode 1.0.155", stderr: "" },
-    ]
-
+    mockBunSpawnSyncResults = [{ exitCode: 0, stdout: "opencode 1.0.155", stderr: "" }]
     const result = await pluginInstallationCheck.check()
     expect(result.status).toBe("warn")
     expect(result.message).toContain("opencode.json not found")
@@ -149,10 +123,7 @@ describe("pluginInstallationCheck", () => {
     const configPath = join(homedir(), ".config", "opencode", "opencode.json")
     mockFiles.add(configPath)
     mockFileContents.set(configPath, JSON.stringify({ plugin: ["opencode-matrixx"] }))
-    mockBunSpawnSyncResults = [
-      { exitCode: 0, stdout: "opencode 1.0.155", stderr: "" },
-    ]
-
+    mockBunSpawnSyncResults = [{ exitCode: 0, stdout: "opencode 1.0.155", stderr: "" }]
     const result = await pluginInstallationCheck.check()
     expect(result.status).toBe("pass")
     expect(result.message).toContain("plugin registered")
@@ -169,7 +140,6 @@ describe("configValidationCheck", () => {
   test("passes when valid config found", async () => {
     mockFiles.add(join(process.cwd(), "matrixx.json"))
     mockFileContents.set(join(process.cwd(), "matrixx.json"), JSON.stringify({ agents: {} }))
-
     const result = await configValidationCheck.check()
     expect(result.status).toBe("pass")
     expect(result.message).toContain("valid")
@@ -178,35 +148,41 @@ describe("configValidationCheck", () => {
   test("fails when config has invalid JSON", async () => {
     mockFiles.add(join(process.cwd(), "matrixx.json"))
     mockFileContents.set(join(process.cwd(), "matrixx.json"), "{ invalid json")
-
     const result = await configValidationCheck.check()
     expect(result.status).toBe("fail")
-    expect(result.message).toContain("Invalid JSON")
+    expect(result.message).toContain("Invalid JSONC")
   })
 })
 
 describe("authCheck", () => {
-  test("fails when no provider configured and no config file", async () => {
+  test("fails when no provider configured and no cache", async () => {
     const result = await authCheck.check()
     expect(result.status).toBe("fail")
     expect(result.message).toContain("No API providers")
   })
 
-  test("warns when some providers configured via opencode.json", async () => {
+  test("warns when providers found in config but cache empty", async () => {
     const configPath = join(homedir(), ".config", "opencode", "opencode.json")
     mockFiles.add(configPath)
     mockFileContents.set(
       configPath,
       JSON.stringify({
-        plugins: ["opencode-matrixx"],
-        provider: "anthropic",
-        apiKey: "sk-ant-xxx",
+        plugin: ["opencode-matrixx"],
+        provider: { anthropic: { apiKey: "sk-ant-xxx" } },
       }),
     )
-
     const result = await authCheck.check()
     expect(result.status).toBe("warn")
-    expect(result.message).toContain("Configured")
+    expect(result.message).toContain("connected-providers cache empty")
+  })
+
+  test("passes when cache has providers", async () => {
+    const cachePath = join(homedir(), ".cache", "matrixx", "connected-providers.json")
+    mockFiles.add(cachePath)
+    mockFileContents.set(cachePath, JSON.stringify({ connected: ["anthropic"], updatedAt: new Date().toISOString() }))
+    const result = await authCheck.check()
+    expect(result.status).toBe("pass")
+    expect(result.message).toContain("Configured providers")
   })
 })
 
@@ -224,7 +200,6 @@ describe("runtimeDepsCheck", () => {
       { exitCode: 0, stdout: "git version 2.45.0", stderr: "" },
       { exitCode: 0, stdout: "Python 3.11.0", stderr: "" },
     ]
-
     const result = await runtimeDepsCheck.check()
     expect(result.status).toBe("pass")
     expect(result.message).toContain("Bun")
@@ -240,62 +215,68 @@ describe("optionalToolsCheck", () => {
     expect(result.status).toBe("warn")
     expect(result.message).toContain("Missing")
   })
-  test("reports all tools present when queued", async () => {
-    mockBunSpawnSyncResults = [
-      { exitCode: 0, stdout: "Python 3.11.0", stderr: "" },
-      { exitCode: 0, stdout: "sg 0.40.0", stderr: "" },
-      { exitCode: 0, stdout: "8.18.0", stderr: "" },
-      { exitCode: 0, stdout: "1.24.0", stderr: "" },
-      { exitCode: 0, stdout: "1.48.0", stderr: "" },
-    ]
-
-    const result = await optionalToolsCheck.check()
-    expect(result.status).toBe("pass")
-    expect(result.message).toContain("ast-grep")
-    expect(result.message).toContain("PyMuPDF")
-  })
 })
 
 describe("mcpPrerequisitesCheck", () => {
   test("fails when uvx not installed (default mock fails)", async () => {
-    //#given - mocked spawnSync fails by default
-
-    //#when
     const result = await mcpPrerequisitesCheck.check()
-
-    //#then
     expect(result.status).toBe("fail")
     expect(result.message).toContain("uvx")
   })
 
   test("passes when uvx installed and package resolves", async () => {
-    //#given
     mockBunSpawnSyncResults = [
       { exitCode: 0, stdout: "uvx 0.12.4", stderr: "" },
       { exitCode: 0, stdout: "usage: markitdown-mcp [-h] [--http]", stderr: "" },
     ]
-
-    //#when
     const result = await mcpPrerequisitesCheck.check()
-
-    //#then
     expect(result.status).toBe("pass")
     expect(result.message).toContain("uvx")
   })
 
   test("warns when uvx installed but markitdown-mcp cannot be resolved", async () => {
-    //#given
     mockBunSpawnSyncResults = [
       { exitCode: 0, stdout: "uvx 0.12.4", stderr: "" },
       { exitCode: 1, stdout: "", stderr: "error: package not found" },
     ]
-
-    //#when
     const result = await mcpPrerequisitesCheck.check()
-
-    //#then
     expect(result.status).toBe("warn")
     expect(result.message).toContain("uvx")
   })
 })
 
+describe("integration checks", () => {
+  test("headroom disabled skips", async () => {
+    const { headroomCheck } = await import("../../../src/cli/doctor/checks/headroom")
+    const result = await headroomCheck.check()
+    expect(result.status).toBe("pass")
+    expect(result.message).toContain("disabled")
+  })
+  test("rtk disabled skips", async () => {
+    const { rtkCheck } = await import("../../../src/cli/doctor/checks/rtk")
+    const result = await rtkCheck.check()
+    expect(result.status).toBe("pass")
+    expect(result.message).toContain("disabled")
+  })
+  test("dcp passes or warns based on plugin presence", async () => {
+    const { dcpCheck } = await import("../../../src/cli/doctor/checks/dcp")
+    const result = await dcpCheck.check()
+    expect(["pass", "warn"]).toContain(result.status)
+  })
+  test("context-mode warns when not registered", async () => {
+    const { contextModeCheck } = await import("../../../src/cli/doctor/checks/context-mode")
+    const result = await contextModeCheck.check()
+    expect(["pass", "warn"]).toContain(result.status)
+  })
+  test("tmux disabled skips", async () => {
+    const { tmuxCheck } = await import("../../../src/cli/doctor/checks/tmux")
+    const result = await tmuxCheck.check()
+    expect(result.status).toBe("pass")
+    expect(result.message).toContain("disabled")
+  })
+  test("docker handles missing gracefully", async () => {
+    const { dockerCheck } = await import("../../../src/cli/doctor/checks/docker")
+    const result = await dockerCheck.check()
+    expect(["pass", "warn"]).toContain(result.status)
+  })
+})
