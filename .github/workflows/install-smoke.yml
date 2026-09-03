@@ -63,7 +63,7 @@ jobs:
           mkdir -p /tmp/smoke-test
           cd /tmp/smoke-test
           bun init -y 2>&1 | tail -3
-          bun add "../$GITHUB_WORKSPACE/$TGZ" 2>&1 | tail -10
+          bun add "$GITHUB_WORKSPACE/$TGZ" 2>&1 | tail -10
           ls -la node_modules/opencode-matrixx/dist/cli.js
           test -f node_modules/opencode-matrixx/dist/cli.js || (echo "cli.js not in installed package" && exit 1)
           node -e "const p=require('./node_modules/opencode-matrixx/package.json'); if(!p.bin['opencode-matrixx']) throw new Error('installed bin missing'); console.log('installed bin OK', p.bin)"
@@ -76,8 +76,8 @@ jobs:
           cd /tmp/smoke-test
           # Use local tgz via bunx --package to avoid registry
           # Instead, verify the built cli directly is runnable
-          bun run ../dist/cli.js --help 2>&1 | head -20
-          bun run ../dist/cli.js doctor --json 2>&1 | head -20
+          bun "$GITHUB_WORKSPACE/dist/cli.js" --help 2>&1 | head -20
+          bun "$GITHUB_WORKSPACE/dist/cli.js" doctor --json 2>&1 | head -20
           echo "bunx-equivalent OK"
 
       - name: Test opencode plugin registration (isolated HOME)
