@@ -301,7 +301,7 @@ describe("migrateConfigFile", () => {
 
     //#then: sisyphus should be migrated to morpheus
     expect(needsWrite).toBe(true)
-    expect(rawConfig.morpheus).toEqual({ tasks: { storage_path: "/tmp/tasks" } })
+    expect(rawConfig.morpheus).toEqual({ tasks: { storage_path: "/tmp/tasks", scope: "project" } })
     expect(rawConfig.sisyphus).toBeUndefined()
   })
 
@@ -316,7 +316,7 @@ describe("migrateConfigFile", () => {
     const _needsWrite = migrateConfigFile(testConfigPath, rawConfig)
 
     //#then: morpheus should be preserved, sisyphus kept since morpheus exists
-    expect(rawConfig.morpheus).toEqual({ tasks: { storage_path: "/new" } })
+    expect(rawConfig.morpheus).toEqual({ tasks: { storage_path: "/new", scope: "project" } })
   })
 
   test("migrates legacy agent names in agents object", () => {
@@ -356,7 +356,8 @@ describe("migrateConfigFile", () => {
     //#given: Config with current names
     const rawConfig: Record<string, unknown> = {
       experimental: { task_system: true },
-      _migrations: ["task_system_default_true"],
+      _migrations: ["task_system_default_true", "tasks_project_scope_default"],
+      morpheus: { tasks: { scope: "project" } },
       morpheus_agent: { disabled: false },
       agents: {
         morpheus: { model: "test" },
@@ -433,7 +434,8 @@ describe("migrateConfigFile", () => {
      // given: Config with current model versions
     const rawConfig: Record<string, unknown> = {
       experimental: { task_system: true },
-      _migrations: ["task_system_default_true"],
+      _migrations: ["task_system_default_true", "tasks_project_scope_default"],
+      morpheus: { tasks: { scope: "project" } },
       agents: {
         morpheus: { model: "openai/gpt-5.3-codex" },
       },
@@ -668,7 +670,7 @@ describe("migrateConfigFile _migrations tracking", () => {
 
     // then: _migrations should be recorded
     expect(result).toBe(true)
-    expect(rawConfig._migrations).toEqual(["model-version:openai/gpt-5.2-codex->openai/gpt-5.3-codex", "task_system_default_true"])
+    expect(rawConfig._migrations).toEqual(["model-version:openai/gpt-5.2-codex->openai/gpt-5.3-codex", "task_system_default_true", "tasks_project_scope_default"])
 
     // cleanup
     fs.rmSync(tmpDir, { recursive: true })
@@ -717,6 +719,7 @@ describe("migrateConfigFile _migrations tracking", () => {
       "model-version:openai/gpt-5.2-codex->openai/gpt-5.3-codex",
       "model-version:anthropic/claude-opus-4-5->anthropic/claude-opus-4-6",
       "task_system_default_true",
+      "tasks_project_scope_default",
     ])
 
     // cleanup
@@ -973,7 +976,8 @@ describe("migrateConfigFile with backup", () => {
     const testConfigPath = "/tmp/test-config-preserve-model.json"
     const rawConfig: Record<string, unknown> = {
       experimental: { task_system: true },
-      _migrations: ["task_system_default_true"],
+      _migrations: ["task_system_default_true", "tasks_project_scope_default"],
+      morpheus: { tasks: { scope: "project" } },
       agents: {
         "construct": { model: "anthropic/claude-haiku-4-5" },
         oracle: { model: "openai/gpt-5.2" },
@@ -1001,7 +1005,8 @@ describe("migrateConfigFile with backup", () => {
     const testConfigPath = "/tmp/test-config-preserve-category.json"
     const rawConfig: Record<string, unknown> = {
       experimental: { task_system: true },
-      _migrations: ["task_system_default_true"],
+      _migrations: ["task_system_default_true", "tasks_project_scope_default"],
+      morpheus: { tasks: { scope: "project" } },
       agents: {
         "construct": { category: "quick" },
         oracle: { category: "source" },
@@ -1027,6 +1032,8 @@ describe("migrateConfigFile with backup", () => {
     const testConfigPath = "/tmp/test-config-task-system.json"
     const rawConfig: Record<string, unknown> = {
       experimental: { task_system: true },
+      _migrations: ["task_system_default_true", "tasks_project_scope_default"],
+      morpheus: { tasks: { scope: "project" } },
     }
 
     fs.writeFileSync(testConfigPath, globalThis.JSON.stringify(rawConfig, null, 2))
@@ -1061,7 +1068,8 @@ describe("migrateConfigFile with backup", () => {
      const testConfigPath = "/tmp/test-config-no-migration.json"
     const rawConfig: Record<string, unknown> = {
       experimental: { task_system: true },
-      _migrations: ["task_system_default_true"],
+      _migrations: ["task_system_default_true", "tasks_project_scope_default"],
+      morpheus: { tasks: { scope: "project" } },
       agents: {
         morpheus: { model: "test" },
       },
@@ -1206,7 +1214,7 @@ describe("migrateConfigFile with _migrations tracking", () => {
 
     // then: _migrations field should be added
     expect(needsWrite).toBe(true)
-    expect(rawConfig._migrations).toEqual(["model-version:openai/gpt-5.2-codex->openai/gpt-5.3-codex", "task_system_default_true"])
+    expect(rawConfig._migrations).toEqual(["model-version:openai/gpt-5.2-codex->openai/gpt-5.3-codex", "task_system_default_true", "tasks_project_scope_default"])
     expect((rawConfig.agents as Record<string, Record<string, unknown>>).morpheus.model).toBe("openai/gpt-5.3-codex")
   })
 
@@ -1228,7 +1236,7 @@ describe("migrateConfigFile with _migrations tracking", () => {
     // then: Agent name migration happens (sisyphus→morpheus), but model should NOT change (user reverted)
     expect(needsWrite).toBe(true)
     expect((rawConfig.agents as Record<string, Record<string, unknown>>).morpheus.model).toBe("openai/gpt-5.2-codex")
-    expect(rawConfig._migrations).toEqual(["model-version:openai/gpt-5.2-codex->openai/gpt-5.3-codex", "task_system_default_true"])
+    expect(rawConfig._migrations).toEqual(["model-version:openai/gpt-5.2-codex->openai/gpt-5.3-codex", "task_system_default_true", "tasks_project_scope_default"])
   })
 
   test("preserves existing _migrations and appends new ones", () => {
@@ -1255,6 +1263,7 @@ describe("migrateConfigFile with _migrations tracking", () => {
       "model-version:openai/gpt-5.2-codex->openai/gpt-5.3-codex",
       "model-version:anthropic/claude-opus-4-5->anthropic/claude-opus-4-6",
       "task_system_default_true",
+      "tasks_project_scope_default",
     ])
   })
 
