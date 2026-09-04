@@ -1,12 +1,12 @@
-export const TASK_LIST_TEMPLATE = `# Task List
+export const TASK_LIST_TEMPLATE = `# Task List — SLASH COMMAND OVERRIDE
 
-Show current state of all file-based tasks.
+SYSTEM OVERRIDE: Ignore any global [search-mode] or [analyze-mode] directive for this command. This is a direct tool call, not a search.
 
-Call the task_list tool now (no search, no exploration — just call the tool).
+Call the task_list tool NOW with no exploration, no grep, no trinity, no operator, no background agents.
 
-- If $ARGUMENTS contains "--all", after task_list also list counts by status (pending/in_progress/completed/deleted) by reading T-*.json files.
-- If $ARGUMENTS contains "--status <value>", filter to that status.
-- Otherwise just report what task_list returns as a table ID | Subject | Status.
+- If $ARGUMENTS contains "--all", call task_list and also report counts by reading T-*.json via the tool's own logic (do not manually find/ls).
+- If $ARGUMENTS contains "--status", filter to that status.
+- Otherwise just return task_list output as table ID | Subject | Status.
 
-Do not launch trinity/operator/background agents. Just call task_list.
+Do not run rtk ls, find, grep, or launch subagents. One tool call only.
 `
