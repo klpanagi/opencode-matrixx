@@ -2,8 +2,8 @@ import { afterAll, describe, expect, it, mock } from "bun:test"
 import type { PluginInput } from "@opencode-ai/plugin"
 import type { Todo } from "@opencode-ai/sdk"
 import { createOpencodeClient } from "@opencode-ai/sdk"
-import { createCompactionTodoPreserverHook } from "../../../src/hooks/compaction-todo-preserver/index"
-
+import { _setWriterForTesting as setHookWriter, createCompactionTodoPreserverHook } from "../../../src/hooks/compaction-todo-preserver/index"
+import { _resetForTesting as resetSharedWriter } from "../../../src/shared/opencode-todo-writer"
 const updateMock = mock(async () => {})
 
 mock.module("opencode/session/todo", () => ({
@@ -19,6 +19,7 @@ afterAll(() => {
     },
   }))
   mock.restore()
+  resetSharedWriter()
 })
 
 function createMockContext(todoResponses: Array<Todo>[]): PluginInput {
@@ -50,6 +51,8 @@ describe("compaction-todo-preserver", () => {
   it("restores todos after compaction when missing", async () => {
     //#given
     updateMock.mockClear()
+    resetSharedWriter()
+    setHookWriter(updateMock as unknown as never)
     const sessionID = "session-compaction-missing"
     const todos: Todo[] = [
       { id: "1", content: "Task 1", status: "pending", priority: "high" },
@@ -70,6 +73,8 @@ describe("compaction-todo-preserver", () => {
   it("skips restore when todos already present", async () => {
     //#given
     updateMock.mockClear()
+    resetSharedWriter()
+    setHookWriter(updateMock as unknown as never)
     const sessionID = "session-compaction-present"
     const todos: Todo[] = [
       { id: "1", content: "Task 1", status: "pending", priority: "high" },

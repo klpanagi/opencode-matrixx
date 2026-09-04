@@ -8,6 +8,7 @@ import { createMouseAgentWithOverrides } from "../agents/mouse";
 import type { MatrixxConfig } from "../config";
 import { log, migrateAgentConfig } from "../shared";
 import { AGENT_NAME_MAP } from "../shared/migration";
+import { isTaskSystemEnabled } from "../shared/task-system-gating";
 import { reorderAgentsByPriority } from "./agent-priority-order";
 import { buildOracleAgentConfig } from "./oracle-agent-config-builder";
 import { buildPlanDemoteConfig } from "./plan-model-inheritance";
@@ -80,7 +81,7 @@ export async function applyAgentConfig(params: {
   if (!params.pluginConfig.tdd_enforcer?.enabled) {
     disabledSkills.add("tdd-enforcer");
   }
-  const useTaskSystem = params.pluginConfig.experimental?.task_system ?? false;
+  const useTaskSystem = isTaskSystemEnabled(params.pluginConfig);
   const availableToolNames = getAvailableToolNames()
 
   const builtinAgents = await createBuiltinAgents(

@@ -5,8 +5,9 @@ import type {
 } from "../agents/dynamic-agent-prompt-builder"
 import type { MatrixxConfig } from "../config"
 import type { Managers } from "../create-managers"
-import { log } from "../shared"
-import { filterDisabledTools } from "../shared/disabled-tools"
+import { log } from "../shared";
+import { filterDisabledTools } from "../shared/disabled-tools";
+import { isTaskSystemEnabled } from "../shared/task-system-gating";
 import {
   builtinTools,
   createAssemblyTool,
@@ -28,6 +29,7 @@ createDelegateAgent,
   createSessionManagerTools,
   createSkillTool,
   createSlashcommandTool,
+  createTaskCleanupTool,
   createTaskCreateTool,
   createTaskGetTool,
   createTaskList,
@@ -103,16 +105,16 @@ export function createToolRegistry(args: {
     client: ctx.client,
   })
 
-  const taskSystemEnabled = pluginConfig.experimental?.task_system ?? false
+  const taskSystemEnabled = isTaskSystemEnabled(pluginConfig)
   const taskToolsRecord: Record<string, ToolDefinition> = taskSystemEnabled
     ? {
         task_create: createTaskCreateTool(pluginConfig, ctx),
         task_get: createTaskGetTool(pluginConfig),
         task_list: createTaskList(pluginConfig),
         task_update: createTaskUpdateTool(pluginConfig, ctx),
+        task_cleanup: createTaskCleanupTool(pluginConfig, ctx),
       }
     : {}
-
   const hashlineEnabled = pluginConfig.experimental?.hashline_edit ?? false
   const hashlineToolsRecord: Record<string, ToolDefinition> = hashlineEnabled
     ? { edit: createHashlineEditTool(ctx) }

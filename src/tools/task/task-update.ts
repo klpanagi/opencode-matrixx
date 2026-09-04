@@ -3,11 +3,12 @@ import type { PluginInput } from "@opencode-ai/plugin";
 import { type ToolDefinition, tool } from "@opencode-ai/plugin/tool";
 import type { MatrixxConfig } from "../../config/schema";
 import {
-  acquireLock,
+  acquireLockWithRetry,
   getTaskDir,
   readJsonSafe,
   writeJsonAtomic,
 } from "../../features/task-storage/storage";
+import { log } from "../../shared/logger";
 import { TASK_ID_PATTERN } from "./constants";
 import { syncTaskTodoUpdate } from "./todo-sync";
 import { TaskObjectSchema, TaskUpdateInputSchema } from "./types";
@@ -80,11 +81,11 @@ async function handleUpdate(
       return JSON.stringify({ error: "invalid_task_id" });
     }
 
-    const taskDir = getTaskDir(config);
-    const lock = acquireLock(taskDir);
+    const taskDir = getTaskDir(config)
+    const lock = await acquireLockWithRetry(taskDir)
 
     if (!lock.acquired) {
-      return JSON.stringify({ error: "task_lock_unavailable" });
+      return JSON.stringify({ error: "task_lock_unavailable" })
     }
 
     try {
@@ -133,7 +134,27 @@ async function handleUpdate(
       const validatedTask = TaskObjectSchema.parse(task);
       writeJsonAtomic(taskPath, validatedTask);
 
-      await syncTaskTodoUpdate(ctx, validatedTask, context.sessionID);
+      let todoSyncFailed = false;
+      let todoSyncError: string | undefined;
+      try {
+        await syncTaskTodoUpdate(ctx, validatedTask, context.sessionID);
+      } catch (err) {
+        todoSyncFailed = true;
+        todoSyncError = err instanceof Error ? err.message : String(err);
+        log("[todo-sync] Failed to sync task todo", {
+          taskId: validatedTask.id,
+          sessionID: context.sessionID,
+          error: todoSyncError,
+        });
+      }
+
+      if (todoSyncFailed) {
+        return JSON.stringify({
+          task: validatedTask,
+          todoSyncFailed: true,
+          warning: `todo sync failed: ${todoSyncError}`,
+        });
+      }
 
       return JSON.stringify({ task: validatedTask });
     } finally {

@@ -84,6 +84,20 @@ export function writeJsonAtomic(filePath: string, data: unknown): void {
 
 const STALE_LOCK_THRESHOLD_MS = 30000
 
+export async function acquireLockWithRetry(
+  dirPath: string,
+  retries = 4,
+): Promise<{ acquired: boolean; release: () => void }> {
+  for (let attempt = 0; attempt < retries; attempt++) {
+    const lock = acquireLock(dirPath)
+    if (lock.acquired) return lock
+    if (attempt < retries - 1) {
+      await new Promise<void>((resolve) => setTimeout(resolve, 15 * 2 ** attempt))
+    }
+  }
+  return { acquired: false, release: () => {} }
+}
+
 export function generateTaskId(): string {
   return `T-${randomUUID()}`
 }

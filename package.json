@@ -21,7 +21,7 @@
   },
   "scripts": {
     "build": "bun run build:plugin && bun run build:cli && tsc --emitDeclarationOnly && bun run build:schema",
-    "build:plugin": "bun build src/index.ts --outdir dist --target bun --format esm --external @ast-grep/napi --external \"opencode/*\" --external \"@opencode-ai/core/*\"",
+    "build:plugin": "bun build src/index.ts --outdir dist --target bun --format esm --external @ast-grep/napi --external \"opencode/*\" --external \"@opencode-ai/core/*\" --external effect --external \"effect/*\"",
     "build:cli": "bun build src/cli/index.ts --outfile dist/cli.js --target bun --format esm && chmod +x dist/cli.js",
     "build:schema": "bun run script/build-schema.ts",
     "clean": "rm -rf dist",
