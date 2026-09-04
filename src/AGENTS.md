@@ -78,3 +78,18 @@ const hook = isHookEnabled("hook-name")
 ```
 
 All hooks use this pattern for graceful degradation on failure.
+
+## TASK SYSTEM CONVENTIONS
+
+Plan and task progress have dedicated tools — raw bash file hacks are blocked.
+
+- Plan progress (`.matrixx/plans/*.md` `- [ ]` -> `- [x]`) -> `Read` -> `Edit` with `LINE#ID` (hashline). Never `sed`/`python3 -c` via `bash`. `plan-persister` counts `- [x]` for `todoCompleted`, this is not `T-*.json` runtime tasks.
+- Task files (`.matrixx/tasks/T-*.json`) -> `task_create`/`task_update`/`task_get`/`task_list`/`task_cleanup` via `PluginInput` directory threading. Never `bash` `echo`/`cat >`/`rm`/`sed`/`python`.
+- Enforcement: `task-edit-guard` hook (`tool.execute.before` on `bash` with `BLOCKED_PATTERNS`) blocks raw bash mutations to `.matrixx/plans/*.md` and `.matrixx/tasks/T-*.json`. Use `Edit` (hashline) for plans and `task_*` tools for tasks.
+- `.matrixx/` is gitignored — project tasks and plans stay local per clone (per-project isolation via `getTaskDir(config, directory)`).
+
+## ANTI-PATTERNS
+
+| Category | Forbidden |
+|----------|-----------|
+| Bash plan/task hacks | `sed`/`python`/`echo >` on `.matrixx/plans` or `.matrixx/tasks` — use `Edit` (hashline) or `task_*` tools |
