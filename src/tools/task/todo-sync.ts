@@ -240,11 +240,12 @@ export async function syncAllTasksToTodos(
 
     finalTodos.push(...newTodos);
 
+    const visibleTodos = finalTodos.filter((t) => t.status !== "completed" && t.status !== "cancelled");
     const resolvedWriter = writer ?? (await resolveTodoWriter(ctx));
-    await writeTodosViaApi(ctx, sessionID, finalTodos, resolvedWriter);
+    await writeTodosViaApi(ctx, sessionID, visibleTodos, resolvedWriter);
 
     log("[todo-sync] Synced todos", {
-      count: finalTodos.length,
+      count: visibleTodos.length,
       sessionID,
     });
   } catch (err) {

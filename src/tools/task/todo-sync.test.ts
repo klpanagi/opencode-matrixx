@@ -285,15 +285,16 @@ describe("syncAllTasksToTodos — pure API", () => {
     ]
     //#when syncing all
     await syncAllTasksToTodos(ctx, tasks, "sess-mix", fn)
-    //#then finalTodos contains kept pending, new completed, orphan, but not deleted
+    //#then visibleTodos contains kept pending and orphan, but not deleted nor completed (filtered for TUI)
     expect(calls.length).toBe(1)
     const contents = calls[0].todos.map((t) => t.content)
     expect(contents).toContain("Keep pending")
-    expect(contents).toContain("New completed")
+    expect(contents).not.toContain("New completed")
     expect(contents).toContain("Orphan keep")
     expect(contents).not.toContain("To delete")
     const deletedStillThere = calls[0].todos.find((t) => t.id === "T-del")
     expect(deletedStillThere).toBeUndefined()
+    expect(calls[0].todos.every((t) => t.status !== "completed" && t.status !== "cancelled")).toBe(true)
   })
 
   test("empty sessionID skips writer", async () => {

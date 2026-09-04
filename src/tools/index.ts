@@ -45,6 +45,7 @@ export { createDelegateTask } from "./delegate-task"
 export { createHashlineEditTool } from "./hashline-edit"
 export { createLookAt } from "./look-at"
 export {
+  createTaskCleanupTool,
   createTaskCreateTool,
   createTaskGetTool,
   createTaskList,

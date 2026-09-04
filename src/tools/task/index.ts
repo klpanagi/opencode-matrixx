@@ -1,3 +1,4 @@
+export { createTaskCleanupTool } from "./task-cleanup"
 export { createTaskCreateTool } from "./task-create"
 export { createTaskGetTool } from "./task-get"
 export { createTaskList } from "./task-list"

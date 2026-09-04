@@ -8,6 +8,7 @@ import { BDD_TESTS_TEMPLATE } from "./templates/bdd-tests"
 import { DCP_PROFILE_TEMPLATE } from "./templates/dcp-profile"
 import { END_ULTRAWORK_TEMPLATE } from "./templates/end-ultrawork"
 import { EVOLUTION_TEMPLATE } from "./templates/evolution"
+import { CLEANUP_TASKS_TEMPLATE } from "./templates/cleanup-tasks"
 import { HANDOFF_TEMPLATE } from "./templates/handoff"
 import { INIT_DEEP_TEMPLATE } from "./templates/init-deep"
 import { CANCEL_LOOP_TEMPLATE, MATRIX_LOOP_TEMPLATE } from "./templates/matrix-loop"
@@ -260,6 +261,17 @@ ${EVOLUTION_TEMPLATE}
 $ARGUMENTS
 </user-request>`,
     argumentHint: "[list|approve <slug>|reject <slug>|audit]",
+  },
+  "cleanup-tasks": {
+    description: "(builtin) Delete completed tasks",
+    template: `<command-instruction>
+${CLEANUP_TASKS_TEMPLATE}
+</command-instruction>
+
+<user-request>
+$ARGUMENTS
+</user-request>`,
+    argumentHint: "[--olderThan <duration>] [--all]",
   },
 }
 
