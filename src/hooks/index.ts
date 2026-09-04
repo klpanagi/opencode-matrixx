@@ -49,6 +49,7 @@ export { createSessionRecoveryHook, type SessionRecoveryHook, type SessionRecove
 export { hasIncompleteTodos } from "./session-todo-status";
 export { createStartWorkHook } from "./start-work";
 export { createStopContinuationGuardHook, type StopContinuationGuard } from "./stop-continuation-guard";
+export { createTaskEditGuardHook } from "./task-edit-guard";
 export { createTaskNotepadHook } from "./task-notepad"
 export { createTaskResumeInfoHook } from "./task-resume-info";
 export { createTaskTodoMirrorHook } from "./task-todo-mirror";

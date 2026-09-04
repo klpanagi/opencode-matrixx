@@ -168,7 +168,8 @@
           "evolution-watcher",
           "evolution-compressor",
           "evolution-quality-gate",
-          "evolution-hitl"
+          "evolution-hitl",
+          "task-edit-guard"
         ]
       }
     },
