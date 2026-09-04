@@ -1,5 +1,11 @@
 import type { PluginInput } from "@opencode-ai/plugin"
 import { log } from "../../shared/logger"
+import {
+  type TodoWriter as SharedTodoWriter,
+  _resetForTesting as sharedReset,
+  resolveTodoWriter as sharedResolveTodoWriter,
+  _setWriterForTesting as sharedSetWriter,
+} from "../../shared/opencode-todo-writer"
 
 interface TodoSnapshot {
   id: string
@@ -8,7 +14,7 @@ interface TodoSnapshot {
   priority?: "low" | "medium" | "high"
 }
 
-type TodoWriter = (input: { sessionID: string; todos: TodoSnapshot[] }) => Promise<void>
+type TodoWriter = SharedTodoWriter
 
 const HOOK_NAME = "compaction-todo-preserver"
 
@@ -24,21 +30,15 @@ function extractTodos(response: unknown): TodoSnapshot[] {
 }
 
 async function resolveTodoWriter(): Promise<TodoWriter | null> {
-  const loaders = ["opencode/session/todo", "@opencode-ai/core/session/todo"];
-  for (const loader of loaders) {
-    try {
-      const mod = (await import(loader)) as {
-        Todo?: { update?: TodoWriter }
-      };
-      const update = mod.Todo?.update;
-      if (typeof update === "function") {
-        return update;
-      }
-    } catch (err) {
-      log(`[${HOOK_NAME}] Failed to resolve Todo.update`, { loader, error: String(err) });
-    }
-  }
-  return null;
+  return sharedResolveTodoWriter() as Promise<TodoWriter | null>
+}
+
+export function _resetForTesting(): void {
+  sharedReset()
+}
+
+export function _setWriterForTesting(writer: TodoWriter | null | undefined): void {
+  sharedSetWriter(writer)
 }
 
 function resolveSessionID(props?: Record<string, unknown>): string | undefined {
@@ -91,20 +91,18 @@ export function createCompactionTodoPreserverHook(
 
     const writer = await resolveTodoWriter()
     if (!writer) {
-      log(`[${HOOK_NAME}] Skipped restore (Todo.update unavailable)`, { sessionID })
+      log(`[${HOOK_NAME}] Todo.update unavailable — todos not restored after compaction (visible failure)`, { sessionID })
       return
     }
 
     try {
       await writer({ sessionID, todos: snapshot })
       log(`[${HOOK_NAME}] Restored todos after compaction`, { sessionID, count: snapshot.length })
+      snapshots.delete(sessionID)
     } catch (err) {
       log(`[${HOOK_NAME}] Failed to restore todos`, { sessionID, error: String(err) })
-    } finally {
-      snapshots.delete(sessionID)
     }
   }
-
   const event = async ({ event }: { event: { type: string; properties?: unknown } }): Promise<void> => {
     const props = event.properties as Record<string, unknown> | undefined
 

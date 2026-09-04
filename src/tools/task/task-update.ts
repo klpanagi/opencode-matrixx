@@ -7,7 +7,8 @@ import {
   getTaskDir,
   readJsonSafe,
   writeJsonAtomic,
-} from "../../features/task-storage/storage"
+} from "../../features/task-storage/storage";
+import { log } from "../../shared/logger";
 import { TASK_ID_PATTERN } from "./constants";
 import { syncTaskTodoUpdate } from "./todo-sync";
 import { TaskObjectSchema, TaskUpdateInputSchema } from "./types";
@@ -133,7 +134,27 @@ async function handleUpdate(
       const validatedTask = TaskObjectSchema.parse(task);
       writeJsonAtomic(taskPath, validatedTask);
 
-      await syncTaskTodoUpdate(ctx, validatedTask, context.sessionID);
+      let todoSyncFailed = false;
+      let todoSyncError: string | undefined;
+      try {
+        await syncTaskTodoUpdate(ctx, validatedTask, context.sessionID);
+      } catch (err) {
+        todoSyncFailed = true;
+        todoSyncError = err instanceof Error ? err.message : String(err);
+        log("[todo-sync] Failed to sync task todo", {
+          taskId: validatedTask.id,
+          sessionID: context.sessionID,
+          error: todoSyncError,
+        });
+      }
+
+      if (todoSyncFailed) {
+        return JSON.stringify({
+          task: validatedTask,
+          todoSyncFailed: true,
+          warning: `todo sync failed: ${todoSyncError}`,
+        });
+      }
 
       return JSON.stringify({ task: validatedTask });
     } finally {
