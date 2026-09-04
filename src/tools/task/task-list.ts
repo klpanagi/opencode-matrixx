@@ -1,5 +1,6 @@
 import { existsSync, readdirSync } from "node:fs"
 import { join } from "node:path"
+import type { PluginInput } from "@opencode-ai/plugin"
 import { type ToolDefinition, tool } from "@opencode-ai/plugin/tool"
 import type { MatrixxConfig } from "../../config/schema"
 import { getTaskDir, readJsonSafe } from "../../features/task-storage/storage"
@@ -14,7 +15,7 @@ interface TaskSummary {
   blockedBy: string[]
 }
 
-export function createTaskList(config: Partial<MatrixxConfig>): ToolDefinition {
+export function createTaskList(config: Partial<MatrixxConfig>, ctx?: PluginInput): ToolDefinition {
   return tool({
     description: `List all active tasks with summary information.
     
@@ -22,8 +23,12 @@ Returns tasks excluding completed and deleted statuses by default.
 For each task's blockedBy field, filters to only include unresolved (non-completed) blockers.
 Returns summary format: id, subject, status, owner, blockedBy (not full description).`,
     args: {},
-    execute: async (): Promise<string> => {
-      const taskDir = getTaskDir(config)
+    execute: async (_args: Record<string, unknown>, context?: { sessionID: string }): Promise<string> => {
+      const directory =
+        ((context as unknown as Record<string, unknown>)?.directory as string | undefined) ??
+        ((ctx as unknown as Record<string, unknown>)?.directory as string | undefined) ??
+        process.cwd()
+      const taskDir = getTaskDir(config, directory)
 
       if (!existsSync(taskDir)) {
         return JSON.stringify({ tasks: [] })

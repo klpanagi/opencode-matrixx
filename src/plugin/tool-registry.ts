@@ -109,8 +109,8 @@ export function createToolRegistry(args: {
   const taskToolsRecord: Record<string, ToolDefinition> = taskSystemEnabled
     ? {
         task_create: createTaskCreateTool(pluginConfig, ctx),
-        task_get: createTaskGetTool(pluginConfig),
-        task_list: createTaskList(pluginConfig),
+        task_get: createTaskGetTool(pluginConfig, ctx),
+        task_list: createTaskList(pluginConfig, ctx),
         task_update: createTaskUpdateTool(pluginConfig, ctx),
         task_cleanup: createTaskCleanupTool(pluginConfig, ctx),
       }

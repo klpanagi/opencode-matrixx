@@ -81,7 +81,11 @@ async function handleUpdate(
       return JSON.stringify({ error: "invalid_task_id" });
     }
 
-    const taskDir = getTaskDir(config)
+    const directory =
+      ((context as unknown as Record<string, unknown>)?.directory as string | undefined) ??
+      ((ctx as unknown as Record<string, unknown>)?.directory as string | undefined) ??
+      process.cwd()
+    const taskDir = getTaskDir(config, directory)
     const lock = await acquireLockWithRetry(taskDir)
 
     if (!lock.acquired) {

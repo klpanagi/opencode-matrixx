@@ -40,7 +40,7 @@ function getTaskTimestamp(task: unknown): number {
 
 export function createTaskCleanupTool(
   config: Partial<MatrixxConfig>,
-  _ctx?: PluginInput,
+  ctx?: PluginInput,
 ): ToolDefinition {
   return tool({
     description: `Delete completed task files from storage.
@@ -52,7 +52,7 @@ Returns counts: {deleted, remaining, deletedIds}`,
       olderThan: tool.schema.string().optional().describe('Only delete completed tasks older than duration (e.g. "7d", "24h", "30m")'),
       all: tool.schema.boolean().optional().describe("Delete all completed tasks (default true when olderThan not set)"),
     },
-    execute: async (args: Record<string, unknown>): Promise<string> => {
+    execute: async (args: Record<string, unknown>, context?: { sessionID: string }): Promise<string> => {
       try {
         const olderThan = args.olderThan as string | undefined
 
@@ -68,7 +68,11 @@ Returns counts: {deleted, remaining, deletedIds}`,
           olderThanMs = parsed
         }
 
-        const taskDir = getTaskDir(config)
+        const directory =
+          ((context as unknown as Record<string, unknown>)?.directory as string | undefined) ??
+          ((ctx as unknown as Record<string, unknown>)?.directory as string | undefined) ??
+          process.cwd()
+        const taskDir = getTaskDir(config, directory)
 
         if (!existsSync(taskDir)) {
           return JSON.stringify({ deleted: 0, remaining: 0, deletedIds: [] })

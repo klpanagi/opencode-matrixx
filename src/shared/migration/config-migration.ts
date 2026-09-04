@@ -123,6 +123,24 @@ export function migrateConfigFile(
     needsWrite = true
   }
 
+  // Default morpheus.tasks.scope to "project" when missing (migration)
+  if (((copy.morpheus as unknown as Record<string, unknown> | undefined)?.tasks as Record<string, unknown> | undefined)?.scope === undefined) {
+    const morpheusExisting = (copy.morpheus as Record<string, unknown> | undefined) ?? {}
+    const tasksExisting = (morpheusExisting.tasks as Record<string, unknown> | undefined) ?? {}
+    copy.morpheus = { ...morpheusExisting, tasks: { ...tasksExisting, scope: "project" } }
+    if (!existingMigrations.has("tasks_project_scope_default")) {
+      allNewMigrations.push("tasks_project_scope_default")
+      const current = Array.isArray(copy._migrations)
+        ? [...(copy._migrations as string[])]
+        : Array.from(existingMigrations)
+      if (!current.includes("tasks_project_scope_default")) {
+        current.push("tasks_project_scope_default")
+        copy._migrations = current
+      }
+    }
+    needsWrite = true
+  }
+
   if (needsWrite) {
     const timestamp = new Date().toISOString().replace(/[:.]/g, "-")
     const backupPath = `${configPath}.bak.${timestamp}`

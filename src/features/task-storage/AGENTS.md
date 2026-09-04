@@ -4,6 +4,19 @@
 
 Claude Code compatible task schema and storage. Core task management with file-based persistence, atomic writes, and OpenCode todo sync.
 
+## STORAGE SCOPE
+
+Hybrid layout selected by `morpheus.tasks.scope` (default `project`) and resolved via `getTaskDir(config, directory?)`.
+
+| scope | Path | Example |
+|-------|------|---------|
+| `project` (default) | `.matrixx/tasks` per project | `<project>/.matrixx/tasks/T-*.json` |
+| `global` | `~/.config/opencode/tasks/{listId}` fallback | `~/.config/opencode/tasks/matrixx/T-*.json` |
+
+- `storage_path` absolute → used as-is; relative → resolves against `directory` (project root) when provided, else `process.cwd()`.
+- `migrateLegacyTasksIfNeeded(config, directory)` lazy copies (not moves) legacy `T-*.json` to project dir on first `task_create`, logs `[task-storage] Migrated N legacy tasks from <legacy> to <project>`, retains legacy 30d. Delete manually or via prune.
+- Rollback: set `scope: "global"` in `matrixx.jsonc` to restore global layout.
+- `.matrixx/` gitignored per `.gitignore` — project tasks stay local per clone.
 ## STRUCTURE
 ```
 task-storage/
@@ -33,6 +46,7 @@ interface Task {
   repoURL?: string
   parentID?: string
   threadID?: string
+  projectRoot?: string          // originating project directory
 }
 ```
 
@@ -40,7 +54,9 @@ interface Task {
 
 | Function | Purpose |
 |----------|---------|
-| `getTaskDir(config)` | Task storage directory path |
+| `getTaskDir(config, directory?)` | Task storage dir — `directory` optional, `storage_path` relative resolves against `directory`, `scope: "project"` → `.matrixx/tasks`, `global` → `~/.config/opencode/tasks/{listId}` |
+| `getProjectTaskDir(directory)` | `join(directory, ".matrixx/tasks")` — project task dir |
+| `migrateLegacyTasksIfNeeded(config, directory)` | Lazy copy-not-move legacy `T-*.json` → project dir, logs `[task-storage] Migrated N ...`, retains legacy 30d |
 | `resolveTaskListId(config)` | Task list ID (env → config → cwd) |
 | `readJsonSafe(path, schema)` | Parse + validate, null on failure |
 | `writeJsonAtomic(path, data)` | Atomic write via temp + rename |
@@ -66,3 +82,4 @@ Sync triggers: `task_create`, `task_update`.
 - Direct fs operations (use storage utilities)
 - Skipping lock acquisition for writes
 - Using old field names (title → subject, dependsOn → blockedBy)
+- Deleting or committing `.matrixx/tasks` — `.matrixx/` is gitignored for per-project isolation, do not track task files

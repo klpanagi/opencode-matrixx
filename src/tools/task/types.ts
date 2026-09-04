@@ -17,6 +17,7 @@ export const TaskObjectSchema = z
     repoURL: z.string().optional(),
     parentID: z.string().optional(),
     threadID: z.string(),
+    projectRoot: z.string().optional(),
   })
   .strict()
 

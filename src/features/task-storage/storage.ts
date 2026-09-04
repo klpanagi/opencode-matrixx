@@ -3,19 +3,28 @@ import { existsSync, mkdirSync, readdirSync, readFileSync, renameSync, unlinkSyn
 import { basename, dirname, isAbsolute, join } from "node:path"
 import type { z } from "zod"
 import type { MatrixxConfig } from "../../config/schema"
+import { log } from "../../shared/logger"
 import { getOpenCodeConfigDir } from "../../shared/opencode-config-dir"
 
-export function getTaskDir(config: Partial<MatrixxConfig> = {}): string {
+export function getProjectTaskDir(directory: string): string {
+  return join(directory, ".matrixx", "tasks")
+}
+
+export function getTaskDir(config: Partial<MatrixxConfig> = {}, directory?: string): string {
   const tasksConfig = config.morpheus?.tasks
   const storagePath = tasksConfig?.storage_path
 
   if (storagePath) {
-    return isAbsolute(storagePath) ? storagePath : join(process.cwd(), storagePath)
+    return isAbsolute(storagePath) ? storagePath : join(directory ?? process.cwd(), storagePath)
   }
 
-  const configDir = getOpenCodeConfigDir({ binary: "opencode" })
-  const listId = resolveTaskListId(config)
-  return join(configDir, "tasks", listId)
+  if (tasksConfig?.scope === "global" || !directory) {
+    const configDir = getOpenCodeConfigDir({ binary: "opencode" })
+    const listId = resolveTaskListId(config)
+    return join(configDir, "tasks", listId)
+  }
+
+  return getProjectTaskDir(directory)
 }
 
 export function sanitizePathSegment(value: string): string {
@@ -102,12 +111,68 @@ export function generateTaskId(): string {
   return `T-${randomUUID()}`
 }
 
-export function listTaskFiles(config: Partial<MatrixxConfig> = {}): string[] {
-  const dir = getTaskDir(config)
+export function listTaskFiles(config: Partial<MatrixxConfig> = {}, directory?: string): string[] {
+  const dir = getTaskDir(config, directory)
   if (!existsSync(dir)) return []
   return readdirSync(dir)
     .filter((f) => f.endsWith('.json') && f.startsWith('T-'))
     .map((f) => f.replace('.json', ''))
+}
+
+export function migrateLegacyTasksIfNeeded(
+  config: Partial<MatrixxConfig>,
+  directory: string,
+): { migrated: number; legacyDir: string; projectDir: string } {
+  const projectDir = getProjectTaskDir(directory)
+  const legacyDir = join(getOpenCodeConfigDir({ binary: "opencode" }), "tasks", resolveTaskListId(config))
+
+  if (existsSync(projectDir)) {
+    try {
+      const existing = readdirSync(projectDir).filter((f) => f.startsWith("T-") && f.endsWith(".json"))
+      if (existing.length > 0) {
+        return { migrated: 0, legacyDir, projectDir }
+      }
+    } catch {
+      // Ignore read errors, proceed to migration check
+    }
+  }
+
+  if (!existsSync(legacyDir)) {
+    return { migrated: 0, legacyDir, projectDir }
+  }
+
+  let files: string[] = []
+  try {
+    files = readdirSync(legacyDir).filter((f) => f.startsWith("T-") && f.endsWith(".json"))
+  } catch {
+    return { migrated: 0, legacyDir, projectDir }
+  }
+
+  if (files.length === 0) {
+    return { migrated: 0, legacyDir, projectDir }
+  }
+
+  ensureDir(projectDir)
+
+  let migrated = 0
+  for (const file of files) {
+    const src = join(legacyDir, file)
+    const dest = join(projectDir, file)
+    if (existsSync(dest)) continue
+    try {
+      const content = readFileSync(src, "utf-8")
+      writeFileSync(dest, content, "utf-8")
+      migrated++
+    } catch {
+      // Ignore individual file copy errors
+    }
+  }
+
+  if (migrated > 0) {
+    log(`[task-storage] Migrated ${migrated} legacy tasks from ${legacyDir} to ${projectDir}`)
+  }
+
+  return { migrated, legacyDir, projectDir }
 }
 
 export function acquireLock(dirPath: string): { acquired: boolean; release: () => void } {

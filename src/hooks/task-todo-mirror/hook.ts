@@ -11,9 +11,9 @@ import { DEBOUNCE_MS, HOOK_NAME } from "./constants";
 
 type TodoSyncCtx = PluginInput;
 
-function loadAllTasks(pluginConfig: MatrixxConfig): Task[] {
+function loadAllTasks(pluginConfig: MatrixxConfig, directory?: string): Task[] {
   try {
-    const dir = getTaskDir(pluginConfig);
+    const dir = getTaskDir(pluginConfig, directory);
     if (!existsSync(dir)) return [];
     const files = readdirSync(dir).filter((f) => f.endsWith(".json") && f.startsWith("T-"));
     const tasks: Task[] = [];
@@ -41,7 +41,7 @@ export function createTaskTodoMirrorHook(
     if (!sessionID) return
     lastSync.set(sessionID, Date.now())
     try {
-      const tasks = loadAllTasks(pluginConfig)
+      const tasks = loadAllTasks(pluginConfig, (ctx as unknown as Record<string, unknown>)?.directory as string | undefined)
       await syncAllTasksToTodos(ctx, tasks, sessionID)
       log(`[${HOOK_NAME}] Synced ${tasks.length} tasks to session`, { sessionID })
     } catch (err) {

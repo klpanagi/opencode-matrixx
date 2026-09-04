@@ -7,6 +7,8 @@ const MorpheusTasksConfigSchema = z.object({
   task_list_id: z.string().optional(),
   /** Enable Claude Code path compatibility mode */
   claude_code_compat: z.boolean().default(false),
+  /** Task storage scope: project → .matrixx/tasks per project (default), global → ~/.config/opencode/tasks/{listId} */
+  scope: z.enum(["global", "project"]).default("project").optional().describe("Task storage scope: project → .matrixx/tasks per project (default), global → ~/.config/opencode/tasks/{listId}"),
 })
 
 export const MorpheusConfigSchema = z.object({

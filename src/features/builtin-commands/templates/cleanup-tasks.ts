@@ -20,9 +20,13 @@ Examples:
 
 ## What This Command Does
 
-Cleans up completed tasks from the file-based task system (\`~/.config/opencode/tasks/{listId}/T-*.json\`) and shrinks the TUI sidebar:
+Cleans up completed tasks from the file-based task system and shrinks the TUI sidebar:
 
-1. **Scans** \`getTaskDir()/*.json\` via \`readdirSync\`
+Storage layout (hybrid, via \`getTaskDir(config, directory)\`):
+- Primary (default, \`scope: "project"\`): \`<project>/.matrixx/tasks/T-*.json\`
+- Fallback (\`scope: "global"\` or \`storage_path\` override): \`~/.config/opencode/tasks/{listId}/T-*.json\`
+
+1. **Scans** \`getTaskDir(config, directory)/*.json\` via \`readdirSync\` → resolves to \`.matrixx/tasks\` when \`scope=project\` (default) or legacy global path when \`scope=global\` / \`storage_path\` set
 2. **Filters** \`status==="completed"\` (and \`olderThan\` if given, via \`time_updated\`/\`time_created\`)
 3. **Deletes** matching files via \`unlinkSync\`
 4. **Reports** \`{deleted, remaining, deletedIds}\`
@@ -36,7 +40,7 @@ After running:
 - \`task_list\` → 0 pending (if no active)
 - \`curl http://127.0.0.1:4096/session/<ID>/todo | jq .\` → 0 pending
 - TUI \`Todos\` dock → shows only active, not 119 ✓
-- Files: \`ls ~/.config/opencode/tasks/matrixx/ | wc -l\` decreases by \`deleted\`
+- Files: \`ls .matrixx/tasks | wc -l\` decreases by \`deleted\` (project scope, default) or \`ls ~/.config/opencode/tasks/matrixx | wc -l\` decreases (global scope / legacy fallback)
 
 ---
 

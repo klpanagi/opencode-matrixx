@@ -6,6 +6,7 @@ import {
   acquireLockWithRetry,
   generateTaskId,
   getTaskDir,
+  migrateLegacyTasksIfNeeded,
   writeJsonAtomic,
 } from "../../features/task-storage/storage";
 import { log } from "../../shared/logger";
@@ -65,7 +66,14 @@ async function handleCreate(
 ): Promise<string> {
   try {
     const validatedArgs = TaskCreateInputSchema.parse(args)
-    const taskDir = getTaskDir(config)
+    const directory =
+      ((context as Record<string, unknown>)?.directory as string | undefined) ??
+      ((ctx as Record<string, unknown>)?.directory as string | undefined) ??
+      process.cwd()
+    try {
+      migrateLegacyTasksIfNeeded(config, directory)
+    } catch {}
+    const taskDir = getTaskDir(config, directory)
     const lock = await acquireLockWithRetry(taskDir)
 
     if (!lock.acquired) {
@@ -86,6 +94,7 @@ async function handleCreate(
         repoURL: validatedArgs.repoURL,
         parentID: validatedArgs.parentID,
         threadID: context.sessionID,
+        projectRoot: directory,
       };
 
       const validatedTask = TaskObjectSchema.parse(task);
