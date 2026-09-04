@@ -1,4 +1,5 @@
 import type { MatrixxConfig } from "../config";
+import { isTaskSystemEnabled } from "../shared/task-system-gating";
 
 type AgentWithPermission = { permission?: Record<string, unknown> };
 
@@ -11,7 +12,7 @@ export function applyToolConfig(params: {
   pluginConfig: MatrixxConfig;
   agentResult: Record<string, unknown>;
 }): void {
-  const denyTodoTools = params.pluginConfig.experimental?.task_system
+  const denyTodoTools = isTaskSystemEnabled(params.pluginConfig)
     ? { todowrite: "deny", todoread: "deny" }
     : {}
 
@@ -23,10 +24,11 @@ export function applyToolConfig(params: {
     LspCodeActionResolve: false,
     "task_*": false,
     teammate: false,
-    ...(params.pluginConfig.experimental?.task_system
+    ...(isTaskSystemEnabled(params.pluginConfig)
       ? { todowrite: false, todoread: false }
       : {}),
   };
+
 
   const isCliRunMode = process.env.OPENCODE_CLI_RUN_MODE === "true";
   const questionPermission = isCliRunMode ? "deny" : "allow";

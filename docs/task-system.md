@@ -34,7 +34,8 @@ The task system is gated behind the `experimental.task_system` flag. Add this to
 }
 ```
 
-> **Note**: There is also a root-level `new_task_system_enabled` field in the config schema. This field is **not consumed** by any runtime code — it is a planned field that was never wired up. Use `experimental.task_system` instead.
+Since v2.5.x, `task_system` defaults to `true` if omitted; fresh clones work with `matrixx.jsonc` without manual edit. To disable, set `false` explicitly. The first load auto-migrates missing field via `_migrations` marker `task_system_default_true`.
+> **Note**: There is also a root-level `new_task_system_enabled` field in the config schema. This field is **not consumed** by any runtime code, it is a planned field that was never wired up. OUT of scope for this migration, field remains unused. Use `experimental.task_system` instead.
 
 ### Task Storage Options
 
@@ -68,6 +69,8 @@ The task list ID (used as the storage subdirectory name) resolves with this prio
 4. `basename(process.cwd())` — the current working directory name
 
 All IDs are sanitized to `[a-zA-Z0-9_-]` characters only.
+
+Verification: `tail -n 100 /tmp/matrixx.log | grep -E "opencode-todo-writer|todo-sync|task-todo-mirror"` should show `writeTodosViaApi ok` with count and no `Cannot find module`; live check `await ctx.client.session.todo({path:{id: mainSessionID}})` returns pending tasks immediately.
 
 ---
 
@@ -645,6 +648,7 @@ This is **Matrixx's own implementation** based on observed Claude Code behavior 
 | `src/plugin/tool-registry.ts` | Conditional tool registration |
 | `src/plugin-handlers/tool-config-handler.ts` | Permission denials |
 | `src/plugin-handlers/agent-config-handler.ts` | `useTaskSystem` propagation |
+| `src/shared/task-system-gating.ts` | canonical gating predicate `isTaskSystemEnabled` + `TASK_SYSTEM_DEFAULT=true` |
 
 ### Key Dependencies
 

@@ -104,6 +104,25 @@ export function migrateConfigFile(
     }
   }
 
+  // Default task_system to true when missing (migration)
+  if ((copy.experimental as Record<string, unknown> | undefined)?.task_system === undefined) {
+    const existing = (copy.experimental as Record<string, unknown> | undefined) ?? {}
+    copy.experimental = { ...existing, task_system: true }
+    if (!existingMigrations.has("task_system_default_true")) {
+      allNewMigrations.push("task_system_default_true")
+      // Ensure _migrations array reflects new migration before write
+      // (early allNewMigrations flush already ran, so update copy directly)
+      const current = Array.isArray(copy._migrations)
+        ? [...(copy._migrations as string[])]
+        : Array.from(existingMigrations)
+      if (!current.includes("task_system_default_true")) {
+        current.push("task_system_default_true")
+        copy._migrations = current
+      }
+    }
+    needsWrite = true
+  }
+
   if (needsWrite) {
     const timestamp = new Date().toISOString().replace(/[:.]/g, "-")
     const backupPath = `${configPath}.bak.${timestamp}`

@@ -5,8 +5,9 @@ import type {
 } from "../agents/dynamic-agent-prompt-builder"
 import type { MatrixxConfig } from "../config"
 import type { Managers } from "../create-managers"
-import { log } from "../shared"
-import { filterDisabledTools } from "../shared/disabled-tools"
+import { log } from "../shared";
+import { filterDisabledTools } from "../shared/disabled-tools";
+import { isTaskSystemEnabled } from "../shared/task-system-gating";
 import {
   builtinTools,
   createAssemblyTool,
@@ -103,7 +104,7 @@ export function createToolRegistry(args: {
     client: ctx.client,
   })
 
-  const taskSystemEnabled = pluginConfig.experimental?.task_system ?? false
+  const taskSystemEnabled = isTaskSystemEnabled(pluginConfig)
   const taskToolsRecord: Record<string, ToolDefinition> = taskSystemEnabled
     ? {
         task_create: createTaskCreateTool(pluginConfig, ctx),

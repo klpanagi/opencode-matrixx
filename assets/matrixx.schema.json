@@ -4063,6 +4063,7 @@
           "type": "boolean"
         },
         "task_system": {
+          "default": true,
           "type": "boolean"
         },
         "plugin_load_timeout_ms": {
@@ -4076,6 +4077,9 @@
           "type": "boolean"
         }
       },
+      "required": [
+        "task_system"
+      ],
       "additionalProperties": false
     },
     "dcp": {

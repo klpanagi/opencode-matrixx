@@ -4,6 +4,7 @@ import type { MatrixxConfig } from "../../config/schema";
 import { getTaskDir, readJsonSafe } from "../../features/task-storage/storage";
 import type { Task } from "../../features/task-storage/types";
 import { log } from "../../shared/logger";
+import { isTaskSystemEnabled } from "../../shared/task-system-gating";
 import { syncAllTasksToTodos } from "../../tools/task/todo-sync";
 import { TaskObjectSchema } from "../../tools/task/types";
 import { DEBOUNCE_MS, HOOK_NAME } from "./constants";
@@ -31,7 +32,7 @@ export function createTaskTodoMirrorHook(
   ctx: TodoSyncCtx,
   pluginConfig: MatrixxConfig,
 ) {
-  const enabled = pluginConfig.experimental?.task_system ?? false
+  const enabled = isTaskSystemEnabled(pluginConfig)
   const pending = new Map<string, ReturnType<typeof setTimeout>>()
   const lastSync = new Map<string, number>()
 
