@@ -355,6 +355,8 @@ describe("migrateConfigFile", () => {
   test("does not write if no migration needed", () => {
     //#given: Config with current names
     const rawConfig: Record<string, unknown> = {
+      experimental: { task_system: true },
+      _migrations: ["task_system_default_true"],
       morpheus_agent: { disabled: false },
       agents: {
         morpheus: { model: "test" },
@@ -429,14 +431,16 @@ describe("migrateConfigFile", () => {
 
    test("does not set needsWrite when no model versions need migration", () => {
      // given: Config with current model versions
-     const rawConfig: Record<string, unknown> = {
-       agents: {
-         morpheus: { model: "openai/gpt-5.3-codex" },
-       },
-       categories: {
-         "my-category": { model: "anthropic/claude-opus-4-6" },
-       },
-     }
+    const rawConfig: Record<string, unknown> = {
+      experimental: { task_system: true },
+      _migrations: ["task_system_default_true"],
+      agents: {
+        morpheus: { model: "openai/gpt-5.3-codex" },
+      },
+      categories: {
+        "my-category": { model: "anthropic/claude-opus-4-6" },
+      },
+    }
 
      // when: Migrate config file
      const needsWrite = migrateConfigFile(testConfigPath, rawConfig)
@@ -664,7 +668,7 @@ describe("migrateConfigFile _migrations tracking", () => {
 
     // then: _migrations should be recorded
     expect(result).toBe(true)
-    expect(rawConfig._migrations).toEqual(["model-version:openai/gpt-5.2-codex->openai/gpt-5.3-codex"])
+    expect(rawConfig._migrations).toEqual(["model-version:openai/gpt-5.2-codex->openai/gpt-5.3-codex", "task_system_default_true"])
 
     // cleanup
     fs.rmSync(tmpDir, { recursive: true })
@@ -712,6 +716,7 @@ describe("migrateConfigFile _migrations tracking", () => {
     expect(rawConfig._migrations).toEqual([
       "model-version:openai/gpt-5.2-codex->openai/gpt-5.3-codex",
       "model-version:anthropic/claude-opus-4-5->anthropic/claude-opus-4-6",
+      "task_system_default_true",
     ])
 
     // cleanup
@@ -967,6 +972,8 @@ describe("migrateConfigFile with backup", () => {
     // given: Config with model setting (should NOT be converted to category)
     const testConfigPath = "/tmp/test-config-preserve-model.json"
     const rawConfig: Record<string, unknown> = {
+      experimental: { task_system: true },
+      _migrations: ["task_system_default_true"],
       agents: {
         "construct": { model: "anthropic/claude-haiku-4-5" },
         oracle: { model: "openai/gpt-5.2" },
@@ -993,6 +1000,8 @@ describe("migrateConfigFile with backup", () => {
     // given: Config with explicit category setting
     const testConfigPath = "/tmp/test-config-preserve-category.json"
     const rawConfig: Record<string, unknown> = {
+      experimental: { task_system: true },
+      _migrations: ["task_system_default_true"],
       agents: {
         "construct": { category: "quick" },
         oracle: { category: "source" },
@@ -1050,11 +1059,13 @@ describe("migrateConfigFile with backup", () => {
   test("does not write when no migration needed", () => {
      // given: Config with no migrations needed
      const testConfigPath = "/tmp/test-config-no-migration.json"
-     const rawConfig: Record<string, unknown> = {
-       agents: {
+    const rawConfig: Record<string, unknown> = {
+      experimental: { task_system: true },
+      _migrations: ["task_system_default_true"],
+      agents: {
         morpheus: { model: "test" },
-       },
-     }
+      },
+    }
 
      fs.writeFileSync(testConfigPath, globalThis.JSON.stringify({ agents: { sisyphus: { model: "test" } } }, null, 2))
      cleanupPaths.push(testConfigPath)
@@ -1195,7 +1206,7 @@ describe("migrateConfigFile with _migrations tracking", () => {
 
     // then: _migrations field should be added
     expect(needsWrite).toBe(true)
-    expect(rawConfig._migrations).toEqual(["model-version:openai/gpt-5.2-codex->openai/gpt-5.3-codex"])
+    expect(rawConfig._migrations).toEqual(["model-version:openai/gpt-5.2-codex->openai/gpt-5.3-codex", "task_system_default_true"])
     expect((rawConfig.agents as Record<string, Record<string, unknown>>).morpheus.model).toBe("openai/gpt-5.3-codex")
   })
 
@@ -1217,7 +1228,7 @@ describe("migrateConfigFile with _migrations tracking", () => {
     // then: Agent name migration happens (sisyphus→morpheus), but model should NOT change (user reverted)
     expect(needsWrite).toBe(true)
     expect((rawConfig.agents as Record<string, Record<string, unknown>>).morpheus.model).toBe("openai/gpt-5.2-codex")
-    expect(rawConfig._migrations).toEqual(["model-version:openai/gpt-5.2-codex->openai/gpt-5.3-codex"])
+    expect(rawConfig._migrations).toEqual(["model-version:openai/gpt-5.2-codex->openai/gpt-5.3-codex", "task_system_default_true"])
   })
 
   test("preserves existing _migrations and appends new ones", () => {
@@ -1243,6 +1254,7 @@ describe("migrateConfigFile with _migrations tracking", () => {
     expect(rawConfig._migrations).toEqual([
       "model-version:openai/gpt-5.2-codex->openai/gpt-5.3-codex",
       "model-version:anthropic/claude-opus-4-5->anthropic/claude-opus-4-6",
+      "task_system_default_true",
     ])
   })
 

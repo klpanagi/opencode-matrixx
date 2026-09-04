@@ -29,8 +29,8 @@ function extractTodos(response: unknown): TodoSnapshot[] {
   return []
 }
 
-async function resolveTodoWriter(): Promise<TodoWriter | null> {
-  return sharedResolveTodoWriter() as Promise<TodoWriter | null>
+async function resolveTodoWriter(ctx: PluginInput): Promise<TodoWriter | null> {
+  return sharedResolveTodoWriter(ctx as unknown as never) as Promise<TodoWriter | null>
 }
 
 export function _resetForTesting(): void {
@@ -89,7 +89,7 @@ export function createCompactionTodoPreserverHook(
       return
     }
 
-    const writer = await resolveTodoWriter()
+    const writer = await resolveTodoWriter(ctx)
     if (!writer) {
       log(`[${HOOK_NAME}] Todo.update unavailable — todos not restored after compaction (visible failure)`, { sessionID })
       return

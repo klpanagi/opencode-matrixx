@@ -57,8 +57,6 @@ step "Mock-heavy tests (isolated) — individual files"
 for test in \
   tests/tools/delegate-agent/sync-executor.test.ts \
   tests/tools/delegate-agent/session-creator.test.ts \
-  tests/features/opencode-skill-loader/loader.test.ts \
-  tests/features/opencode-skill-loader/agents-skills-global.test.ts \
   tests/tools/session-manager/storage.test.ts \
   tests/hooks/oracle-md-only/index.test.ts \
   tests/hooks/architect/index.test.ts \
@@ -99,8 +97,6 @@ find tests script -name '*.test.ts' -type f \
     -e 'tests/features/tmux-subagent/' \
     -e 'tests/tools/delegate-agent/sync-executor.test.ts' \
     -e 'tests/tools/delegate-agent/session-creator.test.ts' \
-    -e 'tests/features/opencode-skill-loader/loader.test.ts' \
-    -e 'tests/features/opencode-skill-loader/agents-skills-global.test.ts' \
     -e 'tests/tools/session-manager/storage.test.ts' \
     -e 'tests/hooks/oracle-md-only/index.test.ts' \
     -e 'tests/hooks/architect/index.test.ts' \
