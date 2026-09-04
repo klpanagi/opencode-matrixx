@@ -9,6 +9,7 @@ import { DCP_PROFILE_TEMPLATE } from "./templates/dcp-profile"
 import { END_ULTRAWORK_TEMPLATE } from "./templates/end-ultrawork"
 import { EVOLUTION_TEMPLATE } from "./templates/evolution"
 import { CLEANUP_TASKS_TEMPLATE } from "./templates/cleanup-tasks"
+import { TASK_LIST_TEMPLATE } from "./templates/task-list"
 import { HANDOFF_TEMPLATE } from "./templates/handoff"
 import { INIT_DEEP_TEMPLATE } from "./templates/init-deep"
 import { CANCEL_LOOP_TEMPLATE, MATRIX_LOOP_TEMPLATE } from "./templates/matrix-loop"
@@ -272,6 +273,17 @@ ${CLEANUP_TASKS_TEMPLATE}
 $ARGUMENTS
 </user-request>`,
     argumentHint: "[--olderThan <duration>] [--all]",
+  },
+  "task-list": {
+    description: "(builtin) Show current state of all tasks",
+    template: `<command-instruction>
+${TASK_LIST_TEMPLATE}
+</command-instruction>
+
+<user-request>
+$ARGUMENTS
+</user-request>`,
+    argumentHint: "[--all] [--status <pending|in_progress|completed|deleted>]",
   },
 }
 
