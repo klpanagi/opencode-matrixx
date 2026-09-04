@@ -1,5 +1,5 @@
 {
-  "\$schema": "https://raw.githubusercontent.com/klpanagi/opencode-matrixx/refs/heads/dev/dist/matrixx.schema.json",
+  "$schema": "https://raw.githubusercontent.com/klpanagi/opencode-matrixx/refs/heads/dev/dist/matrixx.schema.json",
   "experimental": {
     "task_system": true
   }

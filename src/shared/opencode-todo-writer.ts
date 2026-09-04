@@ -1,3 +1,6 @@
+import { existsSync } from "node:fs"
+import { homedir } from "node:os"
+import { join } from "node:path"
 import type { PluginInput } from "@opencode-ai/plugin"
 import { log } from "./logger"
 
@@ -93,12 +96,52 @@ export async function resolveTodoWriter(ctx?: PluginInput): Promise<TodoWriter |
       log("[opencode-todo-writer] Resolved Todo.update", { loader: "host-blessed" })
       return cachedWriter
     }
-    log("[opencode-todo-writer] Todo.update unavailable — host-blessed service not found", {
-      loader: "host-blessed",
-    })
-    cachedWriter = null
+    log("[opencode-todo-writer] host-blessed not found — using direct DB fallback", { loader: "fallback" })
+    const fallback: TodoWriter = async ({ sessionID, todos }) => {
+      const getOpencodeDbPath = (): string | null => {
+        const candidates: string[] = []
+        if (process.env.XDG_DATA_HOME) candidates.push(join(process.env.XDG_DATA_HOME, "opencode", "opencode.db"))
+        candidates.push(join(homedir(), ".local", "share", "opencode", "opencode.db"))
+        candidates.push(join(homedir(), ".config", "opencode", "opencode.db"))
+        for (const p of candidates) if (existsSync(p)) return p
+        return null
+      }
+      const dbPath = getOpencodeDbPath()
+      if (!dbPath || !existsSync(dbPath)) throw new Error("opencode.db not found")
+      for (let attempt = 0; attempt < 3; attempt++) {
+        try {
+          // @ts-ignore — bun:sqlite is runtime only
+          const mod = await import("bun:sqlite")
+          const Database = (mod as unknown as { Database: new (path: string) => { exec: (s: string) => unknown; prepare: (s: string) => { run: (...a: unknown[]) => unknown }; close: () => void } }).Database
+          const db = new Database(dbPath)
+          const now = Date.now()
+          try {
+            db.exec("BEGIN IMMEDIATE")
+            db.prepare("DELETE FROM todo WHERE session_id = ?").run(sessionID)
+            const stmt = db.prepare("INSERT INTO todo (session_id, content, status, priority, position, time_created, time_updated) VALUES (?, ?, ?, ?, ?, ?, ?)")
+            todos.forEach((t, idx) => stmt.run(sessionID, t.content, t.status, t.priority ?? "medium", idx, now, now))
+            db.exec("COMMIT")
+          } catch (inner) { try { db.exec("ROLLBACK") } catch {} throw inner } finally { db.close() }
+          log("[opencode-todo-writer] fallback directDbWrite ok", { sessionID, count: todos.length })
+          break
+        } catch (err) {
+          const msg = String(err)
+          const busy = msg.includes("BUSY") || msg.includes("busy") || msg.includes("locked")
+          if (busy && attempt < 2) { await new Promise<void>((r) => setTimeout(r, 25 * (attempt + 1))); continue }
+          log("[opencode-todo-writer] fallback directDbWrite failed", { error: msg })
+          throw err
+        }
+      }
+      try {
+        // @ts-ignore — optional
+        const { createOpencodeClient } = await import("@opencode-ai/sdk")
+        const client = createOpencodeClient({ baseUrl: "http://127.0.0.1:4096" })
+        await (client as unknown as { session: { todo: (o: unknown) => Promise<unknown> } }).session.todo({ path: { id: sessionID } }).catch(()=>{})
+      } catch {}
+    }
+    cachedWriter = fallback
     cachedCtx = ctx
-    return null
+    return fallback
   } catch (err) {
     log("[opencode-todo-writer] Failed to resolve Todo.update", {
       loader: "host-blessed",
