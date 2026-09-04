@@ -119,7 +119,7 @@ export async function resolveTodoWriter(ctx?: PluginInput): Promise<TodoWriter |
             db.exec("BEGIN IMMEDIATE")
             db.prepare("DELETE FROM todo WHERE session_id = ?").run(sessionID)
             const stmt = db.prepare("INSERT INTO todo (session_id, content, status, priority, position, time_created, time_updated) VALUES (?, ?, ?, ?, ?, ?, ?)")
-            todos.forEach((t, idx) => stmt.run(sessionID, t.content, t.status, t.priority ?? "medium", idx, now, now))
+            todos.forEach((t, idx) => { stmt.run(sessionID, t.content, t.status, t.priority ?? "medium", idx, now, now); })
             db.exec("COMMIT")
           } catch (inner) { try { db.exec("ROLLBACK") } catch {} throw inner } finally { db.close() }
           log("[opencode-todo-writer] fallback directDbWrite ok", { sessionID, count: todos.length })
