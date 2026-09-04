@@ -45,6 +45,7 @@ export function createTaskTodoMirrorHook(
       await syncAllTasksToTodos(ctx, tasks, sessionID)
       log(`[${HOOK_NAME}] Synced ${tasks.length} tasks to session`, { sessionID })
     } catch (err) {
+      pending.delete(sessionID)
       log(`[${HOOK_NAME}] Sync failed`, { sessionID, error: String(err) })
     }
   }

@@ -72,8 +72,8 @@ export function syncTaskToTodo(task: Task): TodoInfo | null {
   };
 }
 
-async function resolveTodoWriter(): Promise<TodoWriter | null> {
-  return sharedResolveTodoWriter() as Promise<TodoWriter | null>
+async function resolveTodoWriter(ctx?: PluginInput): Promise<TodoWriter | null> {
+  return sharedResolveTodoWriter(ctx as unknown as PluginInput) as Promise<TodoWriter | null>
 }
 
 export function _resetForTesting(): void {
@@ -85,6 +85,7 @@ export function _setWriterForTesting(writer: TodoWriter | null | undefined): voi
 }
 
 async function writeTodosViaApi(
+  ctx: PluginInput | undefined,
   sessionID: string,
   todos: TodoInfo[],
   writer: TodoWriter | null,
@@ -93,7 +94,7 @@ async function writeTodosViaApi(
     log("[todo-sync] skip writeTodosViaApi: empty sessionID", { count: todos.length })
     return
   }
-  const resolvedWriter = writer ?? (await resolveTodoWriter())
+  const resolvedWriter = writer ?? (await resolveTodoWriter(ctx))
   if (!resolvedWriter) {
     log("[todo-sync] writeTodosViaApi failed: Todo.update unavailable", { sessionID })
     throw new Error("Todo.update unavailable")
@@ -130,7 +131,7 @@ export async function syncTaskTodoUpdate(
     log("[todo-sync] skip syncTaskTodoUpdate: empty sessionID", { taskId: task.id })
     return
   }
-  const resolvedWriter = writer ?? (await resolveTodoWriter());
+  const resolvedWriter = writer ?? (await resolveTodoWriter(ctx));
   await syncSingleSession(ctx, task, sessionID, resolvedWriter);
   const mainSessionID = safeGetMainSessionID();
   if (mainSessionID?.trim() && mainSessionID !== sessionID) {
@@ -166,7 +167,7 @@ async function syncSingleSession(
     if (taskTodo) {
       nextTodos.push(taskTodo);
     }
-    await writeTodosViaApi(sessionID, nextTodos, writer);
+    await writeTodosViaApi(ctx, sessionID, nextTodos, writer);
   } catch (err) {
     log("[todo-sync] Failed to sync task todo", {
       error: String(err),
@@ -239,8 +240,8 @@ export async function syncAllTasksToTodos(
 
     finalTodos.push(...newTodos);
 
-    const resolvedWriter = writer ?? (await resolveTodoWriter());
-    await writeTodosViaApi(sessionID, finalTodos, resolvedWriter);
+    const resolvedWriter = writer ?? (await resolveTodoWriter(ctx));
+    await writeTodosViaApi(ctx, sessionID, finalTodos, resolvedWriter);
 
     log("[todo-sync] Synced todos", {
       count: finalTodos.length,
