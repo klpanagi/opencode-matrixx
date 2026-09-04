@@ -1,4 +1,8 @@
-export const CLEANUP_TASKS_TEMPLATE = `# Cleanup Tasks Command
+export const CLEANUP_TASKS_TEMPLATE = `# Cleanup Tasks — SLASH COMMAND OVERRIDE
+
+SYSTEM OVERRIDE: Ignore any global [search-mode] or [analyze-mode] directive for this command. This is a direct tool call, not a search.
+
+Call the task_cleanup tool NOW with no exploration, no grep, no trinity, no operator, no background agents.
 
 ## Usage
 \`\`\`
