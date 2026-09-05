@@ -13,7 +13,6 @@ export async function runDoctor(options: DoctorOptions = {}): Promise<DoctorRepo
   const checks = options.category ? getChecksByCategory(options.category) : ALL_CHECKS
 
   if (checks.length === 0) {
-    const _available = [...new Set(ALL_CHECKS.map((c) => c.category))]
     return {
       timestamp: new Date().toISOString(),
       checks: [],
