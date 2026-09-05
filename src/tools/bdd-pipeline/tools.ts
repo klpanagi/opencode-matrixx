@@ -115,7 +115,6 @@ function makeDeps(args: {
     .split("/")
     .pop()
     ?.replace(/\.feature$/i, "") ?? "feature"
-  const _featureDir = resolvePath(args.outDir, featureName)
 
   return {
     parseFeature: async (path: string): Promise<ParseFeatureResult> => {
