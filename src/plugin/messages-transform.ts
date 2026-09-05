@@ -62,7 +62,6 @@ export function createMessagesTransformHandler(args: {
   hooks: CreatedHooks
 }): (input: Record<string, never>, output: MessagesTransformOutput) => Promise<void> {
   return async (input, output): Promise<void> => {
-    await args.hooks.taskTodoMirror?.["experimental.chat.messages.transform"]?.(input, output)
     const sessionID = extractSessionID(output.messages)
     if (!sessionID) {
     await args.hooks.contextInjectorMessagesTransform?.[

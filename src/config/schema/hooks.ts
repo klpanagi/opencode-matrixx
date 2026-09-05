@@ -1,6 +1,7 @@
 import { z } from "zod"
 
 export const HookNameSchema = z.enum([
+  "task-continuation-enforcer",
   "todo-continuation-enforcer",
   "context-window-monitor",
   "session-recovery",
@@ -50,7 +51,6 @@ export const HookNameSchema = z.enum([
   "env-file-write-guard",
   "json-error-recovery",
   "bash-file-read-guard",
-  "todo-description-override",
   "runtime-fallback",
   "read-image-resizer",
   "webfetch-redirect-guard",
@@ -58,7 +58,6 @@ export const HookNameSchema = z.enum([
   "tool-pair-validator",
   "quality-gate",
   "task-notepad",
-  "task-todo-mirror",
   "design-intent-preserver",
   "rtk-bash-rewriter",
   "mcp-startup-notification",

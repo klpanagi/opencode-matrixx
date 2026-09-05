@@ -8,9 +8,7 @@ import {
   readJsonSafe,
   writeJsonAtomic,
 } from "../../features/task-storage/storage";
-import { log } from "../../shared/logger";
 import { TASK_ID_PATTERN } from "./constants";
-import { syncTaskTodoUpdate } from "./todo-sync";
 import { TaskObjectSchema, TaskUpdateInputSchema } from "./types";
 
 function parseTaskId(id: string): string | null {
@@ -27,8 +25,6 @@ export function createTaskUpdateTool(
 
 Supports updating: subject, description, status, activeForm, owner, metadata.
 For blocks/blockedBy: use addBlocks/addBlockedBy to append (additive, not replacement).
-For metadata: merge with existing, set key to null to delete.
-Syncs to OpenCode Todo API after update.
 
 **IMPORTANT - Dependency Management:**
 Use \`addBlockedBy\` to declare dependencies on other tasks.
@@ -137,28 +133,6 @@ async function handleUpdate(
 
       const validatedTask = TaskObjectSchema.parse(task);
       writeJsonAtomic(taskPath, validatedTask);
-
-      let todoSyncFailed = false;
-      let todoSyncError: string | undefined;
-      try {
-        await syncTaskTodoUpdate(ctx, validatedTask, context.sessionID);
-      } catch (err) {
-        todoSyncFailed = true;
-        todoSyncError = err instanceof Error ? err.message : String(err);
-        log("[todo-sync] Failed to sync task todo", {
-          taskId: validatedTask.id,
-          sessionID: context.sessionID,
-          error: todoSyncError,
-        });
-      }
-
-      if (todoSyncFailed) {
-        return JSON.stringify({
-          task: validatedTask,
-          todoSyncFailed: true,
-          warning: `todo sync failed: ${todoSyncError}`,
-        });
-      }
 
       return JSON.stringify({ task: validatedTask });
     } finally {

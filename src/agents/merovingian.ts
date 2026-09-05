@@ -40,6 +40,7 @@ export const ORACLE_PLAN_BUILDER_METADATA: AgentPromptMetadata = {
     { domain: "Work planning", trigger: "Complex feature implementation, refactoring" },
     { domain: "Complex task breakdown", trigger: "Large ambiguous requests needing decomposition" },
     { domain: "Self-review", trigger: "After completing significant implementation" },
+    { domain: "Plan generation", trigger: "ANY .matrixx/plans/*.md creation or planning doc → oracle ONLY, never Mouse" },
   ],
   useWhen: [
     "Complex architecture design",

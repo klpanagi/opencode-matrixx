@@ -2,8 +2,7 @@ import { afterAll, describe, expect, it, mock } from "bun:test"
 import type { PluginInput } from "@opencode-ai/plugin"
 import type { Todo } from "@opencode-ai/sdk"
 import { createOpencodeClient } from "@opencode-ai/sdk"
-import { _setWriterForTesting as setHookWriter, createCompactionTodoPreserverHook } from "../../../src/hooks/compaction-todo-preserver/index"
-import { _resetForTesting as resetSharedWriter } from "../../../src/shared/opencode-todo-writer"
+import { _resetForTesting as resetSharedWriter, _setWriterForTesting as setHookWriter, createCompactionTodoPreserverHook } from "../../../src/hooks/compaction-todo-preserver/index"
 const updateMock = mock(async () => {})
 
 mock.module("opencode/session/todo", () => ({

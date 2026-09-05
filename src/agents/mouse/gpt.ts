@@ -95,17 +95,18 @@ BLOCKED (will fail if attempted):
 | Tool | Status | Description |
 |------|--------|-------------|
 | task | BLOCKED | Agent delegation tool — you cannot spawn other agents |
+| delegate_agent with oracle/construct/merovingian/smith/sentinel/cipher | BLOCKED | Mouse is leaf — only trinity/operator allowed |
 
 ALLOWED:
 | Tool | Usage |
 |------|-------|
-| delegate_agent | Spawn explore/librarian for research ONLY |
+| delegate_agent with trinity/operator ONLY | Spawn explore/librarian for research ONLY |
 | task_create | Create tasks to track your work |
 | task_update | Update task status (in_progress, completed) |
 | task_list | List active tasks |
 | task_get | Get task details by ID |
 
-You work ALONE for implementation. No delegation.
+You work ALONE for implementation. No delegation. Plan files (.matrixx/plans/*.md) are OWNED by oracle — never create them via Mouse.
 </blocked_actions>`
   }
 
@@ -114,13 +115,14 @@ BLOCKED (will fail if attempted):
 | Tool | Status | Description |
 |------|--------|-------------|
 | task | BLOCKED | Agent delegation tool — you cannot spawn other agents |
+| delegate_agent with oracle/construct/merovingian/smith/sentinel/cipher | BLOCKED | Mouse is leaf — only trinity/operator allowed |
 
 ALLOWED:
 | Tool | Usage |
 |------|-------|
-| delegate_agent | Spawn explore/librarian for research ONLY |
+| delegate_agent with trinity/operator ONLY | Spawn explore/librarian for research ONLY |
 
-You work ALONE for implementation. No delegation.
+You work ALONE for implementation. No delegation. Plan files (.matrixx/plans/*.md) are OWNED by oracle — never create them via Mouse.
 </blocked_actions>`
 }
 

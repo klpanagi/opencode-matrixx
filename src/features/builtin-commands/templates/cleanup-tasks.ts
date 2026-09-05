@@ -20,7 +20,7 @@ Examples:
 
 ## What This Command Does
 
-Cleans up completed tasks from the file-based task system and shrinks the TUI sidebar:
+Cleans up completed tasks from the file-based task system (dedicated Matrixx viewer):
 
 Storage layout (hybrid, via \`getTaskDir(config, directory)\`):
 - Primary (default, \`scope: "project"\`): \`<project>/.matrixx/tasks/T-*.json\`
@@ -30,16 +30,14 @@ Storage layout (hybrid, via \`getTaskDir(config, directory)\`):
 2. **Filters** \`status==="completed"\` (and \`olderThan\` if given, via \`time_updated\`/\`time_created\`)
 3. **Deletes** matching files via \`unlinkSync\`
 4. **Reports** \`{deleted, remaining, deletedIds}\`
-5. **TUI auto-shrinks** on next \`task-todo-mirror\` sync (300ms debounce) — \`finalTodos\` no longer contains those \`completed\` rows, fallback \`DELETE+INSERT\` writes only active \`pending\`/\`in_progress\` to \`todo\` table.
-
-TUI now shows only \`pending\`/\`in_progress\` (0-5 rows) — history stays in git, not sidebar. Without \`/cleanup-tasks\`, completed tasks remain in files but are hidden from TUI via \`todo-sync.ts\` filter.
+View remaining tasks via \`/task-list\` or \`task_list\` tool — the dedicated Matrixx task viewer (file-based, no sync). Without \`/cleanup-tasks\`, completed tasks remain on disk for audit.
 
 ## Verification
 
 After running:
 - \`task_list\` → 0 pending (if no active)
-- \`curl http://127.0.0.1:4096/session/<ID>/todo | jq .\` → 0 pending
-- TUI \`Todos\` dock → shows only active, not 119 ✓
+- \`task_list\` → shows remaining active tasks (pending/in_progress)
+- \`task_list --all\` → shows counts by status
 - Files: \`ls .matrixx/tasks | wc -l\` decreases by \`deleted\` (project scope, default) or \`ls ~/.config/opencode/tasks/matrixx | wc -l\` decreases (global scope / legacy fallback)
 
 ---

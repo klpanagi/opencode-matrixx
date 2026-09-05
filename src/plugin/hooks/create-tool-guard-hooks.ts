@@ -17,8 +17,6 @@ import {
   createTaskEditGuardHook,
   createTaskNotepadHook,
   createTasksTodowriteDisablerHook,
-  createTaskTodoMirrorHook,
-  createTodoDescriptionOverrideHook,
   createToolOutputTruncatorHook,
   createWebFetchRedirectGuardHook,
   createWriteExistingFileGuardHook,
@@ -46,7 +44,6 @@ export type ToolGuardHooks = {
   envFileWriteGuard: ReturnType<typeof createEnvFileWriteGuardHook> | null
   jsonErrorRecovery: ReturnType<typeof createJsonErrorRecoveryHook> | null
   bashFileReadGuard: ReturnType<typeof createBashFileReadGuardHook> | null
-  todoDescriptionOverride: ReturnType<typeof createTodoDescriptionOverrideHook> | null
   readImageResizer: ReturnType<typeof createReadImageResizerHook> | null
   webfetchRedirectGuard: ReturnType<typeof createWebFetchRedirectGuardHook> | null
   hashlineEditDiffEnhancer: ReturnType<typeof createHashlineEditDiffEnhancerHook> | null
@@ -54,7 +51,6 @@ export type ToolGuardHooks = {
   taskNotepad: ReturnType<typeof createTaskNotepadHook> | null
   taskEditGuard: ReturnType<typeof createTaskEditGuardHook> | null
   evolutionWatcher: ReturnType<typeof createEvolutionWatcherHook> | null
-  taskTodoMirror: ReturnType<typeof createTaskTodoMirrorHook> | null
 }
 
 export function createToolGuardHooks(args: {
@@ -132,10 +128,6 @@ export function createToolGuardHooks(args: {
     ? safeHook("bash-file-read-guard", () => createBashFileReadGuardHook())
     : null
 
-  const todoDescriptionOverride = isHookEnabled("todo-description-override")
-    ? safeHook("todo-description-override", () => createTodoDescriptionOverrideHook())
-    : null
-
   const readImageResizer = isHookEnabled("read-image-resizer")
     ? safeHook("read-image-resizer", () => createReadImageResizerHook(ctx))
     : null
@@ -165,10 +157,6 @@ export function createToolGuardHooks(args: {
     ? safeHook("evolution-watcher", () => createEvolutionWatcherHook(ctx, pluginConfig.evolution))
     : null
 
-  const taskTodoMirror = isHookEnabled("task-todo-mirror")
-    ? safeHook("task-todo-mirror", () => createTaskTodoMirrorHook(ctx, pluginConfig))
-    : null
-
   return {
     commentChecker,
     toolOutputTruncator,
@@ -183,7 +171,6 @@ export function createToolGuardHooks(args: {
     envFileWriteGuard,
     jsonErrorRecovery,
     bashFileReadGuard,
-    todoDescriptionOverride,
     readImageResizer,
     webfetchRedirectGuard,
     hashlineEditDiffEnhancer,
@@ -191,6 +178,5 @@ export function createToolGuardHooks(args: {
     taskNotepad,
     taskEditGuard,
     evolutionWatcher,
-    taskTodoMirror,
   }
 }

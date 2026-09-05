@@ -49,15 +49,14 @@ export { createSessionRecoveryHook, type SessionRecoveryHook, type SessionRecove
 export { hasIncompleteTodos } from "./session-todo-status";
 export { createStartWorkHook } from "./start-work";
 export { createStopContinuationGuardHook, type StopContinuationGuard } from "./stop-continuation-guard";
+export { createTaskContinuationEnforcer, type TaskContinuationEnforcer } from "./task-continuation-enforcer";
 export { createTaskEditGuardHook } from "./task-edit-guard";
 export { createTaskNotepadHook } from "./task-notepad"
 export { createTaskResumeInfoHook } from "./task-resume-info";
-export { createTaskTodoMirrorHook } from "./task-todo-mirror";
 export { createTasksTodowriteDisablerHook } from "./tasks-todowrite-disabler";
 export { createThinkModeHook } from "./think-mode";
 export { createThinkingBlockValidatorHook } from "./thinking-block-validator";
 export { createTodoContinuationEnforcer, type TodoContinuationEnforcer } from "./todo-continuation-enforcer";
-export { createTodoDescriptionOverrideHook } from "./todo-description-override"
 export { createToolOutputTruncatorHook } from "./tool-output-truncator";
 export { createToolPairValidatorHook } from "./tool-pair-validator"
 export { createUnstableAgentBabysitterHook } from "./unstable-agent-babysitter";
