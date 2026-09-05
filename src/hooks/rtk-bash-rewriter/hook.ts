@@ -1,11 +1,10 @@
 import type { PluginInput } from "@opencode-ai/plugin"
 import type { MatrixxConfig } from "../../config"
 import { log } from "../../shared"
-import { DEFAULT_TIMEOUT_MS, RTK_BINARY_NAME, RTK_REWRITE_COMMAND } from "./constants"
+import { RTK_BINARY_NAME, RTK_REWRITE_COMMAND } from "./constants"
 
 export function createRtkBashRewriterHook(_ctx: PluginInput, config: MatrixxConfig) {
   const rtkConfig = config.rtk
-  const _timeoutMs = rtkConfig?.timeout_ms ?? DEFAULT_TIMEOUT_MS
   const binaryPath = rtkConfig?.binary_path ?? RTK_BINARY_NAME
 
   // Check for rtk binary at creation time (not per-call)
