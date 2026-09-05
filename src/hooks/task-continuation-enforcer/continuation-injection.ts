@@ -7,19 +7,18 @@ import {
   findNearestMessageWithFieldsFromSDK,
   type ToolPermission,
 } from "../../features/hook-message-injector"
+import { getTaskDir, readJsonSafe } from "../../features/task-storage/storage"
+import type { Task } from "../../features/task-storage/types"
 import { getAgentConfigKey } from "../../shared/agent-display-names"
 import { log } from "../../shared/logger"
 import { isSqliteBackend } from "../../shared/opencode-storage-detection"
-
+import { TaskObjectSchema } from "../../tools/task/types"
 import {
   CONTINUATION_PROMPT,
   DEFAULT_SKIP_AGENTS,
   HOOK_NAME,
 } from "./constants"
 import { getMessageDir } from "./message-directory"
-import { getTaskDir, readJsonSafe } from "../../features/task-storage/storage"
-import type { Task } from "../../features/task-storage/types"
-import { TaskObjectSchema } from "../../tools/task/types"
 import type { SessionStateStore } from "./session-state"
 import { getIncompleteTaskCount } from "./todo"
 import type { ResolvedMessageInfo } from "./types"
@@ -65,7 +64,7 @@ export async function injectContinuation(args: {
     return
   }
 
-  let tasks: Task[] = []
+  const tasks: Task[] = []
   let total = 0
   try {
     const taskDir = getTaskDir({}, ctx.directory)

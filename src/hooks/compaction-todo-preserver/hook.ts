@@ -22,7 +22,7 @@ function extractTodos(response: unknown): TodoSnapshot[] {
   }
   return []
 }
-let testWriter: TodoWriter | null | undefined = undefined
+let testWriter: TodoWriter | null | undefined 
 
   async function resolveTodoWriter(_ctx: PluginInput): Promise<TodoWriter | null> {
   if (testWriter !== undefined) return testWriter
