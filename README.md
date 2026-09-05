@@ -100,6 +100,9 @@ Create `matrixx.jsonc` in your project root:
 }
 ```
 
+> **Full example:** See [`matrixx.example.jsonc`](./matrixx.example.jsonc) — a fully annotated reference covering every configuration parameter (agents, categories, **headroom**, **context-mode** (external), DCP, RTK, security, tmux, assembly, evolution, and more) with inline comments and defaults. Copy the sections you need into your project `.opencode/matrixx.jsonc` or user `~/.config/opencode/matrixx.jsonc` (both support JSONC comments).
+> Full guide: [Configuration →](docs/configurations.md) · [Context Management (5 layers) →](docs/context-management.md)
+
 ### Authenticate
 
 ```bash

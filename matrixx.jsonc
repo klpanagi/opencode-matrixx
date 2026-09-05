@@ -1,5 +1,8 @@
 {
   "$schema": "https://raw.githubusercontent.com/klpanagi/opencode-matrixx/refs/heads/dev/dist/matrixx.schema.json",
+  // Full annotated example with every config parameter → ./matrixx.example.jsonc
+  // Copy sections you need into this file or into ~/.config/opencode/matrixx.jsonc (user config).
+  // Both files support JSONC comments. See docs/configurations.md and docs/context-management.md.
   "experimental": {
     "task_system": true
   }
