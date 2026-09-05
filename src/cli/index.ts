@@ -5,6 +5,7 @@
  * Commands:
  *   doctor    - Environment diagnostics and health checks
  *   install   - Interactive setup wizard (--no-tui for CI)
+ *   setup     - Standalone setup wizard for deps + matrixx.jsonc generation
  *   version   - Display version information
  *   help      - Display help information
  */
@@ -14,6 +15,7 @@ import { dirname, join } from "node:path"
 import { fileURLToPath } from "node:url"
 import { executeDoctor } from "./doctor"
 import { executeInstall } from "./install"
+import { executeSetup } from "./setup"
 
 function getVersion(): string {
   try {
@@ -45,6 +47,7 @@ Usage: bunx opencode-matrixx <command> [options]
 Commands:
   doctor     Environment diagnostics and health checks
   install    Interactive setup wizard
+  setup      Standalone setup wizard for deps + matrixx.jsonc generation
   version    Display version information
   help       Display this help message
 
@@ -55,6 +58,8 @@ Options:
   --no-tui      (install) Run in non-interactive mode (CI/CD)
   --local       (install) Use local repo file:// path (dev only)
   --verbose     (install) Display detailed logs
+  --yes, -y     (setup) Non-interactive defaults (no prompts)
+  --dry-run     (setup) Preview changes without writing
 
 Doctor categories:
   installation   Plugin registration and OpenCode version
@@ -81,6 +86,8 @@ interface ParsedArgs {
   noTui: boolean
   verbose: boolean
   local: boolean
+  yes: boolean
+  dryRun: boolean
   claude?: "yes" | "no" | "max20"
   openai?: "yes" | "no"
   gemini?: "yes" | "no"
@@ -98,6 +105,8 @@ function parseArgs(argv: string[]): ParsedArgs {
     noTui: false,
     verbose: false,
     local: false,
+    yes: false,
+    dryRun: false,
     extra: [],
   }
 
@@ -116,6 +125,10 @@ function parseArgs(argv: string[]): ParsedArgs {
       result.help = true
     } else if (a === "--json") {
       result.json = true
+    } else if (a === "--yes" || a === "-y") {
+      result.yes = true
+    } else if (a === "--dry-run") {
+      result.dryRun = true
     } else if (a === "--no-tui") {
       result.noTui = true
     } else if (a === "--local") {
@@ -186,6 +199,12 @@ async function main(): Promise<void> {
       opencodeZen: args.opencodeZen,
       zaiCodingPlan: args.zaiCodingPlan,
     })
+    console.log(output)
+    return
+  }
+
+  if (args.command === "setup") {
+    const output = await executeSetup({ dryRun: args.dryRun, yes: args.yes })
     console.log(output)
     return
   }
