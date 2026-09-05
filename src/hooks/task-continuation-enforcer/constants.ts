@@ -4,7 +4,7 @@ export const HOOK_NAME = "task-continuation-enforcer"
 
 export const DEFAULT_SKIP_AGENTS = ["oracle", "compaction"]
 
-export const CONTINUATION_PROMPT = `${createSystemDirective(SystemDirectiveTypes.TODO_CONTINUATION)}
+export const CONTINUATION_PROMPT = `${createSystemDirective(SystemDirectiveTypes.TASK_CONTINUATION)}
 
 Incomplete Matrixx tasks remain. Continue working on the next pending task.
 

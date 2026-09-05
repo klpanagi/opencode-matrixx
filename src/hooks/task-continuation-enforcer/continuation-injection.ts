@@ -1,3 +1,4 @@
+import { existsSync, readdirSync } from "node:fs"
 import type { PluginInput } from "@opencode-ai/plugin"
 
 import type { BackgroundManager } from "../../features/background-agent"
@@ -6,7 +7,6 @@ import {
   findNearestMessageWithFieldsFromSDK,
   type ToolPermission,
 } from "../../features/hook-message-injector"
-import { normalizeSDKResponse } from "../../shared"
 import { getAgentConfigKey } from "../../shared/agent-display-names"
 import { log } from "../../shared/logger"
 import { isSqliteBackend } from "../../shared/opencode-storage-detection"
@@ -17,9 +17,12 @@ import {
   HOOK_NAME,
 } from "./constants"
 import { getMessageDir } from "./message-directory"
+import { getTaskDir, readJsonSafe } from "../../features/task-storage/storage"
+import type { Task } from "../../features/task-storage/types"
+import { TaskObjectSchema } from "../../tools/task/types"
 import type { SessionStateStore } from "./session-state"
-import { getIncompleteCount } from "./todo"
-import type { ResolvedMessageInfo, Todo } from "./types"
+import { getIncompleteTaskCount } from "./todo"
+import type { ResolvedMessageInfo } from "./types"
 
 function hasWritePermission(tools: Record<string, ToolPermission> | undefined): boolean {
   const editPermission = tools?.edit
@@ -62,18 +65,32 @@ export async function injectContinuation(args: {
     return
   }
 
-  let todos: Todo[] = []
+  let tasks: Task[] = []
+  let total = 0
   try {
-    const response = await ctx.client.session.todo({ path: { id: sessionID } })
-    todos = normalizeSDKResponse(response, [] as Todo[], { preferResponseOnMissingData: true })
+    const taskDir = getTaskDir({}, ctx.directory)
+    if (!existsSync(taskDir)) {
+      log(`[${HOOK_NAME}] Skipped injection: no task dir`, { sessionID, taskDir })
+      return
+    }
+    const files = readdirSync(taskDir).filter((f) => f.startsWith("T-") && f.endsWith(".json"))
+    for (const f of files) {
+      const parsed = readJsonSafe(`${taskDir}/${f}`, TaskObjectSchema)
+      if (parsed) tasks.push(parsed)
+    }
+    total = tasks.length
+    if (total === 0) {
+      log(`[${HOOK_NAME}] Skipped injection: no tasks`, { sessionID })
+      return
+    }
   } catch (error) {
-    log(`[${HOOK_NAME}] Failed to fetch todos`, { sessionID, error: String(error) })
+    log(`[${HOOK_NAME}] Failed to fetch tasks`, { sessionID, error: String(error) })
     return
   }
 
-  const freshIncompleteCount = getIncompleteCount(todos)
+  const freshIncompleteCount = getIncompleteTaskCount(tasks)
   if (freshIncompleteCount === 0) {
-    log(`[${HOOK_NAME}] Skipped injection: no incomplete todos`, { sessionID })
+    log(`[${HOOK_NAME}] Skipped injection: no incomplete tasks`, { sessionID, total })
     return
   }
 
@@ -114,14 +131,19 @@ export async function injectContinuation(args: {
     return
   }
 
-  const incompleteTodos = todos.filter((todo) => todo.status !== "completed" && todo.status !== "cancelled")
-  const todoList = incompleteTodos.map((todo) => `- [${todo.status}] ${todo.content}`).join("\n")
+  const byId = new Map(tasks.map((t) => [t.id, t]))
+  const incompleteTasks = tasks.filter((task) => {
+    if (task.status !== "pending" && task.status !== "in_progress") return false
+    if (task.blockedBy.length === 0) return true
+    return task.blockedBy.every((bid) => byId.get(bid)?.status === "completed")
+  })
+  const taskList = incompleteTasks.map((task) => `- [${task.status}] ${task.subject} (${task.id})`).join("\n")
   const prompt = `${CONTINUATION_PROMPT}
 
-[Status: ${todos.length - freshIncompleteCount}/${todos.length} completed, ${freshIncompleteCount} remaining]
+[Status: ${total - freshIncompleteCount}/${total} completed, ${freshIncompleteCount} remaining]
 
-Remaining tasks:
-${todoList}`
+Remaining Matrixx tasks:
+${taskList}`
 
   const injectionState = sessionStateStore.getExistingState(sessionID)
   if (injectionState) {
