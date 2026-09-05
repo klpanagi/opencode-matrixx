@@ -1,11 +1,5 @@
 import type { PluginInput } from "@opencode-ai/plugin"
 import { log } from "../../shared/logger"
-import {
-  type TodoWriter as SharedTodoWriter,
-  _resetForTesting as sharedReset,
-  resolveTodoWriter as sharedResolveTodoWriter,
-  _setWriterForTesting as sharedSetWriter,
-} from "../../shared/opencode-todo-writer"
 
 interface TodoSnapshot {
   id: string
@@ -14,7 +8,7 @@ interface TodoSnapshot {
   priority?: "low" | "medium" | "high"
 }
 
-type TodoWriter = SharedTodoWriter
+type TodoWriter = (input: { sessionID: string; todos: TodoSnapshot[] }) => Promise<void>
 
 const HOOK_NAME = "compaction-todo-preserver"
 
@@ -29,17 +23,13 @@ function extractTodos(response: unknown): TodoSnapshot[] {
   return []
 }
 
-async function resolveTodoWriter(ctx: PluginInput): Promise<TodoWriter | null> {
-  return sharedResolveTodoWriter(ctx as unknown as never) as Promise<TodoWriter | null>
+async function resolveTodoWriter(_ctx: PluginInput): Promise<TodoWriter | null> {
+  return null
 }
 
-export function _resetForTesting(): void {
-  sharedReset()
-}
+export function _resetForTesting(): void {}
 
-export function _setWriterForTesting(writer: TodoWriter | null | undefined): void {
-  sharedSetWriter(writer)
-}
+export function _setWriterForTesting(_writer: TodoWriter | null | undefined): void {}
 
 function resolveSessionID(props?: Record<string, unknown>): string | undefined {
   return (props?.sessionID ??

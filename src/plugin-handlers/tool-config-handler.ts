@@ -12,8 +12,12 @@ export function applyToolConfig(params: {
   pluginConfig: MatrixxConfig;
   agentResult: Record<string, unknown>;
 }): void {
-  const denyTodoTools = isTaskSystemEnabled(params.pluginConfig)
+  const isTaskSystem = isTaskSystemEnabled(params.pluginConfig)
+  const denyTodoTools = isTaskSystem
     ? { todowrite: "deny", todoread: "deny" }
+    : {}
+  const denyTaskTools = !isTaskSystem
+    ? { "task_*": "deny" as const, task: "deny" as const }
     : {}
 
   params.config.tools = {
@@ -24,9 +28,9 @@ export function applyToolConfig(params: {
     LspCodeActionResolve: false,
     "task_*": false,
     teammate: false,
-    ...(isTaskSystemEnabled(params.pluginConfig)
+    ...(isTaskSystem
       ? { todowrite: false, todoread: false }
-      : {}),
+      : { "task_*": false, task: false }),
   };
 
 
@@ -45,11 +49,10 @@ export function applyToolConfig(params: {
   if (architect) {
     architect.permission = {
       ...architect.permission,
-      task: "allow",
       delegate_agent: "deny",
-      "task_*": "allow",
-      teammate: "allow",
-      ...denyTodoTools,
+      ...(isTaskSystem
+        ? { task: "allow", "task_*": "allow", teammate: "allow", ...denyTodoTools }
+        : { todowrite: "allow", todoread: "allow", ...denyTaskTools }),
     };
   }
   const morpheus = agentByKey(params.agentResult, "morpheus");
@@ -57,11 +60,10 @@ export function applyToolConfig(params: {
     morpheus.permission = {
       ...morpheus.permission,
       delegate_agent: "deny",
-      task: "allow",
       question: questionPermission,
-      "task_*": "allow",
-      teammate: "allow",
-      ...denyTodoTools,
+      ...(isTaskSystem
+        ? { task: "allow", "task_*": "allow", teammate: "allow", ...denyTodoTools }
+        : { todowrite: "allow", todoread: "allow", ...denyTaskTools }),
     };
   }
   const keymaker = agentByKey(params.agentResult, "keymaker");
@@ -69,9 +71,8 @@ export function applyToolConfig(params: {
     keymaker.permission = {
       ...keymaker.permission,
       delegate_agent: "deny",
-      task: "allow",
       question: questionPermission,
-      ...denyTodoTools,
+      ...(isTaskSystem ? { task: "allow", ...denyTodoTools } : { todowrite: "allow", todoread: "allow", ...denyTaskTools }),
     };
   }
   const oracle = agentByKey(params.agentResult, "oracle");
@@ -79,21 +80,19 @@ export function applyToolConfig(params: {
     oracle.permission = {
       ...oracle.permission,
       delegate_agent: "deny",
-      task: "allow",
       question: questionPermission,
-      "task_*": "allow",
-      teammate: "allow",
-      ...denyTodoTools,
+      ...(isTaskSystem
+        ? { task: "allow", "task_*": "allow", teammate: "allow", ...denyTodoTools }
+        : { todowrite: "allow", todoread: "allow", ...denyTaskTools }),
     };
   }
   const mouse = agentByKey(params.agentResult, "mouse");
   if (mouse) {
     mouse.permission = {
       ...mouse.permission,
-      task: "allow",
-      "task_*": "allow",
-      teammate: "allow",
-      ...denyTodoTools,
+      ...(isTaskSystem
+        ? { task: "allow", "task_*": "allow", teammate: "allow", ...denyTodoTools }
+        : { todowrite: "allow", todoread: "allow", ...denyTaskTools }),
     };
   }
 

@@ -9,9 +9,11 @@ import {
   createEvolutionHitlHook,
   createPlanPersister,
   createStopContinuationGuardHook,
+  createTaskContinuationEnforcer,
   createTodoContinuationEnforcer,
 } from "../../hooks"
 import { safeCreateHook } from "../../shared/safe-create-hook"
+import { isTaskSystemEnabled } from "../../shared/task-system-gating"
 import type { PluginContext } from "../types"
 import { createUnstableAgentBabysitter } from "../unstable-agent-babysitter"
 
@@ -20,6 +22,7 @@ export type ContinuationHooks = {
   compactionContextInjector: ReturnType<typeof createCompactionContextInjector> | null
   compactionTodoPreserver: ReturnType<typeof createCompactionTodoPreserverHook> | null
   todoContinuationEnforcer: ReturnType<typeof createTodoContinuationEnforcer> | null
+  taskContinuationEnforcer: ReturnType<typeof createTaskContinuationEnforcer> | null
   unstableAgentBabysitter: ReturnType<typeof createUnstableAgentBabysitter> | null
   backgroundNotificationHook: ReturnType<typeof createBackgroundNotificationHook> | null
   architectHook: ReturnType<typeof createArchitectHook> | null
@@ -65,9 +68,19 @@ export function createContinuationHooks(args: {
     ? safeHook("compaction-todo-preserver", () => createCompactionTodoPreserverHook(ctx))
     : null
 
-  const todoContinuationEnforcer = isHookEnabled("todo-continuation-enforcer")
+  const isTaskSystem = isTaskSystemEnabled(pluginConfig)
+
+  const todoContinuationEnforcer = !isTaskSystem && isHookEnabled("todo-continuation-enforcer")
     ? safeHook("todo-continuation-enforcer", () =>
         createTodoContinuationEnforcer(ctx, {
+          backgroundManager,
+          isContinuationStopped: stopContinuationGuard?.isStopped,
+        }))
+    : null
+
+  const taskContinuationEnforcer = isTaskSystem && isHookEnabled("task-continuation-enforcer")
+    ? safeHook("task-continuation-enforcer", () =>
+        createTaskContinuationEnforcer(ctx, {
           backgroundManager,
           isContinuationStopped: stopContinuationGuard?.isStopped,
         }))
@@ -85,6 +98,11 @@ export function createContinuationHooks(args: {
     if (todoContinuationEnforcer) {
       onAbortCallbacks.push(todoContinuationEnforcer.markRecovering)
       onRecoveryCompleteCallbacks.push(todoContinuationEnforcer.markRecoveryComplete)
+    }
+
+    if (taskContinuationEnforcer) {
+      onAbortCallbacks.push(taskContinuationEnforcer.markRecovering)
+      onRecoveryCompleteCallbacks.push(taskContinuationEnforcer.markRecoveryComplete)
     }
 
     if (onAbortCallbacks.length > 0) {
@@ -133,6 +151,7 @@ export function createContinuationHooks(args: {
     compactionContextInjector,
     compactionTodoPreserver,
     todoContinuationEnforcer,
+    taskContinuationEnforcer,
     unstableAgentBabysitter,
     backgroundNotificationHook,
     architectHook,

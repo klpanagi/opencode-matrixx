@@ -12,6 +12,5 @@ export function createToolDefinitionHandler(args: {
     input: { toolID: string },
     output: { description: string; parameters: unknown },
   ): Promise<void> => {
-    await hooks.todoDescriptionOverride?.["tool.definition"]?.(input, output)
   }
 }

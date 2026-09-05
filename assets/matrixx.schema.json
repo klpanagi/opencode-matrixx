@@ -106,6 +106,7 @@
       "items": {
         "type": "string",
         "enum": [
+          "task-continuation-enforcer",
           "todo-continuation-enforcer",
           "context-window-monitor",
           "session-recovery",
