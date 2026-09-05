@@ -65,6 +65,7 @@
   "dependencies": {
     "@ast-grep/cli": "^0.40.0",
     "@ast-grep/napi": "^0.40.0",
+    "@clack/prompts": "^1.7.0",
     "@code-yeongyu/comment-checker": "^0.6.1",
     "@cucumber/gherkin": "^34.0.0",
     "@modelcontextprotocol/sdk": "^1.25.1",

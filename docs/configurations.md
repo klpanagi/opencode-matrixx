@@ -1,5 +1,7 @@
 # Matrixx Configuration
 
+> **Full reference:** [`matrixx.example.jsonc`](../matrixx.example.jsonc) — exhaustive, commented example covering every `matrixx.jsonc` key (headroom, context-mode, DCP, RTK, all top-level and nested options) with defaults and descriptions. Use it as a starting point: copy sections you need.
+
 Highly opinionated, but adjustable to taste.
 
 ## Quick Start

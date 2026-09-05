@@ -1,0 +1,493 @@
+{
+  // JSON Schema for autocomplete and validation in editors.
+  // Use "dev" branch for latest schema, "master" for stable.
+  "$schema": "https://raw.githubusercontent.com/klpanagi/opencode-matrixx/refs/heads/dev/dist/matrixx.schema.json",
+
+  // ─────────────────────────────────────────────────────────────────────────
+  // Global model override — applies to ALL agents and categories.
+  // Example: "anthropic/claude-sonnet-4-6", "openai/gpt-5.2", "opencode-go/muse-spark-1.2-contributor"
+  // When set, every agent/category uses this model regardless of individual config.
+  // ─────────────────────────────────────────────────────────────────────────
+  // "global_model": "anthropic/claude-sonnet-4-6",
+
+  // ─────────────────────────────────────────────────────────────────────────
+  // Default tier — applied to agents/categories without explicit model/tier.
+  // One of: "free" | "fast" | "standard" | "premium" | "frontier"
+  // Resolved at load time against live provider list → concrete model string.
+  // ─────────────────────────────────────────────────────────────────────────
+  // "default_tier": "standard",
+
+  // ─────────────────────────────────────────────────────────────────────────
+  // Default agent for `opencode run` (env: OPENCODE_DEFAULT_AGENT)
+  // ─────────────────────────────────────────────────────────────────────────
+  // "default_run_agent": "morpheus",
+
+  // ─────────────────────────────────────────────────────────────────────────
+  // Disable specific built-in components — arrays of names to turn off.
+  // ─────────────────────────────────────────────────────────────────────────
+  // "disabled_mcps": ["websearch", "context7", "grep_app"],
+  // "disabled_agents": ["oracle", "construct"],
+  // "disabled_skills": ["playwright"],
+  // "disabled_hooks": ["comment-checker", "agent-usage-reminder"],
+  // "disabled_commands": ["init-deep", "start-work"],
+  // "disabled_tools": ["todowrite", "todoread"],
+
+  // Legacy flag (use experimental.task_system instead)
+  // "new_task_system_enabled": true,
+
+  // Auto-update Matrixx when a new version is available (default: not set → manual)
+  // "auto_update": false,
+
+  // ─────────────────────────────────────────────────────────────────────────
+  // Agent overrides — per-agent model, temperature, permissions, etc.
+  // Each agent supports: model, tier, variant, category, skills, temperature,
+  // top_p, prompt, prompt_append, tools, disable, description, mode, color,
+  // permission, maxTokens, thinking, reasoningEffort, textVerbosity,
+  // providerOptions, fallbackChain
+  // Built-in agents: morpheus, keymaker, oracle, merovingian, operator,
+  // trinity, construct, seraph, smith, architect, cipher, sentinel, sati,
+  // bdd-contract, build, plan, mouse, OpenCode-Builder
+  // ─────────────────────────────────────────────────────────────────────────
+  // "agents": {
+  //   "morpheus": {
+  //     "model": "anthropic/claude-opus-4-6",
+  //     "temperature": 0.1,
+  //     "thinking": { "type": "enabled", "budgetTokens": 32000 },
+  //     "fallbackChain": [{ "providers": ["anthropic"], "model": "claude-sonnet-4-6" }]
+  //   },
+  //   "oracle": {
+  //     "model": "anthropic/claude-sonnet-4-6",
+  //     "temperature": 0.1
+  //   },
+  //   "trinity": {
+  //     "model": "anthropic/claude-haiku-4-5",
+  //     "temperature": 0.1,
+  //     "permission": { "bash": "ask", "edit": "deny" }
+  //   },
+  //   "construct": { "disable": false },
+  //   "cipher": {
+  //     "prompt_append": "Use my custom DSL conventions."
+  //   }
+  // },
+
+  // ─────────────────────────────────────────────────────────────────────────
+  // Categories — domain-specific task delegation via `task(category="...")`
+  // Each category supports: model, tier, variant, description, temperature,
+  // top_p, maxTokens, thinking, reasoningEffort, textVerbosity, tools,
+  // prompt_append, is_unstable_agent, disable, fallback_models,
+  // complexity_downgrades
+  // Built-in categories: construct, source, deep-jack, matrix-bend,
+  // bullet-time, blue-pill, red-pill, broadcast
+  // ─────────────────────────────────────────────────────────────────────────
+  // "categories": {
+  //   "source": { "model": "anthropic/claude-opus-4-6", "temperature": 0.1 },
+  //   "deep-jack": { "model": "anthropic/claude-sonnet-4-6", "variant": "medium" },
+  //   "matrix-bend": { "model": "anthropic/claude-sonnet-4-6" },
+  //   "construct": { "model": "anthropic/claude-sonnet-4-6" },
+  //   "red-pill": { "model": "anthropic/claude-opus-4-6", "variant": "max" },
+  //   "blue-pill": { "model": "anthropic/claude-sonnet-4-6" },
+  //   "broadcast": { "model": "anthropic/claude-sonnet-4-6", "temperature": 0.5 },
+  //   "bullet-time": { "model": "anthropic/claude-haiku-4-5" },
+  //   "my-custom-category": {
+  //     "description": "Data science / ML pipelines",
+  //     "model": "anthropic/claude-sonnet-4-6",
+  //     "temperature": 0.2,
+  //     "prompt_append": "Focus on data analysis, ML pipelines, and statistical methods."
+  //   }
+  // },
+
+  // ─────────────────────────────────────────────────────────────────────────
+  // Morpheus agent — master orchestrator configuration
+  // ─────────────────────────────────────────────────────────────────────────
+  // "morpheus_agent": {
+  //   "disabled": false,                    // disable all Morpheus orchestration
+  //   "default_builder_enabled": false,     // enable OpenCode-Builder (renamed build agent)
+  //   "planner_enabled": true,              // enable Oracle (Planner) agent
+  //   "replace_plan": true                  // demote default plan agent to subagent mode
+  // },
+
+  // ─────────────────────────────────────────────────────────────────────────
+  // Morpheus tasks — advanced task management (.matrixx/tasks/T-*.json)
+  // ─────────────────────────────────────────────────────────────────────────
+  // "morpheus": {
+  //   "tasks": {
+  //     "scope": "project",                 // "project" → .matrixx/tasks per project (default) | "global" → ~/.config/opencode/tasks/{listId}
+  //     "storage_path": ".matrixx/tasks",   // absolute or relative path override
+  //     "task_list_id": "my-list",          // force task list ID (alt to ULTRAWORK_TASK_LIST_ID env)
+  //     "claude_code_compat": false         // Claude Code path compatibility mode
+  //   }
+  // },
+
+  // ─────────────────────────────────────────────────────────────────────────
+  // Comment checker — warns on excessive AI-style comments
+  // ─────────────────────────────────────────────────────────────────────────
+  // "comment_checker": {
+  //   "custom_prompt": "Custom warning. Use {{comments}} placeholder for detected comments XML."
+  // },
+
+  // ─────────────────────────────────────────────────────────────────────────
+  // Experimental features (opt-in, may change)
+  // ─────────────────────────────────────────────────────────────────────────
+  "experimental": {
+    "task_system": true                     // enable experimental task system for todowrite disabler hook (default: true)
+    // "aggressive_truncation": false,      // aggressively truncate tool outputs when token limit exceeded
+    // "auto_resume": true,                 // auto-resume session after thinking block recovery
+    // "preemptive_compaction": true,       // enable preemptive compaction before context window fills
+    // "truncate_all_tool_outputs": false,  // truncate ALL tool outputs (default: only whitelisted tools)
+    // "plugin_load_timeout_ms": 10000,     // timeout for loadAllPluginComponents (default: 10000, min: 1000)
+    // "safe_hook_creation": true,          // wrap hook creation in try/catch (default: true at call site)
+    // "hashline_edit": true                // enable hashline_edit tool for hash-based line anchors
+  },
+
+  // ─────────────────────────────────────────────────────────────────────────
+  // DCP — Dynamic Context Pruning (L3) — profile switcher for `@tarquinen/opencode-dcp`
+  // Install: plugin "@tarquinen/opencode-dcp" in ~/.config/opencode/opencode.jsonc
+  // Switch via slash command: /dcp-profile [economy|balanced|performance|ultimate]
+  // Docs: https://github.com/tarquinen/opencode-dcp
+  // Enabled by default (true) when plugin is installed. Disable to turn off pruning.
+  // ─────────────────────────────────────────────────────────────────────────
+  // "dcp": {
+  //   "enabled": true,                      // enable DCP profile switcher (default: true)
+  //   "default_profile": "balanced",        // default profile when /dcp-profile invoked without args
+  //   "profiles": {                         // custom profile definitions (defaults to 4 built-ins below)
+  //     "economy": {                        // aggressive pruning — minimal context
+  //       "pruneNotification": "off",
+  //       "compress": {
+  //         "maxContextLimit": "30%",        // max context before compression triggers
+  //         "minContextLimit": "20%",        // target context after compression
+  //         "nudgeFrequency": 2,
+  //         "nudgeForce": "strong",          // "strong" | "soft"
+  //         "iterationNudgeThreshold": 7
+  //       },
+  //       "turnProtection": { "enabled": false },
+  //       "experimental": { "allowSubAgents": false },
+  //       "strategies": { "purgeErrors": { "turns": 1 } }
+  //     },
+  //     "balanced": {                       // balanced pruning (default profile)
+  //       "pruneNotification": "minimal",
+  //       "compress": {
+  //         "maxContextLimit": "60%",
+  //         "minContextLimit": "30%",
+  //         "nudgeFrequency": 3,
+  //         "nudgeForce": "strong",
+  //         "iterationNudgeThreshold": 10
+  //       },
+  //       "turnProtection": { "enabled": true, "turns": 2 },
+  //       "experimental": { "allowSubAgents": true },
+  //       "strategies": { "purgeErrors": { "turns": 2 } }
+  //     },
+  //     "performance": {                    // preserve more context
+  //       "pruneNotification": "minimal",
+  //       "compress": {
+  //         "maxContextLimit": "80%",
+  //         "minContextLimit": "35%",
+  //         "nudgeFrequency": 4,
+  //         "nudgeForce": "strong",
+  //         "iterationNudgeThreshold": 12
+  //       },
+  //       "turnProtection": { "enabled": true, "turns": 3 },
+  //       "experimental": { "allowSubAgents": true },
+  //       "strategies": { "purgeErrors": { "turns": 2 } }
+  //     },
+  //     "ultimate": {                       // maximum context retention
+  //       "pruneNotification": "detailed",
+  //       "compress": {
+  //         "maxContextLimit": "85%",
+  //         "minContextLimit": "40%",
+  //         "nudgeFrequency": 5,
+  //         "nudgeForce": "strong",
+  //         "iterationNudgeThreshold": 15,
+  //         "protectTags": true
+  //       },
+  //       "turnProtection": { "enabled": true, "turns": 5 },
+  //       "experimental": { "allowSubAgents": true },
+  //       "strategies": { "purgeErrors": { "turns": 4 } }
+  //     }
+  //   },
+  //   "base": {                             // shared base config applied across all profiles
+  //     "autoUpdate": false,                // auto-update DCP when new version available (default: false)
+  //     "debug": false,                     // enable debug logging for DCP (default: false)
+  //     "pruneNotificationType": "chat",    // "chat" | "toast" — how to deliver prune notifications (default: "chat")
+  //     "compress": {
+  //       "mode": "range",                  // "range" (compress range of messages) | "message" (individual) (default: "range")
+  //       "permission": "allow",            // "ask" (prompt) | "allow" (auto) | "deny" (disable) (default: "allow")
+  //       "showCompression": true,          // show compression summary in chat (default: true)
+  //       "summaryBuffer": true,            // keep summary buffer for continuity (default: true)
+  //       "nudgeForce": "strong",           // "strong" | "soft" (default: "strong")
+  //       "iterationNudgeThreshold": 5,     // consecutive iteration messages before nudge (default: 5)
+  //       "protectedTools": [],             // tools whose outputs are protected from compression
+  //       "protectUserMessages": false      // protect user messages from compression (default: false)
+  //     },
+  //     "strategies": {
+  //       "deduplication": { "enabled": true, "protectedTools": [] },
+  //       "purgeErrors": { "enabled": true, "protectedTools": [] }
+  //     },
+  //     "commands": { "enabled": true, "protectedTools": [] },
+  //     "manualMode": { "enabled": false, "automaticStrategies": true },
+  //     "protectedFilePatterns": []         // glob patterns for files protected from compression
+  //   }
+  // },
+
+  // ─────────────────────────────────────────────────────────────────────────
+  // Headroom — network-proxy compression (L4) — CacheAligner→ContentRouter→CCR
+  // ENABLING/DISABLING: set `enabled` true/false here + run `headroom wrap opencode`
+  // Docs: https://github.com/headroomlabs-ai/headroom
+  // Install: uv tool install headroom-ai[all]  or  pipx install headroom-ai[all]
+  // Verify:  headroom --version && headroom doctor && headroom wrap opencode
+  // Matrixx detects headroom via `headroom_*` tools and injects discipline into
+  // Morpheus/Keymaker prompts automatically (hasHeadroom check in agents/AGENTS.md)
+  // ─────────────────────────────────────────────────────────────────────────
+  // "headroom": {
+  //   "enabled": false,                     // opt-in — set true to enable Headroom detection/discipline (default: false)
+  //   "proxyUrl": "http://127.0.0.1:8787",  // proxy URL (default: http://127.0.0.1:8787, override via HEADROOM_PROXY_URL)
+  //   "project": "my-project",              // CCR scoping per project (optional)
+  //   "backend": "openai"                   // maps to HEADROOM_BACKEND (optional)
+  // },
+
+  // ─────────────────────────────────────────────────────────────────────────
+  // context-mode — tool output sandboxing (L2) — FTS5 sandbox, ctx_* tools
+  // IMPORTANT: context-mode has NO key in matrixx.jsonc. It is an EXTERNAL
+  // OpenCode plugin, not a Matrixx setting. Configure it in opencode.jsonc:
+  //
+  // ENABLING:
+  //   1. In `~/.config/opencode/opencode.jsonc` (or project `.opencode/opencode.jsonc`):
+  //      { "plugin": ["context-mode", "opencode-matrixx"] }
+  //   2. Restart OpenCode. Verify via `ctx stats` — ctx_* tools should be listed.
+  //
+  // DISABLING:
+  //   Remove "context-mode" from the `plugin` array in opencode.jsonc and restart.
+  //
+  // Legacy trap: if you have BOTH `mcp.context-mode` and `plugin: ["context-mode"]`,
+  // OpenCode may expose zero ctx_* tools. Remove the old `mcp` entry.
+  //
+  // Docs: https://github.com/mksglu/context-mode
+  // Full 5-layer guide: docs/context-management.md#22-context-mode
+  // ─────────────────────────────────────────────────────────────────────────
+  // (no matrixx.jsonc key — see above)
+
+  // ─────────────────────────────────────────────────────────────────────────
+  // RTK — bash command rewriter (L1) — token compression for bash outputs
+  // Install: brew install rtk-ai/tap/rtk  or  curl -fsSL https://raw.githubusercontent.com/rtk-ai/rtk/main/install.sh | bash
+  // Verify: rtk --version
+  // ─────────────────────────────────────────────────────────────────────────
+  // "rtk": {
+  //   "enabled": false,                     // opt-in (default: false)
+  //   "binary_path": "rtk",                 // path to rtk binary (default: "rtk" in PATH, e.g. "/usr/local/bin/rtk")
+  //   "timeout_ms": 5000                    // subprocess timeout in ms (default: 5000, min: 1000, max: 30000)
+  // },
+
+  // ─────────────────────────────────────────────────────────────────────────
+  // Skills — advanced skill sources, enable/disable, custom definitions
+  // ─────────────────────────────────────────────────────────────────────────
+  // "skills": {
+  //   "sources": [
+  //     { "path": "./custom-skills", "recursive": true, "glob": "**/*" },
+  //     "https://example.com/skill.yaml"
+  //   ],
+  //   "enable": ["my-custom-skill"],
+  //   "disable": ["other-skill"],
+  //   "my-skill": {
+  //     "description": "Custom skill description",
+  //     "template": "Custom prompt template",
+  //     "from": "source-file.ts",
+  //     "model": "custom/model",
+  //     "agent": "custom-agent",
+  //     "subtask": true,
+  //     "argument-hint": "usage hint",
+  //     "license": "MIT",
+  //     "compatibility": ">= 3.0.0",
+  //     "metadata": { "author": "Your Name" },
+  //     "allowed-tools": ["read", "bash", "lsp_diagnostics"]
+  //   }
+  // },
+  // Or shorthand array form:
+  // "skills": ["skill-1", "skill-2"],
+
+  // ─────────────────────────────────────────────────────────────────────────
+  // Matrix loop — iterative self-referential development loop
+  // ─────────────────────────────────────────────────────────────────────────
+  // "matrix_loop": {
+  //   "enabled": false,                     // opt-in (default: false)
+  //   "default_max_iterations": 100,        // default max iterations (min: 1, max: 1000, default: 100)
+  //   "state_dir": ".opencode/"             // custom state file directory relative to project root (default: .opencode/)
+  // },
+
+  // ─────────────────────────────────────────────────────────────────────────
+  // Background tasks — concurrency limits for parallel subagents
+  // ─────────────────────────────────────────────────────────────────────────
+  // "background_task": {
+  //   "defaultConcurrency": 5,              // default max concurrent background tasks
+  //   "providerConcurrency": {              // per-provider caps
+  //     "anthropic": 3,
+  //     "openai": 5,
+  //     "google": 10
+  //   },
+  //   "modelConcurrency": {                 // per-model caps (overrides provider)
+  //     "anthropic/claude-opus-4-6": 2,
+  //     "anthropic/claude-haiku-4-5": 10
+  //   },
+  //   "staleTimeoutMs": 180000,             // interrupt tasks with no activity (default: 180000 = 3min, min: 60000)
+  //   "messageStalenessTimeoutMs": 120000,  // timeout for tasks that never received progress (default: 600000 = 10min, min: 60000)
+  //   "maxToolCalls": 75,                   // shorthand for circuitBreaker.maxToolCalls
+  //   "circuitBreaker": {
+  //     "enabled": true,
+  //     "maxToolCalls": 75,                 // max tool calls before breaker trips (min: 10)
+  //     "consecutiveThreshold": 10          // consecutive same-tool calls before breaker (min: 5)
+  //   }
+  // },
+
+  // ─────────────────────────────────────────────────────────────────────────
+  // Notification — background task completion notifications
+  // ─────────────────────────────────────────────────────────────────────────
+  // "notification": {
+  //   "force_enable": false                 // force enable even if external notification plugins detected (default: false)
+  // },
+
+  // ─────────────────────────────────────────────────────────────────────────
+  // Babysitting — unstable agent monitoring
+  // ─────────────────────────────────────────────────────────────────────────
+  // "babysitting": {
+  //   "timeout_ms": 120000                  // (default: 120000)
+  // },
+
+  // ─────────────────────────────────────────────────────────────────────────
+  // TDD enforcer — fail → implement → pass → refactor
+  // ─────────────────────────────────────────────────────────────────────────
+  // "tdd_enforcer": {
+  //   "enabled": true                       // (default: true when configured, not set globally)
+  // },
+
+  // ─────────────────────────────────────────────────────────────────────────
+  // Browser automation — provider for `playwright` skill
+  // ─────────────────────────────────────────────────────────────────────────
+  // "browser_automation_engine": {
+  //   "provider": "playwright"              // "playwright" (default, MCP) | "agent-browser" (Vercel CLI) | "dev-browser" | "playwright-cli"
+  // },
+
+  // ─────────────────────────────────────────────────────────────────────────
+  // Websearch — provider for web search
+  // ─────────────────────────────────────────────────────────────────────────
+  // "websearch": {
+  //   "provider": "exa"                     // "exa" (default, no API key) | "tavily" (requires TAVILY_API_KEY)
+  // },
+
+  // ─────────────────────────────────────────────────────────────────────────
+  // Tmux — visual multi-agent execution in tmux panes
+  // ─────────────────────────────────────────────────────────────────────────
+  // "tmux": {
+  //   "enabled": false,                     // only works inside existing tmux session + server mode (opencode --port 4096)
+  //   "layout": "main-vertical",            // "main-vertical" (default) | "main-horizontal" | "tiled" | "even-horizontal" | "even-vertical"
+  //   "main_pane_size": 60,                 // main pane size as % (20-80, default: 60)
+  //   "main_pane_min_width": 120,           // min width for main pane in columns (min: 40, default: 120)
+  //   "agent_pane_min_width": 40            // min width for each agent pane in columns (min: 20, default: 40)
+  // },
+
+  // ─────────────────────────────────────────────────────────────────────────
+  // Assembly — multi-model debate (3-5 voters, synthesis rounds)
+  // ─────────────────────────────────────────────────────────────────────────
+  // "assembly": {
+  //   "enabled": false,                     // default: false (available in every session when true)
+  //   "providers": [                        // provider-model pairs for auto-selection
+  //     { "providerID": "anthropic", "modelID": "claude-sonnet-4-6" },
+  //     { "providerID": "openai", "modelID": "gpt-5.2" }
+  //   ],
+  //   "default_voters": 3,                  // 2-5 (default: 3)
+  //   "default_rounds": 2,                  // 1-3 (default: 2)
+  //   "timeout_ms": 60000                   // 10_000-300_000 (default: 60000)
+  // },
+
+  // ─────────────────────────────────────────────────────────────────────────
+  // Security — secret scanning, sensitive file guards, dependency audit
+  // ─────────────────────────────────────────────────────────────────────────
+  // "security": {
+  //   "secret_scanning": {
+  //     "enabled": true,                    // enable gitleaks scan before commit/push (default: true)
+  //     "tool": "gitleaks",                 // only "gitleaks" supported currently
+  //     "block_on_detection": true,         // block git operation when secrets found (default: true)
+  //     "allowlist_paths": ["**/*.example"] // glob patterns to exclude from scanning
+  //   },
+  //   "env_file_guard": {
+  //     "enabled": true,                    // block writes to sensitive files (default: true)
+  //     "blocked_patterns": [               // default list (14+ patterns):
+  //       ".env", ".env.*", "*.pem", "*.key", "*.p12", "*.pfx",
+  //       "*.jks", "*.keystore", "id_rsa", "id_ed25519",
+  //       "credentials.json", "service-account*.json", ".npmrc", ".pypirc"
+  //     ],
+  //     "allowed_paths": [".env.example"]    // paths explicitly allowed despite matching blocked patterns
+  //   },
+  //   "dependency_audit": {
+  //     "enabled": false,                   // enable dependency vulnerability auditing (default: false)
+  //     "on_package_change": true           // auto-audit when package.json/bun.lockb changes (default: true)
+  //   }
+  // },
+
+  // ─────────────────────────────────────────────────────────────────────────
+  // Runtime fallback — automatic model fallback on quota/rate errors
+  // ─────────────────────────────────────────────────────────────────────────
+  // "runtime_fallback": {
+  //   "enabled": false,                     // enable automatic fallback (default: false)
+  //   "retry_on_errors": [429, 500, 502, 503, 504], // HTTP codes that trigger fallback (default: [429,500,502,503,504])
+  //   "max_fallback_attempts": 3,           // max fallback attempts per session (default: 3)
+  //   "cooldown_seconds": 60,               // seconds failed model stays in cooldown (default: 60)
+  //   "timeout_seconds": 30,                // seconds to wait before timeout fallback (0 = disabled, default: 30)
+  //   "notify_on_fallback": true            // show toast when switching to fallback (default: true)
+  // },
+
+  // ─────────────────────────────────────────────────────────────────────────
+  // Agent definitions — paths to external agent definition files
+  // ─────────────────────────────────────────────────────────────────────────
+  // "agent_definitions": ["./my-agents/custom-agent.json"],
+
+  // ─────────────────────────────────────────────────────────────────────────
+  // Matrixx self-config — allow agents to propose config changes via skill
+  // ─────────────────────────────────────────────────────────────────────────
+  // "matrixx_self_config": {
+  //   "enabled": false,                     // opt-in (default: false)
+  //   "proactive": false                    // proactive suggestions (default: false)
+  // },
+
+  // ─────────────────────────────────────────────────────────────────────────
+  // Evolution — self-evolution loop (trace → compress → propose skills)
+  // ─────────────────────────────────────────────────────────────────────────
+  // "evolution": {
+  //   "enabled": false,                     // opt-in (default: false)
+  //   "watcher": {
+  //     "maxArgChars": 4000,                // max chars from tool args (default: 4000)
+  //     "maxOutputChars": 8000,             // max chars from tool outputs (default: 8000)
+  //     "skipTools": ["evolution-watcher", "evolution-compressor"]
+  //   },
+  //   "compressor": {
+  //     "provider": "llm",                  // "llm" | "dspy-gepa" (default: "llm")
+  //     "model": "anthropic/claude-sonnet-4-6", // model override for compressor LLM
+  //     "minTraces": 5,                     // min traces before compression (default: 5)
+  //     "maxInputTokens": 32000,            // max input tokens for compressor prompt (default: 32000)
+  //     "trigger": "both"                   // "compacting" | "idle" | "both" (default: "both")
+  //   },
+  //   "writer": {
+  //     "outputDir": ".matrixx/evolution/skills", // output dir for generated skills (default: ".matrixx/evolution/skills")
+  //     "globalSkills": false,              // write skills globally (default: false)
+  //     "allowToolGeneration": false,       // allow generation of new tools (default: false)
+  //     "allowAgentGeneration": false       // allow generation of new agents (default: false)
+  //   },
+  //   "governance": {
+  //     "requireApproval": true,            // require human approval before promotion (default: true)
+  //     "autoPromote": false,               // auto-promote high-confidence skills (default: false)
+  //     "autoPromoteThreshold": 0.85,       // confidence threshold for auto-promotion (default: 0.85)
+  //     "minConfidence": 0.7                // min confidence to stage for approval (default: 0.7)
+  //   },
+  //   "retention": {
+  //     "traceDays": 30,                    // days to retain trace files (default: 30)
+  //     "maxPending": 50                    // max pending proposals retained (default: 50)
+  //   },
+  //   "budget": {
+  //     "maxCompressionsPerHour": 10,       // max compressions per hour (default: 10)
+  //     "maxCostCentsPerDay": 100           // max cost in cents per day (default: 100)
+  //   }
+  // },
+
+  // ─────────────────────────────────────────────────────────────────────────
+  // Migrations — auto-tracked history to prevent re-applying migrations.
+  // Managed by Matrixx — do not edit manually.
+  // ─────────────────────────────────────────────────────────────────────────
+  // "_migrations": ["tasks_project_scope_default"]
+}
