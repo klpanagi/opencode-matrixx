@@ -111,10 +111,6 @@ function makeDeps(args: {
   abort?: AbortSignal
   force: boolean
 }): BddPipelineDeps {
-  const featureName = args.featurePath
-    .split("/")
-    .pop()
-    ?.replace(/\.feature$/i, "") ?? "feature"
 
   return {
     parseFeature: async (path: string): Promise<ParseFeatureResult> => {
