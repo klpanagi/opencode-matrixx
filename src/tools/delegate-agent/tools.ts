@@ -45,6 +45,13 @@ export function createDelegateAgent(
 
       const normalizedAgent = args.subagent_type.toLowerCase() as AllowedAgentType
       args = { ...args, subagent_type: normalizedAgent }
+      // Hardening: Mouse is a leaf executor — only trinity/operator allowed via delegate_agent
+      // Prevents Morpheus → Mouse → Oracle extra hop (plan files owned by oracle)
+      const callerAgent = (toolCtx.agent || "").toLowerCase()
+      const MOUSE_RESEARCH_ONLY = ["trinity", "operator"] as const
+      if (callerAgent === "mouse" && !(MOUSE_RESEARCH_ONLY as readonly string[]).includes(normalizedAgent)) {
+        return `Error: Mouse is a leaf executor. delegate_agent with subagent_type="${normalizedAgent}" is BLOCKED. Only trinity/operator allowed for research. Plan files (.matrixx/plans/*.md) must be created via task(subagent_type="oracle") from Morpheus, never via Mouse → Oracle. Route plan generation directly from Morpheus to oracle.`
+      }
 
       if (disabledAgents.some((disabled) => disabled.toLowerCase() === normalizedAgent)) {
         return `Error: Agent "${normalizedAgent}" is disabled via disabled_agents configuration. Remove it from disabled_agents in your matrixx.json to use it.`

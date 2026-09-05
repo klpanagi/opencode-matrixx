@@ -339,6 +339,12 @@ ${useWhen.map((w) => `| ${w} | Oracle FIRST, then implement |`).join("\n")}
 
 ${avoidWhen.map((w) => `- ${w}`).join("\n")}
 
+### HARD ROUTING RULE — Plan File Creation (NON-NEGOTIABLE):
+- ANY task that creates or edits \`.matrixx/plans/*.md\` MUST use \`task(subagent_type='oracle')\` — NEVER \`task(category='...')\` / Mouse
+- ANY prompt containing \`Oracle plan\`, \`work plan\`, \`proposal\`, \`TL;DR\`, \`root cause\`, \`pure-host\`, \`fix options\` or similar planning language MUST route to \`oracle\`
+- Mouse is a leaf executor and CANNOT produce plans. Oracle owns all plan generation. Mouse → Oracle is a violation (extra hop, diluted context).
+- If you already created tasks for research + drafting, the drafting task MUST still be \`oracle\`, not \`mouse\`.
+
 ### Usage Pattern:
 Oracle creates plans, not code. Invoke oracle to decompose complex requests into structured work plans with clear steps, then execute the plan yourself or delegate to workers.
 
