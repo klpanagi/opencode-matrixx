@@ -22,14 +22,20 @@ function extractTodos(response: unknown): TodoSnapshot[] {
   }
   return []
 }
+let testWriter: TodoWriter | null | undefined = undefined
 
-async function resolveTodoWriter(_ctx: PluginInput): Promise<TodoWriter | null> {
+  async function resolveTodoWriter(_ctx: PluginInput): Promise<TodoWriter | null> {
+  if (testWriter !== undefined) return testWriter
   return null
 }
 
-export function _resetForTesting(): void {}
+export function _resetForTesting(): void {
+  testWriter = undefined
+  }
 
-export function _setWriterForTesting(_writer: TodoWriter | null | undefined): void {}
+export function _setWriterForTesting(writer: TodoWriter | null | undefined): void {
+  testWriter = writer
+  }
 
 function resolveSessionID(props?: Record<string, unknown>): string | undefined {
   return (props?.sessionID ??
