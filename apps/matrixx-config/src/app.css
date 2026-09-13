@@ -1,0 +1,39 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  --color-bg: oklch(0.97 0 0);
+  --color-surface: oklch(1 0 0);
+  --color-border: oklch(0.87 0 0);
+  --color-text-primary: oklch(0.15 0 0);
+  --color-text-secondary: oklch(0.45 0 0);
+  --color-accent: oklch(0.55 0.18 265);
+  --color-accent-hover: oklch(0.48 0.2 265);
+  --sidebar-width: 16rem;
+}
+
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+
+html,
+body {
+  margin: 0;
+  padding: 0;
+  height: 100%;
+  font-family:
+    system-ui,
+    -apple-system,
+    sans-serif;
+  background: var(--color-bg);
+  color: var(--color-text-primary);
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+#app {
+  height: 100%;
+}
