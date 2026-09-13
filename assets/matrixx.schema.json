@@ -4832,6 +4832,16 @@
       ],
       "additionalProperties": false
     },
+    "task": {
+      "type": "object",
+      "properties": {
+        "pollTimeoutMs": {
+          "type": "number",
+          "minimum": 60000
+        }
+      },
+      "additionalProperties": false
+    },
     "tdd_enforcer": {
       "type": "object",
       "properties": {

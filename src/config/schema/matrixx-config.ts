@@ -27,6 +27,7 @@ import { RtkConfigSchema } from "./rtk"
 import { RuntimeFallbackConfigSchema } from "./runtime-fallback"
 import { SecurityConfigSchema } from "./security"
 import { SkillsConfigSchema } from "./skills"
+import { TaskConfigSchema } from "./task"
 import { TddEnforcerConfigSchema } from "./tdd-enforcer"
 import { TmuxConfigSchema } from "./tmux"
 import { WebsearchConfigSchema } from "./websearch"
@@ -63,6 +64,8 @@ export const MatrixxConfigSchema = z.object({
   background_task: BackgroundTaskConfigSchema.optional(),
   notification: NotificationConfigSchema.optional(),
   babysitting: BabysittingConfigSchema.optional(),
+  /** Task system configuration (poll timeout, etc.) */
+  task: TaskConfigSchema.optional(),
 
   tdd_enforcer: TddEnforcerConfigSchema.optional(),
   browser_automation_engine: BrowserAutomationConfigSchema.optional(),

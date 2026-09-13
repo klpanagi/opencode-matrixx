@@ -7,6 +7,7 @@ import { createAvailableCategories } from "./plugin/available-categories"
 import { createSkillContext } from "./plugin/skill-context"
 import { createToolRegistry } from "./plugin/tool-registry"
 import type { PluginContext, ToolsRecord } from "./plugin/types"
+import { setPollTimeoutMs } from "./tools/delegate-task/timing"
 
 type CreateToolsResult = {
   filteredTools: ToolsRecord
@@ -24,6 +25,10 @@ export async function createTools(args: {
   managers: Pick<Managers, "backgroundManager" | "tmuxSessionManager">
 }): Promise<CreateToolsResult> {
   const { ctx, pluginConfig, managers } = args
+
+  if (pluginConfig.task?.pollTimeoutMs !== undefined) {
+    setPollTimeoutMs(pluginConfig.task.pollTimeoutMs)
+  }
 
   const skillContext = await createSkillContext({
     directory: ctx.directory,

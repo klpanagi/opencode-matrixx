@@ -28,6 +28,14 @@ export function __resetTimingConfig(): void {
   SESSION_CONTINUATION_STABILITY_MS = 5000
 }
 
+/**
+ * Set poll timeout from plugin config. Called during plugin initialization.
+ * Accepts a value in milliseconds; falls back to 10 min default.
+ */
+export function setPollTimeoutMs(ms: number): void {
+  MAX_POLL_TIME_MS = ms
+}
+
 export function __setTimingConfig(overrides: Partial<ReturnType<typeof getTimingConfig>>): void {
   if (overrides.POLL_INTERVAL_MS !== undefined) POLL_INTERVAL_MS = overrides.POLL_INTERVAL_MS
   if (overrides.MIN_STABILITY_TIME_MS !== undefined) MIN_STABILITY_TIME_MS = overrides.MIN_STABILITY_TIME_MS
