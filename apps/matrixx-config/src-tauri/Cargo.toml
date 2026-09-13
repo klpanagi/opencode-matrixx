@@ -1,0 +1,17 @@
+[package]
+name = "matrixx-config-studio"
+version = "0.1.0"
+edition = "2021"
+description = "Graphical configuration editor for Matrixx and OpenCode"
+
+[dependencies]
+tauri = { version = "2", features = [] }
+serde = { version = "1", features = ["derive"] }
+serde_json = "1"
+
+[build-dependencies]
+tauri-build = { version = "2", features = [] }
+
+[lib]
+name = "matrixx_config_studio_lib"
+crate-type = ["staticlib", "cdylib", "rlib"]

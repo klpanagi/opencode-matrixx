@@ -660,6 +660,7 @@ To disable, set `headroom.enabled: false` or run OpenCode without `headroom wrap
 | [Architecture](docs/agent-architecture.md) | System diagrams, delegation flows, model routing |
 | [Features](docs/features.md) | Complete feature reference |
 | [Configuration](docs/configurations.md) | All config options, agent overrides, hooks, categories |
+| [Config Studio](docs/config-studio.md) | Graphical desktop app setup — build, install, and run the Tauri config editor |
 | [Orchestration](docs/orchestration-guide.md) | How agents coordinate, delegate, and recover |
 | [Categories & Skills](docs/category-skill-guide.md) | Task categories, skill injection, delegation patterns |
 | [Context Management](docs/context-management.md) | 5-layer context stack (Native, RTK, context-mode, DCP, Headroom) — setup, config, verification |
