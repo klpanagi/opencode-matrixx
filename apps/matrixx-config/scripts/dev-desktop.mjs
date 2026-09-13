@@ -8,7 +8,9 @@
  *
  *   1. Tauri CLI present?  (else: install hint)
  *   2. App icons generated? (else: regenerate via `cargo tauri icon`)
+ *   2b. Stale vite on :5173? (reap only this app's orphans, else clear error)
  *   3. Display probed?      (Wayland socket connect / X TCP connect)
+ *   3b. WebKit software path (WEBKIT_DISABLE_DMABUF_RENDERER unless overridden)
  *   4. Supervised launch:   watches stderr for display-crash signatures for
  *      30s after start; on crash it kills the process group and recovers:
  *        crash on Wayland + live X  -> retry once with GDK_BACKEND=x11
@@ -73,6 +75,61 @@ if (missing.length > 0) {
   }
 }
 
+// --- 2b. Stale dev servers ---------------------------------------------------
+// `cargo tauri dev` spawns the frontend (beforeDevCommand) outside the process
+// group we can kill, so a previous guarded run can leave `vite dev` holding
+// :5173 and the next launch fails with "Port 5173 is already in use".
+// Reap only vite processes whose command line points at THIS app directory.
+const DEV_PORT = 5173;
+// Vite v6 may bind ::1, 127.0.0.1, or both — probe both families.
+async function portBusy(port) {
+  const probe = (host) =>
+    new Promise((resolve) => {
+      const s = net.createConnection(port, host);
+      s.on("connect", () => {
+        s.end();
+        resolve(true);
+      });
+      s.on("error", () => resolve(false));
+    });
+  const [v4, v6] = await Promise.all([probe("127.0.0.1"), probe("::1")]);
+  return v4 || v6;
+}
+async function reapStaleVite() {
+  if (!(await portBusy(DEV_PORT))) return;
+  info(
+    `Port ${DEV_PORT} is busy — looking for stale vite processes of this app...`,
+  );
+  let killed = [];
+  for (const pid of readdirSync("/proc").filter((d) => /^\d+$/.test(d))) {
+    try {
+      const cmd = readFileSync(`/proc/${pid}/cmdline`, "utf8").replace(
+        /\0/g,
+        " ",
+      );
+      if (/vite/.test(cmd) && cmd.includes(root)) {
+        process.kill(Number(pid), "SIGKILL");
+        killed.push(pid);
+      }
+    } catch {
+      /* raced exit / no permission — ignore */
+    }
+  }
+  if (killed.length === 0) {
+    fail(
+      `Port ${DEV_PORT} is occupied by an unrelated process.\n` +
+        `Stop it or set a different port, then re-run.`,
+    );
+  }
+  info(`Stopped stale vite processes (${killed.join(", ")}).`);
+  for (let i = 0; i < 10 && (await portBusy(DEV_PORT)); i++) {
+    await new Promise((r) => setTimeout(r, 500));
+  }
+  if (await portBusy(DEV_PORT))
+    fail(`Port ${DEV_PORT} is still busy after cleanup. Aborting.`);
+}
+if (mode === "dev") await reapStaleVite();
+
 // --- 3. Display probes -------------------------------------------------------
 const probeSocket = (path, timeoutMs = 2000) =>
   new Promise((resolve) => {
@@ -122,7 +179,8 @@ if (xLive) info(`X display ${xDisplay} accepts connections.`);
 const CRASH_PATTERNS = [
   /cannot open display/i,
   /dispatching to .* display/i, // Gdk-Message: Error 71 (Protocol error) ...
-  /failed to initialize .*(gtk|gdk|wayland|x11|display)/i,
+  /failed to initialize .*(gtk|gdk|wayland|x11|display|egl|gl|gbm|dmabuf)/i,
+  /failed to create gbm buffer/i, // WebKitGTK without DRI/DMA-BUF (VMs, odd GPUs)
   /no .* (display|graphics|render node|gpu) (found|available)/i,
   /wl_display/i,
 ];
@@ -209,6 +267,16 @@ let extraEnv = {};
 if (!waylandLive && xLive) {
   info("Wayland unusable but X is live — using XWayland (GDK_BACKEND=x11).");
   extraEnv = { GDK_BACKEND: "x11" };
+}
+// WebKitGTK DMA-BUF renderer fails without DRI (VMs, headless GPUs, odd drivers)
+// with "Failed to create GBM buffer". Force the Cairo/software path for this
+// lightweight config UI — negligible perf cost, major compatibility win.
+// Respects an explicit user override.
+if (!process.env.WEBKIT_DISABLE_DMABUF_RENDERER) {
+  info(
+    "Disabling WebKit DMA-BUF renderer (software path — avoids GBM failures on VMs).",
+  );
+  extraEnv.WEBKIT_DISABLE_DMABUF_RENDERER = "1";
 }
 
 // Attempt 1: native (or XWayland if Wayland is already known-dead).
