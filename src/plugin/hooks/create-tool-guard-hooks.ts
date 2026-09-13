@@ -1,5 +1,6 @@
 import type { HookName, MatrixxConfig } from "../../config"
 import {
+  createBackgroundTaskBlockerHook,
   createBashFileReadGuardHook,
   createCommentCheckerHooks,
   createContextModeEnforcerHook,
@@ -31,6 +32,7 @@ import { safeCreateHook } from "../../shared/safe-create-hook"
 import type { PluginContext } from "../types"
 
 export type ToolGuardHooks = {
+  backgroundTaskBlocker: ReturnType<typeof createBackgroundTaskBlockerHook> | null
   commentChecker: ReturnType<typeof createCommentCheckerHooks> | null
   toolOutputTruncator: ReturnType<typeof createToolOutputTruncatorHook> | null
   directoryAgentsInjector: ReturnType<typeof createDirectoryAgentsInjectorHook> | null
@@ -63,6 +65,10 @@ export function createToolGuardHooks(args: {
   const evolutionEnabled = pluginConfig.evolution?.enabled === true
   const safeHook = <T>(hookName: HookName, factory: () => T): T | null =>
     safeCreateHook(hookName, factory, { enabled: safeHookEnabled })
+
+  const backgroundTaskBlocker = isHookEnabled("background-task-blocker")
+    ? safeHook("background-task-blocker", () => createBackgroundTaskBlockerHook())
+    : null
 
   const commentChecker = isHookEnabled("comment-checker")
     ? safeHook("comment-checker", () => createCommentCheckerHooks(pluginConfig.comment_checker))
@@ -160,6 +166,7 @@ export function createToolGuardHooks(args: {
     : null
 
   return {
+    backgroundTaskBlocker,
     commentChecker,
     toolOutputTruncator,
     directoryAgentsInjector,
