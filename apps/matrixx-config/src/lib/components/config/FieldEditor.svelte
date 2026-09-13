@@ -11,6 +11,7 @@
     children?: import("svelte").Snippet
   } = $props()
 
+  // svelte-ignore state_referenced_locally (intentional: snapshot initial collapsed state)
   let expanded = $state(!advanced)
 </script>
 
@@ -20,12 +21,12 @@
   aria-labelledby={label.replace(/\s+/g, "-").toLowerCase()}
 >
   <div class="field-header">
-    <label class="field-label" id={label.replace(/\s+/g, "-").toLowerCase()}>
+    <span class="field-label" id={label.replace(/\s+/g, "-").toLowerCase()}>
       {label}
       {#if advanced}
         <span class="badge-advanced">Advanced</span>
       {/if}
-    </label>
+    </span>
     {#if advanced}
       <button
         class="toggle-btn"

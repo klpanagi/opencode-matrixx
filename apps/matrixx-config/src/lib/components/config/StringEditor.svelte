@@ -15,6 +15,7 @@
     monospace?: boolean
   } = $props()
 
+  // svelte-ignore state_referenced_locally (intentional: local draft synced back via $effect)
   let textValue = $state(value ?? "")
 
   $effect(() => {
@@ -37,7 +38,7 @@
       placeholder={placeholder}
       aria-label={label}
       rows="3"
-    />
+    ></textarea>
   {:else}
     <input
       type="text"

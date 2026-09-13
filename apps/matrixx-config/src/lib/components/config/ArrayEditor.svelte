@@ -11,6 +11,7 @@
     placeholder?: string
   } = $props()
 
+  // svelte-ignore state_referenced_locally (intentional: local draft synced back via $effect)
   let items = $state([...(value ?? [])])
   let newItem = $state("")
 
