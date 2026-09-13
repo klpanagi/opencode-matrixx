@@ -68,45 +68,4 @@ describe("resolveComplexityModel", () => {
 		expect(result.model).toBe("provider-b/model-global")
 		expect(result.downgraded).toBe(true)
 	})
-
-	test("tier: value resolved via live tier resolver", () => {
-		//#given — downgrade is tier:fast, tiers config maps fast to provider-a/model-fast
-		const config = {
-			complexityDowngrades: { source: { "1": "tier:fast" } },
-			tiers: { fast: { providerPriority: ["provider-a"], modelPattern: "model-fast" } },
-		}
-		const tierContext = {
-			availableModels: new Set(["provider-a/model-fast", "provider-a/model-other"]),
-			connectedProviders: ["provider-a"],
-		}
-		//#when
-		const result = resolveComplexityModel("source", 1, "provider-x/model-orig", undefined, config, tierContext)
-		//#then
-		expect(result.model).toBe("provider-a/model-fast")
-		expect(result.downgraded).toBe(true)
-	})
-
-	test("tier: with missing context returns original (no downgrade)", () => {
-		//#given — tier value but no tierContext/tiers provided
-		const config = { complexityDowngrades: { source: { "1": "tier:fast" } } }
-		//#when
-		const result = resolveComplexityModel("source", 1, "provider-x/model-orig", undefined, config)
-		//#then
-		expect(result.model).toBe("provider-x/model-orig")
-		expect(result.downgraded).toBe(false)
-	})
-
-	test("tier: with unresolvable tier returns original", () => {
-		//#given — tier name not in config
-		const config = {
-			complexityDowngrades: { source: { "1": "tier:missing" } },
-			tiers: { fast: { providerPriority: ["provider-a"], modelPattern: "model-fast" } },
-		}
-		const tierContext = { availableModels: new Set(["provider-a/model-fast"]), connectedProviders: ["provider-a"] }
-		//#when
-		const result = resolveComplexityModel("source", 1, "provider-x/model-orig", undefined, config, tierContext)
-		//#then
-		expect(result.model).toBe("provider-x/model-orig")
-		expect(result.downgraded).toBe(false)
-	})
 })

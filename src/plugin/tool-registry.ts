@@ -31,6 +31,7 @@ import {
   createPlanListTool,
   createPlanReadTool,
   createPlanUpdateTool,
+  createPresetTool,
   createSessionManagerTools,
   createSkillTool,
   createSlashcommandTool,
@@ -80,7 +81,8 @@ export function createToolRegistry(args: {
     availableSkills: skillContext.availableSkills,
     modelRequirements: pluginConfig.modelRequirements,
     complexityDowngrades: pluginConfig.complexityDowngrades,
-    tiers: pluginConfig.tiers,
+    modelPresets: pluginConfig.model_presets,
+    activePreset: pluginConfig.active_preset,
     agentOverrides: pluginConfig.agents,
     onSyncSessionCreated: async (event) => {
       log("[index] onSyncSessionCreated callback", {
@@ -153,6 +155,7 @@ export function createToolRegistry(args: {
     ...createHandoffTools(ctx),
     ...createPdfExtractFiguresTool(),
     ...createDcpSwitchProfileTool({ pluginConfig }),
+    ...createPresetTool({ pluginConfig, directory: ctx.directory }),
     ...backgroundTools,
     delegate_agent: delegateAgent,
     ...(lookAt ? { look_at: lookAt } : {}),

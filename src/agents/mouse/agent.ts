@@ -39,7 +39,7 @@ const MODE: AgentMode = "subagent"
 const BLOCKED_TOOLS = ["task"]
 
 export const MOUSE_DEFAULTS = {
-  model: "<provider>/<model>", // placeholder — resolved via config tiers
+  model: "<provider>/<model>", // placeholder — resolved via active model preset or system default
   temperature: 0.1,
 } as const
 

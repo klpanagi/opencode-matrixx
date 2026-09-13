@@ -10,9 +10,11 @@ import { readJsoncFile } from "../../shared/jsonc-parser";
 import { buildMatrixxConfig, previewDiff, resolveMatrixxConfigPath, writeMatrixxConfig } from "./config-writer";
 import { checkOptionalDeps, checkRequiredDeps, formatDepReport } from "./deps";
 import { syncOpencodePlugins } from "./opencode-sync";
+import { runPresetWizard } from "./preset-wizard";
 import { runSetupPrompts } from "./prompts";
+import type { SetupState } from "./types";
 
-export async function executeSetup(opts: { dryRun: boolean; yes: boolean }): Promise<string> {
+export async function executeSetup(opts: { dryRun: boolean; yes: boolean; skipPresets?: boolean }): Promise<string> {
   const required = checkRequiredDeps();
   const missingRequired = required.filter((d) => !d.found);
   if (missingRequired.length > 0) {
@@ -37,7 +39,18 @@ export async function executeSetup(opts: { dryRun: boolean; yes: boolean }): Pro
     } catch {}
   }
 
-  const nextConfig = buildMatrixxConfig(state, existing);
+  const presetResult = await runPresetWizard({
+    skip: (opts.skipPresets ?? false) || opts.yes || Boolean(existing?.model_presets),
+  });
+  if (presetResult.status === "no-providers") {
+    return presetResult.error;
+  }
+  const stateWithPreset: SetupState =
+    presetResult.status === "generated"
+      ? { ...state, preset: { name: presetResult.name, preset: presetResult.preset } }
+      : state;
+
+  const nextConfig = buildMatrixxConfig(stateWithPreset, existing);
 
   if (existing && !opts.yes && !opts.dryRun && existsSync(matrixxPath)) {
     const existingContent = readFileSync(matrixxPath, "utf-8");
@@ -67,6 +80,7 @@ export async function executeSetup(opts: { dryRun: boolean; yes: boolean }): Pro
     "",
     `✓ matrixx.jsonc → ${matrixxPath}${opts.dryRun ? " (preview)" : ""}`,
     `  task_system: ${state.taskSystem}, headroom: ${state.headroom.enabled}, rtk: ${state.rtk.enabled}, dcp: ${state.dcp.enabled}, context-mode: ${state.contextMode}`,
+    stateWithPreset.preset ? `  model preset: ${stateWithPreset.preset.name} (active_preset)` : "",
     "",
     "Next steps:",
     "  1. Restart OpenCode to load new config",

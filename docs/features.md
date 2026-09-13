@@ -133,7 +133,7 @@ All 45 built-in skills use **lazy template resolution**. Skill factories (and th
 
 ### Per-Task Complexity Routing (delegate_task)
 
-The `delegate_task` tool accepts an optional `complexity` field (1-5 or `"auto"`) that allows the resolver to downgrade the model to a cheaper tier when the task is judged simple. This is an **orthogonal, opt-in** dimension layered on top of the existing 8-category routing.
+The `delegate_task` tool accepts an optional `complexity` field (1-5 or `"auto"`) that allows the resolver to downgrade the model to a cheaper model when the task is judged simple. This is an **orthogonal, opt-in** dimension layered on top of the existing 8-category routing.
 
 **Levels:**
 
@@ -149,14 +149,14 @@ The `delegate_task` tool accepts an optional `complexity` field (1-5 or `"auto"`
 
 - **No complexity param (default `"auto"`):** `autoScoreComplexity()` inspects the task's `description`, `prompt`, `load_skills`, and `category` to assign a conservative level. The default is 3 (no downgrade).
 - **Explicit number:** Caller overrides the auto-score (e.g., `complexity: 1` for a known-trivial task).
-- **Downgrade only:** P3 NEVER upgrades a task to a more expensive tier. If the resolved model is already the cheapest available for the category, nothing happens.
-- **Per-category downgrade map:** Built-in `BUILTIN_COMPLEXITY_DOWNGRADES` maps each category to a cheaper-tier model for levels 1-2. Users can override per category via `complexity_downgrades` in their `matrixx.jsonc`.
+- **Downgrade only:** P3 NEVER upgrades a task to a more expensive model. If the resolved model is already the cheapest available for the category, nothing happens.
+- **Per-category downgrade map:** Built-in `BUILTIN_COMPLEXITY_DOWNGRADES` maps each category to a cheaper model for levels 1-2. Users can override per category via `complexity_downgrades` in their `matrixx.jsonc`.
 - **Logged:** Every downgrade decision is logged with `from`/`to`/`complexity` for transparency. The tool result includes `complexityApplied` and `complexityDowngraded` flags.
 
 **Cost impact:**
 
 - **Honest estimate: 15-25% cost reduction** on routable tasks for sessions with model headroom.
-- **0% savings on `free` / `budget` tiers** — those already pin agents to the cheapest tier; P3 has nowhere to downgrade from.
+- **0% savings when categories already pin the cheapest model** — there is nowhere to downgrade from.
 - Quality impact: conservative default + explicit override + per-task logging means the pilotfish-validated 96% quality at 46% cost (Anthropic BrowseComp) is achievable in principle, but real-world Matrixx savings are lower because typical sessions have fewer routable tasks than the pilotfish benchmark.
 
 **100% backwards compatible:** omitting `complexity` from a `delegate_task` call leaves behavior identical to before. The tool schema adds the field as optional with default `"auto"`.

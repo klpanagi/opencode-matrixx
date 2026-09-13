@@ -206,14 +206,14 @@ You are NOT an interactive assistant. You are an autonomous problem-solver.
 </Category_Context>`
 
 export const DEFAULT_CATEGORIES: Record<string, CategoryConfig> = {
-  "construct": { tier: "standard" },
-  "source": { tier: "premium", variant: "max" },
-  "deep-jack": { tier: "premium", variant: "max" },
-  "matrix-bend": { tier: "standard" },
-  "bullet-time": { tier: "fast" },
-  "blue-pill": { tier: "standard" },
-  "red-pill": { tier: "premium", variant: "max" },
-  "broadcast": { tier: "standard" },
+  "construct": {},
+  "source": { variant: "max" },
+  "deep-jack": { variant: "max" },
+  "matrix-bend": {},
+  "bullet-time": {},
+  "blue-pill": {},
+  "red-pill": { variant: "max" },
+  "broadcast": {},
 }
 
 export const CATEGORY_PROMPT_APPENDS: Record<string, string> = {

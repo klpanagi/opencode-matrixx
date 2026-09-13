@@ -3,8 +3,6 @@ import { MatrixxConfigSchema } from "../../src/config/schema/matrixx-config"
 import {
   ComplexityDowngradesSchema,
   ModelFallbackEntrySchema,
-  TierSpecSchema,
-  TiersSchema,
 } from "../../src/config/schema/model-config"
 
 describe("ModelFallbackEntrySchema", () => {
@@ -42,72 +40,8 @@ describe("ModelFallbackEntrySchema", () => {
   })
 })
 
-describe("TierSpecSchema", () => {
-  test("accepts valid tier spec with regex pattern", () => {
-    // #given
-    const spec = {
-      providerPriority: ["provider-a", "provider-b"],
-      modelPattern: "model-.*",
-    }
-
-    // #when
-    const result = TierSpecSchema.safeParse(spec)
-
-    // #then
-    expect(result.success).toBe(true)
-  })
-
-  test("rejects invalid regex pattern", () => {
-    // #given
-    const spec = {
-      providerPriority: ["provider-a"],
-      modelPattern: "[invalid-regex",
-    }
-
-    // #when
-    const result = TierSpecSchema.safeParse(spec)
-
-    // #then
-    expect(result.success).toBe(false)
-  })
-
-  test("accepts tier spec with fallbackTier and fallback", () => {
-    // #given
-    const spec = {
-      providerPriority: ["provider-a"],
-      modelPattern: ".*",
-      fallbackTier: "other-tier",
-      fallback: [{ providers: ["provider-a"], model: "model-id" }],
-    }
-
-    // #when
-    const result = TierSpecSchema.safeParse(spec)
-
-    // #then
-    expect(result.success).toBe(true)
-  })
-})
-
-describe("TiersSchema", () => {
-  test("accepts tiers record with dynamic keys", () => {
-    // #given
-    const tiers = {
-      custom: {
-        providerPriority: ["provider-a"],
-        modelPattern: "model-.*",
-      },
-    }
-
-    // #when
-    const result = TiersSchema.safeParse(tiers)
-
-    // #then
-    expect(result.success).toBe(true)
-  })
-})
-
 describe("ComplexityDowngradesSchema", () => {
-  test("accepts tier reference value", () => {
+  test("rejects tier reference value (only provider/model allowed)", () => {
     // #given
     const downgrades = {
       category_a: { "1": "tier:fast" },
@@ -117,7 +51,7 @@ describe("ComplexityDowngradesSchema", () => {
     const result = ComplexityDowngradesSchema.safeParse(downgrades)
 
     // #then
-    expect(result.success).toBe(true)
+    expect(result.success).toBe(false)
   })
 
   test("accepts provider/model value", () => {
@@ -161,24 +95,6 @@ describe("ComplexityDowngradesSchema", () => {
 })
 
 describe("MatrixxConfigSchema with new fields", () => {
-  test("accepts config with tiers", () => {
-    // #given
-    const config = {
-      tiers: {
-        custom: {
-          providerPriority: ["provider-a"],
-          modelPattern: "model-.*",
-        },
-      },
-    }
-
-    // #when
-    const result = MatrixxConfigSchema.safeParse(config)
-
-    // #then
-    expect(result.success).toBe(true)
-  })
-
   test("accepts config with modelRequirements", () => {
     // #given
     const config = {
@@ -203,11 +119,11 @@ describe("MatrixxConfigSchema with new fields", () => {
     expect(result.success).toBe(true)
   })
 
-  test("accepts config with complexityDowngrades using tier reference", () => {
+  test("accepts config with complexityDowngrades using provider/model value", () => {
     // #given
     const config = {
       complexityDowngrades: {
-        "bullet-time": { "1": "tier:fast" },
+        "bullet-time": { "1": "provider-a/model-fast" },
       },
     }
 

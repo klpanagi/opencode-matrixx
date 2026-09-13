@@ -5,25 +5,21 @@ const MIGRATION_KEY = "model-migration"
 
 /**
  * Normalize a single model string input.
- * - tier:<name> → unchanged, no warning
  * - contains "/" (prefixed provider/model) → emit deprecation warning, keep value
  * - bare model → unchanged, no warning
  *
  * Provider names are opaque strings — no hardcoded allow-list.
  */
 export function normalizeModelInput(value: string): string {
-  if (value.startsWith("tier:")) {
-    return value
-  }
   if (value.includes("/")) {
-    log(`[migration] prefixed model '${value}' is deprecated, use 'tier:<name>' or bare '<model>'`)
+    log(`[migration] prefixed model '${value}' is deprecated, use bare '<model>'`)
   }
   return value
 }
 
 /**
  * In-memory migration for MatrixxConfig model fields.
- * Iterates global_model, tiers fallback models, modelRequirements fallbackChain models,
+ * Iterates global_model, modelRequirements fallbackChain models,
  * and complexityDowngrades values. Normalizes each via normalizeModelInput.
  * Only mutates in memory — never rewrites the user's config file on disk.
  * Idempotent via _migrations guard.
@@ -38,28 +34,6 @@ export function migrateMatrixxConfig(raw: MatrixxConfig): MatrixxConfig {
   // global_model
   if (typeof migrated.global_model === "string") {
     migrated = { ...migrated, global_model: normalizeModelInput(migrated.global_model) }
-  }
-
-  // tiers: each tier's fallback[*].model
-  if (migrated.tiers) {
-    const nextTiers: Record<string, unknown> = {}
-    for (const [tierName, spec] of Object.entries(migrated.tiers)) {
-      if (!spec || typeof spec !== "object") {
-        nextTiers[tierName] = spec
-        continue
-      }
-      const typed = spec as { fallback?: Array<{ model: string; providers: string[]; variant?: string }> }
-      if (!typed.fallback) {
-        nextTiers[tierName] = spec
-        continue
-      }
-      const nextFallback = typed.fallback.map((entry) => ({
-        ...entry,
-        model: normalizeModelInput(entry.model),
-      }))
-      nextTiers[tierName] = { ...spec, fallback: nextFallback }
-    }
-    migrated = { ...migrated, tiers: nextTiers as MatrixxConfig["tiers"] }
   }
 
   // modelRequirements: agents + categories fallbackChain[*].model

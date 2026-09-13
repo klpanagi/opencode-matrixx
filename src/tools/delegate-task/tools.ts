@@ -181,7 +181,9 @@ Prompts MUST be in English.`
       let isUnstableAgent = false
 
       if (args.category) {
-        const resolution = await resolveCategoryExecution(args, options, inheritedModel, systemDefaultModel)
+        // ctx.sessionID is the invoking (parent) session — its preset overlay
+        // propagates to the delegated task's category resolution.
+        const resolution = await resolveCategoryExecution(args, { ...options, sessionID: ctx.sessionID }, inheritedModel, systemDefaultModel)
         if (resolution.error) {
           return resolution.error
         }

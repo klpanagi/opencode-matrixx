@@ -3,7 +3,7 @@ import type {
   AvailableCategory,
   AvailableSkill,
 } from "../../agents/dynamic-agent-prompt-builder"
-import type { AgentOverrides, BrowserAutomationProvider, CategoriesConfig, ComplexityDowngrades, ModelRequirements, Tiers } from "../../config/schema"
+import type { AgentOverrides, BrowserAutomationProvider, CategoriesConfig, ComplexityDowngrades, ModelPresets, ModelRequirements } from "../../config/schema"
 import type { BackgroundManager } from "../../features/background-agent"
 
 export type OpencodeClient = PluginInput["client"]
@@ -77,7 +77,10 @@ export interface DelegateTaskToolOptions {
   agentOverrides?: AgentOverrides
   modelRequirements?: ModelRequirements
   complexityDowngrades?: ComplexityDowngrades
-  tiers?: Tiers
+  /** Named model presets from plugin config (`model_presets`). */
+  modelPresets?: ModelPresets
+  /** Active preset name from plugin config (`active_preset`). */
+  activePreset?: string
   onSyncSessionCreated?: (event: SyncSessionCreatedEvent) => Promise<void>
 }
 

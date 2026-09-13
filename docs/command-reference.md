@@ -18,7 +18,7 @@ Matrixx provides 24 built-in slash commands covering orchestration, research, re
 | `/handoff` | Create session handoff | — | — |
 | `/pickup` | Resume from handoff | — | — |
 | `/remove-deadcode` | Delete unused code (LSP-verified) | — | — |
-| `/profile` | Show tier/profile configuration | — | — |
+| `/preset` | List/show/set model presets (live switch; `--save` persists) | — | — |
 | `/end-ultrawork` | Deactivate ultrawork mode | ✅ | — |
 | `/research` | Saturation research (multi-round) | — | — |
 | `/assembly` | Toggle assembly tool at runtime | ✅ | — |

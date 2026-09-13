@@ -31,6 +31,13 @@ export function buildMatrixxConfig(state: SetupState, existing: MatrixxConfig | 
     ...(existing?.dcp as Record<string, unknown> ?? {}),
     enabled: state.dcp.enabled,
   } as unknown as MatrixxConfig["dcp"];
+  if (state.preset) {
+    next.model_presets = {
+      ...(existing?.model_presets ?? {}),
+      [state.preset.name]: state.preset.preset,
+    };
+    next.active_preset = state.preset.name;
+  }
   const parsed = MatrixxConfigSchema.safeParse(next);
   if (parsed.success) return parsed.data;
   return next as MatrixxConfig;

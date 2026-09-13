@@ -327,7 +327,7 @@ Each agent was selected to fill a **specific gap** in the development workflow t
 - Research needs citations → Operator
 - Codebase search needs speed → Trinity
 
-The cost tiers (free → cheap → normal → expensive) ensure agents are used appropriately — don't burn Opus tokens on grep tasks.
+The per-agent model assignments ensure agents are used appropriately — don't burn Opus tokens on grep tasks.
 
 ---
 

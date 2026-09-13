@@ -40,18 +40,6 @@ describe("normalizeModelInput", () => {
     expect(logSpy).not.toHaveBeenCalled()
   })
 
-  test("tier reference does not warn", () => {
-    // #given
-    const value = "tier:fast"
-
-    // #when
-    const result = normalizeModelInput(value)
-
-    // #then
-    expect(result).toBe(value)
-    expect(logSpy).not.toHaveBeenCalled()
-  })
-
   test("prefixed with multiple slashes still warns (opaque provider check via includes)", () => {
     // #given
     const value = "provider-a/sub/model-id"
@@ -102,44 +90,6 @@ describe("migrateMatrixxConfig", () => {
     expect(migrated._migrations).toContain("model-migration")
   })
 
-  test("tier global_model does not warn", () => {
-    // #given
-    const raw = { global_model: "tier:fast" } as unknown as import("../../src/config/schema/matrixx-config").MatrixxConfig
-
-    // #when
-    const migrated = migrateMatrixxConfig(raw)
-
-    // #then
-    expect(migrated.global_model).toBe("tier:fast")
-    expect(logSpy).not.toHaveBeenCalledWith(expect.stringContaining("[migration] prefixed"))
-  })
-
-  test("migrates tiers fallback models", () => {
-    // #given
-    const raw = {
-      tiers: {
-        fast: {
-          providerPriority: ["provider-a"],
-          modelPattern: ".*",
-          fallback: [{ providers: ["provider-a"], model: "provider-a/model-id" }],
-        },
-        standard: {
-          providerPriority: ["provider-b"],
-          modelPattern: ".*",
-          fallback: [{ providers: ["provider-b"], model: "model-id" }],
-        },
-      },
-    } as unknown as import("../../src/config/schema/matrixx-config").MatrixxConfig
-
-    // #when
-    const migrated = migrateMatrixxConfig(raw)
-
-    // #then
-    expect(migrated.tiers?.fast?.fallback?.[0].model).toBe("provider-a/model-id")
-    expect(migrated.tiers?.standard?.fallback?.[0].model).toBe("model-id")
-    expect(logSpy).toHaveBeenCalledTimes(1) // only fast warns
-  })
-
   test("migrates modelRequirements agents and categories fallbackChain", () => {
     // #given
     const raw = {
@@ -174,7 +124,7 @@ describe("migrateMatrixxConfig", () => {
     // #given
     const raw = {
       complexityDowngrades: {
-        myCategory: { "1": "provider-a/model-id", "2": "tier:fast" },
+        myCategory: { "1": "provider-a/model-id", "2": "model-id-2" },
         other: { "1": "model-id" },
       },
     } as unknown as import("../../src/config/schema/matrixx-config").MatrixxConfig
@@ -184,9 +134,9 @@ describe("migrateMatrixxConfig", () => {
 
     // #then
     expect(migrated.complexityDowngrades?.myCategory?.["1"]).toBe("provider-a/model-id")
-    expect(migrated.complexityDowngrades?.myCategory?.["2"]).toBe("tier:fast")
+    expect(migrated.complexityDowngrades?.myCategory?.["2"]).toBe("model-id-2")
     expect(migrated.complexityDowngrades?.other?.["1"]).toBe("model-id")
-    expect(logSpy).toHaveBeenCalledTimes(1) // only provider-a/model-id warns, tier:fast no warn, bare no warn
+    expect(logSpy).toHaveBeenCalledTimes(1) // only provider-a/model-id warns, bare models no warn
   })
 
   test("is idempotent via _migrations guard", () => {
@@ -217,30 +167,12 @@ describe("migrateMatrixxConfig", () => {
 
   test("existing matrixx.jsonc with prefixed model loads without Zod error (z.string not enum)", () => {
     // #given
-    const raw = { global_model: "provider-a/model-id", tiers: {} }
+    const raw = { global_model: "provider-a/model-id" }
 
     // #when
     const result = MatrixxConfigSchema.safeParse(raw)
 
     // #then
     expect(result.success).toBe(true)
-  })
-
-  test("invalid still validated at schema level but migration keeps value (prefixed not rejected)", () => {
-    // #given
-    const raw = {
-      tiers: {
-        fast: {
-          providerPriority: ["provider-a"],
-          modelPattern: "[invalid-regex",
-        },
-      },
-    }
-
-    // #when
-    const result = MatrixxConfigSchema.safeParse(raw)
-
-    // #then
-    expect(result.success).toBe(false)
   })
 })

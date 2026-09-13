@@ -8,37 +8,8 @@ export const ModelFallbackEntrySchema = z.object({
 
 export type ModelFallbackEntry = z.infer<typeof ModelFallbackEntrySchema>
 
-export const TierSpecSchema = z.object({
-  providerPriority: z.array(z.string()),
-  modelPattern: z
-    .string()
-    .refine(
-      (s) => {
-        try {
-          new RegExp(s)
-          return true
-        } catch {
-          return false
-        }
-      },
-      { message: "Invalid regex pattern" },
-    ),
-  fallbackTier: z.string().optional(),
-  fallback: z.array(ModelFallbackEntrySchema).optional(),
-})
-
-export type TierSpec = z.infer<typeof TierSpecSchema>
-
-export const TiersSchema = z.record(z.string(), TierSpecSchema)
-
-export type Tiers = z.infer<typeof TiersSchema>
-
 const complexityDowngradeValueSchema = z.string().refine(
   (s) => {
-    if (s.startsWith("tier:")) {
-      const name = s.slice(5)
-      return name.length > 0
-    }
     // provider/model format: must contain exactly one "/" with non-empty parts
     if (s.includes("/")) {
       const parts = s.split("/")
@@ -46,7 +17,7 @@ const complexityDowngradeValueSchema = z.string().refine(
     }
     return false
   },
-  { message: "Must be tier:<name> or <provider>/<model>" },
+  { message: "Must be <provider>/<model>" },
 )
 
 export const ComplexityDowngradesSchema = z.record(

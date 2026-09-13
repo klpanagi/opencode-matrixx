@@ -53,7 +53,7 @@ Total: 15 proposals across 3 tiers, plus a recommended implementation sequence a
 
 | Capability | File | Notes |
 |---|---|---|
-| Model tiering system | `src/config/schema/` | Already covers pilotfish's tiering at agent/category level |
+| Model presets | `src/config/schema/model-presets.ts` | Named static model bundles per agent/category; switch via `/preset` |
 | Runtime model fallback | `src/hooks/runtime-fallback/` | Auto-downgrade on failure |
 | Context window monitor (70% warn) | `src/hooks/context-window-monitor.ts` | Pre-empts overload |
 | Preemptive compaction | `src/hooks/preemptive-compaction.ts` | Optional |
@@ -91,7 +91,7 @@ Total: 15 proposals across 3 tiers, plus a recommended implementation sequence a
 - **Source:** esengine/DeepSeek-Reasonix
 
 ### P3. Per-Task Complexity Routing (pilotfish pattern)
-> **Status:** ✅ Shipped (v2.0.0, branch `feat/per-task-complexity-routing`). Implementation: optional `complexity: 1-5 | "auto"` on `delegate_task`; auto-scoring heuristic on description/prompt/skills/category; downgrade-only with logged decisions. 100% backwards compat; savings on tiers with model headroom.
+> **Status:** ✅ Shipped (v2.0.0, branch `feat/per-task-complexity-routing`). Implementation: optional `complexity: 1-5 | "auto"` on `delegate_task`; auto-scoring heuristic on description/prompt/skills/category; downgrade-only with logged decisions. 100% backwards compat; savings when categories use models with headroom.
 
 - **What:** Already have category-based routing; add **per-task complexity scoring** to pick cheaper model for simple subtasks within a plan. Heuristic: line count, file count, dependency depth, "trivial" flag.
 - **Performance impact:** Faster execution for simple subtasks.
