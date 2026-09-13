@@ -51,16 +51,17 @@ One-time Tauri CLI setup (Rust must be installed first):
 cargo install tauri-cli --version "^2" --locked
 ```
 
-Then, from `apps/matrixx-config/`:
+Then, from `apps/matrixx-config/` — prefer the guarded launcher (it checks
+the Tauri CLI, regenerates missing icons, probes the display, and supervises
+the window process):
 
 ```bash
-bun run build && cargo tauri dev     # dev window (frontend on :5173)
-cargo tauri build                    # release bundles
+bun run dev:desktop      # guarded cargo tauri dev (+ web fallback, see below)
+bun run build:desktop    # guarded cargo tauri build
 ```
 
-`src-tauri/tauri.conf.json` already wires `beforeDevCommand` (`bun run dev`)
-and `beforeBuildCommand` (`bun run build`), so `cargo tauri dev` alone also
-works after the first build. Bundle targets: `dmg` (macOS), `msi`
+Raw commands (`bun run build && cargo tauri dev`) also work after the first
+build — `src-tauri/tauri.conf.json` wires `beforeDevCommand`/`beforeBuildCommand`. Bundle targets: `dmg` (macOS), `msi`
 (Windows), `appimage` (Linux). Output lands in
 `src-tauri/target/release/bundle/`.
 
@@ -71,6 +72,8 @@ Run from `apps/matrixx-config/`.
 | Command | Description |
 |---------|-------------|
 | `bun run dev` | Vite dev server (port 5173) |
+| `bun run dev:desktop` | Guarded Tauri dev: CLI/icon checks, display probe, 30s crash supervisor, web fallback |
+| `bun run build:desktop` | Guarded Tauri release build (same pre-flight checks, no fallback) |
 | `bun run build` | Production static build → `build/` (embedded by Tauri) |
 | `bun run preview` | Preview the production build |
 | `bun run check` | Type-check (`svelte-kit sync` + `svelte-check`) — must show 0 errors |
@@ -131,5 +134,6 @@ Linux/macOS/Windows. Root CI never touches `apps/`.
 | `bun run lint` flags `schema.json` / `schema-version.ts` | These are generated — they belong in `.prettierignore`. Re-run `bun run sync:schema` instead of formatting them. |
 | Dev server 200 but empty/stale sections | Re-run `bun run sync:schema` — the bundled `schema.json` is older than the root schema. |
 | `cargo tauri dev` fails on Linux | Missing WebKit system libs — install the `apt-get` list under Prerequisites. |
+| Window dies with `Gdk-Message: Error 71 ... Wayland display` | Broken display stack (socket exists but compositor unreachable). Use `bun run dev:desktop` — it detects the crash signature, retries via XWayland when X is live, else falls back to web mode. Manual override: `GDK_BACKEND=x11 cargo tauri dev`. |
 | `command not found: tauri` | Tauri CLI not installed — `cargo install tauri-cli --version "^2" --locked`, ensure `~/.cargo/bin` is on `PATH`. |
 | App can't find config dir | Override with the `OPENCODE_CONFIG_DIR` env var. |
