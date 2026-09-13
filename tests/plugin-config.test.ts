@@ -3,6 +3,7 @@ import { mkdirSync, mkdtempSync, rmSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 import type { MatrixxConfig } from "../src/config";
+import { ConfigError } from "../src/shared/config-errors";
 import {
   _resetDisabledSetsCacheForTesting,
   getDisabledSets,
@@ -140,7 +141,7 @@ describe("mergeConfigs", () => {
         disabled_agents: ["morpheus", "oracle"],
         disabled_mcps: ["websearch"],
         disabled_hooks: ["quality-gate"],
-        disabled_commands: ["profile"],
+        disabled_commands: ["preset"],
         disabled_skills: ["git-master"],
       };
       const override: MatrixxConfig = {
@@ -190,7 +191,7 @@ describe("mergeConfigs", () => {
         expect(s1.disabledAgents.size).toBe(3);
         expect(s1.disabledMcps.has("websearch")).toBe(true);
         expect(s1.disabledHooks.has("quality-gate")).toBe(true);
-        expect(s1.disabledCommands.has("profile")).toBe(true);
+        expect(s1.disabledCommands.has("preset")).toBe(true);
         expect(s1.disabledSkills.has("git-master")).toBe(true);
       } finally {
         globalThis.Set = OriginalSet;
@@ -204,7 +205,7 @@ describe("mergeConfigs", () => {
         disabled_agents: ["morpheus"],
         disabled_mcps: ["websearch"],
         disabled_hooks: ["quality-gate"],
-        disabled_commands: ["profile"],
+        disabled_commands: ["preset"],
         disabled_skills: ["git-master"],
       };
 
@@ -342,7 +343,7 @@ describe("parseConfigPartially", () => {
   });
 });
 
-describe("loadPluginConfig - tier resolution (end-to-end)", () => {
+describe("loadPluginConfig - preset application (end-to-end)", () => {
   let tempDir: string
   let originalConfigDir: string | undefined
   let originalXdgCache: string | undefined
@@ -399,46 +400,62 @@ describe("loadPluginConfig - tier resolution (end-to-end)", () => {
     return projectDir
   }
 
-  it("#given a matrixx.json with agent.tier='premium' and anthropic connected #when loadPluginConfig #then the merged config has model='anthropic/claude-opus-4-6' and tier is cleared", async () => {
+  it("#given a matrixx.json with model_presets + active_preset #when loadPluginConfig #then empty agent entries are filled from the preset", async () => {
     //#given
-    writeCacheFiles(
-      ["anthropic", "openai"],
-      { anthropic: ["claude-opus-4-6", "claude-sonnet-4-6"], openai: ["gpt-5.3-codex"] },
-    )
-    writeUserMatrixx({ agents: { morpheus: { tier: "premium" } } })
+    writeUserMatrixx({
+      model_presets: {
+        eco: { agents: { morpheus: { model: "anthropic/claude-opus-4-6" } } },
+      },
+      active_preset: "eco",
+      agents: { morpheus: {} },
+    })
 
     //#when
     const result = await loadPluginConfig(freshProjectDir(), null)
 
     //#then
     expect(result.agents?.morpheus?.model).toBe("anthropic/claude-opus-4-6")
-    expect(result.agents?.morpheus?.tier).toBeUndefined()
   })
 
-  it("#given agent.tier='premium' but only openai connected #when loadPluginConfig #then model resolves to 'openai/gpt-5.3-codex' (cross-provider)", async () => {
+  it("#given an agent with explicit model plus a preset entry #when loadPluginConfig #then explicit model wins", async () => {
     //#given
-    writeCacheFiles(
-      ["openai"],
-      { openai: ["gpt-5.3-codex", "gpt-5.2"] },
-    )
-    writeUserMatrixx({ agents: { oracle: { tier: "premium" } } })
+    writeUserMatrixx({
+      model_presets: {
+        eco: { agents: { oracle: { model: "openai/gpt-5.3-codex" } } },
+      },
+      active_preset: "eco",
+      agents: { oracle: { model: "anthropic/claude-opus-4-6" } },
+    })
 
     //#when
     const result = await loadPluginConfig(freshProjectDir(), null)
 
     //#then
-    expect(result.agents?.oracle?.model).toBe("openai/gpt-5.3-codex")
+    expect(result.agents?.oracle?.model).toBe("anthropic/claude-opus-4-6")
   })
 
-  it("#given default_tier='fast' and agents without explicit model or tier #when loadPluginConfig #then those listed agents get a fast-tier model and default_tier is cleared", async () => {
+  it("#given active_preset naming a missing preset and agents without models #when loadPluginConfig #then ConfigError names the remediation", async () => {
     //#given
-    writeCacheFiles(
-      ["anthropic"],
-      { anthropic: ["claude-haiku-4-5", "claude-opus-4-6"] },
-    )
     writeUserMatrixx({
-      default_tier: "fast",
+      active_preset: "missing",
       agents: { trinity: {}, operator: {} },
+    })
+
+    //#when
+    const error = await loadPluginConfig(freshProjectDir(), null).catch((e) => e)
+
+    //#then
+    expect(error).toBeInstanceOf(ConfigError)
+    expect((error as Error).message).toContain('agent "trinity"')
+    expect((error as Error).message).toContain("model_presets")
+  })
+
+  it("#given default_model in the active preset and agents without models #when loadPluginConfig #then default_model fills them", async () => {
+    //#given
+    writeUserMatrixx({
+      model_presets: { eco: { default_model: "anthropic/claude-haiku-4-5" } },
+      active_preset: "eco",
+      agents: { trinity: {} },
     })
 
     //#when
@@ -446,42 +463,23 @@ describe("loadPluginConfig - tier resolution (end-to-end)", () => {
 
     //#then
     expect(result.agents?.trinity?.model).toBe("anthropic/claude-haiku-4-5")
-    expect(result.agents?.operator?.model).toBe("anthropic/claude-haiku-4-5")
-    expect((result as unknown as { default_tier?: string }).default_tier).toBeUndefined()
   })
 
-  it("#given default_tier='fast' and an agent with explicit model #when loadPluginConfig #then explicit model wins (not overridden by default_tier)", async () => {
+  it("#given category with a preset entry #when loadPluginConfig #then category.model is set", async () => {
     //#given
-    writeCacheFiles(
-      ["anthropic"],
-      { anthropic: ["claude-haiku-4-5", "claude-opus-4-6"] },
-    )
     writeUserMatrixx({
-      default_tier: "fast",
-      agents: { trinity: { model: "anthropic/claude-opus-4-6" } },
+      model_presets: {
+        eco: { categories: { source: { model: "anthropic/claude-opus-4-6" } } },
+      },
+      active_preset: "eco",
+      categories: { source: {} },
     })
 
     //#when
     const result = await loadPluginConfig(freshProjectDir(), null)
 
     //#then
-    expect(result.agents?.trinity?.model).toBe("anthropic/claude-opus-4-6")
-  })
-
-  it("#given category with tier='premium' #when loadPluginConfig #then category.model is set", async () => {
-    //#given
-    writeCacheFiles(
-      ["anthropic"],
-      { anthropic: ["claude-opus-4-6"] },
-    )
-    writeUserMatrixx({ categories: { source: { tier: "premium" } } })
-
-    //#when
-    const result = await loadPluginConfig(freshProjectDir(), null)
-
-    //#then
     expect(result.categories?.source?.model).toBe("anthropic/claude-opus-4-6")
-    expect(result.categories?.source?.tier).toBeUndefined()
   })
 
   it("#given a legacy matrixx.json with hardcoded model #when loadPluginConfig #then behavior is unchanged (no regression)", async () => {
@@ -499,14 +497,14 @@ describe("loadPluginConfig - tier resolution (end-to-end)", () => {
     expect(result.agents?.morpheus?.model).toBe("anthropic/claude-opus-4-6")
   })
 
-  it("#given agent with both model and tier #when loadPluginConfig #then model wins (model takes precedence over tier)", async () => {
+  it("#given agent with both model and preset entry #when loadPluginConfig #then model wins", async () => {
     //#given
-    writeCacheFiles(
-      ["anthropic"],
-      { anthropic: ["claude-opus-4-6", "claude-haiku-4-5"] },
-    )
     writeUserMatrixx({
-      agents: { morpheus: { model: "anthropic/claude-opus-4-6", tier: "fast" } },
+      model_presets: {
+        eco: { agents: { morpheus: { model: "anthropic/claude-haiku-4-5" } } },
+      },
+      active_preset: "eco",
+      agents: { morpheus: { model: "anthropic/claude-opus-4-6" } },
     })
 
     //#when
@@ -514,21 +512,22 @@ describe("loadPluginConfig - tier resolution (end-to-end)", () => {
 
     //#then
     expect(result.agents?.morpheus?.model).toBe("anthropic/claude-opus-4-6")
-    expect(result.agents?.morpheus?.tier).toBeUndefined()
   })
 
-  it("#given a project matrixx.json overrides the user config #when loadPluginConfig #then both files are merged and tiers resolved from the merged config", async () => {
+  it("#given a project matrixx.json overrides the user config #when loadPluginConfig #then both files are merged and presets apply to the merged config", async () => {
     //#given
-    writeCacheFiles(
-      ["anthropic"],
-      { anthropic: ["claude-opus-4-6", "claude-sonnet-4-6"] },
-    )
-    writeUserMatrixx({ agents: { morpheus: { tier: "premium" } } })
+    writeUserMatrixx({
+      model_presets: {
+        eco: { agents: { morpheus: { model: "anthropic/claude-opus-4-6" } } },
+      },
+      active_preset: "eco",
+      agents: { morpheus: {} },
+    })
     const projectDir = freshProjectDir()
     mkdirSync(join(projectDir, ".opencode"), { recursive: true })
     writeFileSync(
       join(projectDir, ".opencode", "matrixx.json"),
-      JSON.stringify({ agents: { oracle: { tier: "premium" } } }),
+      JSON.stringify({ agents: { oracle: { model: "anthropic/claude-sonnet-4-6" } } }),
     )
 
     //#when
@@ -536,6 +535,6 @@ describe("loadPluginConfig - tier resolution (end-to-end)", () => {
 
     //#then
     expect(result.agents?.morpheus?.model).toBe("anthropic/claude-opus-4-6")
-    expect(result.agents?.oracle?.model).toBe("anthropic/claude-opus-4-6")
+    expect(result.agents?.oracle?.model).toBe("anthropic/claude-sonnet-4-6")
   })
 });

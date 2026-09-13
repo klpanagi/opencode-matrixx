@@ -5,17 +5,32 @@
 
   // ─────────────────────────────────────────────────────────────────────────
   // Global model override — applies to ALL agents and categories.
-  // Example: "<provider>/<model>" e.g., "openai/gpt-5.2" or tier: "fast" — replace with your live model from provider.list
+  // Example: "<provider>/<model>" e.g., "openai/gpt-5.2" — replace with your live model from provider.list
   // When set, every agent/category uses this model regardless of individual config.
   // ─────────────────────────────────────────────────────────────────────────
-  // "global_model": "<provider>/<model>", // replace with live model from provider.list or tier: "fast"
+  // "global_model": "<provider>/<model>", // replace with live model from provider.list
 
   // ─────────────────────────────────────────────────────────────────────────
-  // Default tier — applied to agents/categories without explicit model/tier.
-  // One of: "free" | "fast" | "standard" | "premium" | "frontier"
-  // Resolved at load time against live provider list → concrete model string.
+  // Model presets — named static bundles of explicit "provider/model" strings.
+  // Each preset maps agents and categories to concrete models. The active
+  // preset is applied at config load; switch live with /preset set <name>.
   // ─────────────────────────────────────────────────────────────────────────
-  // "default_tier": "standard",
+  // "model_presets": {
+  //   "default": {
+  //     "default_model": "anthropic/claude-sonnet-4-6",
+  //     "agents": { "trinity": { "model": "anthropic/claude-haiku-4-5" } },
+  //     "categories": { "source": { "model": "anthropic/claude-sonnet-4-6" } }
+  //   },
+  //   "flagship": {
+  //     "default_model": "anthropic/claude-opus-4-6",
+  //     "agents": {
+  //       "morpheus": { "model": "anthropic/claude-opus-4-6" },
+  //       "trinity": { "model": "anthropic/claude-sonnet-4-6" }
+  //     },
+  //     "categories": { "source": { "model": "anthropic/claude-opus-4-6", "variant": "max" } }
+  //   }
+  // },
+  // "active_preset": "default",
 
   // ─────────────────────────────────────────────────────────────────────────
   // Default agent for `opencode run` (env: OPENCODE_DEFAULT_AGENT)
@@ -40,7 +55,7 @@
 
   // ─────────────────────────────────────────────────────────────────────────
   // Agent overrides — per-agent model, temperature, permissions, etc.
-  // Each agent supports: model, tier, variant, category, skills, temperature,
+  // Each agent supports: model, variant, category, skills, temperature,
   // top_p, prompt, prompt_append, tools, disable, description, mode, color,
   // permission, maxTokens, thinking, reasoningEffort, textVerbosity,
   // providerOptions, fallbackChain
@@ -72,7 +87,7 @@
 
   // ─────────────────────────────────────────────────────────────────────────
   // Categories — domain-specific task delegation via `task(category="...")`
-  // Each category supports: model, tier, variant, description, temperature,
+  // Each category supports: model, variant, description, temperature,
   // top_p, maxTokens, thinking, reasoningEffort, textVerbosity, tools,
   // prompt_append, is_unstable_agent, disable, fallback_models,
   // complexity_downgrades

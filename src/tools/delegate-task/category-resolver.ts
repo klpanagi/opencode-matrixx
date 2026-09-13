@@ -1,5 +1,7 @@
+import { resolvePresetModel } from "../../config/preset-applier"
+import type { ModelPresetEntry } from "../../config/schema"
+import { getSessionPreset } from "../../features/preset-state/manager"
 import type { ModelFallbackInfo } from "../../features/task-toast-manager/types"
-import { readConnectedProvidersCache } from "../../shared/connected-providers-cache"
 import { log } from "../../shared/logger"
 import { mergeCategories } from "../../shared/merge-categories"
 import { getCategoryModelRequirements } from "../../shared/model-requirements"
@@ -30,17 +32,47 @@ export interface CategoryResolutionResult {
   error?: string
 }
 
+/**
+ * Resolve the preset entry that applies to a category at call time.
+ *
+ * Precedence: session overlay preset (invoking/parent session) wins over the
+ * config `active_preset`. An unknown overlay preset name is logged and
+ * ignored (never throws); an entry missing for this category falls through
+ * to the config active preset.
+ */
+function resolveCategoryPresetEntry(categoryName: string, ctx: ExecutorContext): ModelPresetEntry | undefined {
+  const { sessionID, modelPresets, activePreset } = ctx
+  if (!modelPresets) return undefined
+
+  const overlayName = sessionID ? getSessionPreset(sessionID) : undefined
+  let result: ModelPresetEntry | undefined
+  if (overlayName) {
+    const overlayPreset = modelPresets[overlayName]
+    if (overlayPreset) {
+      const entry = resolvePresetModel(overlayPreset, categoryName)
+      if (entry) result = entry
+    } else {
+      log("[preset] unknown session overlay preset, ignoring", { sessionID, presetName: overlayName })
+    }
+  }
+
+  if (!result && activePreset) {
+    const preset = modelPresets[activePreset]
+    if (preset) result = resolvePresetModel(preset, categoryName)
+  }
+  return result
+}
+
 export async function resolveCategoryExecution(
   args: DelegateTaskArgs,
   executorCtx: ExecutorContext,
   inheritedModel: string | undefined,
   systemDefaultModel: string | undefined
 ): Promise<CategoryResolutionResult> {
-  const { client, userCategories, mouseModel, globalModel, modelRequirements, complexityDowngrades, tiers } = executorCtx
+  const { client, userCategories, mouseModel, globalModel, modelRequirements, complexityDowngrades } = executorCtx
   const categoryRequirements = getCategoryModelRequirements(modelRequirements ? { modelRequirements } : undefined)
 
   const availableModels = await getAvailableModelsForDelegateTask(client)
-  const connectedProviders = readConnectedProvidersCache()
 
   const categoryName = args.category as string
   const enabledCategories = mergeCategories(userCategories)
@@ -51,8 +83,8 @@ export async function resolveCategoryExecution(
     inheritedModel,
     systemDefaultModel,
     availableModels,
-    tierContext: { availableModels, connectedProviders },
     modelRequirements,
+    presetEntry: resolveCategoryPresetEntry(categoryName, executorCtx),
   })
 
   if (!resolved) {
@@ -185,9 +217,7 @@ Available categories: ${allCategoryNames}`,
 
   if (actualModel && (complexityLevel === 1 || complexityLevel === 2)) {
     const userDowngrades = userCategories?.[args.category as string]?.complexity_downgrades
-    const holder = complexityDowngrades || tiers ? { complexityDowngrades, tiers } : undefined
-    const tierCtx = { availableModels, connectedProviders }
-    const resolvedDowngrade = resolveComplexityModel(args.category as string, complexityLevel, actualModel, userDowngrades, holder, tierCtx)
+    const resolvedDowngrade = resolveComplexityModel(args.category as string, complexityLevel, actualModel, userDowngrades, complexityDowngrades)
 
     if (resolvedDowngrade.downgraded) {
       complexityDowngraded = true

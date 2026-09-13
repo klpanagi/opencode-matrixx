@@ -1,12 +1,11 @@
-import { afterEach, beforeEach, describe, expect, it, mock, spyOn } from "bun:test"
+import { describe, expect, it } from "bun:test"
 
-import * as connectedProvidersCache from "../../../src/shared/connected-providers-cache"
-import type { TierResolverContext } from "../../../src/shared/tier-resolver"
+import type { ModelPresetEntry } from "../../../src/config/schema"
 import { resolveCategoryConfig } from "../../../src/tools/delegate-task/categories"
 import { DEFAULT_CATEGORIES } from "../../../src/tools/delegate-task/constants"
 
 describe("DEFAULT_CATEGORIES", () => {
-  it("#given the registry #when inspected #then no entry hardcodes a model string (uses tier instead)", () => {
+  it("#given the registry #when inspected #then no entry hardcodes a model string (presets fill models)", () => {
     //#given / #when
     //#then
     for (const [name, entry] of Object.entries(DEFAULT_CATEGORIES)) {
@@ -14,190 +13,79 @@ describe("DEFAULT_CATEGORIES", () => {
     }
   })
 
-  it("#given the registry #when inspected #then every entry has a tier field", () => {
+  it("#given the registry #when inspected #then no entry carries a tier field (tiers removed)", () => {
     //#then
     for (const [name, entry] of Object.entries(DEFAULT_CATEGORIES)) {
-      expect({ name, tier: entry.tier }).toEqual({
-        name,
-        tier: expect.stringMatching(/^(free|fast|standard|premium|frontier)$/),
-      })
+      expect({ name, tier: (entry as { tier?: unknown }).tier }).toEqual({ name, tier: undefined })
     }
+  })
+
+  it("#given the registry #when inspected #then variant defaults are preserved", () => {
+    //#then
+    expect(DEFAULT_CATEGORIES.source.variant).toBe("max")
+    expect(DEFAULT_CATEGORIES["deep-jack"].variant).toBe("max")
+    expect(DEFAULT_CATEGORIES["red-pill"].variant).toBe("max")
+    expect(DEFAULT_CATEGORIES.construct.variant).toBeUndefined()
   })
 })
 
-describe("resolveCategoryConfig with tier-based defaults", () => {
-  let connectedProvidersSpy: ReturnType<typeof spyOn> | undefined
-  let providerModelsSpy: ReturnType<typeof spyOn> | undefined
+describe("resolveCategoryConfig with preset-based defaults", () => {
+  const SYSTEM_DEFAULT = "anthropic/claude-sonnet-4-5"
 
-  beforeEach(() => {
-    mock.restore()
-    connectedProvidersSpy = spyOn(
-      connectedProvidersCache,
-      "readConnectedProvidersCache",
-    ).mockReturnValue(null)
-    providerModelsSpy = spyOn(
-      connectedProvidersCache,
-      "readProviderModelsCache",
-    ).mockReturnValue(null)
+  it("#given source category #when resolved without preset #then falls back to systemDefaultModel", () => {
+    //#given / #when
+    const result = resolveCategoryConfig("source", { systemDefaultModel: SYSTEM_DEFAULT })
+    //#then
+    expect(result?.model).toBe(SYSTEM_DEFAULT)
+    expect(result?.config.variant).toBe("max")
   })
 
-  afterEach(() => {
-    connectedProvidersSpy?.mockRestore()
-    providerModelsSpy?.mockRestore()
+  it("#given presetEntry for category #when resolved #then preset model fills the gap", () => {
+    //#given
+    const presetEntry: ModelPresetEntry = { model: "anthropic/claude-opus-4-6", variant: "max" }
+    //#when
+    const result = resolveCategoryConfig("source", { systemDefaultModel: SYSTEM_DEFAULT, presetEntry })
+    //#then
+    expect(result?.model).toBe("anthropic/claude-opus-4-6")
+    expect(result?.config.variant).toBe("max")
   })
 
-  const makeCtx = (
-    availableModels: string[] = ["anthropic/claude-opus-4-6", "anthropic/claude-sonnet-4-6", "anthropic/claude-haiku-4-5"],
-    connectedProviders: string[] | null = ["anthropic"],
-  ): TierResolverContext => ({
-    availableModels: new Set(availableModels),
-    connectedProviders,
+  it("#given presetEntry variant #when user has no variant #then preset variant fills", () => {
+    //#given
+    const presetEntry: ModelPresetEntry = { model: "anthropic/claude-opus-4-6", variant: "max" }
+    //#when
+    const result = resolveCategoryConfig("construct", { systemDefaultModel: SYSTEM_DEFAULT, presetEntry })
+    //#then
+    expect(result?.model).toBe("anthropic/claude-opus-4-6")
+    expect(result?.config.variant).toBe("max")
   })
 
-  describe("anthropic connected (typical case)", () => {
-    it("#given source category #when resolved #then model='anthropic/claude-opus-4-6' and variant='max'", () => {
-      //#given
-      const ctx = makeCtx()
-
-      //#when
-      const result = resolveCategoryConfig("source", {
-        systemDefaultModel: "anthropic/claude-sonnet-4-5",
-        tierContext: ctx,
-      })
-
-      //#then
-      expect(result?.model).toBe("anthropic/claude-opus-4-6")
-      expect(result?.config.variant).toBe("max")
+  it("#given user model + presetEntry #when resolved #then explicit user model wins", () => {
+    //#given
+    const presetEntry: ModelPresetEntry = { model: "anthropic/claude-opus-4-6" }
+    //#when
+    const result = resolveCategoryConfig("source", {
+      systemDefaultModel: SYSTEM_DEFAULT,
+      presetEntry,
+      userCategories: { source: { model: "openai/gpt-5.3-codex" } },
     })
-
-    it("#given bullet-time category #when resolved #then model='anthropic/claude-haiku-4-5' (fast tier)", () => {
-      //#given
-      const ctx = makeCtx()
-
-      //#when
-      const result = resolveCategoryConfig("bullet-time", {
-        systemDefaultModel: "anthropic/claude-sonnet-4-5",
-        tierContext: ctx,
-      })
-
-      //#then
-      expect(result?.model).toBe("anthropic/claude-haiku-4-5")
-    })
-
-    it("#given construct category #when resolved #then model='anthropic/claude-sonnet-4-6' (standard tier)", () => {
-      //#given
-      const ctx = makeCtx()
-
-      //#when
-      const result = resolveCategoryConfig("construct", {
-        systemDefaultModel: "anthropic/claude-sonnet-4-5",
-        tierContext: ctx,
-      })
-
-      //#then
-      expect(result?.model).toBe("anthropic/claude-sonnet-4-6")
-    })
-
-    it("#given red-pill category #when resolved #then model='anthropic/claude-opus-4-6' (premium tier) and variant='max'", () => {
-      //#given
-      const ctx = makeCtx()
-
-      //#when
-      const result = resolveCategoryConfig("red-pill", {
-        systemDefaultModel: "anthropic/claude-sonnet-4-5",
-        tierContext: ctx,
-      })
-
-      //#then
-      expect(result?.model).toBe("anthropic/claude-opus-4-6")
-      expect(result?.config.variant).toBe("max")
-    })
+    //#then
+    expect(result?.model).toBe("openai/gpt-5.3-codex")
   })
 
-  describe("only openai connected (cross-provider)", () => {
-    it("#given source category with only openai available #when resolved #then model falls back via cross-provider (gpt-5.3-codex for premium)", () => {
-      //#given
-      const ctx: TierResolverContext = {
-        availableModels: new Set(["openai/gpt-5.3-codex", "openai/gpt-5.2"]),
-        connectedProviders: ["openai"],
-      }
-
-      //#when
-      const result = resolveCategoryConfig("source", {
-        systemDefaultModel: "anthropic/claude-sonnet-4-5",
-        tierContext: ctx,
-      })
-
-      //#then
-      expect(result?.model).toBe("openai/gpt-5.3-codex")
-    })
-
-    it("#given bullet-time with only openai #when resolved #then model='openai/gpt-5.2' (standard fallback from fast)", () => {
-      //#given
-      const ctx: TierResolverContext = {
-        availableModels: new Set(["openai/gpt-5.2", "openai/gpt-5-nano"]),
-        connectedProviders: ["openai"],
-      }
-
-      //#when
-      const result = resolveCategoryConfig("bullet-time", {
-        systemDefaultModel: "anthropic/claude-sonnet-4-5",
-        tierContext: ctx,
-      })
-
-      //#then - fast tier matches gpt-5-nano
-      expect(result?.model).toBe("openai/gpt-5-nano")
-    })
+  it("#given no preset and no user model #when resolved #then systemDefaultModel is used", () => {
+    //#given / #when
+    const result = resolveCategoryConfig("construct", { systemDefaultModel: SYSTEM_DEFAULT })
+    //#then
+    expect(result?.model).toBe(SYSTEM_DEFAULT)
   })
 
-  describe("cold cache (no live models, no connected providers)", () => {
-    it("#given no live models and no connected providers #when resolved #then falls back to systemDefaultModel", () => {
-      //#given
-      const ctx: TierResolverContext = {
-        availableModels: new Set(),
-        connectedProviders: [],
-      }
-
-      //#when
-      const result = resolveCategoryConfig("source", {
-        systemDefaultModel: "anthropic/claude-sonnet-4-5",
-        tierContext: ctx,
-      })
-
-      //#then
-      expect(result?.model).toBe("anthropic/claude-sonnet-4-5")
-    })
-  })
-
-  describe("user override wins over tier default", () => {
-    it("#given user sets category.model explicitly #when resolved #then user model wins (no tier resolution applied)", () => {
-      //#given
-      const ctx = makeCtx()
-
-      //#when
-      const result = resolveCategoryConfig("source", {
-        systemDefaultModel: "anthropic/claude-sonnet-4-5",
-        tierContext: ctx,
-        userCategories: { source: { model: "openai/gpt-5.3-codex" } },
-      })
-
-      //#then
-      expect(result?.model).toBe("openai/gpt-5.3-codex")
-    })
-
-    it("#given user sets category.tier explicitly #when resolved #then user tier wins (resolved against live list)", () => {
-      //#given
-      const ctx = makeCtx()
-
-      //#when
-      const result = resolveCategoryConfig("source", {
-        systemDefaultModel: "anthropic/claude-sonnet-4-5",
-        tierContext: ctx,
-        userCategories: { source: { tier: "standard" } },
-      })
-
-      //#then
-      expect(result?.model).toBe("anthropic/claude-sonnet-4-6")
-    })
+  it("#given disabled category #when resolved #then returns null", () => {
+    //#given
+    const userCategories = { source: { disable: true } }
+    //#when
+    const result = resolveCategoryConfig("source", { systemDefaultModel: SYSTEM_DEFAULT, userCategories })
+    //#then
+    expect(result).toBeNull()
   })
 })

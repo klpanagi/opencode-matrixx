@@ -1,4 +1,4 @@
-import type { AgentOverrides, BrowserAutomationProvider, CategoriesConfig, ComplexityDowngrades, ModelRequirements, Tiers } from "../../config/schema"
+import type { AgentOverrides, BrowserAutomationProvider, CategoriesConfig, ComplexityDowngrades, ModelPresets, ModelRequirements } from "../../config/schema"
 import type { BackgroundManager } from "../../features/background-agent"
 import type { OpencodeClient } from "./types"
 
@@ -13,7 +13,12 @@ export interface ExecutorContext {
   agentOverrides?: AgentOverrides
   modelRequirements?: ModelRequirements
   complexityDowngrades?: ComplexityDowngrades
-  tiers?: Tiers
+  /** Named model presets from plugin config (`model_presets`). */
+  modelPresets?: ModelPresets
+  /** Active preset name from plugin config (`active_preset`). */
+  activePreset?: string
+  /** Invoking (parent) session ID — its preset overlay propagates to delegated tasks. */
+  sessionID?: string
   onSyncSessionCreated?: (event: { sessionID: string; parentID: string; title: string }) => Promise<void>
 }
 

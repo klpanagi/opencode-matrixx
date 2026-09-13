@@ -41,3 +41,4 @@ tests/tools/dcp-switch-profile/tools.test.ts
 tests/shared/agent-config-handler.test.ts
 tests/shared/opencode-message-dir.test.ts
 tests/config/model-migration.test.ts
+tests/tools/preset/tools.test.ts

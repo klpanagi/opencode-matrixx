@@ -8,7 +8,7 @@ export const BuiltinCommandNameSchema = z.enum([
   "refactor",
   "start-work",
   "stop-continuation",
-  "profile",
+  "preset",
   "end-ultrawork",
   "handoff",
   "research",

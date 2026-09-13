@@ -60,6 +60,7 @@ Options:
   --verbose     (install) Display detailed logs
   --yes, -y     (setup) Non-interactive defaults (no prompts)
   --dry-run     (setup) Preview changes without writing
+  --skip-presets (setup) Skip model preset generation (headless/CI)
 
 Doctor categories:
   installation   Plugin registration and OpenCode version
@@ -88,6 +89,7 @@ interface ParsedArgs {
   local: boolean
   yes: boolean
   dryRun: boolean
+  skipPresets: boolean
   claude?: "yes" | "no" | "max20"
   openai?: "yes" | "no"
   gemini?: "yes" | "no"
@@ -107,6 +109,7 @@ function parseArgs(argv: string[]): ParsedArgs {
     local: false,
     yes: false,
     dryRun: false,
+    skipPresets: false,
     extra: [],
   }
 
@@ -129,6 +132,8 @@ function parseArgs(argv: string[]): ParsedArgs {
       result.yes = true
     } else if (a === "--dry-run") {
       result.dryRun = true
+    } else if (a === "--skip-presets") {
+      result.skipPresets = true
     } else if (a === "--no-tui") {
       result.noTui = true
     } else if (a === "--local") {
@@ -204,7 +209,7 @@ async function main(): Promise<void> {
   }
 
   if (args.command === "setup") {
-    const output = await executeSetup({ dryRun: args.dryRun, yes: args.yes })
+    const output = await executeSetup({ dryRun: args.dryRun, yes: args.yes, skipPresets: args.skipPresets })
     console.log(output)
     return
   }

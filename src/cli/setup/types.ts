@@ -1,3 +1,5 @@
+import type { ModelPreset } from "../../config/schema/model-presets"
+
 export type Platform = "darwin" | "linux" | "win32";
 
 export type DepStatus = {
@@ -14,6 +16,7 @@ export type SetupState = {
   rtk: { enabled: boolean; binaryPath?: string };
   dcp: { enabled: boolean };
   contextMode: boolean;
+  preset?: { name: string; preset: ModelPreset };
 };
 
 export const BUN_REQUIRED = "1.4.0";

@@ -2,7 +2,7 @@ import { z } from "zod"
 import { AnyMcpNameSchema } from "../../mcp/types"
 import { AgentDefinitionsConfigSchema } from "./agent-definitions"
 import { BuiltinAgentNameSchema, BuiltinSkillNameSchema } from "./agent-names"
-import { AgentOverridesSchema, TierNameSchema } from "./agent-overrides"
+import { AgentOverridesSchema } from "./agent-overrides"
 import { AssemblyConfigSchema } from "./assembly"
 import { BabysittingConfigSchema } from "./babysitting"
 import { BackgroundTaskConfigSchema } from "./background-task"
@@ -19,7 +19,8 @@ import { HeadroomConfigSchema } from "./headroom"
 import { HookNameSchema } from "./hooks"
 import { MatrixLoopConfigSchema } from "./matrix-loop"
 import { MatrixxSelfConfigSkillConfigSchema } from "./matrixx-self-config"
-import { ComplexityDowngradesSchema, ModelRequirementsSchema, TiersSchema } from "./model-config"
+import { ComplexityDowngradesSchema, ModelRequirementsSchema } from "./model-config"
+import { ActivePresetSchema, ModelPresetsSchema } from "./model-presets"
 import { MorpheusConfigSchema } from "./morpheus"
 import { MorpheusAgentConfigSchema } from "./morpheus-agent"
 import { NotificationConfigSchema } from "./notification"
@@ -37,8 +38,10 @@ export const MatrixxConfigSchema = z.object({
   /** Global provider/model override for ALL agents and categories (e.g., "<provider>/<model>" from provider.list — replace with your live model).
    * When set, this model is used for every agent and category regardless of their individual config. */
   global_model: z.string().optional(),
-  /** Default tier applied to every agent and category that has no explicit `model` or `tier`. */
-  default_tier: TierNameSchema.optional(),
+  /** Named static model presets — explicit provider/model bundles per agent/category */
+  model_presets: ModelPresetsSchema.optional(),
+  /** Name of the active preset in model_presets */
+  active_preset: ActivePresetSchema.optional(),
   /** Enable new task system (default: false) */
   new_task_system_enabled: z.boolean().optional(),
   /** Default agent name for `matrixx run` (env: OPENCODE_DEFAULT_AGENT) */
@@ -92,8 +95,6 @@ export const MatrixxConfigSchema = z.object({
   evolution: EvolutionConfigSchema.optional(),
   /** Migration history to prevent re-applying migrations (e.g., model version upgrades) */
   _migrations: z.array(z.string()).optional(),
-  /** Config-driven tier definitions — keys are tier names, values are TierSpec */
-  tiers: TiersSchema.optional(),
   /** Config-driven agent/category model requirements */
   modelRequirements: ModelRequirementsSchema.optional(),
   /** Config-driven complexity downgrade targets per category */

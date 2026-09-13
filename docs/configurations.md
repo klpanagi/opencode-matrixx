@@ -743,9 +743,10 @@ All 8 categories come with optimal model defaults, but **you must configure them
 **Categories DO NOT use their built-in defaults unless configured.** Model resolution follows this priority:
 
 ```
-1. User-configured model (in matrixx.json)
-2. Category's built-in default (if you add category to config)
-3. System default model (from opencode.json)
+1. User-configured model (explicit `model` in matrixx.json)
+2. Active preset entry (from `model_presets` + `active_preset` — per-agent/category assignment, then `default_model`)
+3. Category's built-in default (if you add category to config)
+4. System default model (from opencode.json)
 ```
 
 **Example Problem:**
@@ -859,7 +860,7 @@ Each category can define a `temperature` that overrides the agent's default temp
 | `description`       | string  | -       | Human-readable description of the category's purpose. Shown in task prompt.                     |
 | `is_unstable_agent`| boolean | `false`  | Mark agent as unstable - forces background mode for monitoring. Auto-enabled for gemini models. |
 | `fallback_models`   | string\|string[] | - | Fallback model(s) for this category. Overrides provider chain.                            |
-| `complexity_downgrades` | object | -   | Map complexity level to model downgrade: `{ "2": "haiku" }`                              |
+| `complexity_downgrades` | object | -   | Map complexity level to model downgrade: `{ "2": "anthropic/claude-haiku-4-5" }`                              |
 | `disable`           | boolean | `false` | When `true`, disables this category.                                                        |
 ## Model Resolution System
 
@@ -985,6 +986,69 @@ Override any agent or category model in `matrixx.json`:
 ```
 
 When you specify a model override, it takes precedence (Step 1) and the provider fallback chain is skipped entirely.
+
+## Model Presets
+
+Model presets are **named static bundles of explicit `"provider/model"` strings** that map agents and categories to concrete models. They replace the old named-tier system with deterministic, provider-agnostic assignments — no runtime resolution against a live provider list.
+
+### Schema
+
+```jsonc
+{
+  "model_presets": {
+    "default": {
+      "default_model": "anthropic/claude-sonnet-4-6",
+      "agents": { "trinity": { "model": "anthropic/claude-haiku-4-5" } },
+      "categories": { "source": { "model": "anthropic/claude-sonnet-4-6" } }
+    },
+    "flagship": {
+      "default_model": "anthropic/claude-opus-4-6",
+      "agents": {
+        "morpheus": { "model": "anthropic/claude-opus-4-6" },
+        "trinity": { "model": "anthropic/claude-sonnet-4-6" }
+      },
+      "categories": { "source": { "model": "anthropic/claude-opus-4-6", "variant": "max" } }
+    }
+  },
+  "active_preset": "default"
+}
+```
+
+| Field | Type | Description |
+|-------|------|-------------|
+| `model_presets` | `object` | Registry of named presets, keyed by preset name. |
+| `model_presets.<name>.default_model` | `string` | Default model applied to any agent/category entry that still has no `model`. Format: `<provider>/<model>`. |
+| `model_presets.<name>.agents` | `object` | Per-agent model assignments: `{ "<agent>": { "model": "<provider>/<model>", "variant": "..." } }`. |
+| `model_presets.<name>.categories` | `object` | Per-category model assignments (same shape as `agents`). |
+| `active_preset` | `string` | Name of the preset applied at config load. |
+
+### Precedence
+
+Presets use **fill-in semantics** — they never overwrite an explicit `model` on a config entry. Effective model resolution:
+
+```
+1. Explicit `model` on the agent/category config entry (wins)
+2. Active preset's per-agent/category assignment, then its `default_model`
+3. Built-in default (if the entry is configured)
+4. System default model (from opencode.json)
+```
+
+### `/preset` command
+
+Switch presets at runtime without editing config:
+
+| Command | Effect |
+|---------|--------|
+| `/preset` or `/preset list` | List available presets and mark the active one |
+| `/preset show [<name>]` | Show a preset's agent/category model assignments (defaults to the active preset) |
+| `/preset set <name>` | Switch the active preset for the current session — **delegate-task categories switch immediately**; builtin agents apply on the **next session** |
+| `/preset set <name> --save [--global\|--project]` | Also persist `active_preset` to config (project `.opencode/matrixx.jsonc` by default, or global `~/.config/opencode/matrixx.jsonc`) |
+
+The `/preset` command is backed by the built-in `preset` tool (`src/tools/preset/tools.ts`), which validates the preset name, applies the session overlay, and — with `--save` — persists `active_preset`. It never edits config files directly.
+
+### First-run wizard
+
+The setup wizard (`bunx opencode-matrixx setup`) generates a `default` preset from your connected providers when no `model_presets` exists in the target config: `default_model` is the first available `provider/model` from the highest-priority connected provider, and every builtin agent/category is assigned that same model. If no providers are connected, setup aborts with a hard error instructing you to configure a provider first.
 
 ## Hooks
 

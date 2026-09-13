@@ -2,6 +2,7 @@ declare const require: (name: string) => unknown
 const { describe, test, expect, beforeEach, afterEach, spyOn, mock } = require("bun:test")
 
 import * as connectedProvidersCache from "../../../src/shared/connected-providers-cache"
+import { _resetPresetStateForTesting, setSessionPreset } from "../../../src/features/preset-state/manager"
 import { resolveCategoryExecution } from "../../../src/tools/delegate-task/category-resolver"
 import type { ExecutorContext } from "../../../src/tools/delegate-task/executor-types"
 
@@ -11,11 +12,13 @@ describe("resolveCategoryExecution", () => {
 
 	beforeEach(() => {
 		mock.restore()
+		_resetPresetStateForTesting()
 		connectedProvidersSpy = spyOn(connectedProvidersCache, "readConnectedProvidersCache").mockReturnValue(null)
 		providerModelsSpy = spyOn(connectedProvidersCache, "readProviderModelsCache").mockReturnValue(null)
 	})
 
 	afterEach(() => {
+		_resetPresetStateForTesting()
 		connectedProvidersSpy?.mockRestore()
 		providerModelsSpy?.mockRestore()
 	})
@@ -28,6 +31,16 @@ describe("resolveCategoryExecution", () => {
 		mouseModel: undefined,
 		...overrides,
 	})
+
+	const sourceArgs = {
+		category: "source",
+		prompt: "test prompt",
+		description: "Test task",
+		run_in_background: false,
+		load_skills: [],
+		blockedBy: undefined,
+		enableSkillTools: false,
+	}
 
 	test("returns clear error when category exists but required model is not available", async () => {
 		//#given - deep-jack now uses Claude-only chain, so it resolves successfully
@@ -231,38 +244,87 @@ describe("complexity integration", () => {
 		expect(result.complexityDowngraded).toBe(true)
 	})
 
-	test("tier: downgrade resolved via live tier", async () => {
-		//#given — downgrade is tier:fast, resolved via live list
-		connectedProvidersSpy?.mockReturnValue(["provider-a"])
-		providerModelsSpy?.mockReturnValue({
-			models: { "provider-a": ["model-fast"] },
-			connected: ["provider-a"],
-			updatedAt: new Date().toISOString(),
-		})
-		const args = {
-			category: "source",
-			prompt: "test prompt",
-			description: "Test task",
-			run_in_background: false,
-			load_skills: [],
-			blockedBy: undefined,
-			enableSkillTools: false,
-			complexity: 1,
-		}
+	test("session overlay preset wins over config active_preset", async () => {
+		//#given — session overlay assigns source → provider-a/model-overlay; config active_preset assigns source → provider-b/model-config
+		setSessionPreset("ses-overlay", "overlay")
 		const executorCtx = createMockExecutorContext({
-			complexityDowngrades: { source: { "1": "tier:fast" } },
-			tiers: { fast: { providerPriority: ["provider-a"], modelPattern: "model-fast" } },
+			sessionID: "ses-overlay",
+			modelPresets: {
+				overlay: { agents: { source: { model: "provider-a/model-overlay" } } },
+				config: { agents: { source: { model: "provider-b/model-config" } } },
+			},
+			activePreset: "config",
 		})
 		const inheritedModel = undefined
 		const systemDefaultModel = "provider-x/model-orig"
 
 		//#when
-		const result = await resolveCategoryExecution(args, executorCtx, inheritedModel, systemDefaultModel)
+		const result = await resolveCategoryExecution(sourceArgs, executorCtx, inheritedModel, systemDefaultModel)
+
+		//#then — session overlay wins over config active_preset
+		expect(result.error).toBeUndefined()
+		expect(result.actualModel).toBe("provider-a/model-overlay")
+	})
+
+	test("unknown session overlay preset is ignored, falls back to config active_preset", async () => {
+		//#given — overlay name not in model_presets; config active_preset is valid
+		setSessionPreset("ses-unknown", "nope")
+		const executorCtx = createMockExecutorContext({
+			sessionID: "ses-unknown",
+			modelPresets: {
+				config: { agents: { source: { model: "provider-b/model-config" } } },
+			},
+			activePreset: "config",
+		})
+		const inheritedModel = undefined
+		const systemDefaultModel = "provider-x/model-orig"
+
+		//#when
+		const result = await resolveCategoryExecution(sourceArgs, executorCtx, inheritedModel, systemDefaultModel)
+
+		//#then — unknown overlay ignored, config active_preset applies
+		expect(result.error).toBeUndefined()
+		expect(result.actualModel).toBe("provider-b/model-config")
+	})
+
+	test("config active_preset applies when no session overlay", async () => {
+		//#given — no session overlay, config active_preset assigns source → provider-b/model-config
+		const executorCtx = createMockExecutorContext({
+			sessionID: "ses-plain",
+			modelPresets: {
+				config: { agents: { source: { model: "provider-b/model-config" } } },
+			},
+			activePreset: "config",
+		})
+		const inheritedModel = undefined
+		const systemDefaultModel = "provider-x/model-orig"
+
+		//#when
+		const result = await resolveCategoryExecution(sourceArgs, executorCtx, inheritedModel, systemDefaultModel)
 
 		//#then
 		expect(result.error).toBeUndefined()
-		expect(result.actualModel).toBe("provider-a/model-fast")
-		expect(result.complexityDowngraded).toBe(true)
+		expect(result.actualModel).toBe("provider-b/model-config")
+	})
+
+	test("preset default_model fills category without explicit entry", async () => {
+		//#given — preset has no source entry, only default_model
+		const executorCtx = createMockExecutorContext({
+			sessionID: "ses-default",
+			modelPresets: {
+				config: { default_model: "provider-c/model-default" },
+			},
+			activePreset: "config",
+		})
+		const inheritedModel = undefined
+		const systemDefaultModel = "provider-x/model-orig"
+
+		//#when
+		const result = await resolveCategoryExecution(sourceArgs, executorCtx, inheritedModel, systemDefaultModel)
+
+		//#then — default_model fills the gap
+		expect(result.error).toBeUndefined()
+		expect(result.actualModel).toBe("provider-c/model-default")
 	})
 })
 })

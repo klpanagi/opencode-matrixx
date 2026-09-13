@@ -13,7 +13,7 @@ import { HANDOFF_TEMPLATE } from "./templates/handoff"
 import { INIT_DEEP_TEMPLATE } from "./templates/init-deep"
 import { CANCEL_LOOP_TEMPLATE, MATRIX_LOOP_TEMPLATE } from "./templates/matrix-loop"
 import { PICKUP_TEMPLATE } from "./templates/pickup"
-import { PROFILE_TEMPLATE } from "./templates/profile"
+import { PRESET_TEMPLATE } from "./templates/preset"
 import { REFACTOR_TEMPLATE } from "./templates/refactor"
 import { REMOVE_DEADCODE_TEMPLATE } from "./templates/remove-deadcode"
 import { RESEARCH_TEMPLATE } from "./templates/research"
@@ -128,16 +128,16 @@ ${REMOVE_DEADCODE_TEMPLATE}
 </command-instruction>`,
     argumentHint: "[target-path] [--scope=<file|module|project>] [--dry-run]",
   },
-  profile: {
-    description: "(builtin) View recommended tier configurations (replaces the v2.x profile system; use `tier: \"...\"` in matrixx.jsonc instead)",
+  preset: {
+    description: "(builtin) Switch the active model preset (session-scoped live switch; --save persists to config)",
     template: `<command-instruction>
-${PROFILE_TEMPLATE}
+${PRESET_TEMPLATE}
 </command-instruction>
 
 <user-request>
 $ARGUMENTS
 </user-request>`,
-    argumentHint: "[list|show|set <name> [--global|--project]]",
+    argumentHint: "[list|show|set <name> [--save [--global|--project]]]",
   },
   "end-ultrawork": {
     description: "(builtin) Deactivate ultrawork mode and return to default Matrixx behavior for the current session",

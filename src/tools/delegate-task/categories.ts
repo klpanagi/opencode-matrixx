@@ -1,10 +1,8 @@
-import type { CategoriesConfig, CategoryConfig, ModelRequirements } from "../../config/schema"
+import type { CategoriesConfig, CategoryConfig, ModelPresetEntry, ModelRequirements } from "../../config/schema"
 import { log } from "../../shared/logger"
 import { isModelAvailable } from "../../shared/model-availability"
 import { getCategoryModelRequirements } from "../../shared/model-requirements"
 import { normalizeModel } from "../../shared/model-resolution-pipeline"
-import type { TierResolverContext } from "../../shared/tier-resolver"
-import { resolveTier } from "../../shared/tier-resolver"
 import { CATEGORY_PROMPT_APPENDS, DEFAULT_CATEGORIES } from "./constants"
 
 interface ResolveCategoryConfigOptions {
@@ -12,9 +10,9 @@ interface ResolveCategoryConfigOptions {
   inheritedModel?: string
   systemDefaultModel?: string
   availableModels?: Set<string>
-  tierContext?: TierResolverContext
   modelRequirements?: ModelRequirements
-  tiers?: Record<string, { providerPriority: string[]; modelPattern: string; fallbackTier?: string; fallback?: { providers: string[]; model: string; variant?: string }[] }>
+  /** Preset entry resolved at call time (session overlay > config active_preset). */
+  presetEntry?: ModelPresetEntry
 }
 
 interface ResolveCategoryConfigResult {
@@ -27,17 +25,12 @@ interface ResolveCategoryConfigResult {
 /**
  * Resolve the configuration for a given category name.
  * Merges default and user configurations, handles model resolution.
- *
- * Tier resolution: both `userConfig.tier` and `defaultConfig.tier` are
- * resolved against the live provider list (`tierContext`). An explicit
- * `userConfig.model` always wins; an explicit `userConfig.tier` wins
- * over the default tier; otherwise the default tier is used.
  */
 export function resolveCategoryConfig(
   categoryName: string,
   options: ResolveCategoryConfigOptions
 ): ResolveCategoryConfigResult | null {
-  const { userCategories, inheritedModel: _inheritedModel, systemDefaultModel, availableModels, tierContext, modelRequirements, tiers } = options
+  const { userCategories, inheritedModel: _inheritedModel, systemDefaultModel, availableModels, modelRequirements, presetEntry } = options
 
   const defaultConfig = DEFAULT_CATEGORIES[categoryName]
   const userConfig = userCategories?.[categoryName]
@@ -61,23 +54,19 @@ export function resolveCategoryConfig(
     return null
   }
 
-  // Resolve tiers: user tier wins over default tier; both resolve to model strings.
-  const tierConfig = tiers ? { tiers } : undefined
-  const effectiveUserModel = resolveTierOnEntry(userConfig, tierContext, tierConfig)
-  const effectiveDefaultModel = resolveTierOnEntry(defaultConfig, tierContext, tierConfig)
-
-  // Model priority for categories: user override > category default > system default
+  // Model priority for categories: user override > preset entry > category default > system default
   // Categories have explicit models - no inheritance from parent session
   const model =
-    normalizeModel(effectiveUserModel ?? userConfig?.model) ??
-    normalizeModel(effectiveDefaultModel ?? defaultConfig?.model) ??
+    normalizeModel(userConfig?.model) ??
+    normalizeModel(presetEntry?.model) ??
+    normalizeModel(defaultConfig?.model) ??
     systemDefaultModel
-  const hasUserModelOverride = (effectiveUserModel ?? userConfig?.model) !== undefined
+  const hasUserModelOverride = (userConfig?.model ?? presetEntry?.model) !== undefined
   const config: CategoryConfig = {
     ...defaultConfig,
     ...userConfig,
     model,
-    variant: userConfig?.variant ?? (hasUserModelOverride ? undefined : defaultConfig?.variant),
+    variant: userConfig?.variant ?? presetEntry?.variant ?? (hasUserModelOverride ? undefined : defaultConfig?.variant),
   }
 
   let promptAppend = defaultPromptAppend
@@ -88,14 +77,4 @@ export function resolveCategoryConfig(
   }
 
   return { config, promptAppend, model, temperature: config.temperature }
-}
-
-function resolveTierOnEntry(
-  entry: { model?: string; tier?: string } | undefined,
-  ctx: TierResolverContext | undefined,
-  tiersConfig?: { tiers?: Record<string, { providerPriority: string[]; modelPattern: string; fallbackTier?: string; fallback?: { providers: string[]; model: string; variant?: string }[] }> } | null,
-): string | undefined {
-  if (!entry || entry.model || !entry.tier || !ctx) return undefined
-  const resolved = resolveTier(entry.tier as never, ctx, tiersConfig)
-  return resolved?.model
 }
