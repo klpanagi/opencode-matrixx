@@ -3,7 +3,7 @@ import { mkdirSync, mkdtempSync, rmSync, utimesSync, writeFileSync } from "node:
 import { tmpdir } from "node:os"
 import { join } from "node:path"
 import type { PluginInput } from "@opencode-ai/plugin"
-import { registerSubagentSession } from "../../features/session-state"
+import { registerSubagentSession, unregisterSubagentSession } from "../../features/session-state"
 import { handleSessionIdle } from "./idle-event"
 import { handleNonIdleEvent } from "./non-idle-events"
 import { createSessionStateStore } from "./session-state"
@@ -234,6 +234,30 @@ describe("task-continuation idle-event", () => {
     //#then
     expect(toastMock).toHaveBeenCalledTimes(1)
     expect(store.getState("my-session").countdownTimer).toBeDefined()
+    store.shutdown()
+    rmSync(dir, { recursive: true, force: true })
+  })
+
+  test("skips countdown when owning subagent session is dead", async () => {
+    //#given
+    const dir = mkdtempSync(join(tmpdir(), "task-idle-"))
+    writeValidTask(dir, "T-dead-sub", "pending", "dead-sub")
+    registerSubagentSession("dead-sub", "my-session")
+    unregisterSubagentSession("dead-sub")
+    const toastMock = mock(async () => ({} as never))
+    const ctx = {
+      directory: dir,
+      client: {
+        tui: { showToast: toastMock },
+        session: { messages: async () => ({ data: [] } as unknown as never) as never },
+      },
+    } as unknown as PluginInput
+    const store = createSessionStateStore()
+    //#when
+    await handleSessionIdle({ ctx, sessionID: "my-session", sessionStateStore: store, skipAgents: [] })
+    //#then
+    expect(toastMock).not.toHaveBeenCalled()
+    expect(store.getState("my-session").countdownTimer).toBeUndefined()
     store.shutdown()
     rmSync(dir, { recursive: true, force: true })
   })

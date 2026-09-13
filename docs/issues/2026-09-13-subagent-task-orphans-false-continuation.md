@@ -1,6 +1,6 @@
 # Subagent task orphans caused false continuation directive (2026-09-13)
 
-> Status: INVESTIGATED — directive was a FALSE ALARM (all 17 "remaining" tasks were already complete; CI 7/7 green). Root cause: task files auto-created by subagent sessions were orphaned when those sessions died to a provider outage. Fix pointers documented for a future session.
+> Status: FIXED (2026-09-13) — see [Resolution](#resolution) below. The directive was a FALSE ALARM (all 17 "remaining" tasks were already complete; CI 7/7 green). Root cause: task files auto-created by subagent sessions were orphaned when those sessions died to a provider outage.
 
 ## TL;DR
 
@@ -84,3 +84,18 @@ Injecting continuation {"sessionID":"...","incompleteCount":17}
 - `src/features/task-storage/` — task read/write path (`getTaskDir`, `readJsonSafe`)
 - `src/tools/delegate-task/` — subagent spawning (sessions whose deaths orphan tasks)
 - `/tmp/matrixx.log` — directive injection evidence
+
+## Resolution
+
+Landed on `dev` via PR (branch `fix/task-orphan-directives`). Summary of what changed:
+
+1. **Session-liveness filter (root cause).** `src/features/session-state/state.ts`:
+   - Added `unregisterSubagentSession(sessionID)` which prunes **both** `subagentSessions` and `subagentParentMap`.
+   - `getSubagentSessionIDs(parent)` now iterates the **live** `subagentSessions` set (previously it iterated `subagentParentMap`, which was never pruned — dead subagents were returned forever, so their orphaned tasks passed the enforcer's session filter).
+   - Wired `unregisterSubagentSession` at all three `subagentSessions.delete(...)` sites: `background-agent/state.ts`, `background-agent/manager.ts`, `delegate-task/sync-task.ts`.
+2. **Staleness as a filter on both paths.** `continuation-injection.ts` (post-countdown injection) now excludes stale tasks from the counted total and skips injection when only stale tasks remain — parity with `idle-event.ts`. Shared helper `filterFreshIncompleteTasks` in `staleness.ts`.
+3. **Subtask semantics (opt-in).** `parentID` was already persisted by `task_create`; added `parentID`/`repoURL` to the storage-level `TaskSchema`; `task_list` now accepts a `parentID` filter and includes `parentID` in summaries; the enforcer drops subtasks whose parent is `completed`/`deleted` (`dropSubtasksWithResolvedParent` in `todo.ts`, applied on both paths). Decision: **opt-in** — `delegate_task` does not auto-inject the parent task id (documented in `docs/task-system.md` §9.3).
+4. **Dedup.** `task_create` reuses an existing task with the same trimmed subject, same `projectRoot`, status `pending`/`in_progress`, and file mtime within `DEDUP_WINDOW_MS` (10 min) — returns `{ task, deduplicated: true }` instead of creating a duplicate (prevents the T11/T12 duplicate pattern).
+5. **Docs.** `docs/task-system.md` updated (§4.1, §5.5, §6.1, §6.3, §7.4, §8.1, §9.3, §13) with liveness/orphan hygiene, subtask semantics, dedup, and orchestrator discipline.
+
+**Tests:** `tests/features/session-state/state.test.ts` (14 pass), `src/hooks/task-continuation-enforcer/` (47 pass incl. new `todo.test.ts` + `continuation-injection.test.ts`), `tests/tools/task/` (29 pass). `bun run typecheck` clean. Full CI `bash script/run-ci.sh` 7/7 green.

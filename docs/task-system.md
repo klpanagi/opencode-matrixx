@@ -153,7 +153,7 @@ tail -n 100 /tmp/matrixx.log | grep -E "task.*dir|getTaskDir|migrateLegacy"
 
 | Layer | File | Type | Fields | Notes |
 |-------|------|------|--------|-------|
-| **Storage** | `src/features/task-storage/types.ts` | `Task` (`TaskSchema`) | `id, subject, description, status, activeForm?, blocks, blockedBy, owner?, metadata?, projectRoot?` | Slim storage model. `strict()` — unknown keys rejected. |
+| **Storage** | `src/features/task-storage/types.ts` | `Task` (`TaskSchema`) | `id, subject, description, status, activeForm?, blocks, blockedBy, owner?, metadata?, repoURL?, parentID?, projectRoot?` | Slim storage model. `strict()` — unknown keys rejected. |
 | **API** | `src/tools/task/types.ts` | `TaskObject` (`TaskObjectSchema`) | same + `repoURL?, parentID?, threadID` | Superset for tool I/O. Alias `TaskSchema = TaskObjectSchema` for Claude compat. `strict()` likewise. |
 
 **Mapping:** `TaskObject` is `Task` + `threadID` (auto `sessionID`), `repoURL`, `parentID`. When evolving, keep both in sync — add field to `TaskSchema` first, then extend `TaskObjectSchema`.
@@ -281,6 +281,8 @@ Guarantee: readers never see a half-written file.
 
 `src/features/task-storage/session-storage.ts` — helpers for session-scoped reads (used by continuation enforcer). Not a separate store; thin wrapper over `storage.ts` + `TaskObjectSchema` validation.
 
+**Session liveness & orphans:** Tasks carry `threadID` (owning session). Subagent sessions are tracked in `src/features/session-state/state.ts` via `registerSubagentSession`/`unregisterSubagentSession`; `getSubagentSessionIDs(parent)` returns **only live** subagent sessions. The enforcer's session filter (`filterTasksBySession` in `todo.ts`) admits a task only when its `threadID` is the current session or a **live** subagent of it — tasks orphaned by a dead subagent session are excluded from continuation directives. `unregisterSubagentSession` prunes both the live set and the parent map, so dead sessions never leak into the filter.
+
 ---
 
 ## 6. Tool API — Five Tools
@@ -298,10 +300,11 @@ All tools are `ToolDefinition` factories `createTask*Tool(config, ctx)` register
 1. Validate input (`TaskCreateInputSchema`).
 2. `migrateLegacyTasksIfNeeded()` if project dir empty.
 3. `acquireLockWithRetry(dir)`.
-4. `id = T-{randomUUID()}`; construct `TaskObject` with `status:"pending"`, `blocks:[]`, `blockedBy:[]` defaults, `threadID=context.sessionID`, `projectRoot=ctx.directory`.
-5. Validate full object (`TaskObjectSchema`).
-6. `writeJsonAtomic(join(dir, id+".json"), task)`.
-7. `release()`.
+4. **Dedup:** scan existing `T-*.json`; if a task with the same trimmed `subject`, same `projectRoot`, status `pending`/`in_progress`, and file mtime within `DEDUP_WINDOW_MS` (10 min, `src/tools/task/constants.ts`) exists, return `{ task: { id, subject }, deduplicated: true }` without writing a new file.
+5. `id = T-{randomUUID()}`; construct `TaskObject` with `status:"pending"`, `blocks:[]`, `blockedBy:[]` defaults, `threadID=context.sessionID`, `projectRoot=ctx.directory`.
+6. Validate full object (`TaskObjectSchema`).
+7. `writeJsonAtomic(join(dir, id+".json"), task)`.
+8. `release()`.
 
 **Invariants:** `id` unique; `status` always `pending` on create; `blockedBy`/`blocks` default `[]`; file appears atomically.
 
@@ -322,7 +325,7 @@ task_create({ subject: "Integration tests", blockedBy:["T-001","T-002"] })
 
 **Input:** `TaskListInputSchema` — `status?: TaskStatus`, `parentID?: string` (both optional filters).
 
-**Output:** `{ tasks: TaskSummary[], reminder: string }` where `TaskSummary = { id, subject, status, owner?, blockedBy }` (note: not full `TaskObject`).
+**Output:** `{ tasks: TaskSummary[], reminder: string }` where `TaskSummary = { id, subject, status, owner?, blockedBy, parentID? }` (note: not full `TaskObject`).
 
 **Behavior:**
 
@@ -435,6 +438,8 @@ Rules:
 2. `blockedBy` only when the task truly needs the blocker's output.
 3. Keep chains short — every edge is a serialization point.
 4. Check `task_list()` after each wave; `blockedBy:[]` on a `pending` task means "runnable now."
+5. **Orchestrator discipline:** update the parent task status as each wave completes — even when the work was delegated. A parent left `in_progress` after its work is done keeps the enforcer firing directives.
+6. **Reconcile dead subagents:** when a subagent session dies mid-work, mark its orphaned tasks `completed`/`deleted` before continuing. The enforcer now excludes tasks owned by dead sessions, but reconciliation keeps the store honest.
 
 Full example:
 
@@ -512,9 +517,11 @@ event:idle
 
 **Recovery integration:** `sessionRecovery.setOnAbortCallback/markRecovering` and `setOnRecoveryCompleteCallback` in `create-continuation-hooks.ts` — abort detection via `onAbortCallbacks`, recovery flag via `onRecoveryCompleteCallbacks`.
 
-**Cross-session scope:** The enforcer reads the **project-wide** task store (`.matrixx/tasks/`, resolved via `getTaskDir(config, directory)`), so a directive reflects the **union of all sessions' tasks** in the project — not just the current session's. Tasks created by other sessions (or orphaned when their session ended) are included in the count and the directive's task list. This is by design: the file-backed task system is the shared execution substrate. To avoid a directive chasing another session's work, mark foreign tasks `completed`/`deleted` or use `morpheus.tasks.scope: "global"` to scope storage.
+**Cross-session scope & liveness:** The enforcer reads the **project-wide** task store (`.matrixx/tasks/`, resolved via `getTaskDir(config, directory)`), so a directive reflects the **union of all sessions' tasks** in the project — not just the current session's. Tasks are admitted only when their `threadID` is the current session or a **live subagent session** of it (`filterTasksBySession` + `getSubagentSessionIDs`, which returns live sessions only). Tasks orphaned by a dead subagent session are **excluded** from the count and the directive's task list — this prevents false directives from orphaned task files (see `docs/issues/2026-09-13-subagent-task-orphans-false-continuation.md`). Pre-migration tasks without `threadID` are always included for backward compatibility. To avoid a directive chasing another session's work, mark foreign tasks `completed`/`deleted` or use `morpheus.tasks.scope: "global"` to scope storage.
 
-**Stale-task handling:** A pending/in_progress task whose task file has had no write activity for `morpheus.tasks.stale_after_hours` (default `24`) is considered **stale**. When *all* incomplete tasks are stale, the enforcer skips the directive entirely (logged as `Skipped: only stale tasks remain`). When stale tasks coexist with active ones, the directive annotates them with a `(stale: 2h)` suffix and appends a note suggesting they may be orphaned and should be marked completed/deleted if superseded.
+**Stale-task handling:** A pending/in_progress task whose task file has had no write activity for `morpheus.tasks.stale_after_hours` (default `24`) is considered **stale**. When *all* incomplete tasks are stale, the enforcer skips the directive entirely (logged as `Skipped: only stale tasks remain`) — on **both** the idle path (`idle-event.ts`) and the post-countdown injection path (`continuation-injection.ts`). When stale tasks coexist with active ones, the directive annotates them with a `(stale: 2h)` suffix and appends a note suggesting they may be orphaned and should be marked completed/deleted if superseded.
+
+**Subtask rollup:** A task with `parentID` is a subtask. Subtasks whose parent is `completed`/`deleted` are treated as resolved and excluded from the incomplete count (`dropSubtasksWithResolvedParent` in `todo.ts`, applied before session filtering on both paths). A parent with incomplete subtasks remains incomplete (its own status governs). Subtasks owned by a dead session are excluded by the liveness filter above.
 
 ### 8.2 `tasks-todowrite-disabler` — Enforce Task System
 
@@ -590,6 +597,7 @@ When enabled:
 - **Sync path:** `executeSyncTask` → ephemeral session, runs agent, aborts session after to prevent `todo-continuation` re-awakening.
 - **Dep sync:** `sync-task-deps.ts` — after `task_create({blockedBy:[T-1]})`, syncs reverse edge via `task_update({id:T-1, addBlocks:[newId]})`. Bidirectional graph maintenance.
 - **Task metadata:** `task(session_id="ses_…")` continuation hint injected via `task-resume-info` hook.
+- **Subtasks (opt-in):** subagents may create subtasks under an orchestrator task by passing `parentID` to `task_create` (persisted; `task_list({ parentID })` lists them). This is **opt-in** — `delegate_task` does NOT auto-inject the orchestrator's task id into subagent prompts, because a subagent may legitimately create tasks unrelated to the parent, and threading the id through the prompt is invasive and error-prone. The enforcer treats subtasks of resolved parents as resolved (see §8.1).
 
 ---
 
@@ -698,6 +706,7 @@ Used by: `create-continuation-hooks`, `create-tool-guard-hooks`, `tasks-todowrit
 - **Lock verification:** `release()` checks `id` before unlink. Never delete `.lock` unconditionally.
 - **Single owner:** One `in_progress` task per agent at a time (prompt invariant + `task-continuation-enforcer` expects this).
 - **Unresolved filter is the scheduler:** `task_list` must filter `blockedBy` to unresolved; changing this breaks wave planning.
+- **Liveness filter:** `getSubagentSessionIDs` returns only live subagent sessions; `filterTasksBySession` must never admit tasks owned by dead sessions (prevents false continuation directives).
 - **Gating via predicate:** Always `isTaskSystemEnabled(config)` — never read `config.experimental.task_system` inline.
 - **No bash edits:** `.matrixx/tasks/T-*.json` guarded by `task-edit-guard` — use tools, not `sed`/`echo`.
 

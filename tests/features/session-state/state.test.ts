@@ -1,11 +1,16 @@
+/// <reference types="bun-types" />
 import { afterEach, beforeEach, describe, expect, test } from "bun:test"
 import {
   _resetForTesting,
   clearSessionAgent,
   getMainSessionID,
+  getParentSessionID,
   getSessionAgent,
+  getSubagentSessionIDs,
+  registerSubagentSession,
   setMainSession,
   setSessionAgent,
+  unregisterSubagentSession,
   updateSessionAgent,
 } from "../../../src/features/session-state/state"
 
@@ -126,6 +131,39 @@ describe("session-state", () => {
     })
   })
 
+  describe("subagent session lifecycle", () => {
+    test("getSubagentSessionIDs returns only live subagent sessions after unregister", () => {
+      //#given
+      registerSubagentSession("sub-1", "parent-1")
+      registerSubagentSession("sub-2", "parent-1")
+      //#when
+      unregisterSubagentSession("sub-1")
+      //#then
+      expect(getSubagentSessionIDs("parent-1")).toEqual(["sub-2"])
+      expect(getParentSessionID("sub-1")).toBeUndefined()
+    })
+
+    test("unregisterSubagentSession prunes parent mapping for the session", () => {
+      //#given
+      registerSubagentSession("sub-3", "parent-2")
+      expect(getParentSessionID("sub-3")).toBe("parent-2")
+      //#when
+      unregisterSubagentSession("sub-3")
+      //#then
+      expect(getParentSessionID("sub-3")).toBeUndefined()
+      expect(getSubagentSessionIDs("parent-2")).toEqual([])
+    })
+
+    test("getSubagentSessionIDs does not return sessions of other parents", () => {
+      //#given
+      registerSubagentSession("sub-a", "parent-a")
+      registerSubagentSession("sub-b", "parent-b")
+      //#when
+      const ids = getSubagentSessionIDs("parent-a")
+      //#then
+      expect(ids).toEqual(["sub-a"])
+    })
+  })
   describe("issue #893: custom agent switch reset", () => {
     test("should preserve custom agent when default agent is sent on subsequent messages", () => {
       // given - user switches to custom agent "MyCustomAgent"

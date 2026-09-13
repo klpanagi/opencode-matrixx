@@ -4,3 +4,5 @@
  * double dashes ("T-a--b"). Matches generateTaskId() output (T-{uuid}).
  */
 export const TASK_ID_PATTERN = /^T-[A-Za-z0-9]+(-[A-Za-z0-9]+)*$/
+
+export const DEDUP_WINDOW_MS = 10 * 60 * 1000

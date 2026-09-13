@@ -24,8 +24,8 @@ import {
 } from "./constants"
 import { getMessageDir } from "./message-directory"
 import type { SessionStateStore } from "./session-state"
-import { formatTaskAge, getStaleAfterMs, getTaskAgeMs, isTaskStale } from "./staleness"
-import { filterTasksBySession, getIncompleteTasks } from "./todo"
+import { filterFreshIncompleteTasks, formatTaskAge, getStaleAfterMs, getTaskAgeMs } from "./staleness"
+import { dropSubtasksWithResolvedParent, filterTasksBySession, getIncompleteTasks } from "./todo"
 import type { ResolvedMessageInfo } from "./types"
 
 function hasWritePermission(tools: Record<string, ToolPermission> | undefined): boolean {
@@ -103,7 +103,7 @@ export async function injectContinuation(args: {
         const parsed = readJsonSafe(`${taskDir}/${f}`, TaskObjectSchema)
         if (parsed) tasks.push(parsed)
       }
-      filteredTasks = filterTasksBySession(tasks, {
+      filteredTasks = filterTasksBySession(dropSubtasksWithResolvedParent(tasks), {
         sessionID,
         subagentIDs: getSubagentSessionIDs(sessionID),
         sessionScoped: config?.morpheus?.tasks?.session_scoped !== false,
@@ -131,9 +131,12 @@ export async function injectContinuation(args: {
     stateForBootstrap._bootstrap = undefined
   }
 
-  const freshIncompleteCount = isBootstrap ? 1 : getIncompleteTasks(filteredTasks).length
+  const staleAfterMs = getStaleAfterMs(config)
+  const freshIncompleteCount = isBootstrap
+    ? 1
+    : filterFreshIncompleteTasks(getIncompleteTasks(filteredTasks), taskDir, staleAfterMs).length
   if (!isBootstrap && freshIncompleteCount === 0) {
-    log(`[${HOOK_NAME}] Skipped injection: no incomplete tasks`, { sessionID, total })
+    log(`[${HOOK_NAME}] Skipped injection: only stale tasks remain`, { sessionID, total })
     return
   }
 
@@ -179,7 +182,7 @@ export async function injectContinuation(args: {
     prompt = BOOTSTRAP_PROMPT
   } else {
     const incompleteTasks = getIncompleteTasks(filteredTasks)
-    const staleAfterMs = getStaleAfterMs(config)
+    const freshIncompleteTasks = filterFreshIncompleteTasks(incompleteTasks, taskDir, staleAfterMs)
     const taskList = incompleteTasks
       .map((task) => {
         const ageMs = getTaskAgeMs(join(taskDir, `${task.id}.json`))
@@ -187,7 +190,7 @@ export async function injectContinuation(args: {
         return `- [${task.status}] ${task.subject} (${task.id})${staleSuffix}`
       })
       .join("\n")
-    const staleCount = incompleteTasks.filter((t) => isTaskStale(join(taskDir, `${t.id}.json`), staleAfterMs)).length
+    const staleCount = incompleteTasks.length - freshIncompleteTasks.length
     const staleNote = staleCount > 0
       ? `\n\nNote: ${staleCount} remaining task(s) have had no activity for >${Math.round(staleAfterMs / 3_600_000)}h and may be orphaned. Mark them completed/deleted if superseded.`
       : ""

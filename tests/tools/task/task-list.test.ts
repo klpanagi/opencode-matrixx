@@ -292,34 +292,147 @@ describe("createTaskList", () => {
      expect(parsed.tasks[0].blockedBy).toEqual([])
    })
 
-   it("handles missing blocker tasks gracefully", async () => {
-     //#given
-     const task: TaskObject = {
-       id: "T-1",
-       subject: "Task with missing blocker",
-       description: "",
-       status: "pending",
-       blocks: [],
-       blockedBy: ["T-missing"],
-       threadID: "test-session",
-     }
+it("handles missing blocker tasks gracefully", async () => {
+    //#given
+    const task: TaskObject = {
+      id: "T-1",
+      subject: "Task with missing blocker",
+      description: "",
+      status: "pending",
+      blocks: [],
+      blockedBy: ["T-missing"],
+      threadID: "test-session",
+    }
 
-     writeJsonAtomic(join(testProjectDir, ".matrixx/tasks", "T-1.json"), task)
+    writeJsonAtomic(join(testProjectDir, ".matrixx/tasks", "T-1.json"), task)
 
-     const config = {
-       morpheus: {
-         tasks: {
-           storage_path: join(testProjectDir, ".matrixx/tasks"),
-         },
-       },
-     }
-     const tool = createTaskList(config)
+    const config = {
+      morpheus: {
+        tasks: {
+          storage_path: join(testProjectDir, ".matrixx/tasks"),
+        },
+      },
+    }
+    const tool = createTaskList(config)
 
     //#when
-     const result = await tool.execute({}, { sessionID: "test-session" })
+    const result = await tool.execute({}, { sessionID: "test-session" })
 
     //#then
-     const parsed = JSON.parse(result)
-     expect(parsed.tasks[0].blockedBy).toEqual(["T-missing"])
-   })
+    const parsed = JSON.parse(result)
+    expect(parsed.tasks[0].blockedBy).toEqual(["T-missing"])
+  })
+
+  it("filters to subtasks when parentID is provided and includes parentID in summaries", async () => {
+    //#given
+    const parent: TaskObject = {
+      id: "T-parent",
+      subject: "Parent task",
+      description: "",
+      status: "pending",
+      blocks: [],
+      blockedBy: [],
+      threadID: "test-session",
+    }
+    const sub1: TaskObject = {
+      id: "T-sub1",
+      subject: "Subtask one",
+      description: "",
+      status: "pending",
+      blocks: [],
+      blockedBy: [],
+      threadID: "test-session",
+      parentID: "T-parent",
+    }
+    const sub2: TaskObject = {
+      id: "T-sub2",
+      subject: "Subtask two",
+      description: "",
+      status: "in_progress",
+      blocks: [],
+      blockedBy: [],
+      threadID: "test-session",
+      parentID: "T-parent",
+    }
+    const unrelated: TaskObject = {
+      id: "T-other",
+      subject: "Unrelated task",
+      description: "",
+      status: "pending",
+      blocks: [],
+      blockedBy: [],
+      threadID: "test-session",
+    }
+
+    writeJsonAtomic(join(testProjectDir, ".matrixx/tasks", "T-parent.json"), parent)
+    writeJsonAtomic(join(testProjectDir, ".matrixx/tasks", "T-sub1.json"), sub1)
+    writeJsonAtomic(join(testProjectDir, ".matrixx/tasks", "T-sub2.json"), sub2)
+    writeJsonAtomic(join(testProjectDir, ".matrixx/tasks", "T-other.json"), unrelated)
+
+    const config = {
+      morpheus: {
+        tasks: {
+          storage_path: join(testProjectDir, ".matrixx/tasks"),
+        },
+      },
+    }
+    const tool = createTaskList(config)
+
+    //#when
+    const result = await tool.execute({ parentID: "T-parent" }, { sessionID: "test-session" })
+
+    //#then
+    const parsed = JSON.parse(result)
+    expect(parsed.tasks).toHaveLength(2)
+    expect(parsed.tasks.map((t: { id: string }) => t.id).sort()).toEqual(["T-sub1", "T-sub2"])
+    for (const summary of parsed.tasks) {
+      expect(summary.parentID).toBe("T-parent")
+    }
+  })
+
+  it("returns all active tasks with parentID in summaries when no parentID filter is given", async () => {
+    //#given
+    const parent: TaskObject = {
+      id: "T-parent",
+      subject: "Parent task",
+      description: "",
+      status: "pending",
+      blocks: [],
+      blockedBy: [],
+      threadID: "test-session",
+    }
+    const sub1: TaskObject = {
+      id: "T-sub1",
+      subject: "Subtask one",
+      description: "",
+      status: "pending",
+      blocks: [],
+      blockedBy: [],
+      threadID: "test-session",
+      parentID: "T-parent",
+    }
+
+    writeJsonAtomic(join(testProjectDir, ".matrixx/tasks", "T-parent.json"), parent)
+    writeJsonAtomic(join(testProjectDir, ".matrixx/tasks", "T-sub1.json"), sub1)
+
+    const config = {
+      morpheus: {
+        tasks: {
+          storage_path: join(testProjectDir, ".matrixx/tasks"),
+        },
+      },
+    }
+    const tool = createTaskList(config)
+
+    //#when
+    const result = await tool.execute({}, { sessionID: "test-session" })
+
+    //#then
+    const parsed = JSON.parse(result)
+    expect(parsed.tasks).toHaveLength(2)
+    const subSummary = parsed.tasks.find((t: { id: string }) => t.id === "T-sub1")
+    expect(subSummary.parentID).toBe("T-parent")
+    const parentSummary = parsed.tasks.find((t: { id: string }) => t.id === "T-parent")
+    expect(parentSummary.parentID).toBeUndefined()
+  })
 })

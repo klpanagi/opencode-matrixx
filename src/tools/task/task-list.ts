@@ -13,6 +13,7 @@ interface TaskSummary {
   status: TaskStatus
   owner?: string
   blockedBy: string[]
+  parentID?: string
 }
 
 export function createTaskList(config: Partial<MatrixxConfig>, ctx?: PluginInput): ToolDefinition {
@@ -21,9 +22,15 @@ export function createTaskList(config: Partial<MatrixxConfig>, ctx?: PluginInput
     
 Returns tasks excluding completed and deleted statuses by default.
 For each task's blockedBy field, filters to only include unresolved (non-completed) blockers.
-Returns summary format: id, subject, status, owner, blockedBy (not full description).`,
-    args: {},
-    execute: async (_args: Record<string, unknown>, context?: { sessionID: string }): Promise<string> => {
+Returns summary format: id, subject, status, owner, blockedBy (not full description).
+
+Optional \`parentID\` filter: when provided, returns only tasks whose parentID matches
+(i.e. the subtasks of that parent task).`,
+    args: {
+      parentID: tool.schema.string().optional().describe("Filter to subtasks of this parent task ID"),
+    },
+    execute: async (args: Record<string, unknown>, context?: { sessionID: string }): Promise<string> => {
+      const parentID = args.parentID as string | undefined
       const directory =
         ((context as unknown as Record<string, unknown>)?.directory as string | undefined) ??
         ((ctx as unknown as Record<string, unknown>)?.directory as string | undefined) ??
@@ -55,8 +62,13 @@ Returns summary format: id, subject, status, owner, blockedBy (not full descript
         (task) => task.status !== "completed" && task.status !== "deleted"
       )
 
+      // Filter to subtasks of the requested parent when parentID is provided
+      const filteredTasks = parentID
+        ? activeTasks.filter((task) => task.parentID === parentID)
+        : activeTasks
+
       // Build summary with filtered blockedBy
-      const summaries: TaskSummary[] = activeTasks.map((task) => {
+      const summaries: TaskSummary[] = filteredTasks.map((task) => {
         // Filter blockedBy to only include unresolved (non-completed) blockers
         const unresolvedBlockers = task.blockedBy.filter((blockerId) => {
           const blockerTask = allTasks.find((t) => t.id === blockerId)
@@ -70,6 +82,7 @@ Returns summary format: id, subject, status, owner, blockedBy (not full descript
           status: task.status,
           owner: task.owner,
           blockedBy: unresolvedBlockers,
+          parentID: task.parentID,
         }
       })
 
