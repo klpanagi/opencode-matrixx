@@ -1,5 +1,7 @@
 import { statSync } from "node:fs"
+import { join } from "node:path"
 import type { MatrixxConfig } from "../../config/schema"
+import type { Task } from "../../features/task-storage/types"
 
 export const DEFAULT_STALE_AFTER_HOURS = 24
 
@@ -31,6 +33,14 @@ export function getTaskAgeMs(taskPath: string): number | null {
 export function isTaskStale(taskPath: string, staleAfterMs: number): boolean {
   const ageMs = getTaskAgeMs(taskPath)
   return ageMs !== null && ageMs > staleAfterMs
+}
+
+/**
+ * Filter incomplete tasks down to the ones that are still fresh (not stale).
+ * A task whose file cannot be stat'ed is treated as fresh (not stale).
+ */
+export function filterFreshIncompleteTasks(tasks: Task[], taskDir: string, staleAfterMs: number): Task[] {
+  return tasks.filter((t) => !isTaskStale(join(taskDir, `${t.id}.json`), staleAfterMs))
 }
 
 /** Human-readable age, e.g. "3h", "2d". */

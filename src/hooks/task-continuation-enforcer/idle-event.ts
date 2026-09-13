@@ -24,7 +24,7 @@ import {
 import { startCountdown } from "./countdown"
 import type { SessionStateStore } from "./session-state"
 import { getStaleAfterMs, isTaskStale } from "./staleness"
-import { filterTasksBySession, getIncompleteTasks } from "./todo"
+import { dropSubtasksWithResolvedParent, filterTasksBySession, getIncompleteTasks } from "./todo"
 import type { MessageInfo, ResolvedMessageInfo } from "./types"
 
 export async function handleSessionIdle(args: {
@@ -128,7 +128,7 @@ export async function handleSessionIdle(args: {
         const parsed = readJsonSafe(`${taskDir}/${f}`, TaskObjectSchema)
         if (parsed) tasks.push(parsed)
       }
-      const filteredTasks = filterTasksBySession(tasks, {
+      const filteredTasks = filterTasksBySession(dropSubtasksWithResolvedParent(tasks), {
         sessionID,
         subagentIDs: getSubagentSessionIDs(sessionID),
         sessionScoped: config?.morpheus?.tasks?.session_scoped !== false,

@@ -25,8 +25,25 @@ export function getIncompleteTaskCount(tasks: Task[]): number {
 
 export interface SessionFilterOptions {
   sessionID: string
+  /** LIVE subagent session ids (dead/unregistered subagents are excluded). */
   subagentIDs: string[]
   sessionScoped?: boolean // default: true
+}
+
+/**
+ * Drop subtasks whose parent task is already resolved (completed/deleted).
+ * A task is dropped only when its `parentID` resolves to a task in the full
+ * input array whose status is "completed" or "deleted". Tasks without a
+ * parentID, or whose parent is missing from the input, are kept.
+ */
+export function dropSubtasksWithResolvedParent(tasks: Task[]): Task[] {
+  const byId = new Map(tasks.map((t) => [t.id, t]))
+  return tasks.filter((task) => {
+    if (!task.parentID) return true
+    const parent = byId.get(task.parentID)
+    if (!parent) return true
+    return parent.status !== "completed" && parent.status !== "deleted"
+  })
 }
 
 /**

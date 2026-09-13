@@ -1,4 +1,4 @@
-import { registerSubagentSession, subagentSessions } from "../../features/session-state"
+import { registerSubagentSession, unregisterSubagentSession } from "../../features/session-state"
 import { getTaskToastManager } from "../../features/task-toast-manager"
 import type { ModelFallbackInfo } from "../../features/task-toast-manager/types"
 import { storeToolMetadata } from "../../features/tool-metadata-store"
@@ -155,7 +155,7 @@ session_id: ${sessionID}
     })
   } finally {
     if (syncSessionID) {
-      subagentSessions.delete(syncSessionID)
+      unregisterSubagentSession(syncSessionID)
       // Abort the sync session to prevent todo-continuation enforcer
       // from re-awakening a completed sync agent's session.
       client.session.abort({ path: { id: syncSessionID } }).catch((err) => { log("[delegate-task] Sync session abort failed:", err) })

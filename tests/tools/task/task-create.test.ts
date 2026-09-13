@@ -1,5 +1,5 @@
 import { afterEach, beforeEach, describe, expect, test } from "bun:test"
-import { existsSync, mkdirSync, rmSync } from "node:fs"
+import { existsSync, mkdirSync, readdirSync, rmSync } from "node:fs"
 import { tmpdir } from "node:os"
 import { join } from "node:path"
 import { createTaskCreateTool } from "../../../src/tools/task/task-create"
@@ -327,6 +327,48 @@ describe("task_create tool", () => {
 
       //#then
       expect(result.error).toBe("validation_error")
+    })
+  })
+
+  describe("deduplication", () => {
+    test("returns the same task id with deduplicated:true when subject matches within the dedup window", async () => {
+      //#given
+      const args = { subject: "Implement authentication" }
+
+      //#when
+      const firstStr = await tool.execute(args, TEST_CONTEXT)
+      const first = JSON.parse(firstStr)
+      const secondStr = await tool.execute(args, TEST_CONTEXT)
+      const second = JSON.parse(secondStr)
+
+      //#then
+      expect(second.task.id).toBe(first.task.id)
+      expect(second.task.subject).toBe("Implement authentication")
+      expect(second.deduplicated).toBe(true)
+      const taskFiles = readdirSync(join(testDir, TEST_STORAGE)).filter(
+        (f) => f.startsWith("T-") && f.endsWith(".json")
+      )
+      expect(taskFiles).toHaveLength(1)
+    })
+
+    test("creates a distinct task when the subject differs", async () => {
+      //#given
+      const firstArgs = { subject: "Implement authentication" }
+      const secondArgs = { subject: "Write documentation" }
+
+      //#when
+      const firstStr = await tool.execute(firstArgs, TEST_CONTEXT)
+      const first = JSON.parse(firstStr)
+      const secondStr = await tool.execute(secondArgs, TEST_CONTEXT)
+      const second = JSON.parse(secondStr)
+
+      //#then
+      expect(second.task.id).not.toBe(first.task.id)
+      expect(second.deduplicated).toBeUndefined()
+      const taskFiles = readdirSync(join(testDir, TEST_STORAGE)).filter(
+        (f) => f.startsWith("T-") && f.endsWith(".json")
+      )
+      expect(taskFiles).toHaveLength(2)
     })
   })
 })

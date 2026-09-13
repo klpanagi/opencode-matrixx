@@ -1,3 +1,4 @@
+import { readdirSync, statSync } from "node:fs";
 import { join } from "node:path";
 import type { PluginInput } from "@opencode-ai/plugin";
 import { type ToolDefinition, tool } from "@opencode-ai/plugin/tool";
@@ -8,8 +9,11 @@ import {
   generateTaskId,
   getTaskDir,
   migrateLegacyTasksIfNeeded,
+  readJsonSafe,
   writeJsonAtomic,
 } from "../../features/task-storage/storage";
+import { log } from "../../shared/logger";
+import { DEDUP_WINDOW_MS } from "./constants";
 import type { TaskObject } from "./types";
 import { TaskCreateInputSchema, TaskObjectSchema } from "./types";
 
@@ -80,6 +84,14 @@ async function handleCreate(
     }
 
     try {
+      const existingTask = findDuplicateTask(taskDir, validatedArgs.subject, directory)
+      if (existingTask) {
+        return JSON.stringify({
+          task: { id: existingTask.id, subject: existingTask.subject },
+          deduplicated: true,
+        })
+      }
+
       const taskId = generateTaskId();
       const task: TaskObject = {
         id: taskId,
@@ -117,4 +129,48 @@ async function handleCreate(
     }
     return JSON.stringify({ error: "internal_error" });
   }
+}
+
+function findDuplicateTask(
+  taskDir: string,
+  subject: string,
+  directory: string,
+): TaskObject | null {
+  let files: string[]
+  try {
+    files = readdirSync(taskDir).filter((f) => f.endsWith(".json") && f.startsWith("T-"))
+  } catch (error) {
+    log(`[task-create] Failed to list task dir ${taskDir} during dedup scan`, error)
+    return null
+  }
+
+  for (const file of files) {
+    const filePath = join(taskDir, file)
+    let existing: TaskObject | null
+    try {
+      existing = readJsonSafe(filePath, TaskObjectSchema)
+    } catch (error) {
+      log(`[task-create] Failed to read task file ${filePath} during dedup scan`, error)
+      continue
+    }
+    if (!existing) continue
+
+    const isActive = existing.status === "pending" || existing.status === "in_progress"
+    if (!isActive) continue
+    if (existing.subject.trim() !== subject.trim()) continue
+    if (existing.projectRoot !== directory) continue
+
+    let mtimeMs: number
+    try {
+      mtimeMs = statSync(filePath).mtimeMs
+    } catch (error) {
+      log(`[task-create] Failed to stat task file ${filePath} during dedup scan`, error)
+      continue
+    }
+    if (Date.now() - mtimeMs > DEDUP_WINDOW_MS) continue
+
+    return existing
+  }
+
+  return null
 }

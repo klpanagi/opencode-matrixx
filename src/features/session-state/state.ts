@@ -7,14 +7,24 @@ export function registerSubagentSession(sessionID: string, parentSessionID: stri
   subagentParentMap.set(sessionID, parentSessionID)
 }
 
+export function unregisterSubagentSession(sessionID: string): void {
+  subagentSessions.delete(sessionID)
+  subagentParentMap.delete(sessionID)
+}
+
 export function getParentSessionID(subagentSessionID: string): string | undefined {
   return subagentParentMap.get(subagentSessionID)
 }
 
+/**
+ * Live subagent session IDs registered under the given parent session.
+ * Only sessions still present in `subagentSessions` (i.e. not yet
+ * unregistered on task end) are returned.
+ */
 export function getSubagentSessionIDs(parentSessionID: string): string[] {
   const ids: string[] = []
-  for (const [subID, parentID] of subagentParentMap) {
-    if (parentID === parentSessionID) ids.push(subID)
+  for (const subID of subagentSessions) {
+    if (subagentParentMap.get(subID) === parentSessionID) ids.push(subID)
   }
   return ids
 }

@@ -7,7 +7,7 @@ import { hasPendingQuestionMessage } from "../../shared/awaiting-user"
 import { formatDuration } from "../../shared/format-duration"
 import { setSessionTemperature, setSessionTools } from "../../shared/session-state"
 import { isInsideTmux } from "../../shared/tmux"
-import { registerSubagentSession, subagentSessions } from "../session-state"
+import { registerSubagentSession, subagentSessions, unregisterSubagentSession } from "../session-state"
 import { getTaskToastManager } from "../task-toast-manager"
 import { ConcurrencyManager } from "./concurrency"
 import {
@@ -1462,7 +1462,7 @@ export class BackgroundManager {
         }
         this.tasks.delete(taskId)
         if (task.sessionID) {
-          subagentSessions.delete(task.sessionID)
+          unregisterSubagentSession(task.sessionID)
         }
       }
     }

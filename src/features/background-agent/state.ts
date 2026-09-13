@@ -1,5 +1,5 @@
 import { log } from "../../shared"
-import { subagentSessions } from "../session-state"
+import { unregisterSubagentSession } from "../session-state"
 import type { QueueItem } from "./constants"
 import type { BackgroundTask, LaunchInput } from "./types"
 export class TaskStateManager {
@@ -80,7 +80,7 @@ export class TaskStateManager {
   removeTask(taskId: string): void {
     const task = this.tasks.get(taskId)
     if (task?.sessionID) {
-      subagentSessions.delete(task.sessionID)
+      unregisterSubagentSession(task.sessionID)
     }
     this.tasks.delete(taskId)
   }

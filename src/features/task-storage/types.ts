@@ -14,6 +14,8 @@ export const TaskSchema = z
     blockedBy: z.array(z.string()),
     owner: z.string().optional(),
     metadata: z.record(z.string(), z.unknown()).optional(),
+    repoURL: z.string().optional(),
+    parentID: z.string().optional(),
     threadID: z.string().optional(),
     projectRoot: z.string().optional(),
   })
