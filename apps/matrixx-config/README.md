@@ -34,15 +34,17 @@ bun run dev
 
 ## Commands
 
-| Command               | Description                           |
-| --------------------- | ------------------------------------- |
-| `bun run dev`         | Start Vite dev server (port 5173)     |
-| `bun run build`       | Production build (static site)        |
-| `bun run preview`     | Preview production build              |
-| `bun run check`       | Type-check with svelte-check          |
-| `bun run sync:schema` | Sync Matrixx schema from root `dist/` |
-| `bun run lint`        | Check formatting                      |
-| `bun run format`      | Format with Prettier                  |
+| Command                 | Description                                                     |
+| ----------------------- | --------------------------------------------------------------- |
+| `bun run dev`           | Start Vite dev server (port 5173)                               |
+| `bun run dev:desktop`   | Guarded Tauri dev (display probe, crash recovery, web fallback) |
+| `bun run build:desktop` | Guarded Tauri release build                                     |
+| `bun run build`         | Production build (static site)                                  |
+| `bun run preview`       | Preview production build                                        |
+| `bun run check`         | Type-check with svelte-check                                    |
+| `bun run sync:schema`   | Sync Matrixx schema from root `dist/`                           |
+| `bun run lint`          | Check formatting                                                |
+| `bun run format`        | Format with Prettier                                            |
 
 ## Project Structure
 
