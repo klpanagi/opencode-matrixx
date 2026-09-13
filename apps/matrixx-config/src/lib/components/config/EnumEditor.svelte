@@ -13,6 +13,7 @@
     placeholder?: string
   } = $props()
 
+  // svelte-ignore state_referenced_locally (intentional: local draft synced back via $effect)
   let selected = $state(value ?? "")
 
   $effect(() => {

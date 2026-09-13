@@ -17,6 +17,7 @@
     showSlider?: boolean
   } = $props()
 
+  // svelte-ignore state_referenced_locally (intentional: local draft synced back via $effect)
   let numValue = $state(value ?? 0)
 
   $effect(() => {
@@ -39,7 +40,7 @@
     onChange?.(v)
   }
 
-  const sliderSteps = Math.round((max - min) / step)
+  const sliderSteps = $derived(Math.round((max - min) / step))
 </script>
 
 <div class="number-editor">

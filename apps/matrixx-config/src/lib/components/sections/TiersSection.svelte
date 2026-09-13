@@ -50,7 +50,7 @@
   <div class="tier-grid">
     {#each TIER_INFO as tier}
       <div class="tier-card" style="--tier-color: {tier.color}">
-        <div class="tier-indicator" style="background: {tier.color}" />
+        <div class="tier-indicator" style="background: {tier.color}"></div>
         <div class="tier-content">
           <h3 class="tier-name">{tier.label}</h3>
           <p class="tier-desc">{tier.description}</p>
