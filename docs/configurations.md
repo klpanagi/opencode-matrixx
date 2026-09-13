@@ -1110,20 +1110,22 @@ Configure notification behavior for background task completion.
 | -------------- | ------- | ---------------------------------------------------------------------------------------------- |
 | `force_enable` | - (absent = `false`) | Force enable session-notification even if external notification plugins are detected. |
 
-## Morpheus Tasks
+## Tasks
 
-Configure task storage for the Task System. The system is gated by `experimental.task_system` (default `true`) — see [Experimental](#experimental) and [Task System](./task-system.md).
+Canonical task-system configuration (master switch, storage, enforcer, poll timeout).
+Legacy `morpheus.tasks`, `task.pollTimeoutMs` and `experimental.task_system` still
+parse and act as fallback — explicit `tasks.*` always wins.
 
 ```json
 {
-  "morpheus": {
-    "tasks": {
-      "storage_path": ".matrixx/tasks",
-      "task_list_id": "my-project",
-      "scope": "project",
-      "stale_after_hours": 24,
-      "claude_code_compat": false
-    }
+  "tasks": {
+    "enabled": true,
+    "scope": "project",
+    "storage_path": ".matrixx/tasks",
+    "task_list_id": "my-project",
+    "stale_after_hours": 24,
+    "session_scoped": true,
+    "pollTimeoutMs": 600000
   }
 }
 ```
@@ -1132,11 +1134,13 @@ Configure task storage for the Task System. The system is gated by `experimental
 
 | Option               | Type     | Default            | Description                                                               |
 | -------------------- | -------- | ------------------ | ------------------------------------------------------------------------- |
+| `enabled`            | `boolean` | `true`            | Master switch. `false` → `task_*` tools unregistered, legacy `todo-continuation-enforcer` used instead. |
 | `storage_path`       | `string` | — (runtime default: `.matrixx/tasks` when `scope=project`) | Absolute or relative path override. When set, bypasses `scope`/`listId` resolution. |
 | `task_list_id`       | `string` | — (falls back to `basename(cwd)` sanitized) | Force task list ID (alternative to `ULTRAWORK_TASK_LIST_ID` / `CLAUDE_CODE_TASK_LIST_ID` env). Sanitized to `[a-zA-Z0-9_-]`. |
 | `scope`              | `"global" \| "project"` | `"project"` | `project` → `.matrixx/tasks` per project (default). `global` → `~/.config/opencode/tasks/{listId}`. |
 | `stale_after_hours`  | `number`   | `24`              | Pending/in_progress tasks with no file activity for this many hours are treated as stale by `task-continuation-enforcer` (skipped when all incomplete are stale; annotated `(stale: N)` otherwise). |
-| `claude_code_compat` | `boolean` | `false`            | Enable Claude Code path compatibility mode.                                |
+| `session_scoped`     | `boolean` | `true`            | Only current-session (and subagent) tasks drive `task-continuation-enforcer` directives. `false` → all project tasks considered. |
+| `pollTimeoutMs`      | `number`   | `600000` (min `60000`) | Poll budget for blocking `task()` calls. Increase for agents that delegate to sub-agents. |
 
 ## MCPs
 
@@ -1230,7 +1234,6 @@ Opt-in experimental features that may change or be removed in future versions. U
 ```json
 {
   "experimental": {
-    "task_system": true,
     "truncate_all_tool_outputs": true,
     "aggressive_truncation": true,
     "auto_resume": true,
@@ -1244,7 +1247,7 @@ Opt-in experimental features that may change or be removed in future versions. U
 
 | Option                      | Default | Description                                                                                                                                                                                   |
 | --------------------------- | ------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `task_system`               | `true`  | Enable Task System (`task_create`/`task_update` etc.) and `tasks-todowrite-disabler` hook. When `false`, restores `TodoWrite`/`TodoRead`. See [Task System](./task-system.md). |
+| `task_system`               | `true`  | Legacy (deprecated: use [`tasks.enabled`](#tasks)) — fallback when `tasks.enabled` is unset. See [Task System](./task-system.md). |
 | `truncate_all_tool_outputs` | `false` | Truncates ALL tool outputs instead of just whitelisted tools (Grep, Glob, LSP, AST-grep). Tool output truncator is enabled by default - disable via `disabled_hooks`.                         |
 | `aggressive_truncation`     | `false` | When token limit is exceeded, aggressively truncates tool outputs to fit within limits. More aggressive than the default truncation behavior. Falls back to summarize/revert if insufficient. |
 | `auto_resume`               | `false` | Automatically resumes session after successful recovery from thinking block errors or thinking disabled violations. Extracts last user message and continues.                             |

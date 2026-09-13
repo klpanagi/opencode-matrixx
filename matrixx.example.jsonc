@@ -47,7 +47,7 @@
   // "disabled_commands": ["init-deep", "start-work"],
   // "disabled_tools": ["todowrite", "todoread"],
 
-  // Legacy flag (use experimental.task_system instead)
+  // Legacy flag (deprecated: use tasks.enabled instead — kept as fallback)
   // "new_task_system_enabled": true,
 
   // Auto-update Matrixx when a new version is available (default: not set → manual)
@@ -122,14 +122,24 @@
   // },
 
   // ─────────────────────────────────────────────────────────────────────────
-  // Morpheus tasks — advanced task management (.matrixx/tasks/T-*.json)
+  // Tasks — canonical task-system configuration (.matrixx/tasks/T-*.json)
+  // Legacy `morpheus.tasks`, `task.pollTimeoutMs`, `experimental.task_system`
+  // still parse and act as fallback — explicit `tasks.*` always wins.
   // ─────────────────────────────────────────────────────────────────────────
+  // "tasks": {
+  //   "enabled": true,                      // master switch (default: true); false → task_* tools off, legacy todo-enforcer on
+  //   "scope": "project",                   // "project" → .matrixx/tasks per project (default) | "global" → ~/.config/opencode/tasks/{listId}
+  //   "storage_path": ".matrixx/tasks",     // absolute or relative path override
+  //   "task_list_id": "my-list",            // force task list ID (alt to ULTRAWORK_TASK_LIST_ID env)
+  //   "stale_after_hours": 24,              // stale threshold for continuation directives (default: 24)
+  //   "session_scoped": true,               // only current-session tasks drive directives (default: true)
+  //   "pollTimeoutMs": 600000               // blocking task() poll budget in ms (default: 600000, min: 60000)
+  // },
+  //
+  // Legacy (deprecated: use tasks.* above)
   // "morpheus": {
   //   "tasks": {
-  //     "scope": "project",                 // "project" → .matrixx/tasks per project (default) | "global" → ~/.config/opencode/tasks/{listId}
-  //     "storage_path": ".matrixx/tasks",   // absolute or relative path override
-  //     "task_list_id": "my-list",          // force task list ID (alt to ULTRAWORK_TASK_LIST_ID env)
-  //     "claude_code_compat": false         // Claude Code path compatibility mode
+  //     "scope": "project"
   //   }
   // },
 
@@ -144,7 +154,7 @@
   // Experimental features (opt-in, may change)
   // ─────────────────────────────────────────────────────────────────────────
   "experimental": {
-    "task_system": true                     // enable experimental task system for todowrite disabler hook (default: true)
+    // "task_system": true,                // legacy (deprecated: use tasks.enabled) — fallback when tasks.enabled is unset
     // "aggressive_truncation": false,      // aggressively truncate tool outputs when token limit exceeded
     // "auto_resume": true,                 // auto-resume session after thinking block recovery
     // "preemptive_compaction": true,       // enable preemptive compaction before context window fills
@@ -529,5 +539,5 @@
   // Migrations — auto-tracked history to prevent re-applying migrations.
   // Managed by Matrixx — do not edit manually.
   // ─────────────────────────────────────────────────────────────────────────
-  // "_migrations": ["tasks_project_scope_default"]
+  // "_migrations": ["model-migration"]
 }

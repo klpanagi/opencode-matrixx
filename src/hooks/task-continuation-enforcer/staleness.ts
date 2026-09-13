@@ -2,6 +2,7 @@ import { statSync } from "node:fs"
 import { join } from "node:path"
 import type { MatrixxConfig } from "../../config/schema"
 import type { Task } from "../../features/task-storage/types"
+import { resolveTasksConfig } from "../../shared/task-system-gating"
 
 export const DEFAULT_STALE_AFTER_HOURS = 24
 
@@ -9,11 +10,11 @@ const HOUR_MS = 60 * 60 * 1000
 
 /**
  * Resolve the stale threshold (ms) from plugin config.
- * `morpheus.tasks.stale_after_hours` (default 24h) — a pending task whose
+ * `tasks.stale_after_hours` (default 24h, legacy `morpheus.tasks.stale_after_hours`) — a pending task whose
  * task file has had no write activity for longer than this is "stale".
  */
 export function getStaleAfterMs(config?: Partial<MatrixxConfig>): number {
-  const hours = config?.morpheus?.tasks?.stale_after_hours ?? DEFAULT_STALE_AFTER_HOURS
+  const hours = resolveTasksConfig(config).stale_after_hours ?? DEFAULT_STALE_AFTER_HOURS
   return hours * HOUR_MS
 }
 

@@ -29,6 +29,7 @@ import { RuntimeFallbackConfigSchema } from "./runtime-fallback"
 import { SecurityConfigSchema } from "./security"
 import { SkillsConfigSchema } from "./skills"
 import { TaskConfigSchema } from "./task"
+import { TasksConfigSchema } from "./tasks"
 import { TddEnforcerConfigSchema } from "./tdd-enforcer"
 import { TmuxConfigSchema } from "./tmux"
 import { WebsearchConfigSchema } from "./websearch"
@@ -42,7 +43,7 @@ export const MatrixxConfigSchema = z.object({
   model_presets: ModelPresetsSchema.optional(),
   /** Name of the active preset in model_presets */
   active_preset: ActivePresetSchema.optional(),
-  /** Enable new task system (default: false) */
+  /** Legacy flag (deprecated: use tasks.enabled instead — kept as fallback, no runtime reader) */
   new_task_system_enabled: z.boolean().optional(),
   /** Default agent name for `matrixx run` (env: OPENCODE_DEFAULT_AGENT) */
   default_run_agent: z.string().optional(),
@@ -67,7 +68,11 @@ export const MatrixxConfigSchema = z.object({
   background_task: BackgroundTaskConfigSchema.optional(),
   notification: NotificationConfigSchema.optional(),
   babysitting: BabysittingConfigSchema.optional(),
-  /** Task system configuration (poll timeout, etc.) */
+  /** Canonical task-system configuration (master switch, storage, enforcer, poll timeout).
+   * Legacy `task`, `morpheus.tasks`, `experimental.task_system` still parse
+   * and act as fallback — explicit `tasks.*` always wins. */
+  tasks: TasksConfigSchema.optional(),
+  /** Legacy (deprecated: use tasks.pollTimeoutMs) */
   task: TaskConfigSchema.optional(),
 
   tdd_enforcer: TddEnforcerConfigSchema.optional(),

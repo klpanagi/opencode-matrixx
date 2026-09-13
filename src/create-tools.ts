@@ -7,6 +7,7 @@ import { createAvailableCategories } from "./plugin/available-categories"
 import { createSkillContext } from "./plugin/skill-context"
 import { createToolRegistry } from "./plugin/tool-registry"
 import type { PluginContext, ToolsRecord } from "./plugin/types"
+import { resolveTasksConfig } from "./shared/task-system-gating"
 import { setPollTimeoutMs } from "./tools/delegate-task/timing"
 
 type CreateToolsResult = {
@@ -26,8 +27,9 @@ export async function createTools(args: {
 }): Promise<CreateToolsResult> {
   const { ctx, pluginConfig, managers } = args
 
-  if (pluginConfig.task?.pollTimeoutMs !== undefined) {
-    setPollTimeoutMs(pluginConfig.task.pollTimeoutMs)
+  const pollTimeout = resolveTasksConfig(pluginConfig).pollTimeoutMs
+  if (pollTimeout !== undefined) {
+    setPollTimeoutMs(pollTimeout)
   }
 
   const skillContext = await createSkillContext({

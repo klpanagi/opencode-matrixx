@@ -79,7 +79,7 @@ export async function executeSetup(opts: { dryRun: boolean; yes: boolean; skipPr
     report,
     "",
     `✓ matrixx.jsonc → ${matrixxPath}${opts.dryRun ? " (preview)" : ""}`,
-    `  task_system: ${state.taskSystem}, headroom: ${state.headroom.enabled}, rtk: ${state.rtk.enabled}, dcp: ${state.dcp.enabled}, context-mode: ${state.contextMode}`,
+    `  tasks.enabled: ${state.taskSystem}, headroom: ${state.headroom.enabled}, rtk: ${state.rtk.enabled}, dcp: ${state.dcp.enabled}, context-mode: ${state.contextMode}`,
     stateWithPreset.preset ? `  model preset: ${stateWithPreset.preset.name} (active_preset)` : "",
     "",
     "Next steps:",

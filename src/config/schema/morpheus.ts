@@ -16,6 +16,7 @@ const MorpheusTasksConfigSchema = z.object({
 })
 
 export const MorpheusConfigSchema = z.object({
+  /** Legacy (deprecated: use tasks.*) — same-named keys act as fallback when tasks.* is unset */
   tasks: MorpheusTasksConfigSchema.optional(),
 })
 
