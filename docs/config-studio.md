@@ -135,5 +135,6 @@ Linux/macOS/Windows. Root CI never touches `apps/`.
 | Dev server 200 but empty/stale sections | Re-run `bun run sync:schema` — the bundled `schema.json` is older than the root schema. |
 | `cargo tauri dev` fails on Linux | Missing WebKit system libs — install the `apt-get` list under Prerequisites. |
 | Window dies with `Gdk-Message: Error 71 ... Wayland display` | Broken display stack (socket exists but compositor unreachable). Use `bun run dev:desktop` — it detects the crash signature, retries via XWayland when X is live, else falls back to web mode. Manual override: `GDK_BACKEND=x11 cargo tauri dev`. |
+| `Failed to create GBM buffer` / black window (VMs, headless GPUs) | WebKit DMA-BUF renderer needs DRI. `bun run dev:desktop` sets `WEBKIT_DISABLE_DMABUF_RENDERER=1` automatically (software path). Manual: export it before `cargo tauri dev`. |
 | `command not found: tauri` | Tauri CLI not installed — `cargo install tauri-cli --version "^2" --locked`, ensure `~/.cargo/bin` is on `PATH`. |
 | App can't find config dir | Override with the `OPENCODE_CONFIG_DIR` env var. |
