@@ -1,6 +1,6 @@
 export const HOOK_NAME = "tasks-todowrite-disabler"
 export const BLOCKED_TOOLS = ["TodoWrite", "TodoRead"]
-export const REPLACEMENT_MESSAGE = `TodoRead/TodoWrite are DISABLED because experimental.task_system is enabled.
+export const REPLACEMENT_MESSAGE = `TodoRead/TodoWrite are DISABLED because tasks.enabled is true.
 
 **ACTION REQUIRED**: RE-REGISTER what you were about to write as Todo using Task tools NOW. Then ASSIGN yourself and START WORKING immediately.
 

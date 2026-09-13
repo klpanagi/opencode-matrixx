@@ -21,7 +21,7 @@ describe("runSetupPrompts --yes", () => {
 describe("prompts content", () => {
   test("prompts.ts contains required system prompts", async () => {
     const content = await Bun.file("src/cli/setup/prompts.ts").text();
-    expect(content).toContain("task_system");
+    expect(content).toContain("tasks.enabled");
     expect(content).toContain("Headroom");
     expect(content).toContain("RTK");
     expect(content).toContain("DCP");

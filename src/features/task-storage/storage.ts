@@ -5,20 +5,21 @@ import type { z } from "zod"
 import type { MatrixxConfig } from "../../config/schema"
 import { log } from "../../shared/logger"
 import { getOpenCodeConfigDir } from "../../shared/opencode-config-dir"
+import { resolveTasksConfig } from "../../shared/task-system-gating"
 
 export function getProjectTaskDir(directory: string): string {
   return join(directory, ".matrixx", "tasks")
 }
 
 export function getTaskDir(config: Partial<MatrixxConfig> = {}, directory?: string): string {
-  const tasksConfig = config.morpheus?.tasks
-  const storagePath = tasksConfig?.storage_path
+  const tasksConfig = resolveTasksConfig(config)
+  const storagePath = tasksConfig.storage_path
 
   if (storagePath) {
     return isAbsolute(storagePath) ? storagePath : join(directory ?? process.cwd(), storagePath)
   }
 
-  if (tasksConfig?.scope === "global" || !directory) {
+  if (tasksConfig.scope === "global" || !directory) {
     const configDir = getOpenCodeConfigDir({ binary: "opencode" })
     const listId = resolveTaskListId(config)
     return join(configDir, "tasks", listId)
@@ -36,7 +37,7 @@ export function resolveTaskListId(config: Partial<MatrixxConfig> = {}): string {
   if (envId) return sanitizePathSegment(envId)
 
 
-  const configId = config.morpheus?.tasks?.task_list_id?.trim()
+  const configId = resolveTasksConfig(config).task_list_id?.trim()
   if (configId) return sanitizePathSegment(configId)
 
   return sanitizePathSegment(basename(process.cwd()))

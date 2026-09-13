@@ -13,9 +13,9 @@ export function resolveMatrixxConfigPath(): { format: "json" | "jsonc" | "none";
 
 export function buildMatrixxConfig(state: SetupState, existing: MatrixxConfig | null): MatrixxConfig {
   const next: Record<string, unknown> = { ...(existing ?? {}) };
-  next.experimental = {
-    ...((existing?.experimental as Record<string, unknown>) ?? {}),
-    task_system: state.taskSystem,
+  next.tasks = {
+    ...((existing?.tasks as Record<string, unknown>) ?? {}),
+    enabled: state.taskSystem,
   };
   next.headroom = {
     enabled: state.headroom.enabled,

@@ -19,7 +19,7 @@ function makeState(overrides: Partial<SetupState> = {}): SetupState {
 describe("buildMatrixxConfig", () => {
   test("creates config from state", () => {
     const c = buildMatrixxConfig(makeState({ headroom: { enabled: true, proxyUrl: "http://127.0.0.1:8787" }, dcp: { enabled: true } }), null);
-    expect((c.experimental as unknown as { task_system: boolean }).task_system).toBe(true);
+    expect(c.tasks?.enabled).toBe(true);
     expect((c.headroom as unknown as { enabled: boolean }).enabled).toBe(true);
     expect((c.dcp as unknown as { enabled: boolean }).enabled).toBe(true);
   });
@@ -55,7 +55,7 @@ describe("writeMatrixxConfig", () => {
     await writeMatrixxConfig(p, c, { dryRun: false, backup: false });
     expect(existsSync(p)).toBe(true);
     const txt = readFileSync(p, "utf-8");
-    expect(JSON.parse(txt)).toHaveProperty("experimental");
+    expect(JSON.parse(txt)).toHaveProperty("tasks");
     rmSync(dir, { recursive: true, force: true });
   });
 

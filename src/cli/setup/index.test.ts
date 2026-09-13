@@ -30,7 +30,7 @@ describe("executeSetup --yes --dry-run", () => {
 
   test("help path via executeSetup contains systems", async () => {
     const out = await executeSetup({ dryRun: true, yes: true });
-    expect(out).toContain("task_system");
+    expect(out).toContain("tasks.enabled");
     expect(out).toContain("headroom");
   });
 });

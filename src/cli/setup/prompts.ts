@@ -31,7 +31,7 @@ export async function runSetupPrompts(deps: DepStatus[], opts: { yes: boolean })
   }
 
   const taskSystemAns = await p.confirm({
-    message: "Enable new task system (experimental.task_system)?",
+    message: "Enable task system (tasks.enabled)?",
     initialValue: true,
   });
   if (p.isCancel(taskSystemAns)) {

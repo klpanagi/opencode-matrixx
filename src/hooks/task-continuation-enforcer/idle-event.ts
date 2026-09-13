@@ -11,6 +11,7 @@ import { normalizeSDKResponse } from "../../shared"
 import { getAgentConfigKey } from "../../shared/agent-display-names"
 import { isAwaitingUser } from "../../shared/awaiting-user"
 import { log } from "../../shared/logger"
+import { resolveTasksConfig } from "../../shared/task-system-gating"
 import { TaskObjectSchema } from "../../tools/task/types"
 import { isLastAssistantMessageAborted } from "./abort-detection"
 import {
@@ -131,7 +132,7 @@ export async function handleSessionIdle(args: {
       const filteredTasks = filterTasksBySession(dropSubtasksWithResolvedParent(tasks), {
         sessionID,
         subagentIDs: getSubagentSessionIDs(sessionID),
-        sessionScoped: config?.morpheus?.tasks?.session_scoped !== false,
+        sessionScoped: resolveTasksConfig(config).session_scoped,
       })
       total = filteredTasks.length
       if (total === 0) {
