@@ -119,13 +119,25 @@ export function getPlanProgress(planPath: string): PlanProgress {
 
   try {
     const content = readFileSync(planPath, "utf-8")
-    
+
     // Match markdown checkboxes: - [ ] or - [x] or - [X]
     const uncheckedMatches = content.match(/^[-*]\s*\[\s*\]/gm) || []
     const checkedMatches = content.match(/^[-*]\s*\[[xX]\]/gm) || []
 
-    const total = uncheckedMatches.length + checkedMatches.length
-    const completed = checkedMatches.length
+    // Prefer numbered task lines (Oracle plan format: "- [ ] 1. Task").
+    // Meta/verification checkboxes (Definition-of-Done, Final Checklist) are
+    // NOT numbered and must not count toward completion — otherwise a
+    // functionally-complete plan never reports isComplete=true. Fall back to
+    // all top-level checkboxes when the plan has no numbered tasks
+    // (hand-written plans).
+    const numberedUnchecked = content.match(/^[-*]\s*\[\s*\]\s*\d+\./gm) || []
+    const numberedChecked = content.match(/^[-*]\s*\[[xX]\]\s*\d+\./gm) || []
+
+    const useNumbered = numberedUnchecked.length + numberedChecked.length > 0
+    const total = useNumbered
+      ? numberedUnchecked.length + numberedChecked.length
+      : uncheckedMatches.length + checkedMatches.length
+    const completed = useNumbered ? numberedChecked.length : checkedMatches.length
 
     return {
       total,

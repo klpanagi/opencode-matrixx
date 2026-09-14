@@ -306,6 +306,62 @@ describe("mission-state", () => {
       expect(progress.total).toBe(0)
       expect(progress.isComplete).toBe(true)
     })
+
+    test("should ignore non-numbered meta checkboxes when numbered tasks present", () => {
+      // given - numbered tasks + unnumbered DoD/final-checklist meta checkboxes
+      const planPath = join(TEST_DIR, "numbered-plan.md")
+      writeFileSync(planPath, `# Plan
+- [x] 1. Task A
+- [ ] 2. Task B
+- [ ] Definition of Done: typecheck clean
+- [ ] Final Checklist: full CI green
+`)
+
+      // when
+      const progress = getPlanProgress(planPath)
+
+      // then - only the 2 numbered tasks count; meta checkboxes ignored
+      expect(progress.total).toBe(2)
+      expect(progress.completed).toBe(1)
+      expect(progress.isComplete).toBe(false)
+    })
+
+    test("should report complete when all numbered tasks checked despite unchecked meta checkboxes", () => {
+      // given - all numbered tasks done, but meta checkboxes still unchecked
+      const planPath = join(TEST_DIR, "numbered-complete.md")
+      writeFileSync(planPath, `# Plan
+- [x] 1. Task A
+- [x] 2. Task B
+- [ ] Definition of Done: typecheck clean
+- [ ] Final Checklist: full CI green
+`)
+
+      // when
+      const progress = getPlanProgress(planPath)
+
+      // then - isComplete true because all numbered tasks are done
+      expect(progress.total).toBe(2)
+      expect(progress.completed).toBe(2)
+      expect(progress.isComplete).toBe(true)
+    })
+
+    test("should fall back to all top-level checkboxes when no numbered tasks", () => {
+      // given - unnumbered tasks (hand-written plan)
+      const planPath = join(TEST_DIR, "unnumbered-plan.md")
+      writeFileSync(planPath, `# Plan
+- [ ] Task 1
+- [x] Task 2
+- [ ] Task 3
+`)
+
+      // when
+      const progress = getPlanProgress(planPath)
+
+      // then - all top-level checkboxes counted (backward compatible)
+      expect(progress.total).toBe(3)
+      expect(progress.completed).toBe(1)
+      expect(progress.isComplete).toBe(false)
+    })
   })
 
   describe("getPlanName", () => {
