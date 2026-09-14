@@ -362,6 +362,63 @@ describe("mission-state", () => {
       expect(progress.completed).toBe(1)
       expect(progress.isComplete).toBe(false)
     })
+
+    test("should ignore indented sub-checkboxes", () => {
+      // given - numbered tasks with indented acceptance criteria (Oracle plan format)
+      const planPath = join(TEST_DIR, "indented-plan.md")
+      writeFileSync(planPath, `# Plan
+- [x] 1. Task A
+
+  **Acceptance Criteria**:
+  - [ ] Criterion one
+  - [ ] Criterion two
+- [ ] 2. Task B
+`)
+
+      // when
+      const progress = getPlanProgress(planPath)
+
+      // then - only the 2 numbered tasks count; indented sub-checkboxes ignored
+      expect(progress.total).toBe(2)
+      expect(progress.completed).toBe(1)
+      expect(progress.isComplete).toBe(false)
+    })
+
+    test("should handle numbered format variants", () => {
+      // given - asterisk bullets, multi-digit numbers, uppercase X, extra whitespace
+      const planPath = join(TEST_DIR, "variants-plan.md")
+      writeFileSync(planPath, `# Plan
+* [x] 1. Asterisk bullet
+- [X] 2. Uppercase X
+- [ ] 10. Multi-digit number
+- [x]   3. Extra whitespace
+`)
+
+      // when
+      const progress = getPlanProgress(planPath)
+
+      // then
+      expect(progress.total).toBe(4)
+      expect(progress.completed).toBe(3)
+      expect(progress.isComplete).toBe(false)
+    })
+
+    test("should report incomplete when no numbered tasks checked", () => {
+      // given - numbered tasks, none done
+      const planPath = join(TEST_DIR, "numbered-none-done.md")
+      writeFileSync(planPath, `# Plan
+- [ ] 1. Task A
+- [ ] 2. Task B
+`)
+
+      // when
+      const progress = getPlanProgress(planPath)
+
+      // then
+      expect(progress.total).toBe(2)
+      expect(progress.completed).toBe(0)
+      expect(progress.isComplete).toBe(false)
+    })
   })
 
   describe("getPlanName", () => {
