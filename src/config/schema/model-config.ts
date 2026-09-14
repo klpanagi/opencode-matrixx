@@ -10,12 +10,11 @@ export type ModelFallbackEntry = z.infer<typeof ModelFallbackEntrySchema>
 
 const complexityDowngradeValueSchema = z.string().refine(
   (s) => {
-    // provider/model format: must contain exactly one "/" with non-empty parts
-    if (s.includes("/")) {
-      const parts = s.split("/")
-      return parts.length === 2 && parts[0].length > 0 && parts[1].length > 0
-    }
-    return false
+    if (!s.includes("/")) return false
+    if (s.startsWith("/") || s.endsWith("/")) return false
+    if (s.includes("//")) return false
+    const parts = s.split("/")
+    return parts.length >= 2 && parts.every((p) => p.length > 0)
   },
   { message: "Must be <provider>/<model>" },
 )
