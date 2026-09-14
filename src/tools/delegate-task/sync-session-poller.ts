@@ -101,7 +101,7 @@ export async function pollSyncSession(
   let lastMsgCount = 0
   let stableIdlePolls = 0
 
-  log("[task] Starting poll loop", { sessionID: input.sessionID, agentToUse: input.agentToUse })
+  log("[task] Starting poll loop", { sessionID: input.sessionID, agentToUse: input.agentToUse, maxPollTimeMs })
 
   while (Date.now() - pollStart < maxPollTimeMs) {
     if (ctx.abort?.aborted) {
