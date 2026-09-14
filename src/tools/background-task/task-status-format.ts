@@ -49,6 +49,14 @@ ${truncated}
      statusNote = `
 
 > **Interrupted**: The task was interrupted by a prompt error. The session may contain partial results.`
+   } else if (task.status === "stopped") {
+     statusNote = `
+
+> **Stopped**: the session ended without a terminal result — partial output may exist.`
+   } else if (task.status === "statusUncertain") {
+     statusNote = `
+
+> **Uncertain**: liveness could not be determined after restart; re-check with background_output.`
    }
 
   const durationLabel = task.status === "pending" ? "Queued for" : "Duration"

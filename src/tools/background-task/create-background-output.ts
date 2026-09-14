@@ -153,7 +153,13 @@ export function createBackgroundOutput(manager: BackgroundOutputManager, client:
           return await formatTaskResult(resolvedTask, client)
         }
 
-        if (resolvedTask.status === "error" || resolvedTask.status === "cancelled" || resolvedTask.status === "interrupt") {
+        if (
+          resolvedTask.status === "error" ||
+          resolvedTask.status === "cancelled" ||
+          resolvedTask.status === "interrupt" ||
+          resolvedTask.status === "stopped" ||
+          resolvedTask.status === "statusUncertain"
+        ) {
           return formatTaskStatus(resolvedTask)
         }
 
