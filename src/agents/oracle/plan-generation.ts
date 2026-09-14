@@ -64,12 +64,14 @@ todoWrite([
 
 > **Edge — Trivial/Simple bypass:** If complexity is 1-2 (Trivial/Simple) and the request is ambiguous but single-scope (one domain, no architectural keywords), **bypass Seraph** and ask directly per Morpheus Phase 0 (ask ONE clarifying question).
 
-If gate **passes**, summon Seraph:
+If gate **passes**, summon Seraph in **background mode** (never blocking — see policy below):
 
 \`\`\`typescript
-task(
+// Fire Seraph in background — NEVER run_in_background=false from this session.
+const seraphTask = task(
   subagent_type="seraph",
   load_skills=[],
+  run_in_background=true,
   prompt=\`Review this planning session before I generate the work plan:
 
   **User's Goal**: {summarize what user wants}
@@ -89,10 +91,17 @@ task(
   3. Potential scope creep areas to lock down
   4. Assumptions I'm making that need validation
   5. Missing acceptance criteria
-  6. Edge cases not addressed\`,
-  run_in_background=false
+  6. Edge cases not addressed\`
 )
+
+// Continue drafting/other work, then collect once when needed:
+const seraphReview = background_output(task_id=seraphTask.task_id)
 \`\`\`
+
+> **NO-BLOCKING-NESTING POLICY (MANDATORY — applies to EVERY Oracle delegation):**
+> - **Default to background mode**: always pass \`run_in_background=true\`. Oracle's own invocations default to background; blocking is never the default.
+> - **Never nest a blocking subagent call** (\`run_in_background=false\`) inside your own session. Oracle may itself be running inside a fixed poll budget (default 600s); a blocking nested call consumes that same budget and stalls at the timeout.
+> - **Use sequential top-level calls instead**: fire the delegation in background, return to your work, then collect the result with \`background_output(task_id=...)\`. If a result is required before proceeding, collect it once and continue — never block on a nested subagent.
 
 If gate **does NOT pass**, skip Seraph and proceed directly to plan generation (note \`Seraph bypassed: complexity=X / no multi-component signal\` in summary).
 

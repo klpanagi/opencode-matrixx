@@ -25,6 +25,7 @@ export async function executeSyncTask(
   const toastManager = getTaskToastManager()
   let taskId: string | undefined
   let syncSessionID: string | undefined
+  let pollTimedOut = false
 
   try {
     const createSessionResult = await deps.createSyncSession(client, {
@@ -116,6 +117,7 @@ export async function executeSyncTask(
         },
       })
       if (pollError) {
+        pollTimedOut = pollError.startsWith("Poll timeout reached")
         return pollError
       }
 
@@ -158,7 +160,11 @@ session_id: ${sessionID}
       unregisterSubagentSession(syncSessionID)
       // Abort the sync session to prevent todo-continuation enforcer
       // from re-awakening a completed sync agent's session.
-      client.session.abort({ path: { id: syncSessionID } }).catch((err) => { log("[delegate-task] Sync session abort failed:", err) })
+      // On poll timeout the session is still running — keep it alive so the
+      // caller can resume via session_id.
+      if (!pollTimedOut) {
+        client.session.abort({ path: { id: syncSessionID } }).catch((err) => { log("[delegate-task] Sync session abort failed:", err) })
+      }
     }
   }
 }

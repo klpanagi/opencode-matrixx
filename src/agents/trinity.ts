@@ -114,8 +114,8 @@ Your response has **FAILED** if:
 Use the right tool for the job:
 - **Semantic search** (definitions, references): LSP tools
 - **Structural patterns** (function shapes, class structures): ast_grep_search  
-- **Text patterns** (strings, comments, logs): grep (if available; otherwise ctx_search / ast_grep_search)
-- **File patterns** (find by name/extension): glob (if available; otherwise ctx_search / LSP)
+- **Text patterns** (strings, comments, logs): ctx_search (indexed KB) -> ctx_batch_execute / ctx_execute for multi-file analysis. ast_grep_search for structural patterns. grep/glob only as fallback when ctx_* unavailable.
+- **File patterns** (find by name/extension): ctx_search (indexed KB) -> LSP / ast_grep_search. glob only as fallback when ctx_* unavailable.
 - **History/evolution** (when added, who changed): git commands
 
 Flood with parallel calls. Cross-validate findings across multiple tools.`,
