@@ -416,3 +416,141 @@ describe("ConcurrencyManager.cleanup", () => {
     await p
   })
 })
+
+describe("ConcurrencyManager.acquireWithDeadline", () => {
+  test("should timeout a queued acquire without leaking a slot", async () => {
+    //#given
+    const config: BackgroundTaskConfig = { defaultConcurrency: 1 }
+    const manager = new ConcurrencyManager(config)
+    const first = await manager.acquireWithDeadline("model-a")
+
+    //#when
+    const result = await manager.acquireWithDeadline("model-a", 50)
+
+    //#then
+    expect(first).toEqual({ granted: true })
+    expect(result.granted).toBe(false)
+    if (!result.granted) {
+      expect(result.reason).toBe("timeout")
+      expect(result.waitedMs).toBeGreaterThanOrEqual(0)
+    }
+    expect(manager.getCount("model-a")).toBe(1)
+    expect(manager.getQueueLength("model-a")).toBe(0)
+
+    //#when - releasing afterwards frees the single held slot
+    manager.release("model-a")
+
+    //#then
+    expect(manager.getCount("model-a")).toBe(0)
+  })
+
+  test("should grant immediately when a slot is free", async () => {
+    //#given
+    const config: BackgroundTaskConfig = { defaultConcurrency: 1 }
+    const manager = new ConcurrencyManager(config)
+
+    //#when
+    const result = await manager.acquireWithDeadline("model-a", 50)
+
+    //#then
+    expect(result).toEqual({ granted: true })
+    expect(manager.getCount("model-a")).toBe(1)
+  })
+
+  test("should wait indefinitely when timeout is undefined or non-positive", async () => {
+    //#given
+    const config: BackgroundTaskConfig = { defaultConcurrency: 1 }
+    const manager = new ConcurrencyManager(config)
+    await manager.acquireWithDeadline("model-a")
+
+    //#when
+    const pending = manager.acquireWithDeadline("model-a", 0)
+    await Promise.resolve()
+    const resolvedEarly = await Promise.race([
+      pending.then(() => "resolved"),
+      Promise.resolve("pending")
+    ])
+
+    //#then
+    expect(resolvedEarly).toBe("pending")
+    manager.release("model-a")
+    expect(await pending).toEqual({ granted: true })
+  })
+
+  test("should still reject acquire() with the existing cancel error", async () => {
+    //#given
+    const config: BackgroundTaskConfig = { defaultConcurrency: 1 }
+    const manager = new ConcurrencyManager(config)
+    await manager.acquire("model-a")
+
+    //#when
+    const pending = manager.acquire("model-a")
+    manager.cancelWaiters("model-a")
+
+    //#then
+    await expect(pending).rejects.toThrow("Concurrency queue cancelled for model: model-a")
+  })
+
+  test("should hand off to the first unsettled waiter after an earlier waiter times out", async () => {
+    //#given
+    const config: BackgroundTaskConfig = { defaultConcurrency: 1 }
+    const manager = new ConcurrencyManager(config)
+    await manager.acquireWithDeadline("model-a")
+
+    const granted: string[] = []
+    const first = manager.acquireWithDeadline("model-a", 30).then((outcome) => {
+      if (outcome.granted) granted.push("first")
+      return outcome
+    })
+    const second = manager.acquireWithDeadline("model-a").then((outcome) => {
+      if (outcome.granted) granted.push("second")
+      return outcome
+    })
+
+    //#when
+    const firstOutcome = await first
+    manager.release("model-a")
+    const secondOutcome = await second
+
+    //#then
+    expect(firstOutcome.granted).toBe(false)
+    expect(secondOutcome).toEqual({ granted: true })
+    expect(granted).toEqual(["second"])
+  })
+
+  test("should remove a timed-out entry without reordering survivors", async () => {
+    //#given
+    const config: BackgroundTaskConfig = { defaultConcurrency: 1 }
+    const manager = new ConcurrencyManager(config)
+    await manager.acquireWithDeadline("model-a")
+
+    const order: string[] = []
+    const w1 = manager.acquireWithDeadline("model-a").then((outcome) => {
+      if (outcome.granted) order.push("w1")
+      return outcome
+    })
+    const w2 = manager.acquireWithDeadline("model-a", 30).then((outcome) => {
+      if (outcome.granted) order.push("w2")
+      return outcome
+    })
+    const w3 = manager.acquireWithDeadline("model-a").then((outcome) => {
+      if (outcome.granted) order.push("w3")
+      return outcome
+    })
+
+    //#when - the middle waiter times out and is spliced out
+    const w2Outcome = await w2
+    const queueLengthAfterTimeout = manager.getQueueLength("model-a")
+    manager.release("model-a")
+    await w1
+    manager.release("model-a")
+    await w3
+    manager.release("model-a")
+
+    //#then
+    expect(w2Outcome.granted).toBe(false)
+    expect(queueLengthAfterTimeout).toBe(2)
+    expect(order).toEqual(["w1", "w3"])
+    expect(manager.getCount("model-a")).toBe(0)
+  })
+})
