@@ -27,7 +27,11 @@ export const BgHandleSchema = z
     parentMessageID: z.string(),
     description: z.string(),
     agent: z.string(),
-    status: z.enum(["pending", "running", "completed", "error", "cancelled", "interrupt"]),
+    status: z.enum(["pending", "running", "completed", "error", "cancelled", "interrupt", "stopped", "statusUncertain"]),
+    sessionID: z.string().optional(),
+    terminalReason: z
+      .enum(["queue-saturated", "no-output", "uncertain", "aborted", "stale", "nested-depth-exceeded"])
+      .optional(),
     model: z
       .object({
         providerID: z.string(),
@@ -71,6 +75,8 @@ export function toHandle(task: BackgroundTask): BgHandle {
     description: task.description,
     agent: task.agent,
     status: task.status,
+    sessionID: task.sessionID,
+    terminalReason: task.terminalReason,
     model: task.model,
     category: task.category,
     concurrencyGroup: task.concurrencyGroup,

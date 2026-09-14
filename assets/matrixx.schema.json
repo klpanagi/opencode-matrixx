@@ -4678,6 +4678,39 @@
             }
           },
           "additionalProperties": false
+        },
+        "admissionTimeoutMs": {
+          "anyOf": [
+            {
+              "type": "number",
+              "const": 0
+            },
+            {
+              "type": "number",
+              "minimum": 60000
+            }
+          ]
+        },
+        "nestedAdmission": {
+          "type": "object",
+          "properties": {
+            "enabled": {
+              "type": "boolean"
+            },
+            "mode": {
+              "type": "string",
+              "enum": [
+                "bypass",
+                "reserve"
+              ]
+            },
+            "maxDepth": {
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 5
+            }
+          },
+          "additionalProperties": false
         }
       },
       "additionalProperties": false

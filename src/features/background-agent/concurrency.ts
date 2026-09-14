@@ -1,5 +1,9 @@
 import type { BackgroundTaskConfig } from "../../config/schema"
 
+export type AcquireOutcome =
+  | { granted: true }
+  | { granted: false; reason: "timeout" | "cancelled"; waitedMs: number }
+
 /**
  * Queue entry with settled-flag pattern to prevent double-resolution.
  *
@@ -7,9 +11,9 @@ import type { BackgroundTaskConfig } from "../../config/schema"
  * an entry that was already resolved by release().
  */
 interface QueueEntry {
-  resolve: () => void
-  rawReject: (error: Error) => void
+  settle: (outcome: AcquireOutcome) => void
   settled: boolean
+  enqueuedAt: number
 }
 
 export class ConcurrencyManager {
@@ -38,33 +42,63 @@ export class ConcurrencyManager {
     return 5
   }
 
-  async acquire(model: string): Promise<void> {
+  private tryAcquireSlot(model: string): boolean {
     const limit = this.getConcurrencyLimit(model)
     if (limit === Infinity) {
-      return
+      return true
     }
-
     const current = this.counts.get(model) ?? 0
     if (current < limit) {
       this.counts.set(model, current + 1)
-      return
+      return true
+    }
+    return false
+  }
+
+  async acquire(model: string): Promise<void> {
+    if (this.tryAcquireSlot(model)) return
+    const outcome = await this.acquireWithDeadline(model, undefined)
+    if (outcome.granted) return
+    if (outcome.reason === "cancelled") {
+      throw new Error(`Concurrency queue cancelled for model: ${model}`)
+    }
+  }
+
+  async acquireWithDeadline(model: string, timeoutMs?: number): Promise<AcquireOutcome> {
+    if (this.tryAcquireSlot(model)) {
+      return { granted: true }
     }
 
-    return new Promise<void>((resolve, reject) => {
+    return new Promise<AcquireOutcome>((resolve) => {
       const queue = this.queues.get(model) ?? []
+      let timer: ReturnType<typeof setTimeout> | undefined
 
       const entry: QueueEntry = {
-        resolve: () => {
+        settled: false,
+        enqueuedAt: Date.now(),
+        settle: (outcome) => {
           if (entry.settled) return
           entry.settled = true
-          resolve()
+          if (timer !== undefined) clearTimeout(timer)
+          resolve(outcome)
         },
-        rawReject: reject,
-        settled: false,
       }
 
       queue.push(entry)
       this.queues.set(model, queue)
+
+      if (timeoutMs === undefined || timeoutMs <= 0) return
+
+      timer = setTimeout(() => {
+        if (entry.settled) return
+        entry.settled = true
+        const pending = this.queues.get(model)
+        if (pending) {
+          const index = pending.indexOf(entry)
+          if (index !== -1) pending.splice(index, 1)
+        }
+        resolve({ granted: false, reason: "timeout", waitedMs: Date.now() - entry.enqueuedAt })
+      }, timeoutMs)
     })
   }
 
@@ -82,7 +116,7 @@ export class ConcurrencyManager {
       if (!next) continue
       if (!next.settled) {
         // Hand off the slot to this waiter (count stays the same)
-        next.resolve()
+        next.settle({ granted: true })
         return
       }
     }
@@ -100,11 +134,9 @@ export class ConcurrencyManager {
   cancelWaiters(model: string): void {
     const queue = this.queues.get(model)
     if (queue) {
+      const now = Date.now()
       for (const entry of queue) {
-        if (!entry.settled) {
-          entry.settled = true
-          entry.rawReject(new Error(`Concurrency queue cancelled for model: ${model}`))
-        }
+        entry.settle({ granted: false, reason: "cancelled", waitedMs: now - entry.enqueuedAt })
       }
       this.queues.delete(model)
     }

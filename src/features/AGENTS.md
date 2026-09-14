@@ -7,9 +7,13 @@
 ## STRUCTURE
 ```
 features/
-├── background-agent/           # Task lifecycle, concurrency (29 files, ~5000 LOC)
+├── background-agent/           # Task lifecycle, concurrency, restart reconciliation (32 files, ~5500 LOC)
 │   ├── manager.ts              # Main task orchestration (1646 lines)
-│   └── concurrency.ts          # Parallel execution limits per provider/model
+│   ├── concurrency.ts          # Parallel execution limits per provider/model
+│   ├── reconcile.ts            # Restart reconciliation: classifies persisted in-flight handles
+│   ├── admission.ts            # Nested-admission classifier (`classifyAdmission`)
+│   ├── session-output.ts       # Shared output-validation helpers (assistant output, recorded errors)
+│   └── handle-index.ts         # File-backed handle index (`BgHandleSchema`, `.matrixx/bg-handles/`)
 ├── tmux-subagent/              # Tmux integration (25 files, ~3000 LOC)
 │   └── manager.ts              # Pane management, grid planning (350 lines)
 ├── builtin-skills/             # Built-in skills (8 files, ~1700 LOC)
@@ -28,7 +32,21 @@ features/
 ## KEY PATTERNS
 
 **Background Agent Lifecycle:**
-Task creation → Queue → Concurrency check → Execute → Monitor/Poll → Notification → Cleanup
+Task creation → Queue → Admission check → Concurrency check → Execute → Monitor/Poll → Notification → Cleanup
+
+**Terminal statuses** (`BackgroundTaskStatus`): `pending | running | completed | error | cancelled | interrupt | stopped | statusUncertain`. New Tier-1 additions:
+- `stopped` — the session ended without terminal output (or admission was refused). Does NOT imply failure or success.
+- `statusUncertain` — liveness could not be determined (e.g. host lookup failed after restart). Does NOT imply failure or completion.
+- `interrupt` is retained for genuine mid-flight aborts (promptAsync rejection / abort).
+
+**`BackgroundTerminalReason`** (optional, persisted on handle): `queue-saturated | no-output | uncertain | aborted | stale | nested-depth-exceeded`. Written to `BgHandleSchema.terminalReason` in `<project>/.matrixx/bg-handles/<taskId>.json`. Old handle files without these fields still load.
+
+**Restart reconciliation** (`reconcile.ts`): On plugin start, `restoreHandles()` probes the live host for each persisted `running|pending` handle and classifies it as `completed | error | running | stopped | statusUncertain` instead of blindly flattening to `interrupt`. A still-running child is re-registered and polling restarts; concurrency is deliberately NOT re-acquired. Lookup failure degrades to `statusUncertain` (never assumes completion).
+
+**Bounded admission** (`admissionTimeoutMs`): When a root task waits past the timeout on a saturated queue it becomes terminal `stopped` with `terminalReason: "queue-saturated"`. Value `0` = unbounded (default), otherwise minimum `60000` ms.
+
+**Nested-admission exemption** (`nestedAdmission`): Prevents a managed background child that spawns its own background work from self-deadlocking the semaphore. `classifyAdmission` walks the child→parent session registry. Depth-cap overflow yields terminal `stopped` + `terminalReason: "nested-depth-exceeded"`. Config: `{ enabled: boolean (default true), mode: "bypass"|"reserve" (default "bypass"), maxDepth: 1..5 (default 2) }`.
+
 **Skill Management:** All skills are loaded from `src/features/builtin-skills/` via `createBuiltinSkills()`. No external skill directory loading. Skills are configured via `disabled_skills` in `matrixx.jsonc`.
 
 **SKILL.md Format:**

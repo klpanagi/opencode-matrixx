@@ -3,16 +3,19 @@ const { mock, spyOn } = require("bun:test")
 
 import { randomUUID } from "node:crypto"
 import * as fs from "node:fs"
-import { mkdirSync, rmSync, writeFileSync } from "node:fs"
+import { mkdirSync, mkdtempSync, rmSync, writeFileSync } from "node:fs"
 import { tmpdir } from "node:os"
 import { join } from "node:path"
 import type { PluginInput } from "@opencode-ai/plugin"
 import { _resetTaskToastManagerForTesting, initTaskToastManager } from "../../../src/features/task-toast-manager/manager"
 import type { ConcurrencyManager } from "../../../src/features/background-agent/concurrency"
 import { MIN_IDLE_TIME_MS } from "../../../src/features/background-agent/constants"
+import { writeHandle } from "../../../src/features/background-agent/handle-index"
 import { BackgroundManager } from "../../../src/features/background-agent/manager"
 import { _resetMessageDirCacheForTesting, getMessageDir } from "../../../src/features/background-agent/message-dir"
+import { reconcileHandle } from "../../../src/features/background-agent/reconcile"
 import type { BackgroundTask, ResumeInput } from "../../../src/features/background-agent/types"
+import { registerSubagentSession, subagentSessions } from "../../../src/features/session-state"
 
 // Shared fs call counters for mock.module("node:fs")-based tests
 // (getMessageDir caching + B2 readFileSync regression).
@@ -228,6 +231,24 @@ async function tryCompleteTaskForTest(manager: BackgroundManager, task: Backgrou
 
 function stubNotifyParentSession(manager: BackgroundManager): void {
   ;(manager as unknown as { notifyParentSession: () => Promise<void> }).notifyParentSession = async () => {}
+}
+
+function getNestedActive(manager: BackgroundManager): Map<string, number> {
+  return (manager as unknown as { nestedActive: Map<string, number> }).nestedActive
+}
+
+async function waitForCondition(
+  condition: () => boolean,
+  timeoutMs = 2000,
+  intervalMs = 10,
+): Promise<void> {
+  const start = Date.now()
+  while (!condition()) {
+    if (Date.now() - start > timeoutMs) {
+      throw new Error("waitForCondition timed out")
+    }
+    await new Promise((resolve) => setTimeout(resolve, intervalMs))
+  }
 }
 
 function createToastRemoveTaskTracker(): { removeTaskCalls: string[]; resetToastManager: () => void } {
@@ -4094,6 +4115,463 @@ describe("findNearestMessageExcludingCompaction reads each file once", () => {
       // sanity: every read path lives inside B2_SESSION_DIR
       expect(path.startsWith(B2_SESSION_DIR)).toBe(true)
     }
+
+    manager.shutdown()
+  })
+})
+
+// ----- T4: live handle reconciliation on restart -----
+//
+// `restoreHandles()` must probe the host instead of flattening persisted
+// running/pending handles to `"interrupt"` (a false failure). These tests
+// exercise the deterministic classification order in `reconcile.ts`.
+
+interface ReconcileClientOptions {
+  status?: unknown
+  statusThrows?: boolean
+  messages?: unknown
+  messagesThrows?: boolean
+  todos?: unknown
+}
+
+function makeReconcileClient(options: ReconcileClientOptions = {}) {
+  return {
+    session: {
+      get: async () => ({ data: { directory: tmpdir() } }),
+      create: async () => ({ data: { id: "ses_child" } }),
+      status: async () => {
+        if (options.statusThrows) throw new Error("status lookup failed")
+        return options.status ?? { data: {} }
+      },
+      messages: async () => {
+        if (options.messagesThrows) throw new Error("messages lookup failed")
+        return options.messages ?? { data: [] }
+      },
+      todo: async () => ({ data: options.todos ?? [] }),
+      prompt: async () => ({}),
+      promptAsync: async () => ({}),
+      abort: async () => ({}),
+    },
+  }
+}
+
+const ASSISTANT_TEXT_MESSAGE = {
+  info: { role: "assistant" },
+  parts: [{ type: "text", text: "work complete" }],
+}
+
+describe("BackgroundManager.restoreHandles - live reconciliation", () => {
+  let dir: string
+  const managers: BackgroundManager[] = []
+
+  beforeEach(() => {
+    dir = mkdtempSync(join(tmpdir(), "matrixx-bg-reconcile-"))
+    managers.length = 0
+  })
+
+  afterEach(() => {
+    for (const manager of managers) {
+      try {
+        manager.shutdown()
+      } catch {
+        // best-effort cleanup between tests
+      }
+    }
+    rmSync(dir, { recursive: true, force: true })
+  })
+
+  function seedRunningHandle(overrides: Partial<BackgroundTask> = {}): BackgroundTask {
+    const task: BackgroundTask = {
+      id: `bg_${randomUUID().slice(0, 8)}`,
+      parentSessionID: "ses_parent",
+      parentMessageID: "msg_parent",
+      description: "reconcile task",
+      prompt: "",
+      agent: "explore",
+      status: "running",
+      sessionID: "ses_child",
+      startedAt: new Date(),
+      ...overrides,
+    }
+    writeHandle(dir, task)
+    return task
+  }
+
+  function makeManager(client: ReturnType<typeof makeReconcileClient>): BackgroundManager {
+    const manager = new BackgroundManager({ client, directory: dir } as unknown as PluginInput)
+    managers.push(manager)
+    return manager
+  }
+
+  function getPollingInterval(manager: BackgroundManager): unknown {
+    return (manager as unknown as { pollingInterval?: unknown }).pollingInterval
+  }
+
+  test("(a) terminal-success session reconciles to completed, not interrupt", async () => {
+    //#given a persisted running handle and a host session that finished with output
+    const task = seedRunningHandle()
+    const client = makeReconcileClient({
+      status: { data: { ses_child: { type: "idle" } } },
+      messages: { data: [ASSISTANT_TEXT_MESSAGE] },
+    })
+
+    //#when a fresh manager restores handles
+    const manager = makeManager(client)
+    await manager.restoreHandles()
+
+    //#then the task is truthfully completed, never a false interrupt
+    expect(manager.getTask(task.id)?.status).toBe("completed")
+    expect(manager.getTask(task.id)?.status).not.toBe("interrupt")
+  })
+
+  test("(b) recorded session error reconciles to error", async () => {
+    //#given an idle host session whose assistant message recorded a provider error
+    const task = seedRunningHandle()
+    const client = makeReconcileClient({
+      status: { data: { ses_child: { type: "idle" } } },
+      messages: {
+        data: [
+          {
+            info: { role: "assistant", error: { name: "APIError", data: { message: "provider exploded" } } },
+            parts: [],
+          },
+        ],
+      },
+    })
+
+    //#when the manager restores handles
+    const manager = makeManager(client)
+    await manager.restoreHandles()
+
+    //#then the task is surfaced as a real error
+    expect(manager.getTask(task.id)?.status).toBe("error")
+    expect(manager.getTask(task.id)?.status).not.toBe("statusUncertain")
+  })
+
+  test("(c) busy host session reconciles to running, re-registers, restarts polling", async () => {
+    //#given a persisted running handle and a host session still busy
+    const task = seedRunningHandle()
+    const client = makeReconcileClient({ status: { data: { ses_child: { type: "busy" } } } })
+
+    //#when the manager restores handles
+    const manager = makeManager(client)
+    await manager.restoreHandles()
+
+    //#then the live task is kept running with its session re-attached
+    const restored = manager.getTask(task.id)
+    expect(restored?.status).toBe("running")
+    expect(restored?.sessionID).toBe("ses_child")
+    expect(subagentSessions.has("ses_child")).toBe(true)
+    expect(getPollingInterval(manager)).toBeDefined()
+  })
+
+  test("(d) idle session with output and no incomplete todos reconciles to completed", async () => {
+    //#given an idle session with output and only completed todos
+    const task = seedRunningHandle()
+    const client = makeReconcileClient({
+      status: { data: { ses_child: { type: "idle" } } },
+      messages: { data: [ASSISTANT_TEXT_MESSAGE] },
+      todos: [{ status: "completed" }, { status: "cancelled" }],
+    })
+
+    //#when the manager restores handles
+    const manager = makeManager(client)
+    await manager.restoreHandles()
+
+    //#then the task completes
+    expect(manager.getTask(task.id)?.status).toBe("completed")
+  })
+
+  test("(e) idle session without output reconciles to stopped/no-output", async () => {
+    //#given a persisted running handle whose session is idle and empty
+    const task = seedRunningHandle()
+    const client = makeReconcileClient({
+      status: { data: { ses_child: { type: "idle" } } },
+      messages: { data: [] },
+    })
+
+    //#when the manager restores handles
+    const manager = makeManager(client)
+    await manager.restoreHandles()
+
+    //#then the task is marked stopped with the no-output reason
+    const restored = manager.getTask(task.id)
+    expect(restored?.status).toBe("stopped")
+    expect(restored?.terminalReason).toBe("no-output")
+  })
+
+  test("(f) host lookup failure degrades to statusUncertain and never rejects", async () => {
+    //#given a host whose status probe throws
+    const task = seedRunningHandle()
+    const client = makeReconcileClient({ statusThrows: true })
+
+    //#when the manager restores handles
+    const manager = makeManager(client)
+
+    //#then restoreHandles resolves and the task is fail-safe uncertain
+    await expect(manager.restoreHandles()).resolves.toBeUndefined()
+    const restored = manager.getTask(task.id)
+    expect(restored?.status).toBe("statusUncertain")
+    expect(restored?.terminalReason).toBe("uncertain")
+    expect(restored?.status).not.toBe("completed")
+  })
+
+  test("(g) handle without sessionID reconciles to statusUncertain", async () => {
+    //#given a persisted running handle that never captured a session id
+    const task = seedRunningHandle({ sessionID: undefined })
+    const client = makeReconcileClient({
+      status: { data: {} },
+      messages: { data: [ASSISTANT_TEXT_MESSAGE] },
+    })
+
+    //#when the manager restores handles
+    const manager = makeManager(client)
+    await manager.restoreHandles()
+
+    //#then the handle cannot be probed and is reported uncertain
+    expect(manager.getTask(task.id)?.status).toBe("statusUncertain")
+  })
+
+  test("(h) restored running handle does not re-acquire concurrency", async () => {
+    //#given a busy host session and a running handle whose concurrency group is "explore"
+    const task = seedRunningHandle({ concurrencyGroup: "explore" })
+    const client = makeReconcileClient({ status: { data: { ses_child: { type: "busy" } } } })
+
+    //#when the manager restores handles
+    const manager = makeManager(client)
+    await manager.restoreHandles()
+
+    //#then no slot was acquired for the restored task (C7)
+    expect(manager.getTask(task.id)?.concurrencyKey).toBeUndefined()
+    expect(getConcurrencyManager(manager).getCount("explore")).toBe(0)
+  })
+})
+
+describe("reconcileHandle - confirmation grace", () => {
+  function makeHandle(overrides: Partial<BackgroundTask> = {}) {
+    return {
+      taskId: "bg_grace",
+      parentSessionID: "ses_parent",
+      parentMessageID: "msg_parent",
+      description: "grace",
+      agent: "explore",
+      status: "running" as const,
+      sessionID: "ses_child",
+      startedAt: Date.now(),
+      ...overrides,
+    }
+  }
+
+  test("keeps a stopped verdict pending until the second probe confirms no output", async () => {
+    //#given a first probe that is idle+empty and a second probe that produced output
+    let messagesCalls = 0
+    const client = {
+      session: {
+        status: async () => ({ data: { ses_child: { type: "idle" } } }),
+        messages: async () => {
+          messagesCalls++
+          return messagesCalls === 1 ? { data: [] } : { data: [ASSISTANT_TEXT_MESSAGE] }
+        },
+        todo: async () => ({ data: [] }),
+      },
+    }
+    const sleeps: number[] = []
+
+    //#when reconcile runs with an injected sleep (grace enabled)
+    const outcome = await reconcileHandle(client, makeHandle(), {
+      sleep: async (ms: number) => {
+        sleeps.push(ms)
+      },
+    })
+
+    //#then the confirmed second probe keeps the task running instead of stopped
+    expect(outcome.status).toBe("running")
+    expect(sleeps).toHaveLength(1)
+    expect(sleeps[0]).toBeGreaterThan(0)
+  })
+
+  test("stops when both probes agree there is no output", async () => {
+    //#given idle+empty on both probes
+    const client = {
+      session: {
+        status: async () => ({ data: { ses_child: { type: "idle" } } }),
+        messages: async () => ({ data: [] }),
+        todo: async () => ({ data: [] }),
+      },
+    }
+
+    //#when reconcile runs with an injected sleep
+    const outcome = await reconcileHandle(client, makeHandle(), { sleep: async () => {} })
+
+    //#then the session is confirmed stopped with the no-output reason
+    expect(outcome.status).toBe("stopped")
+    expect(outcome.terminalReason).toBe("no-output")
+  })
+})
+
+// ----- T7: bounded admission + nested-admission exemption -----
+//
+// The Zod schema enforces admissionTimeoutMs >= 60000 at config-load time, but
+// the BackgroundManager constructor accepts the inferred BackgroundTaskConfig
+// type directly, so the tests inject a tiny value to exercise the timeout
+// branch fast without waiting a real minute.
+
+describe("BackgroundManager bounded admission (T7)", () => {
+  function makeStartableClient() {
+    return {
+      session: {
+        create: async () => ({ data: { id: "ses_nested" } }),
+        get: async () => ({ data: { directory: tmpdir() } }),
+        prompt: async () => ({}),
+        promptAsync: async () => ({}),
+        abort: async () => ({}),
+        messages: async () => ({ data: [] }),
+      },
+    }
+  }
+
+  test("root task on a saturated queue times out into stopped/queue-saturated without leaking a slot", async () => {
+    //#given a manager with a tiny admission timeout and the only slot occupied
+    const manager = new BackgroundManager(
+      { client: makeStartableClient(), directory: tmpdir() } as unknown as PluginInput,
+      { defaultConcurrency: 1, admissionTimeoutMs: 50 },
+    )
+    stubNotifyParentSession(manager)
+    const concurrencyManager = getConcurrencyManager(manager)
+    await concurrencyManager.acquire("test-agent")
+
+    const input = {
+      description: "saturated root task",
+      prompt: "do work",
+      agent: "test-agent",
+      parentSessionID: "parent-session",
+      parentMessageID: "msg-1",
+    }
+
+    //#when the task is launched onto the saturated queue
+    const task = await manager.launch(input)
+    await waitForCondition(() => task.status === "stopped")
+
+    //#then it terminates truthfully and no slot leaks
+    expect(task.status).toBe("stopped")
+    expect(task.terminalReason).toBe("queue-saturated")
+    expect(task.error).toContain("Queue admission timed out")
+    expect(task.error).toContain('key "test-agent"')
+    expect(concurrencyManager.getCount("test-agent")).toBe(1)
+    expect(concurrencyManager.getQueueLength("test-agent")).toBe(0)
+    expect(getQueuesByKey(manager).get("test-agent")?.length ?? 0).toBe(0)
+    expect(getPendingByParent(manager).has("parent-session")).toBe(false)
+
+    //#when the running task eventually releases its slot
+    concurrencyManager.release("test-agent")
+
+    //#then the count returns to baseline
+    expect(concurrencyManager.getCount("test-agent")).toBe(0)
+
+    manager.shutdown()
+  })
+
+  test("nested admit at saturation does not block on the semaphore", async () => {
+    //#given a managed child session and a saturated single-slot queue
+    registerSubagentSession("ses_child", "ses_root")
+    const manager = new BackgroundManager(
+      { client: makeStartableClient(), directory: tmpdir() } as unknown as PluginInput,
+      { defaultConcurrency: 1 },
+    )
+    stubNotifyParentSession(manager)
+    const concurrencyManager = getConcurrencyManager(manager)
+    await concurrencyManager.acquire("test-agent")
+
+    const input = {
+      description: "nested task",
+      prompt: "do work",
+      agent: "test-agent",
+      parentSessionID: "ses_child",
+      parentMessageID: "msg-1",
+    }
+
+    //#when the nested task is launched while the only slot is occupied
+    const task = await manager.launch(input)
+    await waitForCondition(() => task.status === "running" && task.concurrencyKey === undefined)
+
+    //#then it is admitted without waiting on the semaphore
+    expect(task.status).toBe("running")
+    expect(concurrencyManager.getCount("test-agent")).toBe(1)
+    expect(concurrencyManager.getQueueLength("test-agent")).toBe(0)
+    expect(task.concurrencyKey).toBeUndefined()
+
+    manager.shutdown()
+  })
+
+  test("exceeding the nested depth cap yields stopped/nested-depth-exceeded", async () => {
+    //#given a managed child session and a maxDepth of 1
+    registerSubagentSession("ses_child", "ses_root")
+    const manager = new BackgroundManager(
+      { client: makeStartableClient(), directory: tmpdir() } as unknown as PluginInput,
+      { defaultConcurrency: 1, nestedAdmission: { maxDepth: 1 } },
+    )
+    stubNotifyParentSession(manager)
+    const concurrencyManager = getConcurrencyManager(manager)
+    await concurrencyManager.acquire("test-agent")
+
+    const input = {
+      description: "nested task",
+      prompt: "do work",
+      agent: "test-agent",
+      parentSessionID: "ses_child",
+      parentMessageID: "msg-1",
+    }
+
+    //#when two nested tasks are launched back-to-back
+    const first = await manager.launch(input)
+    const second = await manager.launch(input)
+    await waitForCondition(() => first.status === "running" && second.status === "stopped")
+
+    //#then the first is admitted and the second is capped
+    expect(first.status).toBe("running")
+    expect(second.status).toBe("stopped")
+    expect(second.terminalReason).toBe("nested-depth-exceeded")
+    expect(second.error).toContain("maxDepth 1")
+    expect(concurrencyManager.getCount("test-agent")).toBe(1)
+
+    manager.shutdown()
+  })
+
+  test("nestedActive is decremented on terminal without underflow on repeated calls", async () => {
+    //#given a bypass-admitted nested task
+    registerSubagentSession("ses_child", "ses_root")
+    const manager = new BackgroundManager(
+      { client: makeStartableClient(), directory: tmpdir() } as unknown as PluginInput,
+      { defaultConcurrency: 1, nestedAdmission: { maxDepth: 2 } },
+    )
+    stubNotifyParentSession(manager)
+    const concurrencyManager = getConcurrencyManager(manager)
+    await concurrencyManager.acquire("test-agent")
+
+    const input = {
+      description: "nested task",
+      prompt: "do work",
+      agent: "test-agent",
+      parentSessionID: "ses_child",
+      parentMessageID: "msg-1",
+    }
+    const task = await manager.launch(input)
+    await waitForCondition(() => task.status === "running" && task.concurrencyKey === undefined)
+    expect(getNestedActive(manager).get("test-agent") ?? 0).toBe(1)
+
+    //#when the task reaches a terminal state via tryCompleteTask
+    const completed = await tryCompleteTaskForTest(manager, task)
+
+    //#then nestedActive is decremented exactly once
+    expect(completed).toBe(true)
+    expect(getNestedActive(manager).get("test-agent") ?? 0).toBe(0)
+
+    //#when tryCompleteTask is called again on the already-terminal task
+    const secondAttempt = await tryCompleteTaskForTest(manager, task)
+
+    //#then no underflow occurs
+    expect(secondAttempt).toBe(false)
+    expect(getNestedActive(manager).get("test-agent") ?? 0).toBe(0)
 
     manager.shutdown()
   })

@@ -89,21 +89,22 @@ describe("BackgroundManager handle persistence", () => {
     expect(restored?.agent).toBe("explore")
   })
 
-  test("restores a running handle as interrupt without re-attaching or re-acquiring concurrency", async () => {
+  test("reconciles a stale running handle to stopped without re-acquiring concurrency", async () => {
     //#given a manager that died while a task was still running
     const manager = makeManager()
     const task = await launchRunningTask(manager)
     manager.shutdown()
 
-    //#when a fresh manager restores from disk
+    //#when a fresh manager restores from disk and probes the (idle, empty) host
     const restoredManager = makeManager()
     await restoredManager.restoreHandles()
 
-    //#then the task is surfaced as interrupted and fully detached
+    //#then the task is truthfully stopped, its session re-attached, and no slot re-acquired
     const restored = restoredManager.getTask(task.id)
     expect(restored).toBeDefined()
-    expect(restored?.status).toBe("interrupt")
-    expect(restored?.sessionID).toBeUndefined()
+    expect(restored?.status).toBe("stopped")
+    expect(restored?.terminalReason).toBe("no-output")
+    expect(restored?.sessionID).toBe("ses_child")
     expect(restored?.concurrencyKey).toBeUndefined()
     expect(restored?.concurrencyGroup).toBe("explore")
   })

@@ -316,6 +316,11 @@ result = task(..., run_in_background=false)  // Never wait synchronously for exp
 - Collect results with \`background_output(task_id="...")\` when needed
 - BEFORE final answer: \`background_cancel(all=true)\` to clean up
 
+**Interpreting terminal task states** — \`background_output\` and the completion \`<system-reminder>\` report one of:
+- \`completed\` / \`error\` / \`cancelled\` / \`interrupt\` — as named.
+- \`stopped\` (notification label \`STOPPED\`) — ended without a terminal result (queue-saturated, no output, or nested depth cap); partial output may exist.
+- \`statusUncertain\` (label \`STATUS UNCERTAIN\`) — liveness could not be determined after a restart; re-check with \`background_output\`, never assume success or failure.
+
 ### Search Stop Conditions
 
 STOP searching when:

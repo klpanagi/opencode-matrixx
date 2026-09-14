@@ -176,6 +176,29 @@ Files: `src/tools/delegate-task/complexity-{types,constants,scorer}.ts` + `categ
 
 Each category defines: model, variant, temperature, max tokens, thinking/reasoning config, prompt append, stability flag.
 
+### Background Task Terminal States
+
+`background_output` returns the full task object including the `status` field. `background_cancel` operates on `running` tasks only. The following statuses are **terminal and non-cancellable**: `completed`, `error`, `cancelled`, `interrupt`, `stopped`, `statusUncertain`.
+
+- `stopped` — the session ended without terminal output, or admission was refused. Not a failure.
+- `statusUncertain` — liveness could not be determined (e.g. host lookup failed after restart). Neither failure nor completion.
+
+### Queue-Saturated Launch Outcome
+
+When `delegate_task` or `delegate_agent` launches into a saturated queue (root launch past `admissionTimeoutMs`), the tool returns a machine-readable block instead of throwing:
+
+```
+Background task NOT admitted (queue saturated).
+
+Task ID: <id>
+Status: stopped
+Reason: queue-saturated
+
+<task_metadata>{"task_id":"<id>","status":"stopped","reason":"queue-saturated"}</task_metadata>
+```
+
+The `<task_metadata>` line carries a JSON payload for programmatic parsing. A depth-cap overflow from nested-admission produces the same block shape with `Reason: nested-depth-exceeded`.
+
 ## HOW TO ADD
 
 1. Create `src/tools/[name]/` with index.ts, tools.ts, types.ts, constants.ts

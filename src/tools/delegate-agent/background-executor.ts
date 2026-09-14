@@ -4,6 +4,12 @@ import { resolveMessageContext } from "../../features/hook-message-injector"
 import { getSessionAgent } from "../../features/session-state"
 import { log } from "../../shared"
 import { formatDetailedError } from "../../shared/error-formatting"
+import {
+  formatLaunchFailure,
+  formatSaturatedOutcome,
+  isLaunchTerminalStatus,
+  isQueueSaturated,
+} from "../../shared/saturated-outcome"
 import { getSessionTools } from "../../shared/session-state"
 import { getMessageDir } from "./message-dir"
 import type { DelegateAgentArgs } from "./types"
@@ -60,8 +66,11 @@ export async function executeBackground(
         return `Task aborted while waiting for session to start.\n\nTask ID: ${task.id}`
       }
       const updated = manager.getTask(task.id)
-      if (updated?.status === "error" || updated?.status === "cancelled" || updated?.status === "interrupt") {
-        return `Task failed to start (status: ${updated.status}).\n\nTask ID: ${task.id}`
+      if (updated && isLaunchTerminalStatus(updated.status)) {
+        if (isQueueSaturated(updated.status, updated.terminalReason)) {
+          return formatSaturatedOutcome(task.id)
+        }
+        return formatLaunchFailure(task.id, updated.status)
       }
       await new Promise(resolve => setTimeout(resolve, WAIT_FOR_SESSION_INTERVAL_MS))
       sessionId = manager.getTask(task.id)?.sessionID

@@ -5,7 +5,22 @@ import {
   getMessageDir,
   isCompactionAgent,
 } from "./message-dir"
-import type { BackgroundTask } from "./types"
+import type { BackgroundTask, BackgroundTaskStatus } from "./types"
+
+const STATUS_LABELS: Record<BackgroundTaskStatus, string> = {
+  completed: "COMPLETED",
+  interrupt: "INTERRUPTED",
+  cancelled: "CANCELLED",
+  stopped: "STOPPED",
+  statusUncertain: "STATUS UNCERTAIN",
+  error: "ERROR",
+  pending: "IN PROGRESS",
+  running: "IN PROGRESS",
+}
+
+function statusToLabel(status: BackgroundTaskStatus): string {
+  return STATUS_LABELS[status]
+}
 
 export function buildCompletionNotification(
   task: Pick<BackgroundTask, "id" | "description" | "error" | "status">,
@@ -30,12 +45,7 @@ Use \`background_output(task_id="<id>")\` to retrieve each result.
 </system-reminder>`
   }
 
-  const statusText =
-    task.status === "completed"
-      ? "COMPLETED"
-      : task.status === "interrupt"
-        ? "INTERRUPTED"
-        : "CANCELLED"
+  const statusText = statusToLabel(task.status)
 
   return `<system-reminder>
 [BACKGROUND TASK ${statusText}]
