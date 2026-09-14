@@ -690,6 +690,12 @@ Configure concurrency limits for background agent tasks. This controls how many 
   "background_task": {
     "defaultConcurrency": 5,
     "staleTimeoutMs": 180000,
+    "admissionTimeoutMs": 0,
+    "nestedAdmission": {
+      "enabled": true,
+      "mode": "bypass",
+      "maxDepth": 2
+    },
     "providerConcurrency": {
       "anthropic": 3,
       "openai": 5,
@@ -714,6 +720,10 @@ Configure concurrency limits for background agent tasks. This controls how many 
 | `circuitBreaker.enabled` | `false` | Enable circuit breaker for failing tasks                                                                            |
 | `circuitBreaker.maxToolCalls` | `50` | Max tool calls before circuit breaker trips                                                                       |
 | `circuitBreaker.consecutiveThreshold` | `3` | Consecutive failures before circuit breaker opens                                                              |
+| `admissionTimeoutMs` | `0` | Queue admission timeout in ms. `0` = unbounded (no timeout). Otherwise minimum `60000`. When a root task waits past this on a saturated queue, it becomes terminal `stopped` with `terminalReason: "queue-saturated"`. |
+| `nestedAdmission.enabled` | `true` | Enable nested-admission exemption. Prevents a managed background child that spawns its own background work from self-deadlocking the semaphore. |
+| `nestedAdmission.mode` | `"bypass"` | `"bypass"`: nested launches skip the concurrency semaphore entirely. `"reserve"`: nested launches acquire a slot but with exemption logic. |
+| `nestedAdmission.maxDepth` | `2` | Maximum nesting depth (1..5). Depth-cap overflow yields terminal `stopped` with `terminalReason: "nested-depth-exceeded"`. |
 **Priority Order**: `modelConcurrency` > `providerConcurrency` > `defaultConcurrency`
 
 **Use Cases**:
