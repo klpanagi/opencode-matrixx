@@ -38,7 +38,19 @@ describe("ModelPresetEntrySchema", () => {
     //#then both fail
     expect(ModelPresetEntrySchema.safeParse({ model: "/model" }).success).toBe(false)
     expect(ModelPresetEntrySchema.safeParse({ model: "provider/" }).success).toBe(false)
-    expect(ModelPresetEntrySchema.safeParse({ model: "a/b/c" }).success).toBe(false)
+    expect(ModelPresetEntrySchema.safeParse({ model: "a//b" }).success).toBe(false)
+    expect(ModelPresetEntrySchema.safeParse({ model: "a/b/" }).success).toBe(false)
+  })
+
+  test("accepts slashed model IDs (provider with nested model)", () => {
+    //#given commandcode-style slashed model IDs
+    //#when parsed
+    //#then they succeed
+    expect(ModelPresetEntrySchema.safeParse({ model: "a/b/c" }).success).toBe(true)
+    expect(
+      ModelPresetEntrySchema.safeParse({ model: "commandcode/deepseek/deepseek-v4-flash" }).success,
+    ).toBe(true)
+    expect(ModelPresetEntrySchema.safeParse({ model: "commandcode/xiaomi/mimo-v2.5" }).success).toBe(true)
   })
 })
 

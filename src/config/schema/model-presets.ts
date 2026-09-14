@@ -1,15 +1,17 @@
 import { z } from "zod"
 
 /**
- * Provider/model format: must contain exactly one "/" with non-empty parts
- * (mirrors the provider/model branch of `complexityDowngradeValueSchema` in
- * `./model-config.ts`).
+ * Provider/model format: `<provider>/<model>` where `<model>` may itself
+ * contain slashes (e.g. `commandcode/deepseek/deepseek-v4-flash`).
+ * Validates: at least one "/" with all segments non-empty and no "//".
  */
 const providerModelSchema = z.string().refine(
   (s) => {
     if (!s.includes("/")) return false
+    if (s.startsWith("/") || s.endsWith("/")) return false
+    if (s.includes("//")) return false
     const parts = s.split("/")
-    return parts.length === 2 && parts[0].length > 0 && parts[1].length > 0
+    return parts.length >= 2 && parts.every((p) => p.length > 0)
   },
   { message: "Must be <provider>/<model>" },
 )
