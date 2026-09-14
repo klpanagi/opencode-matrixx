@@ -9,9 +9,14 @@ import { setSessionTemperature, setSessionTools } from "../../shared/session-sta
 import { isInsideTmux } from "../../shared/tmux"
 import { registerSubagentSession, subagentSessions, unregisterSubagentSession } from "../session-state"
 import { getTaskToastManager } from "../task-toast-manager"
+import { classifyAdmission } from "./admission"
 import { ConcurrencyManager } from "./concurrency"
 import {
+  DEFAULT_ADMISSION_TIMEOUT_MS,
   DEFAULT_MESSAGE_STALENESS_TIMEOUT_MS,
+  DEFAULT_NESTED_ADMISSION_ENABLED,
+  DEFAULT_NESTED_ADMISSION_MODE,
+  DEFAULT_NESTED_MAX_DEPTH,
   DEFAULT_STALE_TIMEOUT_MS,
   MIN_IDLE_TIME_MS,
   MIN_RUNTIME_BEFORE_STALE_MS,
@@ -37,6 +42,7 @@ import { validateSessionHasOutput as validateSessionOutput } from "./session-out
 import { TaskHistory } from "./task-history"
 import type {
   BackgroundTask,
+  BackgroundTerminalReason,
   LaunchInput,
   ResumeInput,
 } from "./types"
@@ -44,6 +50,13 @@ import type {
 type ProcessCleanupEvent = NodeJS.Signals | "beforeExit" | "exit"
 
 type OpencodeClient = PluginInput["client"]
+
+/**
+ * Bounded wait for a nested admit to grab the reserved slot in "reserve" mode.
+ * A nested admit must never await the semaphore unboundedly — if the reserved
+ * slot is not free within this window it falls back to bypass overflow.
+ */
+const NESTED_RESERVE_ATTEMPT_TIMEOUT_MS = 100
 
 
 interface MessagePartInfo {
@@ -138,6 +151,10 @@ export class BackgroundManager {
   private notificationQueueByParent: Map<string, Promise<void>> = new Map()
   private enableParentSessionNotifications: boolean
   private cachedCircuitBreakerSettings?: CircuitBreakerSettings
+  /** Active nested bypass admits per concurrency key (maxDepth cap). */
+  private nestedActive: Map<string, number> = new Map()
+  /** Task IDs admitted via nested bypass — used to decrement `nestedActive` exactly once. */
+  private nestedBypassTaskIds: Set<string> = new Set()
   readonly taskHistory = new TaskHistory()
 
   constructor(
@@ -321,7 +338,61 @@ export class BackgroundManager {
       while (queue && queue.length > 0) {
         const item = queue[0]
 
-        await this.concurrencyManager.acquire(key)
+        const nestedEnabled = this.config?.nestedAdmission?.enabled ?? DEFAULT_NESTED_ADMISSION_ENABLED
+        const maxDepth = this.config?.nestedAdmission?.maxDepth ?? DEFAULT_NESTED_MAX_DEPTH
+        const admission = classifyAdmission(item.input.parentSessionID, maxDepth)
+
+        if (admission.kind === "nested" && nestedEnabled) {
+          const result = await this.admitNested(key, item, maxDepth)
+          if (result.kind === "skip") {
+            queue.shift()
+            continue
+          }
+          acquired = result.slotHeld
+          try {
+            await this.startTask(item)
+            // startTask is responsible for releasing the slot (via task.concurrencyKey lifecycle)
+            acquired = false
+          } catch (error) {
+            log("[background-agent] Error starting nested task:", error)
+            if (!item.task.concurrencyKey && acquired) {
+              this.concurrencyManager.release(key)
+              acquired = false
+            }
+            this.decrementNestedActive(item.task)
+          }
+          // Bypass-admitted tasks never took a slot; clear the phantom key so the
+          // lifecycle release paths don't decrement a slot that was never acquired.
+          if (!result.slotHeld) {
+            item.task.concurrencyKey = undefined
+          }
+          queue.shift()
+          continue
+        }
+
+        // Root admission (or nested with the exemption disabled): bounded by admissionTimeoutMs.
+        const admissionTimeoutMs = this.config?.admissionTimeoutMs ?? DEFAULT_ADMISSION_TIMEOUT_MS
+        const outcome = await this.concurrencyManager.acquireWithDeadline(key, admissionTimeoutMs)
+
+        if (!outcome.granted) {
+          if (outcome.reason === "cancelled") {
+            item.task.status = "cancelled"
+            item.task.completedAt = new Date()
+            this.persistHandle(item.task)
+            queue.shift()
+            continue
+          }
+          // Timeout: the queue is saturated — terminate truthfully instead of hanging.
+          const limit = this.concurrencyManager.getConcurrencyLimit(key)
+          await this.terminateQueuedTask(
+            item.task,
+            "queue-saturated",
+            `Queue admission timed out after ${outcome.waitedMs}ms (key "${key}", limit ${limit})`,
+          )
+          queue.shift()
+          continue
+        }
+
         acquired = true
 
         if (item.task.status === "cancelled" || item.task.status === "error") {
@@ -354,6 +425,110 @@ export class BackgroundManager {
         this.concurrencyManager.release(key)
       }
       this.processingKeys.delete(key)
+    }
+  }
+
+  /**
+   * Admit a nested launch. Bypass mode grants immediately without touching the
+   * semaphore; reserve mode first tries the reserved slot with a bounded wait
+   * and falls back to bypass overflow. Both modes enforce the maxDepth cap.
+   * Returns "skip" when the item was terminated (depth exceeded / cancelled).
+   */
+  private async admitNested(
+    key: string,
+    item: QueueItem,
+    maxDepth: number,
+  ): Promise<{ kind: "admitted"; slotHeld: boolean } | { kind: "skip" }> {
+    const mode = this.config?.nestedAdmission?.mode ?? DEFAULT_NESTED_ADMISSION_MODE
+
+    if (mode === "reserve") {
+      const outcome = await this.concurrencyManager.acquireWithDeadline(key, NESTED_RESERVE_ATTEMPT_TIMEOUT_MS)
+      if (outcome.granted) {
+        return { kind: "admitted", slotHeld: true }
+      }
+      if (outcome.reason === "cancelled") {
+        item.task.status = "cancelled"
+        item.task.completedAt = new Date()
+        this.persistHandle(item.task)
+        return { kind: "skip" }
+      }
+      // Reserved slot taken → fall through to bypass overflow (still capped).
+    }
+
+    const active = this.nestedActive.get(key) ?? 0
+    if (active >= maxDepth) {
+      await this.terminateQueuedTask(
+        item.task,
+        "nested-depth-exceeded",
+        `Nested admission depth exceeded (maxDepth ${maxDepth}, key "${key}")`,
+      )
+      return { kind: "skip" }
+    }
+    this.nestedActive.set(key, active + 1)
+    this.nestedBypassTaskIds.add(item.task.id)
+    return { kind: "admitted", slotHeld: false }
+  }
+
+  /**
+   * Terminal `stopped` outcome for a queued task that was never admitted.
+   * Mirrors the cancelTask terminal+notify sequence but never releases a slot
+   * (none was taken) and routes through the same parent-notification pipeline.
+   */
+  private async terminateQueuedTask(
+    task: BackgroundTask,
+    terminalReason: BackgroundTerminalReason,
+    errorMessage: string,
+  ): Promise<void> {
+    task.status = "stopped"
+    task.terminalReason = terminalReason
+    task.completedAt = new Date()
+    task.error = errorMessage
+    this.persistHandle(task)
+    this.taskHistory.record(task.parentSessionID, {
+      id: task.id,
+      sessionID: task.sessionID,
+      agent: task.agent,
+      description: task.description,
+      status: "stopped",
+      category: task.category,
+      startedAt: task.startedAt,
+      completedAt: task.completedAt,
+    })
+
+    const existingTimer = this.completionTimers.get(task.id)
+    if (existingTimer) {
+      clearTimeout(existingTimer)
+      this.completionTimers.delete(task.id)
+    }
+
+    const idleTimer = this.idleDeferralTimers.get(task.id)
+    if (idleTimer) {
+      clearTimeout(idleTimer)
+      this.idleDeferralTimers.delete(task.id)
+    }
+
+    this.cleanupPendingByParent(task)
+
+    this.markForNotification(task)
+    try {
+      await this.enqueueNotificationForParent(task.parentSessionID, () => this.notifyParentSession(task))
+    } catch (err) {
+      log("[background-agent] Error in notifyParentSession for stopped task:", { taskId: task.id, error: err })
+    }
+  }
+
+  /**
+   * Decrement the nested bypass count for a task exactly once. Idempotent:
+   * repeated calls after the first are no-ops and can never underflow.
+   */
+  private decrementNestedActive(task: BackgroundTask): void {
+    if (!this.nestedBypassTaskIds.has(task.id)) return
+    this.nestedBypassTaskIds.delete(task.id)
+    const key = task.concurrencyGroup ?? task.concurrencyKey
+    if (!key) return
+    const current = this.nestedActive.get(key) ?? 0
+    if (current > 0) {
+      this.nestedActive.set(key, current - 1)
     }
   }
 
@@ -969,6 +1144,7 @@ export class BackgroundManager {
         this.concurrencyManager.release(task.concurrencyKey)
         task.concurrencyKey = undefined
       }
+      this.decrementNestedActive(task)
 
       const completionTimer = this.completionTimers.get(task.id)
       if (completionTimer) {
@@ -1163,6 +1339,7 @@ export class BackgroundManager {
       this.concurrencyManager.release(task.concurrencyKey)
       task.concurrencyKey = undefined
     }
+    this.decrementNestedActive(task)
 
     const existingTimer = this.completionTimers.get(task.id)
     if (existingTimer) {
@@ -1329,6 +1506,7 @@ export class BackgroundManager {
       this.concurrencyManager.release(task.concurrencyKey)
       task.concurrencyKey = undefined
     }
+    this.decrementNestedActive(task)
 
     this.markForNotification(task)
 
@@ -1507,6 +1685,7 @@ export class BackgroundManager {
           this.concurrencyManager.release(task.concurrencyKey)
           task.concurrencyKey = undefined
         }
+        this.decrementNestedActive(task)
         // Clean up pendingByParent to prevent stale entries
         this.cleanupPendingByParent(task)
         if (wasPending) {
@@ -1552,6 +1731,10 @@ export class BackgroundManager {
         this.notifications.set(sessionID, validNotifications)
       }
     }
+
+    // Full sweep: any remaining nested-admission bookkeeping is stale.
+    this.nestedActive.clear()
+    this.nestedBypassTaskIds.clear()
   }
 
   /**
@@ -1607,6 +1790,7 @@ export class BackgroundManager {
           this.concurrencyManager.release(task.concurrencyKey)
           task.concurrencyKey = undefined
         }
+        this.decrementNestedActive(task)
 
         this.abortSessionQuietly(sessionID, "stale-no-progress")
         log(`[background-agent] Task ${task.id} interrupted: no progress since start`)
@@ -1638,6 +1822,7 @@ export class BackgroundManager {
         this.concurrencyManager.release(task.concurrencyKey)
         task.concurrencyKey = undefined
       }
+      this.decrementNestedActive(task)
 
       this.abortSessionQuietly(sessionID, "stale-timeout")
       log(`[background-agent] Task ${task.id} interrupted: stale timeout`)
@@ -1775,6 +1960,8 @@ export class BackgroundManager {
     this.notificationQueueByParent.clear()
     this.queuesByKey.clear()
     this.processingKeys.clear()
+    this.nestedActive.clear()
+    this.nestedBypassTaskIds.clear()
     this.unregisterProcessCleanup()
     log("[background-agent] Shutdown complete")
 

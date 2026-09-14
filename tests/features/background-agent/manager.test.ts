@@ -15,7 +15,7 @@ import { BackgroundManager } from "../../../src/features/background-agent/manage
 import { _resetMessageDirCacheForTesting, getMessageDir } from "../../../src/features/background-agent/message-dir"
 import { reconcileHandle } from "../../../src/features/background-agent/reconcile"
 import type { BackgroundTask, ResumeInput } from "../../../src/features/background-agent/types"
-import { subagentSessions } from "../../../src/features/session-state"
+import { registerSubagentSession, subagentSessions } from "../../../src/features/session-state"
 
 // Shared fs call counters for mock.module("node:fs")-based tests
 // (getMessageDir caching + B2 readFileSync regression).
@@ -231,6 +231,24 @@ async function tryCompleteTaskForTest(manager: BackgroundManager, task: Backgrou
 
 function stubNotifyParentSession(manager: BackgroundManager): void {
   ;(manager as unknown as { notifyParentSession: () => Promise<void> }).notifyParentSession = async () => {}
+}
+
+function getNestedActive(manager: BackgroundManager): Map<string, number> {
+  return (manager as unknown as { nestedActive: Map<string, number> }).nestedActive
+}
+
+async function waitForCondition(
+  condition: () => boolean,
+  timeoutMs = 2000,
+  intervalMs = 10,
+): Promise<void> {
+  const start = Date.now()
+  while (!condition()) {
+    if (Date.now() - start > timeoutMs) {
+      throw new Error("waitForCondition timed out")
+    }
+    await new Promise((resolve) => setTimeout(resolve, intervalMs))
+  }
 }
 
 function createToastRemoveTaskTracker(): { removeTaskCalls: string[]; resetToastManager: () => void } {
@@ -4388,5 +4406,173 @@ describe("reconcileHandle - confirmation grace", () => {
     //#then the session is confirmed stopped with the no-output reason
     expect(outcome.status).toBe("stopped")
     expect(outcome.terminalReason).toBe("no-output")
+  })
+})
+
+// ----- T7: bounded admission + nested-admission exemption -----
+//
+// The Zod schema enforces admissionTimeoutMs >= 60000 at config-load time, but
+// the BackgroundManager constructor accepts the inferred BackgroundTaskConfig
+// type directly, so the tests inject a tiny value to exercise the timeout
+// branch fast without waiting a real minute.
+
+describe("BackgroundManager bounded admission (T7)", () => {
+  function makeStartableClient() {
+    return {
+      session: {
+        create: async () => ({ data: { id: "ses_nested" } }),
+        get: async () => ({ data: { directory: tmpdir() } }),
+        prompt: async () => ({}),
+        promptAsync: async () => ({}),
+        abort: async () => ({}),
+        messages: async () => ({ data: [] }),
+      },
+    }
+  }
+
+  test("root task on a saturated queue times out into stopped/queue-saturated without leaking a slot", async () => {
+    //#given a manager with a tiny admission timeout and the only slot occupied
+    const manager = new BackgroundManager(
+      { client: makeStartableClient(), directory: tmpdir() } as unknown as PluginInput,
+      { defaultConcurrency: 1, admissionTimeoutMs: 50 },
+    )
+    stubNotifyParentSession(manager)
+    const concurrencyManager = getConcurrencyManager(manager)
+    await concurrencyManager.acquire("test-agent")
+
+    const input = {
+      description: "saturated root task",
+      prompt: "do work",
+      agent: "test-agent",
+      parentSessionID: "parent-session",
+      parentMessageID: "msg-1",
+    }
+
+    //#when the task is launched onto the saturated queue
+    const task = await manager.launch(input)
+    await waitForCondition(() => task.status === "stopped")
+
+    //#then it terminates truthfully and no slot leaks
+    expect(task.status).toBe("stopped")
+    expect(task.terminalReason).toBe("queue-saturated")
+    expect(task.error).toContain("Queue admission timed out")
+    expect(task.error).toContain('key "test-agent"')
+    expect(concurrencyManager.getCount("test-agent")).toBe(1)
+    expect(concurrencyManager.getQueueLength("test-agent")).toBe(0)
+    expect(getQueuesByKey(manager).get("test-agent")?.length ?? 0).toBe(0)
+    expect(getPendingByParent(manager).has("parent-session")).toBe(false)
+
+    //#when the running task eventually releases its slot
+    concurrencyManager.release("test-agent")
+
+    //#then the count returns to baseline
+    expect(concurrencyManager.getCount("test-agent")).toBe(0)
+
+    manager.shutdown()
+  })
+
+  test("nested admit at saturation does not block on the semaphore", async () => {
+    //#given a managed child session and a saturated single-slot queue
+    registerSubagentSession("ses_child", "ses_root")
+    const manager = new BackgroundManager(
+      { client: makeStartableClient(), directory: tmpdir() } as unknown as PluginInput,
+      { defaultConcurrency: 1 },
+    )
+    stubNotifyParentSession(manager)
+    const concurrencyManager = getConcurrencyManager(manager)
+    await concurrencyManager.acquire("test-agent")
+
+    const input = {
+      description: "nested task",
+      prompt: "do work",
+      agent: "test-agent",
+      parentSessionID: "ses_child",
+      parentMessageID: "msg-1",
+    }
+
+    //#when the nested task is launched while the only slot is occupied
+    const task = await manager.launch(input)
+    await waitForCondition(() => task.status === "running" && task.concurrencyKey === undefined)
+
+    //#then it is admitted without waiting on the semaphore
+    expect(task.status).toBe("running")
+    expect(concurrencyManager.getCount("test-agent")).toBe(1)
+    expect(concurrencyManager.getQueueLength("test-agent")).toBe(0)
+    expect(task.concurrencyKey).toBeUndefined()
+
+    manager.shutdown()
+  })
+
+  test("exceeding the nested depth cap yields stopped/nested-depth-exceeded", async () => {
+    //#given a managed child session and a maxDepth of 1
+    registerSubagentSession("ses_child", "ses_root")
+    const manager = new BackgroundManager(
+      { client: makeStartableClient(), directory: tmpdir() } as unknown as PluginInput,
+      { defaultConcurrency: 1, nestedAdmission: { maxDepth: 1 } },
+    )
+    stubNotifyParentSession(manager)
+    const concurrencyManager = getConcurrencyManager(manager)
+    await concurrencyManager.acquire("test-agent")
+
+    const input = {
+      description: "nested task",
+      prompt: "do work",
+      agent: "test-agent",
+      parentSessionID: "ses_child",
+      parentMessageID: "msg-1",
+    }
+
+    //#when two nested tasks are launched back-to-back
+    const first = await manager.launch(input)
+    const second = await manager.launch(input)
+    await waitForCondition(() => first.status === "running" && second.status === "stopped")
+
+    //#then the first is admitted and the second is capped
+    expect(first.status).toBe("running")
+    expect(second.status).toBe("stopped")
+    expect(second.terminalReason).toBe("nested-depth-exceeded")
+    expect(second.error).toContain("maxDepth 1")
+    expect(concurrencyManager.getCount("test-agent")).toBe(1)
+
+    manager.shutdown()
+  })
+
+  test("nestedActive is decremented on terminal without underflow on repeated calls", async () => {
+    //#given a bypass-admitted nested task
+    registerSubagentSession("ses_child", "ses_root")
+    const manager = new BackgroundManager(
+      { client: makeStartableClient(), directory: tmpdir() } as unknown as PluginInput,
+      { defaultConcurrency: 1, nestedAdmission: { maxDepth: 2 } },
+    )
+    stubNotifyParentSession(manager)
+    const concurrencyManager = getConcurrencyManager(manager)
+    await concurrencyManager.acquire("test-agent")
+
+    const input = {
+      description: "nested task",
+      prompt: "do work",
+      agent: "test-agent",
+      parentSessionID: "ses_child",
+      parentMessageID: "msg-1",
+    }
+    const task = await manager.launch(input)
+    await waitForCondition(() => task.status === "running" && task.concurrencyKey === undefined)
+    expect(getNestedActive(manager).get("test-agent") ?? 0).toBe(1)
+
+    //#when the task reaches a terminal state via tryCompleteTask
+    const completed = await tryCompleteTaskForTest(manager, task)
+
+    //#then nestedActive is decremented exactly once
+    expect(completed).toBe(true)
+    expect(getNestedActive(manager).get("test-agent") ?? 0).toBe(0)
+
+    //#when tryCompleteTask is called again on the already-terminal task
+    const secondAttempt = await tryCompleteTaskForTest(manager, task)
+
+    //#then no underflow occurs
+    expect(secondAttempt).toBe(false)
+    expect(getNestedActive(manager).get("test-agent") ?? 0).toBe(0)
+
+    manager.shutdown()
   })
 })
