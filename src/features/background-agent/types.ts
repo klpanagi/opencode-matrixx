@@ -5,6 +5,17 @@ export type BackgroundTaskStatus =
   | "error"
   | "cancelled"
   | "interrupt"
+  | "stopped"
+  | "statusUncertain"
+
+/** Why a background task reached a terminal state (persisted on the handle). */
+export type BackgroundTerminalReason =
+  | "queue-saturated"
+  | "no-output"
+  | "uncertain"
+  | "aborted"
+  | "stale"
+  | "nested-depth-exceeded"
 
 export interface ToolCallWindow {
   lastSignature: string
@@ -56,6 +67,8 @@ export interface BackgroundTask {
   lastMsgCount?: number
   /** Number of consecutive polls with stable message count */
   stablePolls?: number
+  /** Why the task reached a terminal state (e.g. stopped/statusUncertain) */
+  terminalReason?: BackgroundTerminalReason
 }
 
 export interface LaunchInput {
