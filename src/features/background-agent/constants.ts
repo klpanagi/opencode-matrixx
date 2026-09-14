@@ -13,6 +13,11 @@ export const MIN_IDLE_TIME_MS = 5000
 export const POLLING_INTERVAL_MS = 3000
 export const PRUNE_THROTTLE_MS = 30_000
 export const TASK_CLEANUP_DELAY_MS = 10 * 60 * 1000
+export const DEFAULT_ADMISSION_TIMEOUT_MS = 0
+export const DEFAULT_NESTED_ADMISSION_ENABLED = true
+export const DEFAULT_NESTED_ADMISSION_MODE = "bypass" as const
+export const DEFAULT_NESTED_MAX_DEPTH = 2
+export const RECONCILE_CONFIRMATION_GRACE_MS = 5000
 
 export type ProcessCleanupEvent = NodeJS.Signals | "beforeExit" | "exit"
 
