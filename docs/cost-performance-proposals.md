@@ -1,8 +1,8 @@
 # Matrixx Cost/Performance Improvement Proposals
 
-**Status:** Research/proposal document — no implementation
-**Date:** 2026-07-09
-**Scope:** Matrixx v2.0.0 + 15 comparator projects
+**Status:** Living document — per-proposal status tracked inline (Implemented / Partial / Proposed with source evidence)
+**Date:** 2026-07-09 (status refresh: v2.6.5)
+**Scope:** Matrixx v2.6.5 + 15 comparator projects
 **Authors:** Morpheus research mode
 
 ---
@@ -60,8 +60,8 @@ Total: 15 proposals across 3 tiers, plus a recommended implementation sequence a
 | Multi-strategy context recovery | `src/hooks/context-window-limit-recovery/ (~1100 LOC)
 | Concurrency limits + circuit breakers | `src/features/background-agent/concurrency.ts` | Model-specific limits |
 | 8-category delegation routing | `src/tools/delegate-task/constants.ts` (591 LOC) | Has per-category models |
-| 45 built-in skills | `src/features/builtin-skills/skills/` | **Loaded eagerly** ← optimization opportunity |
-| 4 MCP servers | `src/mcp/index.ts` | **Initialized at startup** ← optimization opportunity |
+| 45 built-in skills | `src/features/builtin-skills/skills/` | **Lazy-loaded since v2.0.0** — see P1 (`lazy-skill-helper.ts`, `skills.ts`) |
+| 4 MCP servers | `src/mcp/index.ts` | Lazy hydration — see P1 |
 | `handoff` tool | `src/tools/handoff/` | Already supports file-based state |
 
 ---
@@ -70,7 +70,7 @@ Total: 15 proposals across 3 tiers, plus a recommended implementation sequence a
 
 ### P1. Lazy Skill & MCP Loading (barkain pattern)
 
-> **Status:** ✅ Shipped (v2.0.0, branch `feat/lazy-skill-mcp-loading`). See `docs/features.md` § "Lazy Skill Loading" and `src/features/builtin-skills/AGENTS.md` for implementation details.
+> **Status:** Implemented (v2.0.0). Evidence: `src/features/builtin-skills/skills.ts` (lazy loaders), `src/features/builtin-skills/lazy-skill-helper.ts`. See `docs/features.md` § "Lazy Skill Loading".
 
 
 - **What:** Defer loading of 45 skills + 4 MCPs until first reference. Register lightweight stubs at init, hydrate on demand.
@@ -80,7 +80,9 @@ Total: 15 proposals across 3 tiers, plus a recommended implementation sequence a
 - **Where:** `src/features/builtin-skills/skills.ts`, `src/mcp/index.ts`, `src/create-tools.ts`
 - **Source:** barkain/claude-code-workflow-orchestration
 
-> **Status:** ✅ Shipped (v2.0.0, branch `feat/prefix-cache-stability`). Implementation: new `env-context-injector` transform hook appends `<matrixx-env>` to user messages; per-turn dynamic env context no longer in the system prompt prefix.
+### P2. Prefix-Cache Stability (DeepSeek-Reasonix pattern)
+
+> **Status:** Implemented (v2.0.0). Evidence: `src/hooks/env-context-injector/` appends `<matrixx-env>` to user messages; `src/agents/env-context.ts`. Per-turn dynamic env context no longer in the system prompt prefix.
 
 - **What:** Guarantee the system prompt prefix is **byte-identical** across all turns in a session. Move all variable content (timestamp, model name, etc.) to the suffix.
 - **Cost impact:** **30–50% input cost reduction** on cache-supporting providers (Anthropic prompt caching, DeepSeek cache).
@@ -91,7 +93,8 @@ Total: 15 proposals across 3 tiers, plus a recommended implementation sequence a
 - **Source:** esengine/DeepSeek-Reasonix
 
 ### P3. Per-Task Complexity Routing (pilotfish pattern)
-> **Status:** ✅ Shipped (v2.0.0, branch `feat/per-task-complexity-routing`). Implementation: optional `complexity: 1-5 | "auto"` on `delegate_task`; auto-scoring heuristic on description/prompt/skills/category; downgrade-only with logged decisions. 100% backwards compat; savings when categories use models with headroom.
+
+> **Status:** Implemented (v2.0.0). Evidence: `complexity?: 1-5 | "auto"` on `delegate_task` (`src/tools/delegate-task/types.ts`, `tools.ts`), auto-scoring in `src/tools/delegate-task/complexity-scorer.ts` + `complexity-types.ts`. Downgrade-only, backwards compatible.
 
 - **What:** Already have category-based routing; add **per-task complexity scoring** to pick cheaper model for simple subtasks within a plan. Heuristic: line count, file count, dependency depth, "trivial" flag.
 - **Performance impact:** Faster execution for simple subtasks.
@@ -99,22 +102,22 @@ Total: 15 proposals across 3 tiers, plus a recommended implementation sequence a
 - **Where:** `src/tools/delegate-task/constants.ts` (591 LOC), `src/agents/oracle/`
 - **Source:** Nanako0129/pilotfish (Anthropic research validation)
 
-> **Status:** ✅ Shipped (v2.0.0, branch `feat/p4-sdo-audit`). 37 skill descriptions rewritten to follow obra/superpowers SDO pattern (trigger-first, max 150 tokens, cross-references, no workflow). Lazy-skill-helper description-hydration bug fixed. SDO compliance test suite added. Docs: `docs/features.md` § "Skill Discovery Optimization" + `src/features/builtin-skills/AGENTS.md` § "Skill Description SDO".
+### P4. Skill Discovery Optimization audit (superpowers pattern)
 
-- **What:** Audit all 45 built-in skill descriptions so each contains **ONLY triggering conditions** (no workflow summaries). This is superpowers' most counterintuitive but highest-leverage finding: workflow summaries cause agents to shortcut.
+> **Status:** Implemented (v2.0.0). Evidence: `tests/features/builtin-skills/sdo-compliance.test.ts`; skill descriptions in `src/features/builtin-skills/skills/*.ts`. Docs: `docs/features.md` § "Skill Discovery Optimization".
 
-- **What:** Audit all 45 built-in skill descriptions so each contains **ONLY triggering conditions** (no workflow summaries). This is superpowers' most counterintuitive but highest-leverage finding: workflow summaries cause agents to shortcut.
+- **What:** Audit all built-in skill descriptions so each contains **ONLY triggering conditions** (no workflow summaries). This is superpowers' most counterintuitive but highest-leverage finding: workflow summaries cause agents to shortcut.
 - **Cost impact:** Prevents skill-misuse retries and re-explanations. **10–30% reduction in skill-related rework.**
 - **Performance impact:** More reliable, faster skill activation.
 - **Complexity:** **Low.** Documentation/audit task, no code change.
 - **Where:** `src/features/builtin-skills/skills/*.ts` (45 files)
 - **Source:** obra/superpowers (Skill Discovery Optimization)
 
-> **Status:** ✅ Shipped (v2.0.0, branch `feat/p5-plan-as-file`). New `plan-persistence` feature module (storage + rehydration) + `plan-persister` continuation hook. Writes plan state to `.matrixx/plans/<id>.md` on every `session.idle` (atomic write, markdown checkbox sync, metadata comment). Rehydrates on compaction via `experimental.session.compacting` handler. No new file format — reuses existing mission.json + markdown checkboxes. 35 new tests, 0 new deps.
+### P5. Plan-as-File (planning-with-files pattern)
 
-- **What:** Persist active plan to `.matrixx/plans/<id>.md` on every step. On compaction/crash, reload from disk. **Survives `/clear`, compaction, and crashes.**
+> **Status:** Implemented (v2.0.0, now via mission-state). Evidence: `src/features/mission-state/` (storage, constants, types), `.matrixx/plans/<id>.md` plan files, `.matrixx/mission.json` session tracking, `/start-work` rehydration. **Survives `/clear`, compaction, and crashes.**
 
-- **What:** Persist active plan to `.matrixx/plans/<id>.md` on every step. On compaction/crash, reload from disk. **Survives `/clear`, compaction, and crashes.**
+- **What:** Persist active plan to `.matrixx/plans/<id>.md` on every step. On compaction/crash, reload from disk.
 - **Cost impact:** Avoids re-planning waste (re-generating a complex plan can cost 5–20K tokens).
 - **Performance impact:** Faster recovery; no "where was I?" turn.
 - **Complexity:** **Low-Medium.** Already have `handoff` tool + `.matrixx/` directory.
@@ -127,23 +130,29 @@ Total: 15 proposals across 3 tiers, plus a recommended implementation sequence a
 
 ### P6. Bash Output Compression Layer (RTK pattern)
 
+> **Status:** Implemented. Evidence: `src/hooks/rtk-bash-rewriter/` (hook + constants + types), schema `src/config/schema/rtk.ts` (`enabled` default `false`, opt-in). See `docs/context-management.md` §2.1.
+
 - **What:** Add a filter layer between bash and the LLM. For known command patterns (`git diff`, `ls`, `npm test`, `cargo build`), truncate/filter/aggregate output. ~50 known commands cover ~80% of usage.
 - **Cost impact:** **60–90% reduction in output tokens for bash** (RTK-validated).
 - **Performance impact:** Smaller context, faster subsequent turns.
 - **Complexity:** **Medium.** Per-command filter rules; can't break interactive output.
-- **Where:** New `src/features/output-compressor/`, hook into `src/tools/agent-tools/bash.ts`
+- **Where:** `src/hooks/rtk-bash-rewriter/` (hook into `tool.execute.before` for `bash`), schema `src/config/schema/rtk.ts`
 - **Source:** rtk-ai/rtk
 
 ### P7. Tool Output Sandboxing (context-mode pattern)
+
+> **Status:** Partial. Evidence (bridge shipped): `src/hooks/tool-output-truncator.ts` (whitelist truncation, 50k tokens, 10k for webfetch), `context-mode-enforcer` hook + `src/config/schema/context-mode.ts` gate. Full intelligent slicing lives in the external `mksglu/context-mode` plugin (`plugin: ["context-mode"]`), not in matrixx. See `docs/context-management.md` §2.2.
 
 - **What:** Enhance existing `src/hooks/tool-output-truncator/` with **intelligent slicing** — only pass relevant portions of large outputs (e.g., for `read` on a 5000-line file, pass just the targeted lines + ±20 context).
 - **Cost impact:** **Up to 98% tool output reduction** (context-mode-validated).
 - **Performance impact:** Massive. Most tool outputs are dominated by irrelevant context.
 - **Complexity:** **Medium-High.** Heuristics per tool; needs careful testing to avoid missing critical info.
-- **Where:** `src/hooks/tool-output-truncator/`, possibly `src/hooks/hashline-read-enhancer/`
+- **Where:** `src/hooks/tool-output-truncator.ts` (shipped); full slicing in external `mksglu/context-mode`
 - **Source:** mksglu/context-mode
 
 ### P8. Progress Ledger Surviving Compaction (superpowers pattern)
+
+> **Status:** Proposed. No `progress.md` ledger or `ProgressLedger` module exists in `src/`. Partial overlap: `src/features/handoff/` (file-based state) and `src/features/mission-state/` (plan persistence) cover crash recovery, but not the per-task superpowers-style ledger.
 
 - **What:** Write `.matrixx/sdd/progress.md` after each completed task. Read it back after compaction. This is the durable progress ledger superpowers uses to coordinate parallel subagents.
 - **Cost impact:** Avoids re-discovery and re-summarization after compaction.
@@ -154,6 +163,8 @@ Total: 15 proposals across 3 tiers, plus a recommended implementation sequence a
 
 ### P9. Subagent Task-Brief + Review-Package Pattern (superpowers)
 
+> **Status:** Proposed. No `task-brief` module exists in `src/`.
+
 - **What:** Replace ad-hoc subagent prompts with structured `task-brief` (extracted to file) + `review-package` (file-based handoff) for two-stage review (spec compliance, then code quality).
 - **Cost impact:** Prevents context accumulation = smaller per-task prompts. Better review = fewer fix loops.
 - **Performance impact:** Higher quality subagent output; easier debugging.
@@ -162,6 +173,8 @@ Total: 15 proposals across 3 tiers, plus a recommended implementation sequence a
 - **Source:** obra/superpowers
 
 ### P10. File Conflict Detection for Parallel Agents (claude-swarm)
+
+> **Status:** Proposed. No `claim_file` / file-claim tracking exists in `src/features/background-agent/`; `concurrency.ts` covers model-specific limits only.
 
 - **What:** Track which files each background agent intends to modify (via `claim_file` operation). Reject or queue conflicts.
 - **Cost impact:** Avoids wasted work + merge conflicts (fixing conflicts is expensive).
@@ -176,6 +189,8 @@ Total: 15 proposals across 3 tiers, plus a recommended implementation sequence a
 
 ### P11. DAG-Based Orchestration with Budget Invariant (open-multi-agent)
 
+> **Status:** Proposed. No DAG coordinator with budget guarantee exists in `src/`.
+
 - **What:** Coordinator builds a task DAG at runtime with **mathematical budget guarantee** — total cost cannot exceed declared budget. Decomposes complex tasks into dependency-ordered subtasks.
 - **Cost impact:** Hard cost caps per session/task.
 - **Performance impact:** Better task decomposition for complex requests.
@@ -184,6 +199,8 @@ Total: 15 proposals across 3 tiers, plus a recommended implementation sequence a
 - **Source:** open-multi-agent/open-multi-agent
 
 ### P12. Cross-Model Peer Review (cavekit)
+
+> **Status:** Proposed. Related reviewers exist (`src/agents/sentinel.ts`, `src/agents/merovingian.ts`) but no cross-model review orchestration protocol.
 
 - **What:** Different models review each other's work (e.g., Opus code → Sonnet review → Opus fix). Catches blind spots.
 - **Cost impact:** Catches errors early, reducing expensive late-stage fixes.
@@ -194,6 +211,8 @@ Total: 15 proposals across 3 tiers, plus a recommended implementation sequence a
 
 ### P13. Real-Time Cost Dashboard (claude-hud)
 
+> **Status:** Proposed. No `cost-dashboard` module exists in `src/`.
+
 - **What:** TUI/notification panel showing per-agent/per-tool token consumption in real-time. Shows exactly where tokens are going.
 - **Cost impact:** Visibility enables optimization. No direct savings.
 - **Performance impact:** Faster debugging, more informed user decisions.
@@ -202,6 +221,8 @@ Total: 15 proposals across 3 tiers, plus a recommended implementation sequence a
 - **Source:** jarrodwatts/claude-hud
 
 ### P14. Approval Gates for Expensive Operations (humanlayer)
+
+> **Status:** Proposed. No cost-threshold approval gate exists in `src/tools/delegate-task/`. Related but different: evolution HITL (`requireApproval`, `/evolution approve`) governs skill promotion, not spend.
 
 - **What:** For operations exceeding cost threshold (e.g., >50K tokens, full refactor), pause and request human approval before continuing.
 - **Cost impact:** Prevents runaway spend on bad requests.
@@ -212,14 +233,18 @@ Total: 15 proposals across 3 tiers, plus a recommended implementation sequence a
 
 ### P15. Cap Context Recovery at 3 Strategies (internal optimization)
 
+> **Status:** Implemented. Evidence: `src/hooks/context-window-limit-recovery/` — API calls capped (`recovery-hook.ts`: "Cap API calls 2"), summarize-retry with capped backoff (`summarize-retry-strategy.ts`).
+
 - **What:** Current worst case is 22+ API calls in `context-window-limit-recovery` (now capped 2 summarize + 5 truncations + toast). Add an early-termination cap + escalation to user.
 - **Cost impact:** Avoids pathological recovery storms.
 - **Performance impact:** Faster failure path.
 - **Complexity:** **Low.** Tune existing thresholds.
-- **Where:** `src/hooks/context-window-limit-recovery/ (~1100 LOC)
+- **Where:** `src/hooks/context-window-limit-recovery/`
 - **Source:** Internal hotspot analysis
 
 ### P16. Headroom Network-Proxy Compression (headroomlabs-ai/headroom)
+
+> **Status:** Implemented (bridge; proxy external). Evidence: `src/config/schema/headroom.ts` (opt-in `enabled`, default `false`), detection + prompt discipline. Proxy itself (`headroom wrap opencode`, default `http://127.0.0.1:8787`) is installed separately. See `docs/context-management.md` §2.4.
 
 - **What:** Network-proxy-level token compression via `headroom wrap opencode` with CacheAligner→ContentRouter→CCR pipeline. Provider `headroom` via @ai-sdk/openai-compatible, MCP `headroom_retrieve`, proxy default `http://127.0.0.1:8787`.
 - **Cost impact:** **60–95% on JSON, 15–20% on coding agents** (Headroom benchmarks); orthogonal to L1 RTK, L2 context-mode, L3 DCP.
@@ -313,4 +338,4 @@ If Tier 2 (P6–P8, P10) is also added: **~60–80% reduction on tool-heavy sess
 
 ---
 
-*Research complete. No code modified. All proposals are recommendations for future implementation, prioritized by ROI. Citations link specific features from each comparator project.*
+*Tier 1 (P1–P5) + P15 + P16-bridge + P6 implemented; P7 partial. Tier 2–3 mostly proposed — see per-proposal status lines with source evidence. Citations link specific features from each comparator project.*

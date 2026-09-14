@@ -1,5 +1,7 @@
 # Matrixx Agent Architecture
 
+14 built-in agents (13 static in `agentSources` plus Oracle built dynamically, see `src/agents/builtin-agents.ts`; names in `BuiltinAgentNameSchema`, `src/config/schema/agent-names.ts`) plus Mouse, the dynamic category-spawned worker. For delegation flows, see also [Orchestration](orchestration.md).
+
 ## System Overview
 
 ```mermaid
@@ -16,7 +18,7 @@ graph TB
 
     subgraph SPECIALIST["Specialist Agents (mode: all)"]
         CIP["🔵 Cipher<br/>Claude Sonnet 4.6<br/><i>DSL Engineering</i><br/>11 skills"]
-        SAT["🎨 Sati<br/>Claude Sonnet 4.6<br/><i>Frontend Specialist</i><br/>7 skills"]
+        SAT["🎨 Sati<br/>Claude Sonnet 4.6<br/><i>Frontend Specialist</i><br/>8 skills"]
     end
 
     subgraph ADVISORS["Advisory Agents (mode: subagent)"]
@@ -221,8 +223,6 @@ graph LR
     subgraph FULL_ACCESS["Full Tool Access"]
         FA1["Morpheus"]
         FA2["Keymaker"]
-        FA3["Sati"]
-        FA4["Mouse"]
     end
 
     subgraph READ_ONLY["Read-Only (no write/edit/task)"]
@@ -240,6 +240,7 @@ graph LR
     subgraph NO_DELEGATION["No Delegation (no task)"]
         ND1["Cipher"]
         ND2["Mouse"]
+        ND3["Sati"]
     end
 
     TOOLS["26+ Tools<br/>LSP, AST-Grep, Grep,<br/>Glob, Read, Edit, Write,<br/>Bash, task(), background,<br/>session, look_at, skill,<br/>task_create/list/get/update/cleanup"]

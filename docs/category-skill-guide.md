@@ -1,6 +1,6 @@
 # Category & Skill System Guide
 
-This document provides a comprehensive guide to the **Category** and **Skill** systems, which form the extensibility core of Matrixx.
+This document provides a comprehensive guide to the **Category** and **Skill** systems, which form the extensibility core of Matrixx. For delegation flows, see [Orchestration](orchestration.md). For the agent roster, see [Agents](agents.md).
 
 ## 1. Overview
 
@@ -18,6 +18,8 @@ By combining these two concepts, you can generate optimal agents through `task`.
 A Category is an agent configuration preset optimized for specific domains.
 
 ### Available Built-in Categories
+
+8 categories verified against `BuiltinCategoryNameSchema` (`src/config/schema/categories.ts`): `construct`, `source`, `deep-jack`, `matrix-bend`, `bullet-time`, `blue-pill`, `red-pill`, `broadcast`. Resolution logic lives in `src/tools/delegate-task/` (`category-resolver.ts`, `categories.ts`).
 
 | Category | Default Model | Use Cases |
 |----------|---------------|-----------|
@@ -54,6 +56,8 @@ When you use a Category, a special agent called **Mouse** performs the work.
 A Skill is a mechanism that injects **specialized knowledge (Context)** and **tools (MCP)** for specific domains into agents.
 
 ### Built-in Skills (37 total)
+
+37 names verified against `BuiltinSkillNameSchema` (`src/config/schema/agent-names.ts`); templates live in `src/features/builtin-skills/skills/` and load via `createBuiltinSkills()`.
 
 **Development & Tools (6):**
 - **`git-master`** — Git expert. Detects commit styles, splits atomic commits, rebase strategies.
@@ -98,7 +102,7 @@ Add desired skill names to the `load_skills` array.
 
 ```typescript
 task(
-  category="quick",
+  category="bullet-time",
   load_skills=["git-master"],
   prompt="Commit current changes. Follow commit message style."
 )

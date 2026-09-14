@@ -1,5 +1,7 @@
 # Matrixx Configuration
 
+> Version 2.6.5. Every key below is validated by the Zod schemas in `src/config/schema/` (top-level keys: `src/config/schema/matrixx-config.ts`). Do not invent keys; unknown keys fail validation.
+
 > **Full reference:** [`matrixx.example.jsonc`](../matrixx.example.jsonc) — exhaustive, commented example covering every `matrixx.jsonc` key (headroom, context-mode, DCP, RTK, all top-level and nested options) with defaults and descriptions. Use it as a starting point: copy sections you need.
 
 Highly opinionated, but adjustable to taste.
@@ -84,7 +86,7 @@ When both `matrixx.jsonc` and `matrixx.json` files exist, `.jsonc` takes priorit
 
 ## Google Auth
 
-**Recommended**: For Google Gemini authentication, install the [`opencode-antigravity-auth`](https://github.com/NoeFabris/opencode-antigravity-auth) plugin (`@latest`). It provides multi-account load balancing, variant-based thinking levels, dual quota system (Antigravity + Gemini CLI), and active maintenance. See [Installation > Google Gemini](docs/guide/installation.md#google-gemini-antigravity-oauth).
+**Recommended**: For Google Gemini authentication, install the [`opencode-antigravity-auth`](https://github.com/NoeFabris/opencode-antigravity-auth) plugin (`@latest`). It provides multi-account load balancing, variant-based thinking levels, dual quota system (Antigravity + Gemini CLI), and active maintenance. See [Installation > Google Gemini](guide/installation.md#google-gemini-antigravity-oauth).
 
 ## Ollama Provider
 
@@ -608,7 +610,7 @@ Configure git-master skill behavior:
 
 ## Morpheus Agent
 
-When enabled (default), Morpheus provides a powerful orchestrator with optional specialized agents:
+When enabled (default), Morpheus provides a powerful orchestrator with optional specialized agents. See [Orchestration](orchestration.md) for the full planning/execution model.
 
 - **Morpheus**: Primary orchestrator agent (Claude Opus 4.6)
 - **OpenCode-Builder**: OpenCode's default build agent, renamed due to SDK limitations (disabled by default)
@@ -1060,7 +1062,7 @@ Disable specific built-in hooks via `disabled_hooks` in `~/.config/opencode/matr
 }
 ```
 
-Available hooks (60 — see `src/config/schema/hooks.ts`): `agent-usage-reminder`, `context-window-limit-recovery`, `anthropic-effort`, `architect`, `auto-slash-command`, `auto-update-checker`, `background-notification`, `bash-file-read-guard`, `category-skill-reminder`, `comment-checker`, `compaction-context-injector`, `compaction-todo-preserver`, `construct-notepad`, `context-mode-enforcer`, `context-window-monitor`, `delegate-task-retry`, `design-intent-preserver`, `directory-agents-injector`, `edit-error-recovery`, `empty-task-response-detector`, `env-context-injector`, `env-file-write-guard`, `input-secret-guard`, `evolution-compressor`, `evolution-hitl`, `evolution-watcher`, `hashline-edit-diff-enhancer`, `hashline-read-enhancer`, `interactive-bash-session`, `json-error-recovery`, `keyword-detector`, `matrix-loop`, `mouse-notepad`, `non-interactive-env`, `oracle-md-only`, `plan-persister`, `preemptive-compaction`, `read-image-resizer`, `rtk-bash-rewriter`, `rules-injector`, `runtime-fallback`, `secret-leak-guard`, `session-notification`, `session-recovery`, `start-work`, `startup-toast`, `stop-continuation-guard`, `task-continuation-enforcer`, `task-edit-guard`, `task-notepad`, `task-resume-info`, `tasks-todowrite-disabler`, `think-mode`, `thinking-block-validator`, `todo-continuation-enforcer`, `tool-output-truncator`, `tool-pair-validator`, `unstable-agent-babysitter`, `webfetch-redirect-guard`, `write-existing-file-guard`
+Available hooks (63 — see `src/config/schema/hooks.ts`): `agent-usage-reminder`, `context-window-limit-recovery`, `anthropic-context-window-limit-recovery`, `anthropic-effort`, `architect`, `auto-slash-command`, `auto-update-checker`, `background-notification`, `background-task-blocker`, `bash-file-read-guard`, `category-skill-reminder`, `comment-checker`, `compaction-context-injector`, `compaction-todo-preserver`, `context-mode-enforcer`, `context-window-monitor`, `delegate-task-retry`, `design-intent-preserver`, `directory-agents-injector`, `edit-error-recovery`, `empty-task-response-detector`, `env-context-injector`, `env-file-write-guard`, `input-secret-guard`, `evolution-compressor`, `evolution-hitl`, `evolution-watcher`, `failure-counter`, `hashline-edit-diff-enhancer`, `hashline-read-enhancer`, `interactive-bash-session`, `json-error-recovery`, `keyword-detector`, `matrix-loop`, `mouse-notepad`, `non-interactive-env`, `oracle-md-only`, `plan-persister`, `preemptive-compaction`, `quality-gate`, `read-image-resizer`, `rtk-bash-rewriter`, `rules-injector`, `runtime-fallback`, `secret-leak-guard`, `session-notification`, `session-recovery`, `start-work`, `startup-toast`, `stop-continuation-guard`, `task-continuation-enforcer`, `task-edit-guard`, `task-notepad`, `task-resume-info`, `tasks-todowrite-disabler`, `think-mode`, `thinking-block-validator`, `todo-continuation-enforcer`, `tool-output-truncator`, `tool-pair-validator`, `unstable-agent-babysitter`, `webfetch-redirect-guard`, `write-existing-file-guard`
 **Note on `directory-agents-injector`**: This hook is **automatically disabled** when running on OpenCode 1.1.37+ because OpenCode now has native support for dynamically resolving AGENTS.md files from subdirectories (PR #10678). This prevents duplicate AGENTS.md injection. For older OpenCode versions, the hook remains active to provide the same functionality.
 
 **Note on `auto-update-checker` and `startup-toast`**: The `startup-toast` hook is a sub-feature of `auto-update-checker`. To disable only the startup toast notification while keeping update checking enabled, add `"startup-toast"` to `disabled_hooks`. To disable all update checking features (including the toast), add `"auto-update-checker"` to `disabled_hooks`.
@@ -1077,7 +1079,7 @@ Disable specific built-in commands via `disabled_commands` in `~/.config/opencod
 }
 ```
 
-Available commands (19): `init-deep`, `start-work`, `handoff`, `pickup`, `task-list`, `cleanup-tasks`, `dcp-profile`, `research`, `assembly`, `ultrawork`, `end-ultrawork`, `matrix-loop`, `cancel-loop`, `refactor`, `remove-deadcode`, `profile`, `bdd-contract`, `bdd-frontend`, `bdd-backend` (+ `ultrawork`/`ulw` keyword triggers)
+Available commands (24 — see `src/features/builtin-commands/commands.ts` and `BuiltinCommandName` in `src/features/builtin-commands/types.ts`): `init-deep`, `matrix-loop`, `ulw-loop`, `cancel-loop`, `refactor`, `start-work`, `stop-continuation`, `handoff`, `pickup`, `remove-deadcode`, `preset`, `end-ultrawork`, `research`, `assembly`, `ultrawork`, `bdd-backend`, `bdd-contract`, `bdd-frontend`, `bdd-pipeline`, `bdd-tests`, `dcp-profile`, `evolution`, `cleanup-tasks`, `task-list` (+ `ultrawork`/`ulw` keyword triggers)
 ## Comment Checker
 
 Configure comment-checker hook behavior. The comment checker warns when excessive comments are added to code.
@@ -1144,19 +1146,69 @@ parse and act as fallback — explicit `tasks.*` always wins.
 
 ## MCPs
 
-Exa, Context7 and grep.app MCP enabled by default.
+Four built-in MCP servers (`src/mcp/`; names in `McpNameSchema`, `src/mcp/types.ts`): `websearch`, `context7`, `white_rabbit`, `document_reader`. All enabled by default.
 
 - **websearch**: Real-time web search powered by [Exa AI](https://exa.ai) - searches the web and returns relevant content
 - **context7**: Fetches up-to-date official documentation for libraries
 - **white_rabbit**: Ultra-fast code search across millions of public GitHub repositories via [grep.app](https://grep.app)
+- **document_reader**: Document extraction for PDFs and other files (used by the `document-reader` skill and the Construct agent)
 
 Don't want them? Disable via `disabled_mcps` in `~/.config/opencode/matrixx.json` or `.opencode/matrixx.json`:
 
 ```json
 {
-  "disabled_mcps": ["websearch", "context7", "white_rabbit"]
+  "disabled_mcps": ["websearch", "context7", "white_rabbit", "document_reader"]
 }
 ```
+
+## Websearch
+
+Choose the websearch provider (`src/config/schema/websearch.ts`):
+
+```jsonc
+{
+  "websearch": {
+    "provider": "tavily"   // "exa" (default, no API key needed) | "tavily" (requires TAVILY_API_KEY)
+  }
+}
+```
+
+| Option | Type | Default | Description |
+|--------|------|---------|-------------|
+| `provider` | `string` | `exa` | `exa` works without an API key; `tavily` needs `TAVILY_API_KEY`. |
+
+## Failure Counter
+
+Gate repeated tool failures (`src/config/schema/failure-counter.ts`):
+
+```jsonc
+{
+  "failure_counter": {
+    "enabled": true,       // default true
+    "threshold": 2,        // 1-10, consecutive failures before gating
+    "resetOnSuccess": true // reset the counter on any success
+  }
+}
+```
+
+| Option | Type | Default | Description |
+|--------|------|---------|-------------|
+| `enabled` | `boolean` | `true` | Enable failure-counter gating. |
+| `threshold` | `number` | `2` | Consecutive failures before gating (1-10). |
+| `resetOnSuccess` | `boolean` | `true` | Reset counter on any success. |
+
+## Global Model and Auto-Update
+
+Two small top-level keys (`src/config/schema/matrixx-config.ts`):
+
+```jsonc
+{
+  "global_model": "anthropic/claude-sonnet-4-6",  // fallback when an agent/category entry has no explicit model
+  "auto_update": true                             // default true — automatic update behavior in session hooks
+}
+```
+
+`global_model` satisfies the config validation in `src/plugin-config.ts` (`assertModelsResolvable`): any configured agent or category without its own `model` resolves against it instead of raising an error. `auto_update` is passed through as `autoUpdate` to the session hooks (`src/plugin/hooks/create-session-hooks.ts`).
 
 ## Handoff Tool
 
