@@ -1,5 +1,11 @@
 # Understanding the Orchestration System
 
+> **Canonical entry:** [`docs/orchestration.md`](../orchestration.md).
+> Start there for the full orchestration model (planning to execution,
+> roles, task categories, background agents, matrix loop, session
+> continuity). This page keeps the deep-dive diagrams and layer detail
+> as a companion, not a duplicate.
+
 Matrixx's orchestration system transforms a simple AI agent into a coordinated development team. This document explains how the Oracle → Architect → Junior workflow creates high-quality, reliable code output.
 
 ---

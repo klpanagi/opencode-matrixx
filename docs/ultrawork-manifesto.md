@@ -153,7 +153,7 @@ Everything in Matrixx is designed to make this loop work:
 | Oracle | Extract intent through intelligent interview |
 | Seraph | Catch ambiguities before they become bugs |
 | Smith | Verify plans are complete before execution |
-| Orchestrator | Coordinate work without human micromanagement |
+| Morpheus (orchestrator) | Coordinate work without human micromanagement |
 | Todo Continuation | Force completion, prevent "I'm done" lies |
 | Category System | Route to optimal model without human decision |
 | Background Agents | Parallel research without blocking user |

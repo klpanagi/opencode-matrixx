@@ -1,7 +1,7 @@
 # BDD Pipeline — Agent-Driven Implementation
 
-> **Status**: ✅ Implemented & Verified (`feat/bdd` branch)
-> **Package**: `opencode-matrixx` (v2.1.0)
+> **Status**: Shipped and verified
+> **Package**: `opencode-matrixx` (v2.6.5)
 > **Context**: Native matrixx feature — no Python, no external bundling
 
 ---
@@ -42,12 +42,14 @@
                        │
                        ▼
 ┌──────────────────────────────────────────────────────────────┐
-│                    Deterministic Tools                        │
-│                                                               │
-│  bdd_parse_gherkin     →  AST from @cucumber/gherkin          │
-│  bdd_create_contract   →  AST → Contract JSON (Zod v4)        │
-│                                                               │
-│  These are TDD-tested, deterministic, no LLM involved.         │
+│                    Deterministic Tools                       │
+│                                                              │
+│  bdd_parse_gherkin     →  AST from @cucumber/gherkin         │
+│  bdd_create_contract   →  AST → Contract JSON (Zod v4)       │
+│  bdd_validate_contract →  Contract JSON → schema check       │
+│  bdd_pipeline_run      →  full pipeline + ANALYSIS.md        │
+│                                                              │
+│  These are TDD-tested, deterministic, no LLM involved.        │
 └──────────────────────┬───────────────────────────────────────┘
                        │
                        ▼
@@ -247,7 +249,9 @@ There are **5 slash commands**, each accessible from the matrixx chat prompt:
 3. `/bdd-frontend` — Generate React components
 4. `/bdd-backend` — Generate typed API services
 
-**Output**: All 4 artifacts produced in a single orchestrated run
+**Output**: All 4 artifacts produced in a single orchestrated run, plus `ANALYSIS.md` in the per-feature output dir (the `/bdd-pipeline` command delegates to the `bdd_pipeline_run` tool — it does not just chain the four commands)
+
+Validate a contract on its own at any point with `/bdd-pipeline`'s sibling tool `bdd_validate_contract`, or regenerate with `--force`.
 
 ---
 
@@ -435,9 +439,20 @@ Annotations are NOT placed in `.feature` files. The `.feature` file must be 100%
 
 **`bdd_create_contract`**
 - Input: parsed AST JSON + source file path + options
-- Output: JSON Contract file written to disk (with empty annotations)
+- Output: `<feature-path>.contract.json` written alongside the source file (with empty annotations)
 - Steps: walks GherkinDocument AST, validates against `ContractSchema`. Annotations are LEFT EMPTY — the bdd-contract agent fills them via LLM inference from feature content
+- Annotation parsing lives in `src/tools/bdd-create-contract/tools.ts`; contract types in `src/features/bdd/schema.ts` + `src/features/bdd/types.ts`
 - TDD: 9 tests (valid contract, schema validation, force flag, malformed input, data tables, outlines, rules, empty annotations)
+
+**`bdd_validate_contract`**
+- Input: path to a Contract JSON file
+- Output: schema validation result against `ContractSchema`
+- Use it to check a contract before running `/bdd-tests`, `/bdd-frontend`, or `/bdd-backend`
+
+**`bdd_pipeline_run`**
+- Input: one or more `.feature` file paths (or directories/globs) + output dir
+- Output: full pipeline run (contract → tests → frontend → backend) plus `ANALYSIS.md` in the per-feature output dir
+- This is what `/bdd-pipeline` invokes; see `src/tools/bdd-pipeline/` (`pipeline-runner.ts`, `subagent-runner.ts`, `feature-resolver.ts`, `analysis-report.ts`)
 
 ### Guardrails (Must NOT Have)
 
@@ -453,13 +468,16 @@ Annotations are NOT placed in `.feature` files. The `.feature` file must be 100%
 
 ### Fixtures
 
-3 `.feature` files of increasing complexity for testing and development:
+Real demo features live under `demos/bdd/` (numbered, e.g. `demos/bdd/login/1001_username_password.feature`). Each demo dir can contain a `bdd.config.json`, `cucumber.cjs`, generated `*.contract.json` files alongside the features, and pipeline outputs (`ANALYSIS.md`, `backend/`, `components/`, `tests/`, `reports/`):
 
-| Fixture | Complexity | Key Features |
-|---------|-----------|--------------|
-| `login.feature` | Simple | Single scenario, 5 steps, Given/When/Then/And |
-| `checkout.feature` | Medium | Background, Scenario Outline + Examples, Data Table |
-| `api-pagination.feature` | Complex | 2 Rule blocks, Doc Strings, And/But keywords |
+| Demo dir | Content |
+|---------|-----------|
+| `demos/bdd/login/` | Username/password, PIN, biometric, migrated-user scenarios |
+| `demos/bdd/recovery/` | OTP verification, password reset scenarios |
+| `demos/bdd/session/` | Session timeout scenarios |
+| `demos/bdd/registration/`, `demos/bdd/welcome/` | Registration and welcome flows |
+
+Run per-demo tests with the `run-tests.sh` inside each demo dir.
 
 ---
 
@@ -467,8 +485,8 @@ Annotations are NOT placed in `.feature` files. The `.feature` file must be 100%
 
 ### Prerequisites
 
-- matrixx (opencode-matrixx v2.1.0+)
-- `@cucumber/gherkin` (bundled dependency — auto-installed with matrixx)
+- matrixx (opencode-matrixx v2.6.5+)
+- `@cucumber/gherkin` v34 (bundled dependency — auto-installed with matrixx)
 - `@cucumber/cucumber` and `@playwright/test` (user-installed per project)
 
 ### Running the Pipeline
@@ -540,16 +558,13 @@ bun run lint
 ```
 src/
 ├── features/bdd/
-│   ├── schema.ts              ← Contract JSON v1 Zod schema
+│   ├── schema.ts              ← Contract JSON v1 Zod schema (ContractSchema, ContractAnnotationsSchema)
 │   ├── types.ts               ← Re-exported TypeScript types
-│   ├── annotations.ts         ← Gherkin comment annotation parser
-
-│   └── __tests__/
-│       ├── schema.test.ts     ← 9 schema tests
-│       └── annotations.test.ts ← 14 annotation parser tests
 ├── tools/
-│   ├── bdd-parse-gherkin/     ← bdd_parse_gherkin tool (6 tests)
-│   └── bdd-create-contract/   ← bdd_create_contract tool (8 tests)
+│   ├── bdd-parse-gherkin/     ← bdd_parse_gherkin tool (createBddParseGherkinTool)
+│   ├── bdd-create-contract/   ← bdd_create_contract tool (createBddCreateContractTool, annotation parsing)
+│   ├── bdd-validate-contract/ ← bdd_validate_contract tool (createBddValidateContractTool)
+│   └── bdd-pipeline/          ← bdd_pipeline_run tool (pipeline-runner, subagent-runner, feature-resolver, analysis-report)
 ├── agents/
 │   ├── bdd-contract.ts        ← BDD contract specialist agent (only new agent)
 │   ├── bdd-contract.test.ts   ← 12 agent tests

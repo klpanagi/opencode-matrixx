@@ -507,11 +507,10 @@ Source: `src/hooks/context-window-limit-recovery/ (~1100 LOC).
 | Behavior | Truncates whitelisted tools when output exceeds `DEFAULT_MAX_TOKENS` 50k tokens (~200k characters). `webfetch` is capped at 10k tokens. With `experimental.truncate_all_tool_outputs: true`, truncates all tool outputs instead of only the whitelist. Keeps a 50% safety margin so truncation leaves headroom. |
 | Whitelist | Grep, Glob, LSP, AST-grep, and similar high volume tools. `webfetch` has a lower cap. |
 | Config key | `experimental.truncate_all_tool_outputs` (boolean, optional) |
-| Aliases | None — `grep-output-truncator` was removed in v3 (use `tool-output-truncator`) |
-| Disable | `"tool-output-truncator"` or `"grep-output-truncator"` in `disabled_hooks` |
+| Aliases | None — `tool-output-truncator` is the only valid name in `HookNameSchema` (`src/config/schema/hooks.ts`); do not use `grep-output-truncator`, it fails Zod validation |
+| Disable | `"tool-output-truncator"` in `disabled_hooks` |
 
 Source: `src/hooks/tool-output-truncator.ts`, HookNameSchema in `src/config/schema/hooks.ts`.
-
 > **Term collision note:** `grep-output-truncator` keeps 50% headroom as a generic token budget phrase. This is not the Headroom network proxy plugin. See the Headroom section above for `headroomlabs-ai/headroom`.
 
 ### 3.7 quality-gate (context protecting)
@@ -618,7 +617,7 @@ Unified `matrixx.jsonc` showing every context management key. All keys are optio
     // "compaction-todo-preserver",
     // "context-window-limit-recovery",
     // "tool-output-truncator",
-    // removed: grep-output-truncator was an alias, now deleted
+    // NOTE: "grep-output-truncator" is not a valid hook name (fails Zod validation)
     // "quality-gate",
     // "rtk-bash-rewriter"
   ]

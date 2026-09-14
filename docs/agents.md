@@ -1,6 +1,6 @@
 # Matrixx Agents — Deep Dive
 
-Matrixx orchestrates a team of specialized AI agents, each with distinct expertise, optimized models, and tool permissions. This page covers the primary agents you'll interact with directly. For the full architecture diagram, see [Agent Architecture](agent-architecture.md). For the complete agent table with models and fallback chains, see [Features](features.md).
+Matrixx orchestrates a team of specialized AI agents, each with distinct expertise, optimized models, and tool permissions. This page covers the primary agents you'll interact with directly. For the full architecture diagram, see [Agent Architecture](agent-architecture.md). For orchestration flows, see [Orchestration](orchestration.md). For the complete agent table with models and fallback chains, see [Features](features.md).
 
 ---
 
@@ -29,7 +29,7 @@ Meet the main agent: **Morpheus** (Claude Opus 4.6). Everything below is customi
 | Agent | Role | Model |
 |-------|------|-------|
 | **Keymaker** | Autonomous deep worker | GPT 5.3 Codex |
-| **Merovingian** | Architecture & debugging | Claude Sonnet 4.6 |
+| **Merovingian** | Architecture and debugging | Claude Sonnet 4.6 |
 | **Operator** | Docs, OSS search, codebase exploration | Claude Haiku 4.5 |
 | **Trinity** | Fast codebase grep | Claude Haiku 4.5 |
 | **Cipher** | DSL engineering | Claude Sonnet 4.6 |
@@ -42,7 +42,8 @@ Meet the main agent: **Morpheus** (Claude Opus 4.6). Everything below is customi
 | **Sati** | Frontend specialist (components, a11y, perf, testing) | Claude Sonnet 4.6 |
 | **Sentinel** | Security auditor | Claude Sonnet 4.6 |
 | **BDD Contract** | BDD contract authoring | Claude Sonnet 4.6 |
-| **Sati** | Frontend specialist (components, a11y, perf, testing) | Claude Sonnet 4.6 |
+
+The 14 names above match `BuiltinAgentNameSchema` in `src/config/schema/agent-names.ts`. Thirteen are registered statically in `agentSources` (`src/agents/builtin-agents.ts`); Oracle is built dynamically by `buildOracleAgentConfig()`. Mouse is the dynamic category-spawned worker used when `task()` is called with a `category` (see [Agent Architecture](agent-architecture.md) and [Orchestration](orchestration.md)).
 
 ### Built-in Capabilities
 
@@ -92,7 +93,7 @@ Cipher is the agent you call when you need to design, build, or extend domain-sp
 
 | Property | Value |
 |----------|-------|
-| **Model** | Claude Sonnet 4.6 (fallback: Claude Opus 4.6 → GPT 5.2 → Kimi K2.5 → Gemini 3.1 Pro) |
+| **Model** | Claude Sonnet 4.6 (provider-resolved fallback chain, see `src/agents/AGENTS.md`) |
 | **Mode** | `all` — selectable in agent menu AND spawnable as subagent |
 | **Thinking** | Extended thinking enabled (32k budget) |
 | **Max Tokens** | 64,000 — DSL tasks produce large outputs (grammars + parsers + code generators) |
@@ -224,9 +225,9 @@ Sati is the dedicated frontend specialist. Self-contained execution — Sati han
 ### Agent Characteristics
 
 - **Role**: Frontend specialist
-- **Model**: Claude Sonnet 4.6 (fallback: Claude Opus 4.6 @ max)
+- **Model**: Claude Sonnet 4.6 (provider-resolved fallback chain, see `src/agents/AGENTS.md`)
 - **Tool Restrictions**: Cannot use `task` or `delegate_agent` (self-contained execution)
-- **Skills**: 8 frontend + browser skills (React/Next.js, Svelte/SvelteKit, a11y, perf, testing, state/data, build tooling, Playwright)
+- **Skills**: 8 frontend and browser skills (`frontend-react-nextjs`, `frontend-svelte-sveltekit`, `frontend-a11y`, `frontend-perf`, `frontend-testing`, `frontend-state-data`, `frontend-build-tooling`, `playwright`, verified in `src/agents/sati.ts` via `SATI_FRONTEND_SKILLS`)
 - **Mode**: `subagent` — explicitly invokable only
 
 ### Example Prompts

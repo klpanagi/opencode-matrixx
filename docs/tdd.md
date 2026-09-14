@@ -239,7 +239,7 @@ task(
 
 ## Config Gate
 
-The `tdd-enforcer` skill is **disabled by default**. It only activates when enabled in the matrixx config:
+The `tdd-enforcer` skill is **disabled by default**. It only activates when enabled in the matrixx config. Schema: `src/config/schema/tdd-enforcer.ts` (`TddEnforcerConfigSchema`, `enabled` defaults to `false`); wired as optional `tdd_enforcer` key in `src/config/schema/matrixx-config.ts`:
 
 ```jsonc
 // matrixx.json or matrixx.jsonc

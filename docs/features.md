@@ -4,7 +4,7 @@
 
 ## Agents: Your AI Team
 
-Matrixx provides 14 specialized AI agents. Each has distinct expertise, optimized models, and tool permissions.
+Matrixx provides 14 specialized AI agents (`BuiltinAgentNameSchema` in `src/config/schema/agent-names.ts`; factories in `src/agents/`). Each has distinct expertise, optimized models, and tool permissions. Model fallbacks below come from `src/shared/model-requirements.ts`. For the planning/execution model behind these agents, see [Orchestration](orchestration.md).
 
 ### Core Agents
 
@@ -17,6 +17,16 @@ Matrixx provides 14 specialized AI agents. Each has distinct expertise, optimize
 | **Trinity** | `anthropic/claude-haiku-4-5` | Fast codebase exploration and contextual grep. Fallback: claude-sonnet-4-6 → gpt-5.2. |
 | **Construct** | `anthropic/claude-sonnet-4-6` | Visual content specialist. Analyzes PDFs, images, diagrams to extract information. Fallback: claude-opus-4-6 → gpt-5.2. |
 | **Sati** | `anthropic/claude-sonnet-4-6` | **The frontend specialist.** UI/UX, components, accessibility (WCAG 2.2), performance (Core Web Vitals), testing (Vitest, Playwright, Storybook). Self-contained execution with 7 frontend skills. Fallback: claude-opus-4-6@max. |
+
+### Specialist Agents
+
+| Agent | Model | Purpose |
+|-------|-------|---------|
+| **Architect** | `anthropic/claude-sonnet-4-6` | Plan execution — runs Oracle work plans step by step (`/start-work` routes here). Fallback: claude-haiku-4-5. |
+| **Cipher** | `anthropic/claude-opus-4-6` (max) | DSL engineering lead — grammar design (BNF/EBNF/PEG), type systems, parsers, transpilers, code generators, metamodeling (textX/PyEcore/ANTLR4). Fallback: claude-sonnet-4-6. |
+| **Sentinel** | `anthropic/claude-sonnet-4-6` | Security auditing specialist — SAST/DAST, secret detection, dependency auditing (CVE/SBOM), API review, crypto analysis, hardening, OWASP/CWE compliance, threat modeling. Read-only auditor, never modifies code. Fallback: claude-opus-4-6@max. |
+
+The **`bdd-contract`** agent handles BDD contract generation from Gherkin files (see `/bdd-contract` in the [Command Reference](command-reference.md)).
 
 ### Planning Agents
 
@@ -43,6 +53,7 @@ Ask @trinity for the policy on this feature
 | merovingian | Read-only: cannot write, edit, or delegate |
 | operator | Cannot write, edit, or delegate |
 | trinity | Cannot write, edit, or delegate |
+| sentinel | Read-only auditor: reports findings, never modifies code |
 | construct | Allowlist only: read, glob, grep |
 
 ### Background Agents
@@ -285,6 +296,42 @@ A multi-round saturation research orchestrator that explores code, docs, web, an
 
 Also accessible via the `ulw-research` built-in skill (load with `load_skills=["ulw-research"]`) or the `/research` slash command.
 
+### Command: /preset
+
+Switch model presets at runtime without editing config. `/preset list` shows available presets, `/preset show <name>` inspects one, `/preset set <name>` switches for the session (delegate-task categories switch immediately; builtin agents apply next session). Add `--save [--global|--project]` to persist `active_preset`. See [Configuration](configurations.md#model-presets).
+
+### Commands: /ultrawork, /assembly, /end-ultrawork
+
+Runtime toggles with imperative intercepts (per-session state, cleared on session end):
+
+```
+/ultrawork enable|disable|status
+/assembly enable|disable|status
+/end-ultrawork [follow-up task]
+```
+
+`/ultrawork enable` forces ultrawork on every message; `disable` blocks it even when the keyword appears. `/assembly` hides or reveals the multi-model assembly tool. `/end-ultrawork` equals `/ultrawork disable` plus a follow-up task template.
+
+### Commands: /task-list and /cleanup-tasks
+
+Thin wrappers over the `task_list` and `task_cleanup` tools. `/task-list [--all] [--status <...>]` shows active tasks; `/cleanup-tasks [--olderThan 7d] [--all]` deletes completed ones (never `pending`/`in_progress`). See [Task System](task-system.md).
+
+### Command: /dcp-profile
+
+Switch the Dynamic Context Pruning tier at runtime (`economy`, `balanced`, `performance`, `ultimate`). Has an imperative intercept that switches the active profile for the session. See [Context Management](context-management.md) and [Configuration](configurations.md#dcp).
+
+### Command: /evolution
+
+Manage self-evolution proposals (`list`, `approve <slug>`, `reject <slug>`, `audit`). Evolution hooks only run when `evolution.enabled: true`. See [Evolution](evolution.md).
+
+### Commands: /stop-continuation and /remove-deadcode
+
+`/stop-continuation` halts all automated continuation for the session (todo-continuation-enforcer, matrix loops, mission state) and cancels background tasks. `/remove-deadcode [target] [--scope=...] [--dry-run]` finds zero-reference symbols via LSP and removes them after confirmation, then verifies with typecheck and tests.
+
+### BDD Commands
+
+Five commands cover the BDD workflow (see [BDD Pipeline](BDD_PIPELINE.md)): `/bdd-contract` (contract JSON from `.feature`), `/bdd-tests` (Cucumber steps + page objects), `/bdd-frontend` (React from `@ui:*` annotations), `/bdd-backend` (typed API service), and `/bdd-pipeline` (all stages from one `.feature` file).
+
 ---
 
 ### Skill: remove-ai-slops (AI Code Smell Detection)
@@ -314,8 +361,6 @@ Also integrated into `review-work` as Agent 6 (advisory SUP).
 Load custom skills from:
 - `.opencode/skills/*/SKILL.md` (project)
 - `~/.config/opencode/skills/*/SKILL.md` (user)
-- `.claude/skills/*/SKILL.md` (Claude Code compat)
-- `~/.claude/skills/*/SKILL.md` (Claude Code user)
 
 Disable built-in skills via `disabled_skills: ["playwright"]` in config.
 
@@ -335,12 +380,25 @@ Commands are slash-triggered workflows that execute predefined templates.
 | `/cancel-loop` | Cancel active Matrix Loop |
 | `/refactor` | Intelligent refactoring with LSP, AST-grep, architecture analysis, and TDD verification |
 | `/start-work` | Start Morpheus work session from Oracle plan |
-
+| `/stop-continuation` | Pause automated continuation for the session |
 | `/handoff` | Create a detailed context summary for continuing work in a new session |
-
 | `/pickup` | Load handoff context from a previous session |
-|| `/research` | Saturation research with parallel swarms and convergence — code, docs, web, and OSS repos |
-
+| `/remove-deadcode` | Find and remove dead code (LSP-verified, dry-run support) |
+| `/preset` | List/show/set model presets (live switch; `--save` persists) |
+| `/end-ultrawork` | Deactivate ultrawork mode |
+| `/research` | Saturation research with parallel swarms and convergence |
+| `/assembly` | Toggle the assembly multi-model tool at runtime |
+| `/ultrawork` | Toggle ultrawork mode at runtime |
+| `/task-list` | List active tasks |
+| `/cleanup-tasks` | Delete completed tasks |
+| `/dcp-profile` | Switch DCP pruning tier (economy/balanced/performance/ultimate) |
+| `/evolution` | Manage self-evolution proposals (list/approve/reject/audit) |
+| `/bdd-contract` | BDD contract JSON from a Gherkin file |
+| `/bdd-frontend` | React components from a BDD contract |
+| `/bdd-backend` | Typed API service from a BDD contract |
+| `/bdd-pipeline` | Full BDD pipeline (contract, tests, frontend, backend) |
+| `/bdd-tests` | Cucumber steps + page objects from a BDD contract |
+All 24 commands are registered in `src/features/builtin-commands/commands.ts`. Full argument reference: [Command Reference](command-reference.md).
 
 ### Command: /init-deep
 
@@ -510,8 +568,6 @@ Uses Architect agent to execute planned tasks systematically.
 Load custom commands from:
 - `.opencode/command/*.md` (project)
 - `~/.config/opencode/command/*.md` (user)
-- `.claude/commands/*.md` (Claude Code compat)
-- `~/.claude/commands/*.md` (Claude Code user)
 
 ---
 
@@ -535,7 +591,7 @@ Hooks intercept and modify behavior at key points in the agent lifecycle.
 | Hook | Event | Description |
 |------|-------|-------------|
 | **directory-agents-injector** | PostToolUse | Auto-injects AGENTS.md when reading files. Walks from file to project root, collecting all AGENTS.md files. **Deprecated for OpenCode 1.1.37+** - Auto-disabled when native AGENTS.md injection is available. |
-| **rules-injector** | PostToolUse | Injects rules from `.claude/rules/` when conditions match. Supports globs and alwaysApply. |
+| **rules-injector** | PostToolUse | Injects rule files (`.github/instructions/`, `.cursor/rules/`, `.matrixx/rules/`) when conditions match. Supports globs and alwaysApply. |
 | **compaction-context-injector** | Stop | Preserves critical context during session compaction. |
 
 #### Productivity & Control
@@ -554,7 +610,6 @@ Hooks intercept and modify behavior at key points in the agent lifecycle.
 |------|-------|-------------|
 | **comment-checker** | PostToolUse | Reminds agents to reduce excessive comments. Smartly ignores BDD, directives, docstrings. |
 | **thinking-block-validator** | PreToolUse | Validates thinking blocks to prevent API errors. |
-| **empty-message-sanitizer** | PreToolUse | Prevents API errors from empty chat messages. |
 | **edit-error-recovery** | PostToolUse | Recovers from edit tool failures. |
 
 #### Recovery & Stability
@@ -563,7 +618,7 @@ Hooks intercept and modify behavior at key points in the agent lifecycle.
 |------|-------|-------------|
 | **session-recovery** | Stop | Recovers from session errors - missing tool results, thinking block issues, empty messages. |
 | **context-window-limit-recovery** | Stop | Handles context window limits (provider-agnostic, keyword+pattern) gracefully. |
-| **background-compaction** | Stop | Auto-compacts sessions hitting token limits. |
+| **preemptive-compaction** | Stop | Proactively compacts context before hitting token limits. |
 
 #### Truncation & Context Management
 
@@ -572,8 +627,8 @@ Hooks intercept and modify behavior at key points in the agent lifecycle.
 | **tool-output-truncator** | PostToolUse | Truncates output from Grep, Glob, LSP, AST-grep tools. |
 | **context-mode-enforcer** | PreToolUse (BLOCKING when `enforce:true`) | Blocks `read`/`grep`/`glob` for analysis — forces `ctx_*` sandbox (`ctx_search`, `ctx_batch_execute`). See [Context Management](./context-management.md). |
 | **rtk-bash-rewriter** | PreToolUse | Rewrites bash via `rtk <cmd>` for 60-90% token compression on git/npm/test outputs. |
-| **dcp** | Opt-in | Dynamic Context Pruning tiers `economy`/`balanced`/`performance`/`ultimate` via `/dcp-profile`. See [Context Management](./context-management.md). |
-| **headroom-integration** | Opt-in | Network-proxy compression (L4) via `headroom wrap opencode` — CacheAligner→ContentRouter→CCR, 60-95% JSON reduction. Matrixx bridge: `headroom: {enabled, proxyUrl?, project?, backend?}` + `hasHeadroom` discipline. |
+
+DCP tiers (`economy`/`balanced`/`performance`/`ultimate`, via `/dcp-profile`) and Headroom network-proxy compression (`headroom wrap opencode`) are integrations configured in `matrixx.jsonc`, not hooks. See [Context Management](./context-management.md) and [Configuration](configurations.md#dcp).
 
 #### Notifications & UX
 
@@ -599,7 +654,7 @@ Hooks intercept and modify behavior at key points in the agent lifecycle.
 
 | Hook | Event | Description |
 |------|-------|-------------|
-| **architect** | All | Main orchestration logic (771 lines). |
+| **architect** | All | Main orchestration logic. |
 | **interactive-bash-session** | PreToolUse | Manages tmux sessions for interactive CLI. |
 | **non-interactive-env** | PreToolUse | Handles non-interactive environment constraints. |
 
@@ -890,9 +945,17 @@ sections:
 
 ## MCPs: Built-in Servers
 
+Matrixx ships four built-in MCP servers (`src/mcp/`; names validated by `McpNameSchema` in `src/mcp/types.ts`). Disable any of them via `disabled_mcps` in config.
+
 ### websearch (Exa AI)
 
-Real-time web search powered by [Exa AI](https://exa.ai).
+Real-time web search powered by [Exa AI](https://exa.ai). Provider is configurable via the `websearch` key (`src/config/schema/websearch.ts`): `exa` (default, works without an API key) or `tavily` (requires `TAVILY_API_KEY`).
+
+```jsonc
+{
+  "websearch": { "provider": "tavily" }
+}
+```
 
 ### context7
 
@@ -901,6 +964,10 @@ Official documentation lookup for any library/framework.
 ### white_rabbit
 
 Ultra-fast code search across public GitHub repos. Great for finding implementation examples.
+
+### document_reader
+
+Document extraction for PDFs and other files (used by the `document-reader` skill and the Construct agent).
 
 ### Skill-Embedded MCPs
 
@@ -912,7 +979,7 @@ description: Browser automation skill
 mcp:
   playwright:
     command: npx
-    args: ["-y", "@anthropic-ai/mcp-playwright"]
+    args: ["@playwright/mcp@latest"]
 ---
 ```
 
@@ -939,7 +1006,14 @@ project/
 
 ### Conditional Rules
 
-Inject rules from `.claude/rules/` when conditions match:
+The `rules-injector` hook injects rule files when conditions match. It searches upward from the edited file to the project root (`src/hooks/rules-injector/rule-file-finder.ts`, constants in `src/hooks/rules-injector/constants.ts`):
+
+| Location | Example |
+|----------|---------|
+| `.github/instructions/` | `*.instructions.md` pattern files |
+| `.cursor/rules/` | `.md` / `.mdc` rule files |
+| `.matrixx/rules/` | `.md` / `.mdc` rule files |
+| `.github/copilot-instructions.md` | Single-file project instructions |
 
 ```markdown
 ---
@@ -954,66 +1028,15 @@ Supports:
 - `.md` and `.mdc` files
 - `globs` field for pattern matching
 - `alwaysApply: true` for unconditional rules
-- Walks upward from file to project root, plus `~/.claude/rules/`
+- Walks upward from file to project root, closest files first
 
 ---
 
-## Claude Code Compatibility
+## Removed: Claude Code Compatibility
 
-Full compatibility layer for Claude Code configurations.
+The legacy Claude Code compatibility layer (`.claude/commands/`, `.claude/skills/`, `.claude/agents/`, `.claude/.mcp.json` loaders, `~/.claude/todos/` storage, and the `claude_code` config toggles) no longer exists in-tree: there are zero `.claude/` path references and zero `claude_code` config keys anywhere under `src/`. If you see older docs or configs mentioning them, drop those entries.
 
-### Config Loaders
+Custom commands and skills now load from OpenCode paths only:
 
-| Type | Locations |
-|------|-----------|
-| **Commands** | `~/.claude/commands/`, `.claude/commands/` |
-| **Skills** | `~/.claude/skills/*/SKILL.md`, `.claude/skills/*/SKILL.md` |
-| **Agents** | `~/.claude/agents/*.md`, `.claude/agents/*.md` |
-| **MCPs** | `~/.claude/.mcp.json`, `.mcp.json`, `.claude/.mcp.json` |
-
-MCP configs support environment variable expansion: `${VAR}`.
-
-### Data Storage
-
-| Data | Location | Format |
-|------|----------|--------|
-| Todos | `~/.claude/todos/` | Claude Code compatible |
-| Transcripts | `~/.claude/transcripts/` | JSONL |
-
-### Compatibility Toggles
-
-Disable specific features:
-
-```json
-{
-  "claude_code": {
-    "mcp": false,
-    "commands": false,
-    "skills": false,
-    "agents": false,
-    "hooks": false,
-    "plugins": false
-  }
-}
-```
-
-| Toggle | Disables |
-|--------|----------|
-| `mcp` | `.mcp.json` files (keeps built-in MCPs) |
-| `commands` | `~/.claude/commands/`, `.claude/commands/` |
-| `skills` | `~/.claude/skills/`, `.claude/skills/` |
-| `agents` | `~/.claude/agents/` (keeps built-in agents) |
-| `hooks` | settings.json hooks |
-| `plugins` | Claude Code marketplace plugins |
-
-Disable specific plugins:
-
-```json
-{
-  "claude_code": {
-    "plugins_override": {
-      "claude-mem@thedotmack": false
-    }
-  }
-}
-```
+- Commands: `.opencode/command/*.md` (project), `~/.config/opencode/command/*.md` (user)
+- Skills: `.opencode/skills/*/SKILL.md` (project), `~/.config/opencode/skills/*/SKILL.md` (user)

@@ -1,5 +1,7 @@
 # Matrixx CLI Guide
 
+> Version 2.6.5. The CLI entry is `src/cli/index.ts`. Real commands: `doctor`, `install`, `setup`, `version`, `help`.
+
 This document provides a comprehensive guide to using the Matrixx CLI tools.
 
 ## 1. Overview
@@ -21,10 +23,10 @@ npx opencode-matrixx
 | Command | Description |
 |---------|-------------|
 | `install` | Interactive Setup Wizard |
+| `setup` | Standalone setup wizard for deps + matrixx.jsonc generation |
 | `doctor` | Environment diagnostics and health checks |
-| `run` | OpenCode session runner |
-| `auth` | Google Antigravity authentication management |
 | `version` | Display version information |
+| `help` | Display help information |
 
 ---
 
@@ -50,13 +52,27 @@ bunx opencode-matrixx install
 | Option | Description |
 |--------|-------------|
 | `--no-tui` | Run in non-interactive mode without TUI (for CI/CD environments) |
+| `--local` | Use local repo file:// path (dev only) |
 | `--verbose` | Display detailed logs |
+
+### Subscription flags (`install --no-tui`)
+
+Preseed provider subscriptions without prompts:
+
+| Flag | Values |
+|------|--------|
+| `--claude=<yes\|no\|max20>` | Claude subscription |
+| `--openai=<yes\|no>` | OpenAI subscription |
+| `--gemini=<yes\|no>` | Gemini subscription |
+| `--copilot=<yes\|no>` | Muse subscription |
+| `--opencode-zen=<yes\|no>` | OpenCode Zen subscription |
+| `--zai-coding-plan=<yes\|no>` | ZAI coding plan subscription |
 
 ---
 
 ## 4. `doctor` - Environment Diagnostics
 
-Diagnoses your environment to ensure Matrixx is functioning correctly. Performs 17+ health checks.
+Diagnoses your environment to ensure Matrixx is functioning correctly. Runs 12 checks (`ALL_CHECKS` in `src/cli/doctor/checks/index.ts`).
 
 ### Usage
 
@@ -68,12 +84,12 @@ bunx opencode-matrixx doctor
 
 | Category | Check Items |
 |----------|-------------|
-| **Installation** | OpenCode version (>= 1.0.150), plugin registration status |
-| **Configuration** | Configuration file validity, JSONC parsing |
-| **Authentication** | Anthropic, OpenAI, Google API key validity |
-| **Dependencies** | Bun, Node.js, Git installation status |
-| **Tools** | LSP server status, MCP server status |
-| **Updates** | Latest version check |
+| **installation** | OpenCode version (>= 1.0.150), plugin registration status |
+| **configuration** | Configuration file validity, JSONC parsing |
+| **authentication** | Anthropic, OpenAI, Google API key validity |
+| **dependencies** | Bun, Node.js, Git, Python installation status |
+| **tools** | Optional tools (ast-grep, Gitleaks, PyMuPDF, Playwright) |
+| **integrations** | Headroom, RTK, DCP, context-mode, tmux, Docker, MCP prerequisites |
 
 ### Options
 
@@ -98,7 +114,6 @@ Installation
 
 Configuration
   ✓ matrixx.json is valid
-  ⚠ categories.visual-engineering: using default model
 
 Authentication
   ✓ Anthropic API key configured
@@ -106,7 +121,7 @@ Authentication
   ✗ Google API key not found
 
 Dependencies
-  ✓ Bun 1.2.5 installed
+  ✓ Bun 1.4.0 installed
   ✓ Node.js 22.0.0 installed
   ✓ Git 2.45.0 installed
 
@@ -115,42 +130,38 @@ Summary: 10 passed, 1 warning, 1 failed
 
 ---
 
-## 5. `run` - OpenCode Session Runner
+## 5. `setup` - Standalone Setup Wizard
 
-Executes OpenCode sessions and monitors task completion.
+Generates deps + `matrixx.jsonc` without the full install flow. Entry: `src/cli/setup/index.ts`.
 
 ### Usage
 
 ```bash
-bunx opencode-matrixx run [prompt]
+bunx opencode-matrixx setup
+bunx opencode-matrixx setup --yes --dry-run
 ```
 
 ### Options
 
 | Option | Description |
 |--------|-------------|
-| `--enforce-completion` | Keep session active until all TODOs are completed |
-| `--timeout <seconds>` | Set maximum execution time |
+| `--yes, -y` | Non-interactive defaults (no prompts, overwrite without asking) |
+| `--dry-run` | Preview changes without writing |
+| `--skip-presets` | Skip model preset generation (headless/CI) |
+
+When no `model_presets` exist in the target config, setup generates a `default` preset from your connected providers. If no providers are connected, setup aborts with an error telling you to configure a provider first.
 
 ---
 
 
-## 6. `auth` - Authentication Management
+## 6. Authentication
 
-Manages Google Antigravity OAuth authentication. Required for using Gemini models.
+There is no `auth` subcommand. Authentication is handled in two places:
 
-### Usage
+1. **Install wizard** (`bunx opencode-matrixx install`) — captures provider API keys during setup.
+2. **Doctor** (`bunx opencode-matrixx doctor --category authentication`) — reports provider API key status.
 
-```bash
-# Login
-bunx opencode-matrixx auth login
-
-# Logout
-bunx opencode-matrixx auth logout
-
-# Check current status
-bunx opencode-matrixx auth status
-```
+For Google Gemini, Matrixx recommends the external [`opencode-antigravity-auth`](https://github.com/NoeFabris/opencode-antigravity-auth) plugin. See [Configuration > Google Auth](configurations.md#google-auth).
 
 ---
 
@@ -200,7 +211,7 @@ This enables seamless session-to-session continuity without losing context.
 
 ---
 
-## 9. Configuration Files
+## 8. Configuration Files
 
 The CLI searches for configuration files in the following locations (in priority order):
 
@@ -221,8 +232,8 @@ Configuration files support **JSONC (JSON with Comments)** format. You can use c
   
   /* Category customization */
   "categories": {
-    "visual-engineering": {
-      "model": "google/gemini-3-pro",
+    "construct": {
+      "model": "anthropic/claude-sonnet-4-6",
     },
   },
 }
@@ -230,15 +241,13 @@ Configuration files support **JSONC (JSON with Comments)** format. You can use c
 
 ---
 
-## 10. Troubleshooting
+## 9. Troubleshooting
 
 ### "OpenCode version too old" Error
 
 ```bash
 # Update OpenCode
-npm install -g opencode@latest
-# or
-bun install -g opencode@latest
+bun add -g opencode@latest
 ```
 
 ### "Plugin not registered" Error
@@ -260,7 +269,7 @@ bunx opencode-matrixx doctor --category authentication
 
 ---
 
-## 11. Non-Interactive Mode
+## 10. Non-Interactive Mode
 
 Use the `--no-tui` option for CI/CD environments.
 
@@ -274,21 +283,33 @@ bunx opencode-matrixx doctor --json > doctor-report.json
 
 ---
 
-## 12. Developer Information
+## 11. Developer Information
 
 ### CLI Structure
 
 ```
 src/cli/
-├── index.ts              # Commander.js-based main entry
-├── install.ts            # @clack/prompts-based TUI installer
-├── config-manager.ts     # JSONC parsing, multi-source config management
-├── doctor/               # Health check system
+├── index.ts              # Main entry (doctor | install | setup | version | help)
+├── install/
+│   └── index.ts          # @clack/prompts-based TUI installer
+├── setup/                # Standalone setup wizard (deps + matrixx.jsonc)
+│   ├── index.ts          # executeSetup({ dryRun, yes, skipPresets })
+│   ├── prompts.ts        # Interactive prompts
+│   ├── preset-wizard.ts  # Model preset generation
+│   ├── config-writer.ts  # matrixx.jsonc writer
+│   ├── opencode-sync.ts  # opencode.json sync
+│   ├── deps.ts           # Dependency checks
+│   └── constants.ts      # Setup constants
+├── doctor/               # Health check system (12 checks)
 │   ├── index.ts          # Doctor command entry
-│   └── checks/           # 17+ individual check modules
-├── run/                  # Session runner
-└── commands/auth.ts      # Authentication management
+│   ├── types.ts          # DoctorCheck types
+│   ├── format.ts         # Output formatting
+│   └── checks/           # auth, config, context-mode, dcp, docker,
+│                         # headroom, mcp, optional, plugin, rtk,
+│                         # runtime, tmux (+ helpers, index)
 ```
+
+Config loading lives outside the CLI: Zod schemas in `src/config/schema/`, JSONC parsing in `src/shared/jsonc-parser.ts`.
 
 ### Adding New Doctor Checks
 
@@ -312,8 +333,15 @@ export const myCheck: DoctorCheck = {
 }
 ```
 
-2. Register in `src/cli/doctor/checks/index.ts`:
+2. Register in `src/cli/doctor/checks/index.ts` (import, add to `ALL_CHECKS`, re-export):
 
 ```typescript
+import { myCheck } from "./my-check"
+
+export const ALL_CHECKS: DoctorCheck[] = [
+  // ...existing checks
+  myCheck,
+]
+
 export { myCheck } from "./my-check"
 ```

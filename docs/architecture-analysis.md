@@ -1,5 +1,7 @@
 # Matrixx Architecture — Full Analysis
 
+For orchestration flows, see [Orchestration](orchestration.md). For the delegation diagram, see [Agent Architecture](agent-architecture.md).
+
 ## 1. Philosophy Behind Matrixx for Software Development
 
 Matrixx is built on the philosophy that **software development is a team sport, not a solo activity** — even when the "team" is all AI. The core principles:
@@ -18,11 +20,13 @@ Matrixx is built on the philosophy that **software development is a team sport, 
 
 ## 2. Base Agents (14 Total)
 
+Names verified against `BuiltinAgentNameSchema` (`src/config/schema/agent-names.ts`): morpheus, keymaker, oracle, merovingian, operator, trinity, construct, seraph, smith, architect, cipher, sentinel, sati, bdd-contract. Thirteen are registered statically in `agentSources` (`src/agents/builtin-agents.ts`); Oracle is built dynamically. Mouse is the dynamic category-spawned worker used when `task()` is called with a `category`.
+
 | Agent | Role | Model | Cost | Key Trait |
 |-------|------|-------|------|-----------|
 | **Morpheus** | Main orchestrator (user-facing) | Claude Opus 4.6 | normal | Delegates by default, only works directly for trivial tasks |
 | **Keymaker** | Autonomous deep worker | GPT 5.3 Codex | normal | "KEEP GOING" — explores before assuming, never asks permission |
-| **Atlas/Architect** | Master orchestrator (subagent) | Claude Sonnet 4.6 | normal | Pure conductor — denied write tools, delegates ALL work via `task()` |
+| **Architect** | Master orchestrator (subagent) | Claude Sonnet 4.6 | normal | Pure conductor — denied `task`/`delegate_agent`, delegates ALL work via categories (see `src/agents/AGENTS.md`) |
 | **Merovingian** | Strategic advisor (Consultant) | Claude Sonnet 4.6 | expensive | Read-only, pragmatic minimalism, "one clear path" |
 | **Oracle** | Planning agent | dynamic | expensive | Interview mode → plan generation → structured output with RED-GREEN-REFACTOR |
 | **Cipher** | DSL engineering specialist | varies | normal | 11 DSL skills, delegates codegen to language-specific experts |
@@ -289,7 +293,7 @@ The 14-agent roster maps to **distinct cognitive functions** in software develop
 ### The Orchestration Layer (3 agents)
 
 - **Morpheus** (user-facing orchestrator): The "face" — translates user intent into delegation decisions. Chosen because orchestration requires the strongest model (Claude Opus 4.6) for understanding nuance.
-- **Atlas/Architect** (subagent orchestrator): Pure conductor — denied write tools to prevent "orchestrator doing implementation" anti-pattern. Exists to enforce the separation of concerns.
+- **Architect** (subagent orchestrator): Pure conductor — denied `task`/`delegate_agent` to prevent "orchestrator doing implementation" anti-pattern. Exists to enforce the separation of concerns.
 - **Mouse** (task executor): The "hands" — spawned per-task with category-specific config. Exists because workers should be stateless and disposable.
 
 ### The Intelligence Layer (3 agents)
@@ -372,6 +376,4 @@ The per-agent model assignments ensure agents are used appropriately — don't b
 
 ### Architectural Differentiation
 Matrixx's **3-tier hook system** (Core → Continuation → Skill) with safe-creation pattern is the most structured in the ecosystem. The **category + skill delegation system** with mandatory `load_skills` parameter ensures subagents are always properly equipped. The **dual task/todo-continuation-enforcers** (each with 2-second countdown + 5-failure circuit breaker, `task-continuation-enforcer` file-backed via `.matrixx/tasks`) are the most aggressive task-completion mechanisms available.
-Matrixx's **3-tier hook system** (Core → Continuation → Skill) with safe-creation pattern is the most structured in the ecosystem. The **category + skill delegation system** with mandatory `load_skills` parameter ensures subagents are always properly equipped. The **todo-continuation-enforcer** with its 2-second countdown + 5-failure circuit breaker is the most aggressive task-completion mechanism available.
-
 The closest competitor is **oh-my-openagent** (code-yeongyu/oh-my-openagent) which shares similar architectural DNA (Ralph Loop ≈ Matrix Loop, Todo Enforcer ≈ Todo Continuation Enforcer, 5 categories ≈ 8 categories) — but lacks the specialist agents (Sentinel, Cipher, Sati) and the structured quality pipeline.

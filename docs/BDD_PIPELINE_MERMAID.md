@@ -16,7 +16,7 @@ flowchart TB
 
     %% Input
     FeatureFiles["📄 Gherkin .feature Files"]:::input
-    Annotations["📝 Inline Annotations<br/><small>@api, @ui, @state, @assumption</small>"]:::annotation
+    Annotations["📝 Annotations<br/><small>Gherkin comments parsed by bdd_create_contract<br/>+ LLM inference by bdd-contract agent</small>"]:::annotation
 
     %% === PHASE 1: CONTRACT GENERATION ===
     subgraph Phase1["Phase 1 — Contract Generation"]
@@ -29,12 +29,14 @@ flowchart TB
             A1_Model["Claude 3.5 Sonnet<br/>GPT-4o<br/><small>thinking / reasoningEffort</small>"]:::agent
 
             subgraph Tools1["Deterministic Tools (no hallucination)"]
-                ToolParse["bdd_parse_gherkin<br/><small>@cucumber/gherkin generateMessages()</small>"]:::tool
-                ToolContract["bdd_create_contract<br/><small>parseAnnotations() + AST walk + Zod validate</small>"]:::tool
+                ToolParse["bdd_parse_gherkin<br/><small>@cucumber/gherkin v34 generateMessages()</small>"]:::tool
+                ToolContract["bdd_create_contract<br/><small>comment parsing + AST walk + Zod validate</small>"]:::tool
+                ToolValidate["bdd_validate_contract<br/><small>ContractSchema check</small>"]:::tool
             end
 
             A1_Model --> ToolParse
             ToolParse --> ToolContract
+            ToolContract --> ToolValidate
         end
 
         ContractJson["📦 Contract JSON<br/><small>schemaVersion, feature, scenarios,<br/>background, rules, annotations</small>"]:::artifact
@@ -85,7 +87,7 @@ flowchart TB
     CmdBackend --> Agent4
 
     %% === ORCHESTRATED PIPELINE ===
-    CmdPipeline["🚀 /bdd-pipeline &lt;path/*.feature&gt;<br/><small>Full orchestration: contract → tests → frontend → backend</small>"]:::cmd
+    CmdPipeline["🚀 /bdd-pipeline &lt;path/*.feature&gt;<br/><small>bdd_pipeline_run tool: contract → tests → frontend → backend + ANALYSIS.md</small>"]:::cmd
     FeatureFiles & Annotations -.-> CmdPipeline
     CmdPipeline -.-> ContractJson
     CmdPipeline -.-> Agent2
@@ -118,8 +120,9 @@ flowchart TB
 ```
 User Input           →    Phase 1 (Deterministic)     →    Phase 2 (Generative, Parallel)
 .feature files            bdd-contract agent                Morpheus + bdd-tests skill    →  step defs
-+ @ annotations    ───►   bdd_parse_gherkin tool      ───►  Morpheus + bdd-frontend skill →  React components
-                          bdd_create_contract tool           Morpheus + bdd-backend skill  →  API services
++ Gherkin comments   ───►   bdd_parse_gherkin tool      ───►  Morpheus + bdd-frontend skill →  React components
+(+ LLM inference)           bdd_create_contract tool           Morpheus + bdd-backend skill  →  API services
+                            bdd_validate_contract tool         bdd_pipeline_run tool         →  ANALYSIS.md
                                     │
                                     ▼
                               Contract JSON
