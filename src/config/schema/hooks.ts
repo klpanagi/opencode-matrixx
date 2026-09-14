@@ -15,6 +15,7 @@ const HookNameEnum = z.enum([
   "preemptive-compaction",
   "rules-injector",
   "background-notification",
+  "background-task-blocker",
   "auto-update-checker",
   "startup-toast",
   "keyword-detector",

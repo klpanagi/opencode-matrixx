@@ -49,6 +49,7 @@ export function createToolExecuteBeforeHandler(args: {
   const taskEditGuardHook = hooks.taskEditGuard?.["tool.execute.before"]
   const tasksTodowriteDisablerHook = hooks.tasksTodowriteDisabler?.["tool.execute.before"]
   const oracleMdOnlyHook = hooks.oracleMdOnly?.["tool.execute.before"]
+  const backgroundTaskBlockerHook = hooks.backgroundTaskBlocker?.["tool.execute.before"]
   const contextModeEnforcerHook = (hooks as Record<string, { "tool.execute.before"?: (input: unknown, output: unknown) => Promise<void> }>).contextModeEnforcer?.["tool.execute.before"]
   const nonInteractiveEnvHook = hooks.nonInteractiveEnv?.["tool.execute.before"]
   const bashFileReadGuardHook = hooks.bashFileReadGuard?.["tool.execute.before"]
@@ -98,6 +99,7 @@ const rtkBashRewriterHook = hooks.rtkBashRewriter?.["tool.execute.before"]
       tasksTodowriteDisablerHook?.(input, output),
       oracleMdOnlyHook?.(input, output),
       contextModeEnforcerHook?.(input as never, output as never),
+      backgroundTaskBlockerHook?.(input, output),
     ])
 
     // Wave 3 (7 hooks): MUTATOR — must run sequentially to preserve

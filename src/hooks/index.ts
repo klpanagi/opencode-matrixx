@@ -3,6 +3,7 @@ export { createArchitectHook } from "./architect";
 export { createAutoSlashCommandHook } from "./auto-slash-command";
 export { createAutoUpdateCheckerHook } from "./auto-update-checker";
 export { createBackgroundNotificationHook } from "./background-notification"
+export { createBackgroundTaskBlockerHook } from "./background-task-blocker"
 export { createBashFileReadGuardHook } from "./bash-file-read-guard"
 export { createCategorySkillReminderHook } from "./category-skill-reminder";
 export { createCommentCheckerHooks } from "./comment-checker";
