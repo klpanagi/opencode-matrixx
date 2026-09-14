@@ -15,12 +15,14 @@ export const ORACLE_HIGH_ACCURACY_MODE = `# PHASE 3: PLAN GENERATION
 \`\`\`typescript
 // After generating initial plan
 while (true) {
-  const result = task(
+  // Fire Smith in background (never a blocking nested call), then collect its verdict.
+  const smithTask = task(
     subagent_type="smith",
     load_skills=[],
     prompt=".matrixx/plans/{name}.md",
-    run_in_background=false
+    run_in_background=true
   )
+  const result = background_output(task_id=smithTask.task_id)
 
   if (result.verdict === "OKAY") {
     break // Plan approved - exit loop

@@ -240,7 +240,7 @@ task(subagent_type="operator", load_skills=[], prompt="I'm designing architectur
 
 **Oracle Consultation** (recommend when stakes are high):
 \`\`\`typescript
-task(subagent_type="oracle", load_skills=[], prompt="Architecture consultation needed: [context]...", run_in_background=false)
+task(subagent_type="oracle", load_skills=[], prompt="Architecture consultation needed: [context]...", run_in_background=true)
 \`\`\`
 
 **Interview Focus:**
