@@ -59,6 +59,11 @@ export function createManagers(args: {
     },
   )
 
+  // C5: restore persisted bg handles on plugin startup (fire-and-forget, never blocks init).
+  backgroundManager.restoreHandles().catch((error) => {
+    log("[index] Failed to restore background handles:", error)
+  })
+
   initTaskToastManager(ctx.client)
 
   const configHandler = createConfigHandler({

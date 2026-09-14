@@ -161,11 +161,6 @@ export class BackgroundManager {
     this.onShutdown = options?.onShutdown
     this.enableParentSessionNotifications = options?.enableParentSessionNotifications ?? true
     this.registerProcessCleanup()
-
-    // C5: restore is fire-and-forget so plugin init is never blocked.
-    this.restoreHandles().catch((error) => {
-      log("[background-agent] Failed to restore background handles:", error)
-    })
   }
 
   /**
