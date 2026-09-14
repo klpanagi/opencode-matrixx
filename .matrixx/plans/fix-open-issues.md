@@ -169,7 +169,7 @@ Wave 4 (final):
 
 ## TODOs
 
-- [ ] 1. Investigate why bg file persistence was removed (Item D forensics)
+- [x] 1. Investigate why bg file persistence was removed (Item D forensics)
 
   **What to do**:
   - Re-read `24a7f333` full diff first-hand: record exactly what persist/restore did (debounced 500ms `Bun.write` of whole task array to single `background_tasks.json`, `restore()` on startup, constructor `storePath` param).
@@ -188,7 +188,7 @@ Wave 4 (final):
   - [ ] Evidence file exists with: removal mechanism, race shape, mirror-pattern description, 4+ design constraints for T8
   - [ ] `bun run typecheck` clean
 
-- [ ] 2. Diagnose H1 pollTimeoutMs wiring (why user config was ignored)
+- [x] 2. Diagnose H1 pollTimeoutMs wiring (why user config was ignored)
 
   **What to do**:
   - Trace full wiring: config -> `resolveTasksConfig()` -> `createTools()` -> `setPollTimeoutMs()` -> `getTimingConfig().MAX_POLL_TIME_MS` at poll start
@@ -205,7 +205,7 @@ Wave 4 (final):
   - [ ] Diagnosis names root cause with file:line evidence
   - [ ] Identifies exact T4 edit locations
 
-- [ ] 3. Audit all subagent prompt templates for blocked-tool authorizations
+- [x] 3. Audit all subagent prompt templates for blocked-tool authorizations
 
   **What to do**:
   - Collect every prompt template authorizing grep/glob/read/edit/bash-cat for subagents
@@ -222,7 +222,7 @@ Wave 4 (final):
   - [ ] Table covers Oracle + delegate-task + dynamic-builder templates
   - [ ] Every row has ctx_* rewrite pointer
 
-- [ ] 4. Make pollTimeoutMs authoritative + log effective budget at poll start
+- [x] 4. Make pollTimeoutMs authoritative + log effective budget at poll start
 
   **What to do**:
   - Implement T2 verdict: fix wiring so `tasks.pollTimeoutMs` takes effect
@@ -242,7 +242,7 @@ Wave 4 (final):
 
   **Commit**: `fix(delegate-task): make pollTimeoutMs authoritative and log effective budget`
 
-- [ ] 5. No-abort-on-timeout with session_id resume path
+- [x] 5. No-abort-on-timeout with session_id resume path
 
   **What to do**:
   - Distinguish poll outcomes: timeout -> no abort, return session_id; success -> abort (guard preserved)
@@ -263,7 +263,7 @@ Wave 4 (final):
 
   **Commit**: `fix(delegate-task): keep timed-out sync session alive with session_id resume`
 
-- [ ] 6. Context-mode-aware subagent prompts
+- [x] 6. Context-mode-aware subagent prompts
 
   **What to do**:
   - Create `src/shared/context-mode-prompt.ts` - routing utility
@@ -283,7 +283,7 @@ Wave 4 (final):
 
   **Commit**: `feat(prompts): route subagent tool authorization via context-mode-aware utility`
 
-- [ ] 7. Oracle background-by-default + no-nesting-under-fixed-budget policy
+- [x] 7. Oracle background-by-default + no-nesting-under-fixed-budget policy
 
   **What to do**:
   - Change Oracle to `run_in_background=true` by default
@@ -303,7 +303,7 @@ Wave 4 (final):
 
   **Commit**: `fix(oracle): default to background mode and forbid blocking Seraph nesting`
 
-- [ ] 8. File-backed bg handle index mirroring .matrixx/tasks
+- [x] 8. File-backed bg handle index mirroring .matrixx/tasks
 
   **What to do**:
   - Design per T1 constraints (file-per-task, atomic tmp+rename, startup restore, TTL sweep)
@@ -379,4 +379,4 @@ bash script/run-ci.sh                      # Expected: Steps: 7, Passed: 7, Fail
 - [ ] Item D: restarted manager recovers handles; TTL sweep bounded
 - [ ] Full CI 7/7 green
 
-<!-- plan-persister: {"id":"fix-open-issues","updatedAt":"2026-09-14T12:16:42.545Z","sessionId":"ses_f60420400ffe2ZuSbdR6KTDgHS","todoTotal":51,"todoCompleted":0} -->
+<!-- plan-persister: {"id":"fix-open-issues","updatedAt":"2026-09-14T14:03:50.071Z","sessionId":"ses_f5feb6796ffeqyz6f8HQQBo5vP","todoTotal":24,"todoCompleted":6,"gitHead":{"sha":"1a7e0709385b2d33bde1ed723169f269bed9d215","detached":false,"branch":"feat/fix-open-issues-plan"}} -->

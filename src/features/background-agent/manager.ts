@@ -24,6 +24,7 @@ import {
   getSessionErrorMessage,
   isAbortedSessionError,
   } from "./error-helpers"
+import { type BgHandle, readHandles, sweepStaleHandles, writeHandle } from "./handle-index"
 import {
   type CircuitBreakerSettings,
   detectRepetitiveToolUse,
@@ -82,6 +83,33 @@ export interface SubagentSessionCreatedEvent {
 
 export type OnSubagentSessionCreated = (event: SubagentSessionCreatedEvent) => Promise<void>
 
+/**
+ * Rebuild a minimal in-memory task from a persisted handle.
+ *
+ * Restored handles are detached by design: no `sessionID` (never re-attach to
+ * the old session) and no `concurrencyKey` (never re-acquire a slot). A handle
+ * that was mid-flight when the process died surfaces as `"interrupt"`.
+ */
+function restoreTaskFromHandle(handle: BgHandle): BackgroundTask {
+  const interrupted = handle.status === "running" || handle.status === "pending"
+
+  return {
+    id: handle.taskId,
+    parentSessionID: handle.parentSessionID,
+    parentMessageID: handle.parentMessageID,
+    description: handle.description,
+    prompt: "",
+    agent: handle.agent,
+    status: interrupted ? "interrupt" : handle.status,
+    queuedAt: handle.queuedAt !== undefined ? new Date(handle.queuedAt) : undefined,
+    startedAt: handle.startedAt !== undefined ? new Date(handle.startedAt) : undefined,
+    completedAt: handle.completedAt !== undefined ? new Date(handle.completedAt) : undefined,
+    model: handle.model,
+    category: handle.category,
+    concurrencyGroup: handle.concurrencyGroup,
+  }
+}
+
 export class BackgroundManager {
   private static cleanupManagers = new Set<BackgroundManager>()
   private static cleanupRegistered = false
@@ -133,6 +161,48 @@ export class BackgroundManager {
     this.onShutdown = options?.onShutdown
     this.enableParentSessionNotifications = options?.enableParentSessionNotifications ?? true
     this.registerProcessCleanup()
+
+    // C5: restore is fire-and-forget so plugin init is never blocked.
+    this.restoreHandles().catch((error) => {
+      log("[background-agent] Failed to restore background handles:", error)
+    })
+  }
+
+  /**
+   * Persist a lightweight handle for the given task. Called on running and
+   * terminal transitions only — never on intermediate progress updates (C8).
+   * Best-effort: write failures are logged and never break task lifecycle.
+   */
+  private persistHandle(task: BackgroundTask): void {
+    try {
+      writeHandle(this.directory, task)
+    } catch (error) {
+      log("[background-agent] Failed to persist background handle:", { taskId: task.id, error })
+    }
+  }
+
+  /**
+   * Recover handles persisted by a previous manager/process. Sweeps stale
+   * handles first, then loads the remainder into memory. Running handles are
+   * marked `"interrupt"` (C6) and no concurrency is re-acquired (C7).
+   */
+  async restoreHandles(): Promise<void> {
+    const swept = sweepStaleHandles(this.directory)
+    const handles = readHandles(this.directory)
+
+    let restored = 0
+    for (const handle of handles) {
+      if (this.tasks.has(handle.taskId)) {
+        continue
+      }
+
+      this.tasks.set(handle.taskId, restoreTaskFromHandle(handle))
+      restored++
+    }
+
+    if (restored > 0 || swept > 0) {
+      log("[background-agent] Restored background handles:", { restored, swept })
+    }
   }
 
   async launch(input: LaunchInput): Promise<BackgroundTask> {
@@ -322,6 +392,7 @@ export class BackgroundManager {
     }
     task.concurrencyKey = concurrencyKey
     task.concurrencyGroup = concurrencyKey
+    this.persistHandle(task)
 
     this.taskHistory.record(input.parentSessionID, { id: task.id, sessionID, agent: input.agent, description: input.description, status: "running", category: input.category, startedAt: task.startedAt })
     this.startPolling()
@@ -386,6 +457,7 @@ export class BackgroundManager {
           existingTask.error = errorMessage
         }
         existingTask.completedAt = new Date()
+        this.persistHandle(existingTask)
         if (existingTask.concurrencyKey) {
           this.concurrencyManager.release(existingTask.concurrencyKey)
           existingTask.concurrencyKey = undefined
@@ -524,6 +596,7 @@ export class BackgroundManager {
     }
 
     this.tasks.set(task.id, task)
+    this.persistHandle(task)
     registerSubagentSession(input.sessionID, input.parentSessionID)
     this.startPolling()
     this.taskHistory.record(input.parentSessionID, { id: task.id, sessionID: input.sessionID, agent: input.agent || "task", description: input.description, status: "running", startedAt: task.startedAt })
@@ -583,6 +656,7 @@ export class BackgroundManager {
     // Reset startedAt on resume to prevent immediate completion
     // The MIN_IDLE_TIME_MS check uses startedAt, so resumed tasks need fresh timing
     existingTask.startedAt = new Date()
+    this.persistHandle(existingTask)
 
     existingTask.progress = {
       toolCalls: existingTask.progress?.toolCalls ?? 0,
@@ -651,6 +725,7 @@ export class BackgroundManager {
       const errorMessage = error instanceof Error ? error.message : String(error)
       existingTask.error = errorMessage
       existingTask.completedAt = new Date()
+      this.persistHandle(existingTask)
 
       // Release concurrency on error to prevent slot leaks
       if (existingTask.concurrencyKey) {
@@ -849,6 +924,7 @@ export class BackgroundManager {
       task.status = "error"
       task.error = errorMessage ?? "Session error"
       task.completedAt = new Date()
+      this.persistHandle(task)
       this.taskHistory.record(task.parentSessionID, { id: task.id, sessionID: task.sessionID, agent: task.agent, description: task.description, status: "error", category: task.category, startedAt: task.startedAt, completedAt: task.completedAt })
 
       if (task.concurrencyKey) {
@@ -1087,6 +1163,7 @@ export class BackgroundManager {
 
     task.status = "cancelled"
     task.completedAt = new Date()
+    this.persistHandle(task)
     if (reason) {
       task.error = reason
     }
@@ -1254,6 +1331,7 @@ export class BackgroundManager {
     // Atomically mark as completed to prevent race conditions
     task.status = "completed"
     task.completedAt = new Date()
+    this.persistHandle(task)
     this.taskHistory.record(task.parentSessionID, { id: task.id, sessionID: task.sessionID, agent: task.agent, description: task.description, status: "completed", category: task.category, startedAt: task.startedAt, completedAt: task.completedAt })
 
     // Release concurrency BEFORE any async operations to prevent slot leaks
@@ -1434,6 +1512,7 @@ export class BackgroundManager {
         task.status = "error"
         task.error = errorMessage
         task.completedAt = new Date()
+        this.persistHandle(task)
         if (task.concurrencyKey) {
           this.concurrencyManager.release(task.concurrencyKey)
           task.concurrencyKey = undefined
@@ -1532,6 +1611,7 @@ export class BackgroundManager {
         task.status = "cancelled"
         task.error = `Stale timeout (no activity for ${staleMinutes}min since start)`
         task.completedAt = new Date()
+        this.persistHandle(task)
 
         if (task.concurrencyKey) {
           this.concurrencyManager.release(task.concurrencyKey)
@@ -1562,6 +1642,7 @@ export class BackgroundManager {
       task.status = "cancelled"
       task.error = `Stale timeout (no activity for ${staleMinutes}min)`
       task.completedAt = new Date()
+      this.persistHandle(task)
 
       if (task.concurrencyKey) {
         this.concurrencyManager.release(task.concurrencyKey)
