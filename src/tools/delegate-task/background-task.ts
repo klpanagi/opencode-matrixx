@@ -1,5 +1,11 @@
 import { storeToolMetadata } from "../../features/tool-metadata-store"
 import { formatDetailedError } from "../../shared/error-formatting"
+import {
+  formatLaunchFailure,
+  formatSaturatedOutcome,
+  isLaunchTerminalStatus,
+  isQueueSaturated,
+} from "../../shared/saturated-outcome"
 import { getSessionTools } from "../../shared/session-state"
 import type { ExecutorContext, ParentContext } from "./executor-types"
 import { getTimingConfig } from "./timing"
@@ -45,6 +51,12 @@ export async function executeBackgroundTask(
       }
       await new Promise(resolve => setTimeout(resolve, timing.WAIT_FOR_SESSION_INTERVAL_MS))
       const updated = manager.getTask(task.id)
+      if (updated && isLaunchTerminalStatus(updated.status)) {
+        if (isQueueSaturated(updated.status, updated.terminalReason)) {
+          return formatSaturatedOutcome(task.id)
+        }
+        return formatLaunchFailure(task.id, updated.status)
+      }
       sessionId = updated?.sessionID
     }
 
