@@ -32,6 +32,8 @@ import {
   resolveCircuitBreakerSettings,
 } from "./loop-detector"
 import { buildCompletionNotification, resolveAgentAndModel } from "./notification-builder"
+import { type ReconcileOutcome, reconcileHandle } from "./reconcile"
+import { validateSessionHasOutput as validateSessionOutput } from "./session-output"
 import { TaskHistory } from "./task-history"
 import type {
   BackgroundTask,
@@ -84,15 +86,12 @@ export interface SubagentSessionCreatedEvent {
 export type OnSubagentSessionCreated = (event: SubagentSessionCreatedEvent) => Promise<void>
 
 /**
- * Rebuild a minimal in-memory task from a persisted handle.
- *
- * Restored handles are detached by design: no `sessionID` (never re-attach to
- * the old session) and no `concurrencyKey` (never re-acquire a slot). A handle
- * that was mid-flight when the process died surfaces as `"interrupt"`.
+ * Rebuild a minimal in-memory task from a persisted handle. The persisted
+ * status is carried verbatim and `sessionID`/`terminalReason` are preserved so
+ * `restoreHandles()` can reconcile in-flight handles against the live host.
+ * No `concurrencyKey` is restored: a slot is never re-acquired (C7).
  */
 function restoreTaskFromHandle(handle: BgHandle): BackgroundTask {
-  const interrupted = handle.status === "running" || handle.status === "pending"
-
   return {
     id: handle.taskId,
     parentSessionID: handle.parentSessionID,
@@ -100,7 +99,9 @@ function restoreTaskFromHandle(handle: BgHandle): BackgroundTask {
     description: handle.description,
     prompt: "",
     agent: handle.agent,
-    status: interrupted ? "interrupt" : handle.status,
+    status: handle.status,
+    sessionID: handle.sessionID,
+    terminalReason: handle.terminalReason,
     queuedAt: handle.queuedAt !== undefined ? new Date(handle.queuedAt) : undefined,
     startedAt: handle.startedAt !== undefined ? new Date(handle.startedAt) : undefined,
     completedAt: handle.completedAt !== undefined ? new Date(handle.completedAt) : undefined,
@@ -178,8 +179,10 @@ export class BackgroundManager {
 
   /**
    * Recover handles persisted by a previous manager/process. Sweeps stale
-   * handles first, then loads the remainder into memory. Running handles are
-   * marked `"interrupt"` (C6) and no concurrency is re-acquired (C7).
+   * handles first, then loads the remainder into memory. Persisted
+   * `running|pending` handles are reconciled against the live host instead of
+   * being flattened to a false `"interrupt"` (C6). No concurrency is
+   * re-acquired for restored running handles (C7).
    */
   async restoreHandles(): Promise<void> {
     const swept = sweepStaleHandles(this.directory)
@@ -191,13 +194,53 @@ export class BackgroundManager {
         continue
       }
 
-      this.tasks.set(handle.taskId, restoreTaskFromHandle(handle))
+      const task = restoreTaskFromHandle(handle)
+      this.tasks.set(handle.taskId, task)
       restored++
+
+      if (handle.status === "running" || handle.status === "pending") {
+        await this.reconcileRestoredTask(task, handle)
+      }
     }
 
     if (restored > 0 || swept > 0) {
       log("[background-agent] Restored background handles:", { restored, swept })
     }
+  }
+
+  /**
+   * Probe the live host for a persisted in-flight handle and apply the
+   * reconciled outcome. Never throws: any unexpected failure degrades to
+   * `statusUncertain`, never a false completion. `restoreHandles()`'s caller
+   * is fire-and-forget (`create-managers.ts`), so rejection is not an option.
+   */
+  private async reconcileRestoredTask(task: BackgroundTask, handle: BgHandle): Promise<void> {
+    let outcome: ReconcileOutcome
+    try {
+      outcome = await reconcileHandle(this.client, handle)
+    } catch (error) {
+      log("[background-agent] Handle reconciliation failed:", { taskId: handle.taskId, error })
+      outcome = { status: "statusUncertain", terminalReason: "uncertain" }
+    }
+
+    if (outcome.status === "running") {
+      task.status = "running"
+      if (task.sessionID) {
+        registerSubagentSession(task.sessionID, task.parentSessionID)
+      }
+      // C7: a restored running handle must NOT re-acquire its concurrency slot.
+      task.concurrencyKey = undefined
+      const pending = this.pendingByParent.get(task.parentSessionID) ?? new Set<string>()
+      pending.add(task.id)
+      this.pendingByParent.set(task.parentSessionID, pending)
+      this.startPolling()
+      return
+    }
+
+    task.status = outcome.status
+    task.terminalReason = outcome.terminalReason
+    task.completedAt = new Date()
+    this.persistHandle(task)
   }
 
   async launch(input: LaunchInput): Promise<BackgroundTask> {
@@ -1031,58 +1074,10 @@ export class BackgroundManager {
   /**
    * Validates that a session has actual assistant/tool output before marking complete.
    * Prevents premature completion when session.idle fires before agent responds.
+   * Delegates to the shared `session-output` helper (also used by reconciliation).
    */
   private async validateSessionHasOutput(sessionID: string): Promise<boolean> {
-    try {
-      const response = await this.client.session.messages({
-        path: { id: sessionID },
-      })
-
-      const messages = normalizeSDKResponse(response, [] as Array<{ info?: { role?: string } }>, { preferResponseOnMissingData: true })
-      
-      const hasAssistantOrToolMessage = messages.some(
-        (m: { info?: { role?: string } }) => 
-          m.info?.role === "assistant" || m.info?.role === "tool"
-      )
-
-      if (!hasAssistantOrToolMessage) {
-        log("[background-agent] No assistant/tool messages found in session:", sessionID)
-        return false
-      }
-
-      // Additionally check that at least one message has content (not just empty)
-      // OpenCode API uses different part types than Anthropic's API:
-      // - "reasoning" with .text property (thinking/reasoning content)
-      // - "tool" with .state.output property (tool call results)
-      // - "text" with .text property (final text output)
-      // - "step-start"/"step-finish" (metadata, no content)
-      const hasContent = messages.some((m: { info?: { role?: string }; parts?: Array<Record<string, unknown>> }) => {
-        if (m.info?.role !== "assistant" && m.info?.role !== "tool") return false
-        const parts = m.parts ?? []
-      return parts.some((p: { type?: string; text?: string; content?: string | unknown[] }) => 
-        // Text content (final output)
-        (p.type === "text" && p.text && p.text.trim().length > 0) ||
-        // Reasoning content (thinking blocks)
-        (p.type === "reasoning" && p.text && p.text.trim().length > 0) ||
-        // Tool calls (indicates work was done)
-        p.type === "tool" ||
-        // Tool results (output from executed tools) - important for tool-only tasks
-        (p.type === "tool_result" && p.content && 
-          (typeof p.content === "string" ? p.content.trim().length > 0 : p.content.length > 0))
-      )
-      })
-
-      if (!hasContent) {
-        log("[background-agent] Messages exist but no content found in session:", sessionID)
-        return false
-      }
-
-      return true
-    } catch (error) {
-      log("[background-agent] Error validating session output:", error)
-      // On error, allow completion to proceed (don't block indefinitely)
-      return true
-    }
+    return validateSessionOutput(this.client, sessionID)
   }
 
   private clearNotificationsForTask(taskId: string): void {
