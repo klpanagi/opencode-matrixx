@@ -7,12 +7,13 @@
 ## STRUCTURE
 ```
 features/
-├── background-agent/           # Task lifecycle, concurrency, restart reconciliation (32 files, ~5500 LOC)
-│   ├── manager.ts              # Main task orchestration (1646 lines)
+├── background-agent/           # Task lifecycle, concurrency, restart reconciliation (33 files, ~5600 LOC)
+│   ├── manager.ts              # Main task orchestration (2165 lines, grandfathered over the 200-LOC limit)
 │   ├── concurrency.ts          # Parallel execution limits per provider/model
 │   ├── reconcile.ts            # Restart reconciliation: classifies persisted in-flight handles
 │   ├── admission.ts            # Nested-admission classifier (`classifyAdmission`)
 │   ├── session-output.ts       # Shared output-validation helpers (assistant output, recorded errors)
+│   ├── revive.ts               # Session revive: revivable-set classifier + handle rehydration
 │   └── handle-index.ts         # File-backed handle index (`BgHandleSchema`, `.matrixx/bg-handles/`)
 ├── tmux-subagent/              # Tmux integration (25 files, ~3000 LOC)
 │   └── manager.ts              # Pane management, grid planning (350 lines)
@@ -46,6 +47,8 @@ Task creation → Queue → Admission check → Concurrency check → Execute �
 **Bounded admission** (`admissionTimeoutMs`): When a root task waits past the timeout on a saturated queue it becomes terminal `stopped` with `terminalReason: "queue-saturated"`. Value `0` = unbounded (default), otherwise minimum `60000` ms.
 
 **Nested-admission exemption** (`nestedAdmission`): Prevents a managed background child that spawns its own background work from self-deadlocking the semaphore. `classifyAdmission` walks the child→parent session registry. Depth-cap overflow yields terminal `stopped` + `terminalReason: "nested-depth-exceeded"`. Config: `{ enabled: boolean (default true), mode: "bypass"|"reserve" (default "bypass"), maxDepth: 1..5 (default 2) }`.
+
+**Session revive** (`revive.ts`, `background_revive` tool): A terminal task whose handle is still on disk can be resumed with a NEW instruction. Retention IS the existing handle files — there is no separate store — bounded by `TASK_TTL_MS` (30 min). Revivable: `cancelled | stopped | interrupt | error | completed` (each requires a `sessionID`); `statusUncertain` requires `force: true`; `pending | running` must use `background_output` instead; a handle that never produced a session (e.g. `queue-saturated`) is unrevivable. `manager.revive()` falls back to disk on an in-memory map miss, then re-admits through bounded/nested admission — and a nested revive bypasses the semaphore entirely so it can never await it unboundedly. `manager.resume()` remains the in-memory-only path.
 
 **Skill Management:** All skills are loaded from `src/features/builtin-skills/` via `createBuiltinSkills()`. No external skill directory loading. Skills are configured via `disabled_skills` in `matrixx.jsonc`.
 
