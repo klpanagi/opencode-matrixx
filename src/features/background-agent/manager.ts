@@ -1,7 +1,7 @@
 
 
 import type { PluginInput } from "@opencode-ai/plugin"
-import type { BackgroundTaskConfig, TmuxConfig } from "../../config/schema"
+import type { BackgroundTaskConfig, DcpHandoffCompression, TmuxConfig } from "../../config/schema"
 import { getAgentToolRestrictions, log, normalizeSDKResponse, promptWithModelSuggestionRetry } from "../../shared"
 import { hasPendingQuestionMessage } from "../../shared/awaiting-user"
 import { formatDuration } from "../../shared/format-duration"
@@ -159,6 +159,7 @@ export class BackgroundManager {
   private notificationQueueByParent: Map<string, Promise<void>> = new Map()
   private enableParentSessionNotifications: boolean
   private cachedCircuitBreakerSettings?: CircuitBreakerSettings
+  private handoffCompression?: DcpHandoffCompression
   /** Active nested bypass admits per concurrency key (maxDepth cap). */
   private nestedActive: Map<string, number> = new Map()
   /** Task IDs admitted via nested bypass — used to decrement `nestedActive` exactly once. */
@@ -177,6 +178,7 @@ export class BackgroundManager {
       onSubagentSessionCreated?: OnSubagentSessionCreated
       onShutdown?: () => void
       enableParentSessionNotifications?: boolean
+      handoffCompression?: DcpHandoffCompression
     }
   ) {
     this.tasks = new Map()
@@ -190,6 +192,7 @@ export class BackgroundManager {
     this.onSubagentSessionCreated = options?.onSubagentSessionCreated
     this.onShutdown = options?.onShutdown
     this.enableParentSessionNotifications = options?.enableParentSessionNotifications ?? true
+    this.handoffCompression = options?.handoffCompression
     this.registerProcessCleanup()
   }
 
@@ -1735,6 +1738,51 @@ export class BackgroundManager {
     // Atomically mark as completed to prevent race conditions
     task.status = "completed"
     task.completedAt = new Date()
+
+    // Compress result for handoff boundary (before persist so compactedResult is persisted)
+    const hc = this.handoffCompression
+    if (hc && hc.enabled !== false && task.sessionID) {
+      try {
+        const raw = await this.client.session.messages({ path: { id: task.sessionID } })
+        let msgs: Array<{
+          info?: { role?: string }
+          parts?: Array<{ type?: string; text?: string }>
+        }> = []
+        if (Array.isArray(raw)) {
+          msgs = raw
+        } else if (raw && typeof raw === "object" && "data" in raw && Array.isArray((raw as Record<string, unknown>).data)) {
+          msgs = (raw as Record<string, unknown>).data as typeof msgs
+        }
+        const assistantMsgs = msgs.filter((m) => m.info?.role === "assistant")
+        const maxMsgs = hc?.maxMessages ?? 6
+        const keepFirst = hc?.keepFirst ?? 2
+        const keepLast = hc?.keepLast ?? 3
+
+        if (assistantMsgs.length > maxMsgs) {
+          const first = assistantMsgs.slice(0, keepFirst)
+          const last = assistantMsgs.slice(-keepLast)
+          const extractText = (msgs: typeof assistantMsgs): string =>
+            msgs
+              .map((m) =>
+                m.parts
+                  ?.filter((p) => p.type === "text" || p.type === "reasoning")
+                  .map((p) => p.text)
+                  .filter(Boolean)
+                  .join("\n") ?? "",
+              )
+              .filter(Boolean)
+              .join("\n\n")
+          const firstText = extractText(first)
+          const lastText = extractText(last)
+          const truncated = assistantMsgs.length - keepFirst - keepLast
+          task.compactedResult = `${firstText}\n\n[... ${truncated} messages truncated]\n\n${lastText}`
+        }
+      } catch (err) {
+        // Graceful fallback — compression failure should not break completion
+        log("[background-agent] Handoff compression failed:", { taskId: task.id, error: err })
+      }
+    }
+
     this.persistHandle(task)
     this.disarmWallclock(task.id)
     this.taskHistory.record(task.parentSessionID, { id: task.id, sessionID: task.sessionID, agent: task.agent, description: task.description, status: "completed", category: task.category, startedAt: task.startedAt, completedAt: task.completedAt })

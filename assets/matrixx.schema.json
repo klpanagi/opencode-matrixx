@@ -4205,6 +4205,46 @@
         "default_profile": {
           "type": "string"
         },
+        "handoffCompression": {
+          "default": {
+            "enabled": true,
+            "maxMessages": 6,
+            "keepFirst": 2,
+            "keepLast": 3
+          },
+          "type": "object",
+          "properties": {
+            "enabled": {
+              "default": true,
+              "type": "boolean"
+            },
+            "maxMessages": {
+              "default": 6,
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 9007199254740991
+            },
+            "keepFirst": {
+              "default": 2,
+              "type": "integer",
+              "minimum": 0,
+              "maximum": 9007199254740991
+            },
+            "keepLast": {
+              "default": 3,
+              "type": "integer",
+              "minimum": 0,
+              "maximum": 9007199254740991
+            }
+          },
+          "required": [
+            "enabled",
+            "maxMessages",
+            "keepFirst",
+            "keepLast"
+          ],
+          "additionalProperties": false
+        },
         "base": {
           "default": {
             "autoUpdate": false,
@@ -4491,6 +4531,7 @@
       "required": [
         "enabled",
         "profiles",
+        "handoffCompression",
         "base"
       ],
       "additionalProperties": false

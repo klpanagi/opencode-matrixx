@@ -123,6 +123,29 @@ export const BUILTIN_DCP_PROFILES = {
   },
 } as const satisfies Record<string, DcpProfileDefinition>
 
+// ─── Handoff compression schema ─────────────────────────────────────────
+
+/**
+ * Configuration for compressing background task results when sending
+ * completion notifications to the parent session (handoff boundary).
+ *
+ * When enabled, assistant messages beyond `maxMessages` are truncated:
+ * the first `keepFirst` and last `keepLast` messages are preserved,
+ * with a "[... N messages truncated]" marker inserted between them.
+ * This reduces the context cost of notifying the parent session.
+ */
+export const DcpHandoffCompressionSchema = z.object({
+  /** Enable handoff boundary compression (default: true) */
+  enabled: z.boolean().default(true),
+  /** Max assistant messages before truncation kicks in (default: 6) */
+  maxMessages: z.number().int().min(1).default(6),
+  /** Number of leading messages to keep (default: 2) */
+  keepFirst: z.number().int().min(0).default(2),
+  /** Number of trailing messages to keep (default: 3) */
+  keepLast: z.number().int().min(0).default(3),
+})
+export type DcpHandoffCompression = z.infer<typeof DcpHandoffCompressionSchema>
+
 // ─── Root DCP config schema ─────────────────────────────────────────────
 
 export const DcpConfigSchema = z.object({
@@ -134,6 +157,14 @@ export const DcpConfigSchema = z.object({
 
   /** Default profile to activate when the command is invoked without arguments. Default: "balanced" */
   default_profile: z.string().optional(),
+
+  /** Handoff compression configuration for background task results */
+  handoffCompression: DcpHandoffCompressionSchema.default({
+    enabled: true,
+    maxMessages: 6,
+    keepFirst: 2,
+    keepLast: 3,
+  }),
 
   /** Base/shared configuration that applies across all profiles */
   base: z

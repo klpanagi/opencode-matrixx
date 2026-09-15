@@ -70,6 +70,9 @@ export interface BackgroundTask {
   stablePolls?: number
   /** Why the task reached a terminal state (e.g. stopped/statusUncertain) */
   terminalReason?: BackgroundTerminalReason
+
+  /** Compressed result payload for handoff to parent session (set by tryCompleteTask) */
+  compactedResult?: string
 }
 
 export interface LaunchInput {

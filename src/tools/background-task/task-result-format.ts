@@ -9,6 +9,19 @@ function getTimeString(value: unknown): string {
 }
 
 export async function formatTaskResult(task: BackgroundTask, client: BackgroundOutputClient): Promise<string> {
+  if (task.compactedResult) {
+    const duration = formatDuration(task.startedAt ?? new Date(), task.completedAt)
+    return `Task Result
+
+Task ID: ${task.id}
+Description: ${task.description}
+Duration: ${duration}
+Session ID: ${task.sessionID}
+
+---
+${task.compactedResult}`
+  }
+
   if (!task.sessionID) {
     return `Error: Task has no sessionID`
   }
