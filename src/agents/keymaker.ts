@@ -1,4 +1,5 @@
 import type { AgentConfig } from "@opencode-ai/sdk"
+import { resolveGrepGlobUsable } from "../shared/context-mode-enforcement"
 import type { AvailableAgent, AvailableCategory, AvailableSkill, AvailableTool } from "./dynamic-agent-prompt-builder"
 import {
   buildAntiPatternsSection,
@@ -13,7 +14,6 @@ import {
   buildOracleSection,
   buildToolSelectionTable,
   categorizeTools,
-  hasGrepGlobToolNames,
 } from "./dynamic-agent-prompt-builder"
 import type { AgentMode } from "./types"
 
@@ -126,7 +126,7 @@ function buildKeymakerPrompt(
   const hardBlocks = buildHardBlocksSection()
   const antiPatterns = buildAntiPatternsSection()
   const hasContextMode = availableTools.some((t) => t.name.startsWith("ctx_"))
-  const hasGrepGlob = hasGrepGlobToolNames(availableTools.map((t) => t.name))
+  const hasGrepGlob = resolveGrepGlobUsable(availableTools.map((t) => t.name))
   const contextDiscipline = buildContextDisciplineSection(hasContextMode, hasGrepGlob)
   const hasHeadroom = availableTools.some((t) => t.name.startsWith("headroom_"))
   const headroomDiscipline = buildHeadroomSection(hasHeadroom)

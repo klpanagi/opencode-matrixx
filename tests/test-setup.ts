@@ -10,6 +10,8 @@ import { _resetThinkModeStateForTesting } from "../src/hooks/think-mode/hook"
 import { _resetNormalizeModelCacheForTesting } from "../src/hooks/think-mode/switcher"
 import { _resetDisabledSetsCacheForTesting } from "../src/plugin-config"
 import { _resetMessagesTransformCacheForTesting } from "../src/plugin/messages-transform"
+import { _resetDisciplineCacheForTesting } from "../src/agents/dynamic-agent-prompt-builder"
+import { _resetContextModeEnforcementForTesting } from "../src/shared/context-mode-enforcement"
 
 beforeEach(() => {
   _resetForTesting()
@@ -24,4 +26,6 @@ beforeEach(() => {
   _resetNormalizeModelCacheForTesting()
   _resetDisabledSetsCacheForTesting()
   _resetMessagesTransformCacheForTesting()
+  _resetDisciplineCacheForTesting()
+  _resetContextModeEnforcementForTesting()
 })

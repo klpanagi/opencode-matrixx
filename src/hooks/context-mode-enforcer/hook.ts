@@ -2,6 +2,7 @@ import type { Hooks } from "@opencode-ai/plugin"
 
 import type { MatrixxConfig } from "../../config"
 import { log } from "../../shared"
+import { hasWorkingSubstitute, resolveContextModeEnforcement } from "../../shared/context-mode-enforcement"
 import {
   BLOCK_MESSAGE_GREP_GLOB,
   HOOK_NAME,
@@ -13,11 +14,11 @@ const BASH_FILE_READ_RE = /^\s*(cat|head|tail)\s+/
 const BASH_GREP_RE = /\bgrep\b/
 
 function resolveContextModeConfig(pluginConfig: MatrixxConfig) {
-  const cfg = pluginConfig.context_mode
+  const { enabled, enforce, blockedTools } = resolveContextModeEnforcement(pluginConfig.context_mode)
   return {
-    enabled: cfg?.enabled ?? true,
-    enforce: cfg?.enforce ?? false,
-    blockedTools: new Set((cfg?.blocked_tools ?? ["grep", "glob"]).map((t) => t.toLowerCase())),
+    enabled,
+    enforce,
+    blockedTools: new Set(blockedTools),
   }
 }
 
@@ -63,7 +64,7 @@ export function createContextModeEnforcerHook(pluginConfig: MatrixxConfig): Hook
 
       if (isGrepGlob) {
         if (!isBlocked) return
-        if (enforce) {
+        if (enforce && hasWorkingSubstitute()) {
           log(`[${HOOK_NAME}] BLOCKED ${tool}`, { sessionID: input.sessionID })
           throw new Error(BLOCK_MESSAGE_GREP_GLOB)
         }

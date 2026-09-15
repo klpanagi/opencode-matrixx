@@ -3,11 +3,11 @@ import {
   buildCompactContextDisciplineSection,
   buildExploreDisciplineSection,
   buildHeadroomSection,
-  hasGrepGlobToolNames,
 } from "../agents/dynamic-agent-prompt-builder";
 import { createMouseAgentWithOverrides } from "../agents/mouse";
 import type { MatrixxConfig } from "../config";
 import { log, migrateAgentConfig } from "../shared";
+import { type ContextModeConfigInput, getContextModeForPrompts, resolveGrepGlobUsable, setContextModeForPrompts } from "../shared/context-mode-enforcement";
 import { isTaskSystemEnabled } from "../shared/task-system-gating";
 import { reorderAgentsByPriority } from "./agent-priority-order";
 import { buildOracleAgentConfig } from "./oracle-agent-config-builder";
@@ -26,11 +26,12 @@ export function getAvailableToolNames(): string[] {
 export function injectContextDiscipline(
   availableToolNames: string[],
   agents: Record<string, Record<string, unknown>>,
+  contextMode?: ContextModeConfigInput,
 ): void {
   const hasContextMode = availableToolNames.some((n) => n.startsWith("ctx_"));
   const hasHeadroom = availableToolNames.some((n) => n.startsWith("headroom_"));
   if (!(hasContextMode || hasHeadroom)) return;
-  const hasGrepGlob = hasGrepGlobToolNames(availableToolNames);
+  const hasGrepGlob = resolveGrepGlobUsable(availableToolNames, contextMode ?? getContextModeForPrompts());
   const exploreAgents = new Set(["trinity", "operator", "seraph", "smith", "merovingian", "construct", "bdd-contract"]);
   for (const [name, cfg] of Object.entries(agents)) {
     if (name === "morpheus" || name === "keymaker") continue;
@@ -79,6 +80,7 @@ export async function applyAgentConfig(params: {
     disabledSkills.add("tdd-enforcer");
   }
   const useTaskSystem = isTaskSystemEnabled(params.pluginConfig);
+  setContextModeForPrompts(params.pluginConfig.context_mode);
   const availableToolNames = getAvailableToolNames()
 
   const builtinAgents = await createBuiltinAgents(
@@ -210,7 +212,7 @@ export async function applyAgentConfig(params: {
   }
 
   if (params.config.agent) {
-    injectContextDiscipline(availableToolNames, params.config.agent as Record<string, Record<string, unknown>>);
+    injectContextDiscipline(availableToolNames, params.config.agent as Record<string, Record<string, unknown>>, params.pluginConfig.context_mode);
   }
 
   const agentResult = params.config.agent as Record<string, unknown>;

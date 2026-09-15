@@ -10,6 +10,7 @@ import { setAvailableToolNames } from "./plugin-handlers/agent-config-handler"
 import { createPluginInterface } from "./plugin-interface"
 import { createModelCacheState } from "./plugin-state"
 import { injectServerAuthIntoClient, log } from "./shared"
+import { setContextModeForPrompts } from "./shared/context-mode-enforcement"
 import { createFirstMessageVariantGate } from "./shared/first-message-variant"
 import { startTmuxCheck } from "./tools"
 
@@ -22,6 +23,7 @@ const MatrixxPlugin: Plugin = async (ctx) => {
   startTmuxCheck()
 
   const pluginConfig = await loadPluginConfig(ctx.directory, ctx)
+  setContextModeForPrompts(pluginConfig.context_mode)
   const disabledHooks = new Set(pluginConfig.disabled_hooks ?? [])
 
   const isHookEnabled = (hookName: HookName): boolean => !disabledHooks.has(hookName)
