@@ -53,7 +53,7 @@ export function createDelegateTask(options: DelegateTaskToolOptions): ToolDefini
     return desc ? `  - ${name}: ${desc}` : `  - ${name}`
   }).join("\n")
 
-  const description = `Spawn agent task with category-based or direct agent selection.
+      const description = `Spawn agent task with category-based or direct agent selection.
 
 REQUIRED: You MUST provide EITHER category OR subagent_type (one of them is REQUIRED, but not both).
 - If using a predefined category → provide category
@@ -65,7 +65,7 @@ REQUIRED: You MUST provide EITHER category OR subagent_type (one of them is REQU
   Available categories:
 ${categoryList}
 - subagent_type: Use specific agent directly (e.g., "oracle", "trinity")
-- run_in_background: true=async (returns task_id), false=sync (waits for result). Default: false. Use background=true ONLY for parallel exploration with 5+ independent queries.
+- run_in_background: true=async (returns task_id), false=sync (waits for result). Default: false. Use true for ANY parallel independent work (exploration, fan-out, multi-agent waves); false awaits the result inline.
 - session_id: Existing Task session to continue (from previous task output). Continues agent with FULL CONTEXT PRESERVED - saves tokens, maintains continuity.
 - command: The command that triggered this task (optional, for slash command tracking).
 
@@ -115,9 +115,26 @@ Prompts MUST be in English.`
         title: args.description,
       })
 
-      // Honor the schema's documented "Default: false" — Zod .default() is not applied
-      // at runtime by the OpenCode plugin tool executor, so we apply the default here.
-      // Defense-in-depth: throw only for invalid types (not for missing values).
+      // ── Four-option analysis (T4 reconciliation, behavioural conservation):
+      //   (a) flip default to true → REJECTED. Silently fire-and-forgets every
+      //       single-shot delegation; sync callers awaiting a result would receive
+      //       a task_id instead of content — breaking change across all agents/templates.
+      //   (b) keep false + fix prompt text → RECOMMENDED. Zero behavioural change;
+      //       removes the "ONLY … 5+ queries" restriction so text matches the repo
+      //       directive (AGENTS.md:223: "never sequential task() calls; use
+      //       run_in_background=true and collect via background_output"). Cheapest,
+      //       safest, reviewable as a text diff.
+      //   (c) per-category default → REJECTED. Category matrix already complex; adds a
+      //       second default source and per-category surprise; no requester asked for
+      //       divergent sync/async per category.
+      //   (d) warn on serialized task() calls → REJECTED as a blocker-gate (new
+      //       detection subsystem, hook wiring, false-positive risk on legitimately
+      //       sequential chains); accepted only as a future docs-lint idea.
+      //   sameProviderPolicy: symbol does not exist (rg EMPTY); no provider-policy knob
+      //     added.
+      // ── Coercion: honor the schema's documented "Default: false".
+      //   Zod .default() is not applied at runtime by the OpenCode plugin tool executor,
+      //   so we apply the default here. Defense-in-depth: throw only for invalid types.
       if (args.run_in_background === undefined) {
         args.run_in_background = false
       } else if (typeof args.run_in_background !== "boolean") {

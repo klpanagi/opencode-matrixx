@@ -459,6 +459,7 @@ Run background subagents in separate tmux panes for **visual multi-agent executi
 
 When `tmux.enabled` is `true` and you're inside a tmux session:
 - Background agents (via `task(run_in_background=true)`) spawn in new tmux panes
+  **Note**: `run_in_background` defaults to `false`. Use `true` for any parallel independent work (exploration, fan-out, multi-agent waves). `true` is async (returns `task_id` immediately, no result); `false` is sync (awaits result inline). Never call `task()` sequentially when tasks are independent — use `run_in_background=true` + `background_output` instead (AGENTS.md:223).
 - Each pane shows the subagent's real-time output
 - Panes are automatically closed when the subagent completes
 - Layout is automatically adjusted based on your configuration
@@ -704,6 +705,15 @@ Configure concurrency limits for background agent tasks. This controls how many 
     "modelConcurrency": {
       "anthropic/claude-opus-4-6": 2,
       "anthropic/claude-haiku-4-5": 10
+    },
+    "wakeScheduler": {
+      "enabled": true,
+      "intervalMs": 300000
+    },
+    "jobBoard": {
+      "enabled": true,
+      "strategy": "latest",
+      "maxRetainedSnapshots": 20
     }
   }
 }
@@ -724,6 +734,11 @@ Configure concurrency limits for background agent tasks. This controls how many 
 | `nestedAdmission.enabled` | `true` | Enable nested-admission exemption. Prevents a managed background child that spawns its own background work from self-deadlocking the semaphore. |
 | `nestedAdmission.mode` | `"bypass"` | `"bypass"`: nested launches skip the concurrency semaphore entirely. `"reserve"`: nested launches acquire a slot but with exemption logic. |
 | `nestedAdmission.maxDepth` | `2` | Maximum nesting depth (1..5). Depth-cap overflow yields terminal `stopped` with `terminalReason: "nested-depth-exceeded"`. |
+| `wakeScheduler.enabled` | `true` | Idle-parent wake scheduler — periodic `<system-reminder>` nudges when the parent session is idle with pending todos. |
+| `wakeScheduler.intervalMs` | `300000` | Wake reminder interval in milliseconds (default: 300000 = 5 minutes, minimum: 60000 = 1 minute). |
+| `jobBoard.enabled` | `true` | Job-board snapshot in background-task notifications. |
+| `jobBoard.strategy` | `"latest"` | `"latest"`: strip-and-replace snapshot. `"checkpoint-compatible"`: append-only ledger with oldest-eviction. |
+| `jobBoard.maxRetainedSnapshots` | `20` | Max retained snapshots for the checkpoint-compatible strategy (1..100). |
 | `wallClockTimeoutMs`      | `0`   | Wall-clock execution timeout in milliseconds. Union type: `0` disables wall-clock enforcement (OFF/default). Values ≥60000 enforce a maximum runtime (range 60000–2147483647). Zero means legacy unbounded behavior; any non-zero value triggers terminal `stopped` with `terminalReason: "wallclock-timeout"` when the process runs past this limit. |
 | `wallClockAbortGraceMs`   | `5000` | Grace period in milliseconds between wall-clock timeout expiration and actual task abort signal. Gives long-running processes time to finish flush operations, release resources, or exit cleanly on SIGTERM/SIGKILL (range 1000–60000). |
 **Priority Order**: `modelConcurrency` > `providerConcurrency` > `defaultConcurrency`

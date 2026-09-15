@@ -4733,6 +4733,40 @@
           },
           "additionalProperties": false
         },
+        "wakeScheduler": {
+          "type": "object",
+          "properties": {
+            "enabled": {
+              "type": "boolean"
+            },
+            "intervalMs": {
+              "type": "number",
+              "minimum": 60000
+            }
+          },
+          "additionalProperties": false
+        },
+        "jobBoard": {
+          "type": "object",
+          "properties": {
+            "enabled": {
+              "type": "boolean"
+            },
+            "strategy": {
+              "type": "string",
+              "enum": [
+                "latest",
+                "checkpoint-compatible"
+              ]
+            },
+            "maxRetainedSnapshots": {
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 100
+            }
+          },
+          "additionalProperties": false
+        },
         "wallClockTimeoutMs": {
           "anyOf": [
             {
