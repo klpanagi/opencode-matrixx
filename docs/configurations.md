@@ -1328,7 +1328,7 @@ Enforce sandbox-based `ctx_*` tools (`ctx_batch_execute`, `ctx_search`, `ctx_exe
   "context_mode": {
     "enabled": true,      // default true — inject ctx_* discipline into prompts (runtime read + fallback)
     "enforce": false,     // when true, blocks raw grep/glob via hook (read is WARN_ONLY, write is no-op)
-    "blocked_tools": ["read", "grep", "glob"]  // read warns only; write has no hook branch
+    "blocked_tools": ["grep", "glob"]  // tools to gate (add "read"/"bash" to also cover those)
   }
 }
 ```
@@ -1337,7 +1337,7 @@ Enforce sandbox-based `ctx_*` tools (`ctx_batch_execute`, `ctx_search`, `ctx_exe
 |--------|------|---------|-------------|
 | `enabled` | `boolean` | `true` | Inject context-mode discipline into agent prompts (runtime file + fallback). |
 | `enforce` | `boolean` | `false` | When `true`, `context-mode-enforcer` hook blocks `grep`/`glob` for analysis (`read` warns, `write` no-op) — forces `ctx_*` sandbox. |
-| `blocked_tools` | `string[]` | `["read","grep","glob"]` | Tools gated when `enforce:true` (`read` warn-only; `write` ignored — no branch). |
+| `blocked_tools` | `string[]` | `["grep","glob"]` | Tools gated when `enforce:true` (`read` warn-only when listed; `write` ignored — no branch). |
 
 > Schema: `src/config/schema/context-mode.ts` (`ContextModeConfigSchema`, `additionalProperties:false` — no `disabled_tools` inside `context_mode`; use top-level `disabled_tools` to hide tools). Example: `matrixx.example.jsonc` § context_mode. Doctor: `doctor --check context-mode-integration` reports discipline path + version + plan tools.
 

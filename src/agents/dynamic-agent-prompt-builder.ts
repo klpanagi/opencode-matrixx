@@ -1,7 +1,8 @@
-import { existsSync, readFileSync } from "node:fs"
-import { homedir } from "node:os"
-import { join } from "node:path"
-import { getOpenCodeCacheDir } from "../shared/data-path"
+import { readFileSync } from "node:fs"
+import {
+  resolveContextModeDisciplinePath,
+  hasGrepGlobToolNames as sharedHasGrepGlobToolNames,
+} from "../shared/context-mode-enforcement"
 import { log } from "../shared/logger"
 import { truncateDescription } from "../shared/truncate-description"
 import type { AgentPromptMetadata } from "./types"
@@ -388,20 +389,20 @@ export function buildAntiPatternsSection(): string {
 ${patterns.join("\n")}`
 }
 
-let cachedRuntimeFull: string | null = null
-let cachedRuntimeCompact: string | null = null
+let cachedRuntimeFull: Record<string, string> = {}
+let cachedRuntimeCompact: Record<string, string> = {}
 let cachedFallbackFull: Record<string, string> = {}
 let cachedFallbackCompact: Record<string, string> = {}
 
 export function _resetDisciplineCacheForTesting(): void {
-  cachedRuntimeFull = null
-  cachedRuntimeCompact = null
+  cachedRuntimeFull = {}
+  cachedRuntimeCompact = {}
   cachedFallbackFull = {}
   cachedFallbackCompact = {}
 }
 
 export function hasGrepGlobToolNames(toolNames: readonly string[]): boolean {
-  return toolNames.some((n) => n === "grep" || n === "glob")
+  return sharedHasGrepGlobToolNames(toolNames)
 }
 
 function fallbackFullDiscipline(hasGrepGlob: boolean): string {
@@ -410,7 +411,7 @@ function fallbackFullDiscipline(hasGrepGlob: boolean): string {
     : "| Analysis / Processing | Use ctx_* tools — NEVER raw read/bash for analysis |"
   const search = hasGrepGlob
     ? "| Search | ctx_search FIRST -> grep/glob fallback |"
-    : "| Search | ctx_search FIRST (indexed KB) -> LSP/ast_grep fallback |"
+    : "| Search | ctx_search FIRST (indexed KB) -> ctx_batch_execute / ctx_execute (rg) or LSP/ast_grep fallback |"
   return `### Context Discipline (ALWAYS)
 
 | Scenario | Tool |
@@ -432,7 +433,7 @@ function fallbackCompactDiscipline(hasGrepGlob: boolean): string {
     : "| Analysis / Aggregation / Counting | ctx_batch_execute / ctx_execute(_file) — NEVER raw read for analysis |"
   const search = hasGrepGlob
     ? "| Search | ctx_search FIRST (indexed KB) → grep/glob fallback (raw FS) |"
-    : "| Search | ctx_search FIRST (indexed KB) → LSP/ast_grep fallback |"
+    : "| Search | ctx_search FIRST (indexed KB) → ctx_batch_execute / ctx_execute (rg) or LSP/ast_grep fallback |"
   const note = hasGrepGlob
     ? "Edits need prior read for LINE#ID — read→edit chain exempt (non-plan paths; .matrixx/plans/*.md must use plan_read/plan_update). MUST use ctx_* when available — raw grep/read is forbidden for analysis."
     : "Edits need prior read for LINE#ID — read→edit chain exempt (non-plan paths; .matrixx/plans/*.md must use plan_read/plan_update). MUST use ctx_* when available — raw read for analysis is forbidden."
@@ -451,62 +452,52 @@ ${note}`
 function exploreCtxPart(hasGrepGlob: boolean): string {
   return hasGrepGlob
     ? "MUST use ctx_search for indexed hits → grep/glob fallback ONLY when ctx_* unavailable; use ctx_batch_execute / ctx_execute for multi-file analysis; use ctx_fetch_and_index for docs/web → ctx_search. Raw grep/read/glob for analysis is forbidden when ctx_* is available."
-    : "MUST use ctx_search for indexed hits → LSP/ast_grep fallback ONLY when ctx_* unavailable; use ctx_batch_execute / ctx_execute for multi-file analysis; use ctx_fetch_and_index for docs/web → ctx_search. Raw read for analysis is forbidden when ctx_* is available."
+    : "MUST use ctx_search for indexed hits → ctx_batch_execute / ctx_execute (rg) or LSP/ast_grep fallback ONLY when ctx_* unavailable; use ctx_batch_execute / ctx_execute for multi-file analysis; use ctx_fetch_and_index for docs/web → ctx_search. Raw read for analysis is forbidden when ctx_* is available."
 }
 
-
-function resolveContextModeDisciplinePath(): string | null {
-  try {
-    const resolved = require.resolve("context-mode/configs/opencode/AGENTS.md")
-    if (existsSync(resolved)) return resolved
-  } catch {}
-  try {
-    const cacheDir = getOpenCodeCacheDir()
-    const p = join(cacheDir, "packages/context-mode@latest/node_modules/context-mode/configs/opencode/AGENTS.md")
-    if (existsSync(p)) return p
-  } catch {}
-  try {
-    const base = process.env.XDG_CACHE_HOME ?? join(homedir(), ".cache")
-    const p = join(base, "opencode/packages/context-mode@latest/node_modules/context-mode/configs/opencode/AGENTS.md")
-    if (existsSync(p)) return p
-  } catch {}
-  try {
-    const p2 = join(homedir(), ".cache/opencode/packages/context-mode@latest/node_modules/context-mode/configs/opencode/AGENTS.md")
-    if (existsSync(p2)) return p2
-  } catch {}
-  return null
-}
 
 function stripDisciplineHeader(content: string): string {
   return content.trim()
 }
 
-function loadContextModeDiscipline(hasGrepGlob = true): string {
-  if (cachedRuntimeFull) return cachedRuntimeFull
-  const fallbackKey = hasGrepGlob ? "1" : "0"
-  if (cachedFallbackFull[fallbackKey]) return cachedFallbackFull[fallbackKey]
+function readDisciplineFile(): { text: string; version: string; path: string } {
+  const p = resolveContextModeDisciplinePath()
+  if (!p) throw new Error("discipline file not found")
+  const raw = readFileSync(p, "utf8")
+  let version = "1.0.169"
   try {
-    const p = resolveContextModeDisciplinePath()
-    if (!p) throw new Error("discipline file not found")
-    const raw = readFileSync(p, "utf8")
-    let version = "1.0.169"
-    try {
-      const pkgResolved = require.resolve("context-mode/package.json")
-      const pkgRaw = readFileSync(pkgResolved, "utf8")
-      const pkg = JSON.parse(pkgRaw)
-      if (pkg.version) version = pkg.version
-    } catch {}
-    const body = stripDisciplineHeader(raw)
-    const withVersion = body.includes("<!-- discipline") ? body : `${body}\n\n<!-- discipline v${version} Elastic-2.0 -->`
-    cachedRuntimeFull = withVersion
-    log("context-discipline loaded", { path: p, version })
-    return withVersion
+    const pkgResolved = require.resolve("context-mode/package.json")
+    const pkgRaw = readFileSync(pkgResolved, "utf8")
+    const pkg = JSON.parse(pkgRaw)
+    if (pkg.version) version = pkg.version
+  } catch {}
+  const body = stripDisciplineHeader(raw)
+  const text = body.includes("<!-- discipline") ? body : `${body}\n\n<!-- discipline v${version} Elastic-2.0 -->`
+  return { text, version, path: p }
+}
+
+function loadDiscipline(kind: "full" | "compact", hasGrepGlob = true): string {
+  const fallbackKey = hasGrepGlob ? "1" : "0"
+  const runtimeCache = kind === "full" ? cachedRuntimeFull : cachedRuntimeCompact
+  const fallbackCache = kind === "full" ? cachedFallbackFull : cachedFallbackCompact
+  const label = kind === "full" ? "context-discipline" : "compact-discipline"
+  if (runtimeCache[fallbackKey]) return runtimeCache[fallbackKey]
+  if (fallbackCache[fallbackKey]) return fallbackCache[fallbackKey]
+  try {
+    const { text, version, path } = readDisciplineFile()
+    runtimeCache[fallbackKey] = text
+    log(`${label} loaded`, { path, version })
+    return text
   } catch (e) {
-    log("context-discipline fallback", { error: String(e) })
-    const fallback = fallbackFullDiscipline(hasGrepGlob)
-    cachedFallbackFull[fallbackKey] = fallback
+    log(`${label} fallback`, { error: String(e) })
+    const fallback = kind === "full" ? fallbackFullDiscipline(hasGrepGlob) : fallbackCompactDiscipline(hasGrepGlob)
+    fallbackCache[fallbackKey] = fallback
     return fallback
   }
+}
+
+function loadContextModeDiscipline(hasGrepGlob = true): string {
+  return loadDiscipline("full", hasGrepGlob)
 }
 
 export function buildContextDisciplineSection(hasContextMode = false, hasGrepGlob = true): string {
@@ -530,31 +521,7 @@ export function buildHeadroomSection(hasHeadroom = false): string {
 
 
 function loadCompactContextDiscipline(hasGrepGlob = true): string {
-  if (cachedRuntimeCompact) return cachedRuntimeCompact;
-  const fallbackKey = hasGrepGlob ? "1" : "0";
-  if (cachedFallbackCompact[fallbackKey]) return cachedFallbackCompact[fallbackKey];
-  try {
-    const p = resolveContextModeDisciplinePath();
-    if (!p) throw new Error("discipline file not found");
-    const raw = readFileSync(p, "utf8");
-    let version = "1.0.169";
-    try {
-      const pkgResolved = require.resolve("context-mode/package.json");
-      const pkgRaw = readFileSync(pkgResolved, "utf8");
-      const pkg = JSON.parse(pkgRaw);
-      if (pkg.version) version = pkg.version;
-    } catch {}
-    const body = stripDisciplineHeader(raw);
-    const withVersion = body.includes("<!-- discipline") ? body : `${body}\n\n<!-- discipline v${version} Elastic-2.0 -->`;
-    cachedRuntimeCompact = withVersion;
-    log("compact-discipline loaded", { path: p, version });
-    return withVersion;
-  } catch (e) {
-    log("compact-discipline fallback", { error: String(e) });
-    const fallback = fallbackCompactDiscipline(hasGrepGlob);
-    cachedFallbackCompact[fallbackKey] = fallback;
-    return fallback;
-  }
+  return loadDiscipline("compact", hasGrepGlob)
 }
 
 export function buildCompactContextDisciplineSection(hasContextMode = false, hasGrepGlob = true): string {
