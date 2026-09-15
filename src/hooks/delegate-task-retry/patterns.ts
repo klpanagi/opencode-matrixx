@@ -9,7 +9,7 @@ export const DELEGATE_TASK_ERROR_PATTERNS: DelegateTaskErrorPattern[] = [
     pattern: "run_in_background",
     errorType: "missing_run_in_background",
     fixHint:
-      "Add run_in_background=false (for delegation) or run_in_background=true (for parallel exploration)",
+      "Add run_in_background=false (sync, awaits result inline; the default) or run_in_background=true (async, returns task_id immediately for parallel independent work such as exploration or fan-out waves)",
   },
   {
     pattern: "load_skills",

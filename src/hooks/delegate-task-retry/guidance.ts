@@ -35,7 +35,7 @@ export function buildRetryGuidance(errorInfo: DetectedError): string {
    description="Task description",
    prompt="Detailed prompt...",
    category="blue-pill",  // OR subagent_type="trinity"
-   run_in_background=false,
+   run_in_background=false,  // false is default — use true for any parallel independent work (returns task_id; async). Sync awaits result inline.
    load_skills=[]
  )
  \`\`\`

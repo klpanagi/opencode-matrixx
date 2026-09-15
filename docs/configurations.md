@@ -459,6 +459,7 @@ Run background subagents in separate tmux panes for **visual multi-agent executi
 
 When `tmux.enabled` is `true` and you're inside a tmux session:
 - Background agents (via `task(run_in_background=true)`) spawn in new tmux panes
+  **Note**: `run_in_background` defaults to `false`. Use `true` for any parallel independent work (exploration, fan-out, multi-agent waves). `true` is async (returns `task_id` immediately, no result); `false` is sync (awaits result inline). Never call `task()` sequentially when tasks are independent — use `run_in_background=true` + `background_output` instead (AGENTS.md:223).
 - Each pane shows the subagent's real-time output
 - Panes are automatically closed when the subagent completes
 - Layout is automatically adjusted based on your configuration
