@@ -7,6 +7,7 @@ import { hasPendingQuestionMessage } from "../../shared/awaiting-user"
 import { formatDuration } from "../../shared/format-duration"
 import { setSessionTemperature, setSessionTools } from "../../shared/session-state"
 import { isInsideTmux } from "../../shared/tmux"
+import { formatWallclockTimeout } from "../../shared/wallclock-outcome"
 import { registerSubagentSession, subagentSessions, unregisterSubagentSession } from "../session-state"
 import { getTaskToastManager } from "../task-toast-manager"
 import { classifyAdmission } from "./admission"
@@ -18,6 +19,8 @@ import {
   DEFAULT_NESTED_ADMISSION_MODE,
   DEFAULT_NESTED_MAX_DEPTH,
   DEFAULT_STALE_TIMEOUT_MS,
+  DEFAULT_WALL_CLOCK_ABORT_GRACE_MS,
+  DEFAULT_WALL_CLOCK_TIMEOUT_MS,
   MIN_IDLE_TIME_MS,
   MIN_RUNTIME_BEFORE_STALE_MS,
   POLLING_INTERVAL_MS,
@@ -49,6 +52,7 @@ import type {
   ReviveInput,
 } from "./types"
 import { resolveWakeIntervalMs, shouldWakeForParent, WAKE_REMINDER_TEXT, WakeScheduler } from "./wake-scheduler"
+import { WallclockSupervisor } from "./wallclock"
 
 type ProcessCleanupEvent = NodeJS.Signals | "beforeExit" | "exit"
 
@@ -159,6 +163,10 @@ export class BackgroundManager {
   private nestedActive: Map<string, number> = new Map()
   /** Task IDs admitted via nested bypass — used to decrement `nestedActive` exactly once. */
   private nestedBypassTaskIds: Set<string> = new Set()
+  /** Elapsed-time bound supervisor (U7 wall-clock). OFF by default — arms nothing when disabled. */
+  private wallclock = new WallclockSupervisor()
+  /** Grace timers pending a terminal wall-clock mark, keyed by task id. */
+  private wallclockGraceTimers = new Map<string, ReturnType<typeof setTimeout>>()
   readonly taskHistory = new TaskHistory()
 
   constructor(
@@ -195,6 +203,64 @@ export class BackgroundManager {
       writeHandle(this.directory, task)
     } catch (error) {
       log("[background-agent] Failed to persist background handle:", { taskId: task.id, error })
+    }
+  }
+
+  private armWallclock(task: BackgroundTask): void {
+    const timeoutMs = this.config?.wallClockTimeoutMs ?? DEFAULT_WALL_CLOCK_TIMEOUT_MS
+    if (timeoutMs === 0 || timeoutMs === undefined || !task.startedAt) return
+    const startedAtMs = task.startedAt.getTime()
+    this.wallclock.arm(task.id, startedAtMs, timeoutMs, () => {
+      void this.onWallclockFire(task.id)
+    })
+  }
+
+  private disarmWallclock(taskId: string): void {
+    this.wallclock.disarm(taskId)
+    const grace = this.wallclockGraceTimers.get(taskId)
+    if (grace !== undefined) {
+      clearTimeout(grace)
+      this.wallclockGraceTimers.delete(taskId)
+    }
+  }
+
+  private async onWallclockFire(taskId: string): Promise<void> {
+    const task = this.tasks.get(taskId)
+    if (task?.status !== "running") return
+    if (this.wallclockGraceTimers.has(taskId)) return
+    if (task.sessionID) {
+      this.abortSessionQuietly(task.sessionID, "wall-clock-timeout")
+    }
+    const graceMs = this.config?.wallClockAbortGraceMs ?? DEFAULT_WALL_CLOCK_ABORT_GRACE_MS
+    const startedAtMs = task.startedAt?.getTime() ?? Date.now()
+    const limitMs = this.config?.wallClockTimeoutMs ?? DEFAULT_WALL_CLOCK_TIMEOUT_MS
+    const timer = setTimeout(() => {
+      this.wallclockGraceTimers.delete(taskId)
+      void this.completeWallclockTimeout(taskId, startedAtMs, limitMs)
+    }, graceMs)
+    this.wallclockGraceTimers.set(taskId, timer)
+  }
+
+  private async completeWallclockTimeout(taskId: string, startedAtMs: number, limitMs: number): Promise<void> {
+    const task = this.tasks.get(taskId)
+    if (task?.status !== "running") return
+    const elapsedMs = Date.now() - startedAtMs
+    const elapsedMin = Math.round(elapsedMs / 60000)
+    const limitMin = Math.round(limitMs / 60000)
+    task.status = "cancelled"
+    task.terminalReason = "wall-clock-timeout"
+    task.error = `Wall-clock timeout (elapsed ${elapsedMin}min, limit ${limitMin}min)\n\n${formatWallclockTimeout(task.id, elapsedMs, limitMs)}`
+    task.completedAt = new Date()
+    this.persistHandle(task)
+    if (task.concurrencyKey) {
+      this.concurrencyManager.release(task.concurrencyKey)
+      task.concurrencyKey = undefined
+    }
+    this.decrementNestedActive(task)
+    try {
+      await this.enqueueNotificationForParent(task.parentSessionID, () => this.notifyParentSession(task))
+    } catch (err) {
+      log("[background-agent] Error in notifyParentSession for wall-clock task:", { taskId: task.id, error: err })
     }
   }
 
@@ -255,6 +321,7 @@ export class BackgroundManager {
       pending.add(task.id)
       this.pendingByParent.set(task.parentSessionID, pending)
       this.startPolling()
+      this.armWallclock(task)
       return
     }
 
@@ -262,6 +329,7 @@ export class BackgroundManager {
     task.terminalReason = outcome.terminalReason
     task.completedAt = new Date()
     this.persistHandle(task)
+    this.disarmWallclock(task.id)
   }
 
   async launch(input: LaunchInput): Promise<BackgroundTask> {
@@ -488,6 +556,7 @@ export class BackgroundManager {
     task.completedAt = new Date()
     task.error = errorMessage
     this.persistHandle(task)
+    this.disarmWallclock(task.id)
     this.taskHistory.record(task.parentSessionID, {
       id: task.id,
       sessionID: task.sessionID,
@@ -610,6 +679,7 @@ export class BackgroundManager {
     task.concurrencyKey = concurrencyKey
     task.concurrencyGroup = concurrencyKey
     this.persistHandle(task)
+    this.armWallclock(task)
 
     this.taskHistory.record(input.parentSessionID, { id: task.id, sessionID, agent: input.agent, description: input.description, status: "running", category: input.category, startedAt: task.startedAt })
     this.startPolling()
@@ -675,6 +745,7 @@ export class BackgroundManager {
         }
         existingTask.completedAt = new Date()
         this.persistHandle(existingTask)
+        this.disarmWallclock(existingTask.id)
         if (existingTask.concurrencyKey) {
           this.concurrencyManager.release(existingTask.concurrencyKey)
           existingTask.concurrencyKey = undefined
@@ -874,6 +945,7 @@ export class BackgroundManager {
     // The MIN_IDLE_TIME_MS check uses startedAt, so resumed tasks need fresh timing
     existingTask.startedAt = new Date()
     this.persistHandle(existingTask)
+    this.armWallclock(existingTask)
 
     existingTask.progress = {
       toolCalls: existingTask.progress?.toolCalls ?? 0,
@@ -943,6 +1015,7 @@ export class BackgroundManager {
       existingTask.error = errorMessage
       existingTask.completedAt = new Date()
       this.persistHandle(existingTask)
+      this.disarmWallclock(existingTask.id)
 
       // Release concurrency on error to prevent slot leaks
       if (existingTask.concurrencyKey) {
@@ -1055,6 +1128,7 @@ export class BackgroundManager {
     task.status = "running"; task.startedAt = new Date(); task.completedAt = undefined; task.error = undefined
     task.progress = { toolCalls: task.progress?.toolCalls ?? 0, lastUpdate: new Date() }
     this.persistHandle(task)
+    this.armWallclock(task)
     registerSubagentSession(sessionID, input.parentSessionID)
     this.startPolling()
     const toastManager = getTaskToastManager()
@@ -1071,6 +1145,7 @@ export class BackgroundManager {
       log("[background-agent] revive prompt error:", error)
       task.status = "interrupt"; task.error = error instanceof Error ? error.message : String(error); task.completedAt = new Date()
       this.persistHandle(task)
+      this.disarmWallclock(task.id)
       this.decrementNestedActive(task)
       if (task.concurrencyKey) { this.concurrencyManager.release(task.concurrencyKey); task.concurrencyKey = undefined }
       this.abortSessionQuietly(sessionID, "revive-error")
@@ -1275,6 +1350,7 @@ export class BackgroundManager {
       task.error = errorMessage ?? "Session error"
       task.completedAt = new Date()
       this.persistHandle(task)
+      this.disarmWallclock(task.id)
       this.taskHistory.record(task.parentSessionID, { id: task.id, sessionID: task.sessionID, agent: task.agent, description: task.description, status: "error", category: task.category, startedAt: task.startedAt, completedAt: task.completedAt })
 
       if (task.concurrencyKey) {
@@ -1489,6 +1565,7 @@ export class BackgroundManager {
     task.status = "cancelled"
     task.completedAt = new Date()
     this.persistHandle(task)
+    this.disarmWallclock(task.id)
     if (reason) {
       task.error = reason
     }
@@ -1659,6 +1736,7 @@ export class BackgroundManager {
     task.status = "completed"
     task.completedAt = new Date()
     this.persistHandle(task)
+    this.disarmWallclock(task.id)
     this.taskHistory.record(task.parentSessionID, { id: task.id, sessionID: task.sessionID, agent: task.agent, description: task.description, status: "completed", category: task.category, startedAt: task.startedAt, completedAt: task.completedAt })
 
     // Release concurrency BEFORE any async operations to prevent slot leaks
@@ -1842,6 +1920,7 @@ export class BackgroundManager {
         task.error = errorMessage
         task.completedAt = new Date()
         this.persistHandle(task)
+        this.disarmWallclock(task.id)
         if (task.concurrencyKey) {
           this.concurrencyManager.release(task.concurrencyKey)
           task.concurrencyKey = undefined
@@ -1946,6 +2025,7 @@ export class BackgroundManager {
         task.error = `Stale timeout (no activity for ${staleMinutes}min since start)`
         task.completedAt = new Date()
         this.persistHandle(task)
+        this.disarmWallclock(task.id)
 
         if (task.concurrencyKey) {
           this.concurrencyManager.release(task.concurrencyKey)
@@ -1978,6 +2058,7 @@ export class BackgroundManager {
       task.error = `Stale timeout (no activity for ${staleMinutes}min)`
       task.completedAt = new Date()
       this.persistHandle(task)
+      this.disarmWallclock(task.id)
 
       if (task.concurrencyKey) {
         this.concurrencyManager.release(task.concurrencyKey)
@@ -2114,6 +2195,11 @@ export class BackgroundManager {
     }
     this.idleDeferralTimers.clear()
     this.wakeScheduler.dispose()
+    this.wallclock.disarmAll()
+    for (const timer of this.wallclockGraceTimers.values()) {
+      clearTimeout(timer)
+    }
+    this.wallclockGraceTimers.clear()
 
     this.concurrencyManager.clear()
     this.tasks.clear()
