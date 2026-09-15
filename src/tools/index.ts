@@ -37,6 +37,7 @@ import {
   type BackgroundOutputManager,
   createBackgroundCancel,
   createBackgroundOutput,
+  createBackgroundRevive,
 } from "./background-task"
 
 type OpencodeClient = PluginInput["client"]
@@ -55,12 +56,17 @@ export {
   createTaskUpdateTool,
 } from "./task"
 
-export function createBackgroundTools(manager: BackgroundManager, client: OpencodeClient): Record<string, ToolDefinition> {
+export function createBackgroundTools(
+  manager: BackgroundManager,
+  client: OpencodeClient,
+  directory: string,
+): Record<string, ToolDefinition> {
   const outputManager: BackgroundOutputManager = manager
   const cancelClient: BackgroundCancelClient = client
   return {
     background_output: createBackgroundOutput(outputManager, client),
     background_cancel: createBackgroundCancel(manager, cancelClient),
+    background_revive: createBackgroundRevive(manager, directory),
   }
 }
 

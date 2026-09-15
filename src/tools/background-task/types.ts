@@ -15,6 +15,15 @@ export interface BackgroundCancelArgs {
   all?: boolean
 }
 
+export interface BackgroundReviveArgs {
+  taskId?: string
+  session_id?: string
+  prompt?: string
+  list?: boolean
+  force?: boolean
+  parentSessionID?: string
+}
+
 export type BackgroundOutputMessage = {
   info?: { role?: string; time?: string | { created?: number }; agent?: string }
   parts?: Array<{
@@ -42,6 +51,11 @@ export type BackgroundCancelClient = {
 }
 
 export type BackgroundOutputManager = Pick<import("../../features/background-agent").BackgroundManager, "getTask">
+
+export type BackgroundReviveManager = Pick<
+  import("../../features/background-agent").BackgroundManager,
+  "revive" | "listRevivable"
+>
 
 export type ToolContextWithMetadata = {
   sessionID: string

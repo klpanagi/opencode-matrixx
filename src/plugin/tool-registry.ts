@@ -60,7 +60,7 @@ export function createToolRegistry(args: {
 }): ToolRegistryResult {
   const { ctx, pluginConfig, managers, skillContext, availableCategories } = args
 
-  const backgroundTools = createBackgroundTools(managers.backgroundManager, ctx.client)
+  const backgroundTools = createBackgroundTools(managers.backgroundManager, ctx.client, ctx.directory)
   const delegateAgent = createDelegateAgent(ctx, managers.backgroundManager, pluginConfig.disabled_agents ?? [])
 
   const isMultimodalLookerEnabled = !(pluginConfig.disabled_agents ?? []).some(
