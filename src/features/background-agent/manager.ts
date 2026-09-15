@@ -999,18 +999,57 @@ export class BackgroundManager {
     const key = task.concurrencyGroup ?? task.agent
     const maxDepth = this.config?.nestedAdmission?.maxDepth ?? DEFAULT_NESTED_MAX_DEPTH
     const admissionTimeoutMs = this.config?.admissionTimeoutMs ?? DEFAULT_ADMISSION_TIMEOUT_MS
-    log("[background-agent] Reviving task:", { taskId: task.id, admission: classifyAdmission(input.parentSessionID, maxDepth).kind, key })
-    const outcome = await this.concurrencyManager.acquireWithDeadline(key, admissionTimeoutMs)
-    if (!outcome.granted) {
-      if (outcome.reason === "cancelled") {
-        task.status = "cancelled"; this.persistHandle(task)
-        throw new Error(`Revive admission cancelled for task ${task.id}.`)
+    const nestedEnabled = this.config?.nestedAdmission?.enabled ?? DEFAULT_NESTED_ADMISSION_ENABLED
+    const nestedMode = this.config?.nestedAdmission?.mode ?? DEFAULT_NESTED_ADMISSION_MODE
+    const admission = classifyAdmission(input.parentSessionID, maxDepth)
+    log("[background-agent] Reviving task:", { taskId: task.id, admission: admission.kind, key })
+
+    // Mirrors processKey's nested contract: a nested revive must never await the
+    // semaphore unboundedly (that is the Tier-1 U4 self-deadlock). Reserve mode
+    // tries the bounded reserved slot, then both modes fall back to bypass
+    // overflow capped by maxDepth.
+    let slotHeld = true
+    if (admission.kind === "nested" && nestedEnabled) {
+      let bypass = true
+      if (nestedMode === "reserve") {
+        const reserved = await this.concurrencyManager.acquireWithDeadline(key, NESTED_RESERVE_ATTEMPT_TIMEOUT_MS)
+        if (reserved.granted) {
+          bypass = false
+        } else if (reserved.reason === "cancelled") {
+          task.status = "cancelled"
+          this.persistHandle(task)
+          throw new Error(`Revive admission cancelled for task ${task.id}.`)
+        }
       }
-      const errorMessage = `Queue admission timed out after ${outcome.waitedMs}ms (key "${key}", limit ${this.concurrencyManager.getConcurrencyLimit(key)})`
-      await this.terminateQueuedTask(task, "queue-saturated", errorMessage)
-      throw new Error(errorMessage)
+      if (bypass) {
+        const active = this.nestedActive.get(key) ?? 0
+        if (active >= maxDepth) {
+          const depthMessage = `Nested admission depth exceeded (maxDepth ${maxDepth}, key "${key}")`
+          await this.terminateQueuedTask(task, "nested-depth-exceeded", depthMessage)
+          throw new Error(depthMessage)
+        }
+        this.nestedActive.set(key, active + 1)
+        this.nestedBypassTaskIds.add(task.id)
+        slotHeld = false
+      }
+    } else {
+      const outcome = await this.concurrencyManager.acquireWithDeadline(key, admissionTimeoutMs)
+      if (!outcome.granted) {
+        if (outcome.reason === "cancelled") {
+          task.status = "cancelled"
+          this.persistHandle(task)
+          throw new Error(`Revive admission cancelled for task ${task.id}.`)
+        }
+        const errorMessage = `Queue admission timed out after ${outcome.waitedMs}ms (key "${key}", limit ${this.concurrencyManager.getConcurrencyLimit(key)})`
+        await this.terminateQueuedTask(task, "queue-saturated", errorMessage)
+        throw new Error(errorMessage)
+      }
     }
-    task.concurrencyKey = key; task.concurrencyGroup = key
+
+    // A bypass-admitted revive never took a slot: leave concurrencyKey unset so
+    // the lifecycle release paths cannot decrement a slot that was never acquired.
+    task.concurrencyGroup = key
+    task.concurrencyKey = slotHeld ? key : undefined
     task.status = "running"; task.startedAt = new Date(); task.completedAt = undefined; task.error = undefined
     task.progress = { toolCalls: task.progress?.toolCalls ?? 0, lastUpdate: new Date() }
     this.persistHandle(task)
@@ -1030,6 +1069,7 @@ export class BackgroundManager {
       log("[background-agent] revive prompt error:", error)
       task.status = "interrupt"; task.error = error instanceof Error ? error.message : String(error); task.completedAt = new Date()
       this.persistHandle(task)
+      this.decrementNestedActive(task)
       if (task.concurrencyKey) { this.concurrencyManager.release(task.concurrencyKey); task.concurrencyKey = undefined }
       this.abortSessionQuietly(sessionID, "revive-error")
       this.markForNotification(task); this.cleanupPendingByParent(task)
