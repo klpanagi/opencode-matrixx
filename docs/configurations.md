@@ -724,6 +724,8 @@ Configure concurrency limits for background agent tasks. This controls how many 
 | `nestedAdmission.enabled` | `true` | Enable nested-admission exemption. Prevents a managed background child that spawns its own background work from self-deadlocking the semaphore. |
 | `nestedAdmission.mode` | `"bypass"` | `"bypass"`: nested launches skip the concurrency semaphore entirely. `"reserve"`: nested launches acquire a slot but with exemption logic. |
 | `nestedAdmission.maxDepth` | `2` | Maximum nesting depth (1..5). Depth-cap overflow yields terminal `stopped` with `terminalReason: "nested-depth-exceeded"`. |
+| `wallClockTimeoutMs`      | `0`   | Wall-clock execution timeout in milliseconds. Union type: `0` disables wall-clock enforcement (OFF/default). Values ≥60000 enforce a maximum runtime (range 60000–2147483647). Zero means legacy unbounded behavior; any non-zero value triggers terminal `stopped` with `terminalReason: "wallclock-timeout"` when the process runs past this limit. |
+| `wallClockAbortGraceMs`   | `5000` | Grace period in milliseconds between wall-clock timeout expiration and actual task abort signal. Gives long-running processes time to finish flush operations, release resources, or exit cleanly on SIGTERM/SIGKILL (range 1000–60000). |
 **Priority Order**: `modelConcurrency` > `providerConcurrency` > `defaultConcurrency`
 
 **Use Cases**:
