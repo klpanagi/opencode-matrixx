@@ -7,4 +7,5 @@ export type {
 } from "./clients"
 export { createBackgroundCancel } from "./create-background-cancel"
 export { createBackgroundOutput } from "./create-background-output"
+export { createBackgroundRevive } from "./create-background-revive"
 
