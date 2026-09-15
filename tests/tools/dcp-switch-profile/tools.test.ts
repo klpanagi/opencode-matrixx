@@ -17,7 +17,7 @@ mock.module("node:fs", () => ({
   writeFileSync: mockWriteFileSync,
 }))
 
-import { createDcpSwitchProfileTool } from "../../../src/tools/dcp-switch-profile/tools"
+import { createDcpSwitchProfileTool, deepMergeProfile } from "../../../src/tools/dcp-switch-profile/tools"
 
 // ---------------------------------------------------------------------------
 // Helpers
@@ -516,6 +516,99 @@ describe("dcp_switch_profile tool", () => {
       )
       expect(result).toContain("DCP is not installed")
       expect(capturedWriteData).toBeNull()
+    })
+  })
+
+  // ── deepMergeProfile unit tests ─────────────────────────────────────
+
+  describe("deepMergeProfile", () => {
+    const builtin = BUILTIN_DCP_PROFILES.balanced as unknown as Record<string, unknown>
+
+    test("empty override returns builtin as-is", () => {
+      const result = deepMergeProfile(builtin, {})
+      expect(result).toEqual(builtin)
+    })
+
+    test("partial compress override preserves other compress fields", () => {
+      const result = deepMergeProfile(builtin, {
+        compress: { maxContextLimit: "50%" },
+      })
+      const c = result.compress as Record<string, unknown>
+      expect(c.maxContextLimit).toBe("50%")
+      expect(c.minContextLimit).toBe(BUILTIN_DCP_PROFILES.balanced.compress.minContextLimit)
+      expect(c.nudgeFrequency).toBe(BUILTIN_DCP_PROFILES.balanced.compress.nudgeFrequency)
+    })
+
+    test("partial turnProtection override preserves other turnProtection fields", () => {
+      const result = deepMergeProfile(builtin, {
+        turnProtection: { turns: 5 },
+      })
+      const tp = result.turnProtection as Record<string, unknown>
+      expect(tp.turns).toBe(5)
+      expect(tp.enabled).toBe(BUILTIN_DCP_PROFILES.balanced.turnProtection.enabled)
+    })
+
+    test("partial experimental override preserves allowSubAgents", () => {
+      const result = deepMergeProfile(builtin, {
+        experimental: { allowSubAgents: false },
+      })
+      const exp = result.experimental as Record<string, unknown>
+      expect(exp.allowSubAgents).toBe(false)
+    })
+
+    test("partial strategies.purgeErrors override preserves other purgeErrors fields", () => {
+      const result = deepMergeProfile(builtin, {
+        strategies: { purgeErrors: { turns: 5 } },
+      })
+      const s = result.strategies as Record<string, unknown>
+      const pe = s.purgeErrors as Record<string, unknown>
+      expect(pe.turns).toBe(5)
+    })
+
+    test("pruneNotification scalar override", () => {
+      const result = deepMergeProfile(builtin, { pruneNotification: "detailed" })
+      expect(result.pruneNotification).toBe("detailed")
+    })
+
+    test("full override replaces all sub-objects completely", () => {
+      const fullOverride: Record<string, unknown> = {
+        pruneNotification: "off",
+        compress: {
+          maxContextLimit: "10%",
+          minContextLimit: "5%",
+          nudgeFrequency: 1,
+          nudgeForce: "strong",
+          iterationNudgeThreshold: 1,
+        },
+        turnProtection: { enabled: false },
+        experimental: { allowSubAgents: false },
+        strategies: { purgeErrors: { turns: 1 } },
+      }
+      const result = deepMergeProfile(builtin, fullOverride)
+      expect(result.pruneNotification).toBe("off")
+      expect((result.compress as Record<string, unknown>).maxContextLimit).toBe("10%")
+      expect((result.compress as Record<string, unknown>).minContextLimit).toBe("5%")
+      expect((result.turnProtection as Record<string, unknown>).enabled).toBe(false)
+      expect((result.experimental as Record<string, unknown>).allowSubAgents).toBe(false)
+      expect(((result.strategies as Record<string, unknown>).purgeErrors as Record<string, unknown>).turns).toBe(1)
+    })
+
+    test("override with empty sub-object preserves builtin sub-object entirely", () => {
+      const result = deepMergeProfile(builtin, { compress: {} })
+      const c = result.compress as Record<string, unknown>
+      expect(c.maxContextLimit).toBe("60%")
+      expect(c.minContextLimit).toBe("30%")
+      expect(c.nudgeFrequency).toBe(3)
+    })
+
+    test("override with all sub-objects empty preserves everything", () => {
+      const result = deepMergeProfile(builtin, {
+        compress: {},
+        turnProtection: {},
+        experimental: {},
+        strategies: {},
+      })
+      expect(result).toEqual(builtin)
     })
   })
 

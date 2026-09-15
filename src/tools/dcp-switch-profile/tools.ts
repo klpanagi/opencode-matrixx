@@ -24,17 +24,59 @@ function checkDcpInstalled(): string | null {
   return null
 }
 
+export function deepMergeProfile(
+  builtin: Record<string, unknown>,
+  override: Record<string, unknown>,
+): Record<string, unknown> {
+  const result = { ...builtin }
+
+  if (override.pruneNotification !== undefined) {
+    result.pruneNotification = override.pruneNotification
+  }
+
+  const subObjects = ["compress", "turnProtection", "experimental"] as const
+  for (const key of subObjects) {
+    const builtinObj = builtin[key] as Record<string, unknown> | undefined
+    const overrideObj = override[key] as Record<string, unknown> | undefined
+    if (builtinObj || overrideObj) {
+      result[key] = { ...(builtinObj ?? {}), ...(overrideObj ?? {}) }
+    }
+  }
+
+  const builtinStrategies = builtin.strategies as Record<string, unknown> | undefined
+  const overrideStrategies = override.strategies as Record<string, unknown> | undefined
+  if (builtinStrategies || overrideStrategies) {
+    const merged: Record<string, unknown> = { ...(builtinStrategies ?? {}), ...(overrideStrategies ?? {}) }
+    const builtinPurge = builtinStrategies?.purgeErrors as Record<string, unknown> | undefined
+    const overridePurge = overrideStrategies?.purgeErrors as Record<string, unknown> | undefined
+    if (builtinPurge || overridePurge) {
+      merged.purgeErrors = { ...(builtinPurge ?? {}), ...(overridePurge ?? {}) }
+    }
+    result.strategies = merged
+  }
+
+  return result
+}
+
 /**
  * Build a full inline DCP PluginConfig object for the given profile.
  * Starts with base values from dcpConfig.base, overlays profile-specific
  * values from dcpConfig.profiles[profile], and falls back to built-in
  * profile definitions when no Matrixx config is provided.
+ *
+ * NOTE: DCP also supports per-model context limits via modelMaxLimits
+ * and modelMinLimits in the compress section. These allow fine-grained
+ * control per LLM provider/model (e.g., {"anthropic/claude-sonnet-4-20250514": "80%"}).
+ * Matrixx does not currently expose these in its schema — if needed, add
+ * them to DcpCompressOverrideSchema and propagate here.
  */
 function buildInlineConfig(profile: string, options?: DcpSwitchProfileOptions): Record<string, unknown> {
   const dcpConfig = options?.pluginConfig?.dcp
   const base = dcpConfig?.base ? (dcpConfig.base as Record<string, unknown>) : {}
   const validProfiles = BUILTIN_DCP_PROFILES as unknown as Record<string, Record<string, unknown>>
-  const profileConfig = dcpConfig?.profiles?.[profile] ?? validProfiles[profile] ?? {}
+  const builtinProfile = validProfiles[profile] ?? {}
+  const userOverride = dcpConfig?.profiles?.[profile]
+  const profileConfig = userOverride ? deepMergeProfile(builtinProfile, userOverride as unknown as Record<string, unknown>) : builtinProfile
 
   // Extract sub-objects with proper typing
   const compressBase = (base.compress as Record<string, unknown>) ?? {}
