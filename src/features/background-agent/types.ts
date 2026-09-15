@@ -96,3 +96,15 @@ export interface ResumeInput {
   parentAgent?: string
   parentTools?: Record<string, boolean>
 }
+
+export interface ReviveInput {
+  taskId?: string
+  sessionId?: string
+  prompt: string
+  parentSessionID: string
+  parentMessageID: string
+  parentModel?: { providerID: string; modelID: string }
+  parentAgent?: string
+  parentTools?: Record<string, boolean>
+  force?: boolean
+}
