@@ -8,7 +8,7 @@ import { BUILTIN_DCP_PROFILES } from "../../config/schema/dcp"
 const DCP_PLUGIN_DIR = join(homedir(), ".config", "opencode", "node_modules", "@tarquinen", "opencode-dcp")
 const DCP_SYMLINK = join(homedir(), ".config", "opencode", "dcp.jsonc")
 
-const VALID_PROFILES = ["economy", "balanced", "performance", "ultimate"] as const
+const VALID_PROFILES = ["economy", "balanced", "performance", "ultimate", "brutal"] as const
 
 export interface DcpSwitchProfileOptions {
   pluginConfig?: { dcp?: DcpConfig }
@@ -109,9 +109,11 @@ function buildInlineConfig(profile: string, options?: DcpSwitchProfileOptions): 
  * a full inline DCP config to ~/.config/opencode/dcp.jsonc.
  */
 function switchProfile(profile: string, options?: DcpSwitchProfileOptions): string {
-  // Validate profile
-  if (!VALID_PROFILES.includes(profile as (typeof VALID_PROFILES)[number])) {
-    return `Error: Invalid profile "${profile}". Valid profiles: ${VALID_PROFILES.join(", ")}`
+  // Validate profile — accept built-ins OR custom profiles defined in config
+  const customProfiles = Object.keys(options?.pluginConfig?.dcp?.profiles ?? {})
+  const allValid = [...VALID_PROFILES, ...customProfiles]
+  if (!allValid.includes(profile)) {
+    return `Error: Invalid profile "${profile}". Valid profiles: ${allValid.join(", ")}`
   }
 
   // Check DCP installation
@@ -133,12 +135,13 @@ export function createDcpSwitchProfileTool(options?: DcpSwitchProfileOptions): R
       "Switch the active DCP (Dynamic Context Pruning) profile tier. " +
       "Reads profile parameters from the Matrixx plugin configuration and writes a full inline DCP config " +
       "to ~/.config/opencode/dcp.jsonc. No external files needed. " +
-      "Call this with one of: economy, balanced, performance, ultimate.",
+      "Built-in profiles: economy, balanced, performance, ultimate. " +
+      "Custom profiles (e.g. brutal) are read from dcp.profiles in opencode.jsonc.",
     args: {
       profile: tool.schema
-        .enum(VALID_PROFILES)
+        .string()
         .describe(
-          "Target DCP profile tier: economy (most aggressive), balanced, performance, ultimate (least aggressive)",
+          "Target DCP profile tier: economy (most aggressive), balanced, performance, ultimate (least aggressive), or a custom profile name from config (e.g., brutal)",
         ),
     },
     async execute(args) {
