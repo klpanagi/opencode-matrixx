@@ -148,3 +148,16 @@ export async function resolveAgentAndModel(
 
   return { agent, model }
 }
+
+export function buildJobBoardNotification(snapshot: import("./task-history").JobBoardSnapshot): string {
+  const header =
+    snapshot.strategy === "latest" ? "[BACKGROUND TASK BOARD]" : "[BACKGROUND TASK BOARD CHECKPOINT]"
+
+  return `<system-reminder>
+${header}
+
+${snapshot.block}
+
+Use \`background_output(task_id="<id>")\` to retrieve each result.
+</system-reminder>`
+}

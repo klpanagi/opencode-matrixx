@@ -2,6 +2,33 @@ import type { BackgroundTaskStatus } from "./types"
 
 const MAX_ENTRIES_PER_PARENT = 100
 
+// Row cap vs snapshot-retention cap: MAX_ENTRIES_PER_PARENT bounds how many
+// history rows are retained per parent (oldest rows evicted on overflow),
+// while maxRetained (BuildJobBoardSnapshotOpts) bounds how many rendered
+// checkpoint snapshots the caller retains (oldest snapshots evicted). Rows
+// always come from getByParentSession — there is no second store.
+export type JobBoardStrategy = "latest" | "checkpoint-compatible"
+
+export interface JobBoardRow {
+  agent: string
+  category?: string
+  status: BackgroundTaskStatus
+  description: string
+  session?: string
+}
+
+export interface JobBoardSnapshot {
+  strategy: JobBoardStrategy
+  block: string
+  retained?: string[]
+}
+
+export interface BuildJobBoardSnapshotOpts {
+  strategy?: JobBoardStrategy
+  maxRetained?: number
+  previous?: string[]
+}
+
 export interface TaskHistoryEntry {
   id: string
   sessionID?: string
@@ -72,4 +99,44 @@ export class TaskHistory {
 
     return lines.join("\n")
   }
+
+  getJobBoardEntries(parentSessionID: string): JobBoardRow[] {
+    return this.getByParentSession(parentSessionID).map((e) => ({
+      agent: e.agent,
+      ...(e.category !== undefined ? { category: e.category } : {}),
+      status: e.status,
+      description: e.description.replace(/[\n\r]+/g, " ").trim(),
+      ...(e.sessionID !== undefined ? { session: e.sessionID } : {}),
+    }))
+  }
+
+  buildJobBoardSnapshot(parentSessionID: string, opts?: BuildJobBoardSnapshotOpts): JobBoardSnapshot | null {
+    const entries = this.getJobBoardEntries(parentSessionID)
+    if (entries.length === 0) return null
+    const strategy = opts?.strategy ?? "latest"
+    const block = formatJobBoardBlock(entries)
+    if (strategy === "latest") return { strategy, block }
+    const maxRetained = clampMaxRetainedSnapshots(opts?.maxRetained)
+    const retained = [...(opts?.previous ?? []), block].slice(-maxRetained)
+    return { strategy, block, retained }
+  }
+}
+
+function clampMaxRetainedSnapshots(value: number | undefined): number {
+  if (value === undefined || !Number.isFinite(value)) return 20
+  return Math.min(100, Math.max(1, Math.floor(value)))
+}
+
+function formatJobBoardBlock(entries: JobBoardRow[]): string {
+  const lines = entries.map((row) => {
+    const parts = [
+      `- **${row.agent}**`,
+      row.category ? `[${row.category}]` : null,
+      `(${row.status})`,
+      `: ${row.description}`,
+      row.session ? ` | session: \`${row.session}\`` : null,
+    ]
+    return parts.filter(Boolean).join("")
+  })
+  return `**Background task board (${entries.length} task${entries.length === 1 ? "" : "s"}):**\n${lines.join("\n")}`
 }
