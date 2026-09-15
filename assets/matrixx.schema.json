@@ -4063,6 +4063,27 @@
                   "turns": 4
                 }
               }
+            },
+            "brutal": {
+              "pruneNotification": "off",
+              "compress": {
+                "maxContextLimit": "15%",
+                "minContextLimit": "10%",
+                "nudgeFrequency": 1,
+                "nudgeForce": "strong",
+                "iterationNudgeThreshold": 1
+              },
+              "turnProtection": {
+                "enabled": false
+              },
+              "experimental": {
+                "allowSubAgents": false
+              },
+              "strategies": {
+                "purgeErrors": {
+                  "turns": 1
+                }
+              }
             }
           },
           "type": "object",
@@ -4711,6 +4732,24 @@
             }
           },
           "additionalProperties": false
+        },
+        "wallClockTimeoutMs": {
+          "anyOf": [
+            {
+              "type": "number",
+              "const": 0
+            },
+            {
+              "type": "integer",
+              "minimum": 60000,
+              "maximum": 2147483647
+            }
+          ]
+        },
+        "wallClockAbortGraceMs": {
+          "type": "integer",
+          "minimum": 1000,
+          "maximum": 60000
         }
       },
       "additionalProperties": false

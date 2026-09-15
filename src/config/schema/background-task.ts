@@ -28,6 +28,10 @@ export const BackgroundTaskConfigSchema = z.object({
   admissionTimeoutMs: z.union([z.literal(0), z.number().min(60000)]).optional(),
   /** Nested-task admission exemption (prevents self-deadlock when a managed child spawns background work). */
   nestedAdmission: NestedAdmissionConfigSchema.optional(),
+  /** Elapsed-time bound in ms. 0 = OFF (default); otherwise minimum 60000, max 2^31-1 (setTimeout ceiling). */
+  wallClockTimeoutMs: z.union([z.literal(0), z.number().int().min(60000).max(2147483647)]).optional(),
+  /** Grace period after wall-clock abort before terminal mark. Minimum 1000, maximum 60000. Default 5000. */
+  wallClockAbortGraceMs: z.number().int().min(1000).max(60000).optional(),
 })
 
 export type BackgroundTaskConfig = z.infer<typeof BackgroundTaskConfigSchema>

@@ -30,7 +30,7 @@ export const BgHandleSchema = z
     status: z.enum(["pending", "running", "completed", "error", "cancelled", "interrupt", "stopped", "statusUncertain"]),
     sessionID: z.string().optional(),
     terminalReason: z
-      .enum(["queue-saturated", "no-output", "uncertain", "aborted", "stale", "nested-depth-exceeded"])
+      .enum(["queue-saturated", "no-output", "uncertain", "aborted", "stale", "nested-depth-exceeded", "wall-clock-timeout"])
       .optional(),
     model: z
       .object({
