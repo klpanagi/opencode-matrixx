@@ -46,6 +46,7 @@ function buildInlineConfig(profile: string, options?: DcpSwitchProfileOptions): 
   const profileExp = (profileConfig.experimental as Record<string, unknown>) ?? {}
   const profilePurge = ((profileConfig.strategies as Record<string, unknown>)?.purgeErrors as Record<string, unknown>) ?? {}
   const basePurge = ((strategiesBase.purgeErrors as Record<string, unknown>)) ?? {}
+  const baseExp = (base.experimental as Record<string, unknown>) ?? {}
 
   return {
     $schema:
@@ -77,7 +78,8 @@ function buildInlineConfig(profile: string, options?: DcpSwitchProfileOptions): 
       turns: (profileTurn.turns as number) ?? 2,
     },
     experimental: {
-      allowSubAgents: (profileExp.allowSubAgents as boolean) ?? true,
+      allowSubAgents:
+        (profileExp.allowSubAgents as boolean) ?? (baseExp.allowSubAgents as boolean) ?? true,
       customPrompts: false,
     },
     protectedFilePatterns: (base.protectedFilePatterns as string[]) ?? [],

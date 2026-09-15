@@ -244,6 +244,9 @@ export const DcpConfigSchema = z.object({
 
       /** Glob patterns for files that should be protected from compression (default: []) */
       protectedFilePatterns: z.array(z.string()).default([]),
+
+      /** Experimental settings that apply across all profiles (profile-level takes precedence) */
+      experimental: DcpExperimentalSchema.default({ allowSubAgents: true }),
     })
     .default({
       autoUpdate: false,
@@ -266,6 +269,7 @@ export const DcpConfigSchema = z.object({
       commands: { enabled: true, protectedTools: [] },
       manualMode: { enabled: false, automaticStrategies: true },
       protectedFilePatterns: [],
+      experimental: { allowSubAgents: true },
     }),
 })
 
