@@ -48,6 +48,7 @@ import type {
   ResumeInput,
   ReviveInput,
 } from "./types"
+import { resolveWakeIntervalMs, shouldWakeForParent, WAKE_REMINDER_TEXT, WakeScheduler } from "./wake-scheduler"
 
 type ProcessCleanupEvent = NodeJS.Signals | "beforeExit" | "exit"
 
@@ -150,6 +151,7 @@ export class BackgroundManager {
   private processingKeys: Set<string> = new Set()
   private completionTimers: Map<string, ReturnType<typeof setTimeout>> = new Map()
   private idleDeferralTimers: Map<string, ReturnType<typeof setTimeout>> = new Map()
+  private wakeScheduler = new WakeScheduler()
   private notificationQueueByParent: Map<string, Promise<void>> = new Map()
   private enableParentSessionNotifications: boolean
   private cachedCircuitBreakerSettings?: CircuitBreakerSettings
@@ -1296,6 +1298,7 @@ export class BackgroundManager {
       this.cleanupPendingByParent(task)
       this.tasks.delete(task.id)
       this.clearNotificationsForTask(task.id)
+      this.refreshParentWake(task.parentSessionID)
       const toastManager = getTaskToastManager()
       if (toastManager) {
         toastManager.removeTask(task.id)
@@ -1417,6 +1420,27 @@ export class BackgroundManager {
     }
   }
 
+  private refreshParentWake(parentSessionID: string): void {
+    if (this.config?.wakeScheduler?.enabled === false) return
+    const readState = () => ({
+      hasPendingChildren: (this.pendingByParent.get(parentSessionID)?.size ?? 0) > 0,
+      hasUndeliveredNotifications: (this.notifications.get(parentSessionID)?.length ?? 0) > 0,
+    })
+    if (!shouldWakeForParent(readState())) {
+      this.wakeScheduler.clear(parentSessionID)
+      return
+    }
+    this.wakeScheduler.schedule(parentSessionID, {
+      intervalMs: resolveWakeIntervalMs(this.config?.wakeScheduler),
+      readState,
+      deliverWake: async () => {
+        await this.enqueueNotificationForParent(parentSessionID, async () => {
+          await this.client.session.promptAsync({ path: { id: parentSessionID }, body: { noReply: true, parts: [{ type: "text", text: WAKE_REMINDER_TEXT }] } })
+        })
+      },
+    })
+  }
+
   /**
    * Fire-and-forget session abort. Logs failures at debug level instead of
    * swallowing errors silently — useful for diagnosing zombie sessions.
@@ -1508,6 +1532,7 @@ export class BackgroundManager {
     try {
       await this.enqueueNotificationForParent(task.parentSessionID, () => this.notifyParentSession(task))
       log(`[background-agent] Task cancelled via ${source}:`, task.id)
+      this.refreshParentWake(task.parentSessionID)
     } catch (err) {
       log("[background-agent] Error in notifyParentSession for cancelled task:", { taskId: task.id, error: err })
     }
@@ -1661,6 +1686,7 @@ export class BackgroundManager {
     try {
       await this.enqueueNotificationForParent(task.parentSessionID, () => this.notifyParentSession(task))
       log(`[background-agent] Task completed via ${source}:`, task.id)
+      this.refreshParentWake(task.parentSessionID)
     } catch (err) {
       log("[background-agent] Error in notifyParentSession:", { taskId: task.id, error: err })
       // Concurrency already released, notification failed but task is complete
@@ -2087,6 +2113,7 @@ export class BackgroundManager {
       clearTimeout(timer)
     }
     this.idleDeferralTimers.clear()
+    this.wakeScheduler.dispose()
 
     this.concurrencyManager.clear()
     this.tasks.clear()
