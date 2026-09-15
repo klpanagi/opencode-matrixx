@@ -5,6 +5,9 @@
  * session. No I/O, no manager access, no client imports.
  */
 
+import type { BgHandle } from "./handle-index"
+import type { BackgroundTask } from "./types"
+
 export const REVIVABLE_STATUSES = ["cancelled", "stopped", "interrupt", "error", "completed"] as const
 
 export function isRevivableStatus(status: string): boolean {
@@ -36,4 +39,47 @@ export function classifyRevivable(
     return { eligible: true }
   }
   return { eligible: false, reason: "unknown-task" }
+}
+
+/**
+ * Locate a revivable handle by task id or session id. `taskId` wins when
+ * both are supplied. Returns `undefined` when neither matches.
+ */
+export function findRevivableHandle(
+  handles: BgHandle[],
+  opts: { taskId?: string; sessionId?: string },
+): BgHandle | undefined {
+  if (opts.taskId !== undefined && opts.taskId !== "") {
+    const byTask = handles.find((handle) => handle.taskId === opts.taskId)
+    if (byTask) return byTask
+  }
+  if (opts.sessionId !== undefined && opts.sessionId !== "") {
+    return handles.find((handle) => handle.sessionID === opts.sessionId)
+  }
+  return undefined
+}
+
+/**
+ * Rehydrate a pre-admission `BackgroundTask` from a persisted handle with a
+ * NEW prompt. Mirrors `restoreTaskFromHandle` except `prompt` comes from the
+ * caller and `status` restarts at `"pending"`; `startedAt` is left unset (it
+ * is assigned on admission) and `completedAt`/`error` are cleared.
+ */
+export function toReviveTask(handle: BgHandle, prompt: string): BackgroundTask {
+  return {
+    id: handle.taskId,
+    parentSessionID: handle.parentSessionID,
+    parentMessageID: handle.parentMessageID,
+    description: handle.description,
+    prompt,
+    agent: handle.agent,
+    status: "pending",
+    sessionID: handle.sessionID,
+    queuedAt: handle.queuedAt !== undefined ? new Date(handle.queuedAt) : undefined,
+    completedAt: undefined,
+    error: undefined,
+    model: handle.model,
+    category: handle.category,
+    concurrencyGroup: handle.concurrencyGroup,
+  }
 }

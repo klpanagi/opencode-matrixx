@@ -38,6 +38,7 @@ import {
 } from "./loop-detector"
 import { buildCompletionNotification, resolveAgentAndModel } from "./notification-builder"
 import { type ReconcileOutcome, reconcileHandle } from "./reconcile"
+import { classifyRevivable, findRevivableHandle, type ReviveBlockReason, toReviveTask } from "./revive"
 import { validateSessionHasOutput as validateSessionOutput } from "./session-output"
 import { TaskHistory } from "./task-history"
 import type {
@@ -45,6 +46,7 @@ import type {
   BackgroundTerminalReason,
   LaunchInput,
   ResumeInput,
+  ReviveInput,
 } from "./types"
 
 type ProcessCleanupEvent = NodeJS.Signals | "beforeExit" | "exit"
@@ -959,6 +961,99 @@ export class BackgroundManager {
     })
 
     return existingTask
+  }
+
+  /** Revive a terminal task with a new prompt, from memory or disk. Bounded admission; saturated queue fails truthfully. */
+  async revive(input: ReviveInput): Promise<BackgroundTask> {
+    const id = input.taskId ?? input.sessionId ?? ""
+    let task = input.taskId !== undefined ? this.tasks.get(input.taskId) : undefined
+    if (!task && input.sessionId !== undefined) task = this.findBySession(input.sessionId)
+    if (task?.status === "running") {
+      log("[background-agent] Revive skipped - task already running:", { taskId: task.id, sessionID: task.sessionID })
+      return task
+    }
+    const guidance: Record<ReviveBlockReason, string> = { active: `Task ${id} is still active; use background_output to inspect it.`, uncertain: `Task ${id} has unknown liveness; re-run with force: true to acknowledge this.`, "no-session": `Task ${id} has no session to revive (it never produced one, e.g. it was queue-saturated).`, "unknown-task": `Task ${id} is not revivable (unrecognised state).`, expired: `Task ${id} is not revivable (unrecognised state).` }
+    if (!task) {
+      const handle = findRevivableHandle(readHandles(this.directory), { taskId: input.taskId, sessionId: input.sessionId })
+      if (!handle) throw new Error(`Task not found for revive: ${id}. It may have expired (handles are retained 30 minutes) or never existed.`)
+      const handleEligibility = classifyRevivable(handle, { force: input.force })
+      if (!handleEligibility.eligible) throw new Error(guidance[handleEligibility.reason])
+      task = toReviveTask(handle, input.prompt)
+    } else {
+      task.prompt = input.prompt
+      const taskEligibility = classifyRevivable(task, { force: input.force })
+      if (!taskEligibility.eligible) throw new Error(guidance[taskEligibility.reason])
+    }
+    if (!task.sessionID) throw new Error(`Task has no sessionID: ${task.id}`)
+    const sessionID = task.sessionID
+    const completionTimer = this.completionTimers.get(task.id)
+    if (completionTimer) { clearTimeout(completionTimer); this.completionTimers.delete(task.id) }
+    task.status = "pending"; task.parentSessionID = input.parentSessionID; task.parentMessageID = input.parentMessageID
+    if (input.parentModel !== undefined) task.parentModel = input.parentModel
+    if (input.parentAgent !== undefined) task.parentAgent = input.parentAgent
+    if (input.parentTools !== undefined) task.parentTools = input.parentTools
+    this.tasks.set(task.id, task)
+    this.taskHistory.record(task.parentSessionID, { id: task.id, sessionID, agent: task.agent, description: task.description, status: "pending", startedAt: task.startedAt })
+    const pending = this.pendingByParent.get(task.parentSessionID) ?? new Set<string>()
+    pending.add(task.id); this.pendingByParent.set(task.parentSessionID, pending)
+    const key = task.concurrencyGroup ?? task.agent
+    const maxDepth = this.config?.nestedAdmission?.maxDepth ?? DEFAULT_NESTED_MAX_DEPTH
+    const admissionTimeoutMs = this.config?.admissionTimeoutMs ?? DEFAULT_ADMISSION_TIMEOUT_MS
+    log("[background-agent] Reviving task:", { taskId: task.id, admission: classifyAdmission(input.parentSessionID, maxDepth).kind, key })
+    const outcome = await this.concurrencyManager.acquireWithDeadline(key, admissionTimeoutMs)
+    if (!outcome.granted) {
+      if (outcome.reason === "cancelled") {
+        task.status = "cancelled"; this.persistHandle(task)
+        throw new Error(`Revive admission cancelled for task ${task.id}.`)
+      }
+      const errorMessage = `Queue admission timed out after ${outcome.waitedMs}ms (key "${key}", limit ${this.concurrencyManager.getConcurrencyLimit(key)})`
+      await this.terminateQueuedTask(task, "queue-saturated", errorMessage)
+      throw new Error(errorMessage)
+    }
+    task.concurrencyKey = key; task.concurrencyGroup = key
+    task.status = "running"; task.startedAt = new Date(); task.completedAt = undefined; task.error = undefined
+    task.progress = { toolCalls: task.progress?.toolCalls ?? 0, lastUpdate: new Date() }
+    this.persistHandle(task)
+    registerSubagentSession(sessionID, input.parentSessionID)
+    this.startPolling()
+    const toastManager = getTaskToastManager()
+    if (toastManager) toastManager.addTask({ id: task.id, description: task.description, agent: task.agent, isBackground: true })
+    const tools = { task: false, delegate_agent: true, question: false, ...getAgentToolRestrictions(task.agent) }
+    setSessionTools(sessionID, tools)
+    const reviveModel = task.model ? { providerID: task.model.providerID, modelID: task.model.modelID } : undefined
+    const reviveVariant = task.model?.variant
+    // Mirrors resume() promptAsync (keep in sync)
+    this.client.session.promptAsync({
+      path: { id: sessionID },
+      body: { agent: task.agent, ...(reviveModel ? { model: reviveModel } : {}), ...(reviveVariant ? { variant: reviveVariant } : {}), tools, parts: [{ type: "text", text: input.prompt }] },
+    }).catch((error) => {
+      log("[background-agent] revive prompt error:", error)
+      task.status = "interrupt"; task.error = error instanceof Error ? error.message : String(error); task.completedAt = new Date()
+      this.persistHandle(task)
+      if (task.concurrencyKey) { this.concurrencyManager.release(task.concurrencyKey); task.concurrencyKey = undefined }
+      this.abortSessionQuietly(sessionID, "revive-error")
+      this.markForNotification(task); this.cleanupPendingByParent(task)
+      this.enqueueNotificationForParent(task.parentSessionID, () => this.notifyParentSession(task)).catch((err) => {
+        log("[background-agent] Failed to notify on revive error:", err)
+      })
+    })
+    return task
+  }
+
+  /** Revivable terminal tasks: in-memory first (wins on taskId), then disk; newest-first. */
+  listRevivable(parentSessionID?: string): Array<{ taskId: string; description: string; agent: string; status: string; sessionID: string; terminalReason?: string }> {
+    const seen = new Set<string>()
+    const rows: Array<{ taskId: string; description: string; agent: string; status: string; sessionID: string; terminalReason?: string; ts: number }> = []
+    const consider = (id: string, parent: string, description: string, agent: string, status: string, sessionID: string | undefined, terminalReason: string | undefined, ts: number): void => {
+      if (seen.has(id) || sessionID === undefined) return
+      if (parentSessionID !== undefined && parent !== parentSessionID) return
+      if (!classifyRevivable({ status, sessionID }, {}).eligible) return
+      seen.add(id); rows.push({ taskId: id, description, agent, status, sessionID, terminalReason, ts })
+    }
+    for (const task of this.tasks.values()) consider(task.id, task.parentSessionID, task.description, task.agent, task.status, task.sessionID, task.terminalReason, task.completedAt?.getTime() ?? task.startedAt?.getTime() ?? task.queuedAt?.getTime() ?? 0)
+    for (const handle of readHandles(this.directory)) consider(handle.taskId, handle.parentSessionID, handle.description, handle.agent, handle.status, handle.sessionID, handle.terminalReason, handle.completedAt ?? handle.startedAt ?? handle.queuedAt ?? 0)
+    rows.sort((a, b) => b.ts - a.ts)
+    return rows.map((row) => ({ taskId: row.taskId, description: row.description, agent: row.agent, status: row.status, sessionID: row.sessionID, terminalReason: row.terminalReason }))
   }
 
   private async checkSessionTodos(sessionID: string): Promise<boolean> {
