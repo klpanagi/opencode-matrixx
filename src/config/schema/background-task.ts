@@ -12,6 +12,19 @@ const NestedAdmissionConfigSchema = z.object({
   maxDepth: z.number().int().min(1).max(5).optional(),
 })
 
+/** Idle-parent wake scheduler settings (default ON, default interval 300000ms, minimum 60000ms) */
+export const WakeSchedulerConfigSchema = z.object({
+  enabled: z.boolean().optional(),
+  intervalMs: z.number().min(60000).optional(),
+})
+
+/** Job-board snapshot settings (defaults: enabled true, strategy "latest", maxRetainedSnapshots 20) */
+export const JobBoardConfigSchema = z.object({
+  enabled: z.boolean().optional(),
+  strategy: z.enum(["latest", "checkpoint-compatible"]).optional(),
+  maxRetainedSnapshots: z.number().int().min(1).max(100).optional(),
+})
+
 export const BackgroundTaskConfigSchema = z.object({
   defaultConcurrency: z.number().min(1).optional(),
   providerConcurrency: z.record(z.string(), z.number().min(0)).optional(),
@@ -28,6 +41,10 @@ export const BackgroundTaskConfigSchema = z.object({
   admissionTimeoutMs: z.union([z.literal(0), z.number().min(60000)]).optional(),
   /** Nested-task admission exemption (prevents self-deadlock when a managed child spawns background work). */
   nestedAdmission: NestedAdmissionConfigSchema.optional(),
+  /** Idle-parent wake scheduler settings (default ON; see WakeSchedulerConfigSchema). */
+  wakeScheduler: WakeSchedulerConfigSchema.optional(),
+  /** Job-board snapshot settings (defaults true/latest/20; see JobBoardConfigSchema). */
+  jobBoard: JobBoardConfigSchema.optional(),
 })
 
 export type BackgroundTaskConfig = z.infer<typeof BackgroundTaskConfigSchema>

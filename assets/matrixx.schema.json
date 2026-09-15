@@ -4063,6 +4063,27 @@
                   "turns": 4
                 }
               }
+            },
+            "brutal": {
+              "pruneNotification": "off",
+              "compress": {
+                "maxContextLimit": "15%",
+                "minContextLimit": "10%",
+                "nudgeFrequency": 1,
+                "nudgeForce": "strong",
+                "iterationNudgeThreshold": 1
+              },
+              "turnProtection": {
+                "enabled": false
+              },
+              "experimental": {
+                "allowSubAgents": false
+              },
+              "strategies": {
+                "purgeErrors": {
+                  "turns": 1
+                }
+              }
             }
           },
           "type": "object",
@@ -4708,6 +4729,40 @@
               "type": "integer",
               "minimum": 1,
               "maximum": 5
+            }
+          },
+          "additionalProperties": false
+        },
+        "wakeScheduler": {
+          "type": "object",
+          "properties": {
+            "enabled": {
+              "type": "boolean"
+            },
+            "intervalMs": {
+              "type": "number",
+              "minimum": 60000
+            }
+          },
+          "additionalProperties": false
+        },
+        "jobBoard": {
+          "type": "object",
+          "properties": {
+            "enabled": {
+              "type": "boolean"
+            },
+            "strategy": {
+              "type": "string",
+              "enum": [
+                "latest",
+                "checkpoint-compatible"
+              ]
+            },
+            "maxRetainedSnapshots": {
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 100
             }
           },
           "additionalProperties": false
