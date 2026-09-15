@@ -4238,7 +4238,10 @@
               "enabled": false,
               "automaticStrategies": true
             },
-            "protectedFilePatterns": []
+            "protectedFilePatterns": [],
+            "experimental": {
+              "allowSubAgents": true
+            }
           },
           "type": "object",
           "properties": {
@@ -4457,6 +4460,18 @@
               "items": {
                 "type": "string"
               }
+            },
+            "experimental": {
+              "default": {
+                "allowSubAgents": true
+              },
+              "type": "object",
+              "properties": {
+                "allowSubAgents": {
+                  "type": "boolean"
+                }
+              },
+              "additionalProperties": false
             }
           },
           "required": [
@@ -4467,7 +4482,8 @@
             "strategies",
             "commands",
             "manualMode",
-            "protectedFilePatterns"
+            "protectedFilePatterns",
+            "experimental"
           ],
           "additionalProperties": false
         }

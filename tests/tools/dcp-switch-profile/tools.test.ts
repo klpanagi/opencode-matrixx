@@ -385,6 +385,37 @@ describe("dcp_switch_profile tool", () => {
       expect(mm.enabled).toBe(true)
       expect(mm.automaticStrategies).toBe(false)
     })
+
+    test("base.experimental.allowSubAgents applies when profile omits it", async () => {
+      const dcp = DcpConfigSchema.parse({
+        base: { experimental: { allowSubAgents: false } },
+      })
+      const tools = createDcpSwitchProfileTool({ pluginConfig: { dcp } })
+      await tools.dcp_switch_profile.execute({ profile: "economy" }, mockContext)
+      const exp = extractWrittenConfig()!.experimental as AnyRecord
+      expect(exp.allowSubAgents).toBe(false)
+    })
+
+    test("profile experimental.allowSubAgents overrides base", async () => {
+      const dcp = DcpConfigSchema.parse({
+        base: { experimental: { allowSubAgents: false } },
+        profiles: {
+          brutal: { experimental: { allowSubAgents: true } },
+        },
+      })
+      const tools = createDcpSwitchProfileTool({ pluginConfig: { dcp } })
+      await tools.dcp_switch_profile.execute({ profile: "brutal" }, mockContext)
+      const exp = extractWrittenConfig()!.experimental as AnyRecord
+      expect(exp.allowSubAgents).toBe(true)
+    })
+
+    test("base.experimental defaults to allowSubAgents: true when unset", async () => {
+      const dcp = DcpConfigSchema.parse({})
+      const tools = createDcpSwitchProfileTool({ pluginConfig: { dcp } })
+      await tools.dcp_switch_profile.execute({ profile: "balanced" }, mockContext)
+      const exp = extractWrittenConfig()!.experimental as AnyRecord
+      expect(exp.allowSubAgents).toBe(true)
+    })
   })
 
   // ── Profile override values ─────────────────────────────────────────
