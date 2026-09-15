@@ -50,6 +50,11 @@ Task creation → Queue → Admission check → Concurrency check → Execute �
 
 **Session revive** (`revive.ts`, `background_revive` tool): A terminal task whose handle is still on disk can be resumed with a NEW instruction. Retention IS the existing handle files — there is no separate store — bounded by `TASK_TTL_MS` (30 min). Revivable: `cancelled | stopped | interrupt | error | completed` (each requires a `sessionID`); `statusUncertain` requires `force: true`; `pending | running` must use `background_output` instead; a handle that never produced a session (e.g. `queue-saturated`) is unrevivable. `manager.revive()` falls back to disk on an in-memory map miss, then re-admits through bounded/nested admission — and a nested revive bypasses the semaphore entirely so it can never await it unboundedly. `manager.resume()` remains the in-memory-only path.
 
+**Tier-3 wake scheduler + job board** (`wake-scheduler.ts`, `task-history.ts`, `notification-builder.ts`): helper modules, NOT new hooks — `manager.ts` Tier-3 diff confined to wake-timer wiring (≤30 lines).
+- **Wake scheduler** (`wakeScheduler: { enabled: boolean (default true), intervalMs` default `300000`, min `60000` }): per-session recursive `setTimeout().unref()` (no `setInterval`) sends a static `<system-reminder>` nudge when the parent is idle with pending todos. Todo-gated, 2-wake no-progress cap with reset-on-activity.
+- **Job board** (`jobBoard: { enabled: boolean (default true), strategy: "latest"|"checkpoint-compatible" (default "latest"), maxRetainedSnapshots: 1..100 (default 20) }`): `latest` strip-and-replaces the snapshot; `checkpoint-compatible` appends to a bounded ledger with oldest-eviction. Surfaced on history + notification paths.
+- **Default conservation** (U9): `run_in_background` default stays `false`. `true` is async fan-out (returns `task_id`, retrieve via `background_output`); `false` is sync inline. Never call `task()` sequentially for independent work.
+
 **Skill Management:** All skills are loaded from `src/features/builtin-skills/` via `createBuiltinSkills()`. No external skill directory loading. Skills are configured via `disabled_skills` in `matrixx.jsonc`.
 
 **SKILL.md Format:**
