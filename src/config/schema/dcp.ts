@@ -108,6 +108,19 @@ export const BUILTIN_DCP_PROFILES = {
     experimental: { allowSubAgents: true },
     strategies: { purgeErrors: { turns: 4 } },
   },
+  brutal: {
+    pruneNotification: "off" as const,
+    compress: {
+      maxContextLimit: "15%",
+      minContextLimit: "10%",
+      nudgeFrequency: 1,
+      nudgeForce: "strong" as const,
+      iterationNudgeThreshold: 1,
+    },
+    turnProtection: { enabled: false },
+    experimental: { allowSubAgents: false },
+    strategies: { purgeErrors: { turns: 1 } },
+  },
 } as const satisfies Record<string, DcpProfileDefinition>
 
 // ─── Root DCP config schema ─────────────────────────────────────────────
