@@ -1,5 +1,6 @@
 import { normalizeSDKResponse } from "../../shared"
 import { log } from "../../shared/logger"
+import { formatPollTimeoutOutcome } from "../../shared/poll-timeout-outcome"
 import type { SessionMessage } from "./executor-types"
 import { getTimingConfig } from "./timing"
 import type { OpencodeClient, ToolContextWithMetadata } from "./types"
@@ -259,5 +260,27 @@ export async function pollSyncSession(
     log("[task] Poll timeout reached", { sessionID: input.sessionID, pollCount })
   }
 
-  return timedOut ? `Poll timeout reached after ${maxPollTimeMs}ms for session ${input.sessionID}` : null
+  if (!timedOut) return null
+
+  let lastAssistantText: string | undefined
+  try {
+    const timeoutMessagesResult = await client.session.messages({ path: { id: input.sessionID } }).catch(() => undefined)
+    if (timeoutMessagesResult) {
+      const timeoutMsgs = normalizeSDKResponse(timeoutMessagesResult, [] as SessionMessage[], {
+        preferResponseOnMissingData: true,
+      })
+      const lastAssistant = [...timeoutMsgs].reverse().find((m) => m.info?.role === "assistant")
+      const textParts = (lastAssistant?.parts ?? []).filter((p) => p.type === "text" && p.text).map((p) => p.text as string)
+      if (textParts.length > 0) lastAssistantText = textParts.join("\n")
+    }
+  } catch {
+    lastAssistantText = undefined
+  }
+
+  return formatPollTimeoutOutcome({
+    sessionID: input.sessionID,
+    agentToUse: input.agentToUse,
+    maxPollTimeMs,
+    lastAssistantText,
+  })
 }

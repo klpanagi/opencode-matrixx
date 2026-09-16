@@ -275,9 +275,10 @@ describe("pollSyncSession", () => {
         toastManager: null,
         taskId: undefined,
       })
-
-      //#then - timeout returns error string
-      expect(result).toBe("Poll timeout reached after 50ms for session ses_timeout")
+      //#then - timeout returns structured outcome with prefix preserved
+      expect(result).toContain("Poll timeout reached after 50ms for session ses_timeout")
+      expect(result).toContain("<task_metadata>")
+      expect(result).toContain('"reason":"poll-timeout"')
     })
   })
 
