@@ -20,6 +20,7 @@ import {
   DEFAULT_SKIP_AGENTS,
   FAILURE_RESET_WINDOW_MS,
   HOOK_NAME,
+  hasNonExplorerBgTasks,
   MAX_CONSECUTIVE_FAILURES,
 } from "./constants"
 import { startCountdown } from "./countdown"
@@ -112,8 +113,10 @@ export async function handleSessionIdle(args: {
   try {
     taskDir = getTaskDir(config, ctx.directory)
     if (!existsSync(taskDir)) {
-      const hadBgTasks = backgroundManager ? backgroundManager.getTasksByParentSession(sessionID).length > 0 : false
-      if (hadBgTasks) {
+      const hadNonExplorerBgTasks = backgroundManager
+        ? hasNonExplorerBgTasks(backgroundManager.getTasksByParentSession(sessionID))
+        : false
+      if (hadNonExplorerBgTasks) {
         log(`[${HOOK_NAME}] No task dir — bootstrap (hadBgTasks)`, { sessionID, taskDir })
         isBootstrap = true
         total = 0
@@ -136,9 +139,11 @@ export async function handleSessionIdle(args: {
       })
       total = filteredTasks.length
       if (total === 0) {
-        const hadBgTasks = backgroundManager ? backgroundManager.getTasksByParentSession(sessionID).length > 0 : false
-        if (hadBgTasks) {
-          log(`[${HOOK_NAME}] No tasks — bootstrap (hadBgTasks)`, { sessionID })
+        const hadNonExplorerBgTasks = backgroundManager
+          ? hasNonExplorerBgTasks(backgroundManager.getTasksByParentSession(sessionID))
+          : false
+        if (hadNonExplorerBgTasks) {
+          log(`[${HOOK_NAME}] No tasks — bootstrap (hadNonExplorerBgTasks)`, { sessionID })
           isBootstrap = true
           incompleteCount = 1
         } else {

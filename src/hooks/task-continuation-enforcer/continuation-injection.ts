@@ -22,6 +22,7 @@ import {
   CONTINUATION_PROMPT,
   DEFAULT_SKIP_AGENTS,
   HOOK_NAME,
+  hasNonExplorerBgTasks,
 } from "./constants"
 import { getMessageDir } from "./message-directory"
 import type { SessionStateStore } from "./session-state"
@@ -89,9 +90,11 @@ export async function injectContinuation(args: {
   try {
     taskDir = getTaskDir(config, ctx.directory)
     if (!existsSync(taskDir)) {
-      const hadBgTasks = backgroundManager ? backgroundManager.getTasksByParentSession(sessionID).length > 0 : false
-      if (hadBgTasks) {
-        log(`[${HOOK_NAME}] Bootstrap injection: no task dir (hadBgTasks)`, { sessionID, taskDir })
+      const hadNonExplorerBgTasks = backgroundManager
+        ? hasNonExplorerBgTasks(backgroundManager.getTasksByParentSession(sessionID))
+        : false
+      if (hadNonExplorerBgTasks) {
+        log(`[${HOOK_NAME}] Bootstrap injection: no task dir (hadNonExplorerBgTasks)`, { sessionID, taskDir })
         isBootstrap = true
       } else {
         log(`[${HOOK_NAME}] Skipped injection: no task dir`, { sessionID, taskDir })
@@ -111,9 +114,11 @@ export async function injectContinuation(args: {
       })
       total = filteredTasks.length
       if (total === 0) {
-        const hadBgTasks = backgroundManager ? backgroundManager.getTasksByParentSession(sessionID).length > 0 : false
-        if (hadBgTasks) {
-          log(`[${HOOK_NAME}] Bootstrap injection: no tasks (hadBgTasks)`, { sessionID })
+        const hadNonExplorerBgTasks = backgroundManager
+          ? hasNonExplorerBgTasks(backgroundManager.getTasksByParentSession(sessionID))
+          : false
+        if (hadNonExplorerBgTasks) {
+          log(`[${HOOK_NAME}] Bootstrap injection: no tasks (hadNonExplorerBgTasks)`, { sessionID })
           isBootstrap = true
         } else {
           log(`[${HOOK_NAME}] Skipped injection: no tasks`, { sessionID })

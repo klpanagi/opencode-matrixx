@@ -4,6 +4,12 @@ export const HOOK_NAME = "task-continuation-enforcer"
 
 export const DEFAULT_SKIP_AGENTS = ["oracle", "compaction"]
 
+export const EXPLORER_AGENTS = ["trinity", "operator"]
+
+export function hasNonExplorerBgTasks(tasks: Array<{ agent?: string }>): boolean {
+  return tasks.some((t) => !t.agent || !EXPLORER_AGENTS.includes(t.agent))
+}
+
 export const CONTINUATION_PROMPT = `${createSystemDirective(SystemDirectiveTypes.TASK_CONTINUATION)}
 
 Incomplete Matrixx tasks remain. Continue working on the next pending task.

@@ -93,4 +93,45 @@ describe("ulw bootstrap", () => {
     store.shutdown()
     rmSync(dir, { recursive: true, force: true })
   })
+
+  test("does not bootstrap when only explorer bg tasks exist", async () => {
+    const dir = mkdtempSync(join(tmpdir(), "ulw-boot-"))
+    const toastMock = mock(async () => ({} as never))
+    const ctx = makeCtx(dir, [])
+    const store = createSessionStateStore()
+    const bg = {
+      getTasksByParentSession: () => [
+        { status: "completed", agent: "trinity" },
+        { status: "completed", agent: "operator" },
+      ],
+    } as never
+    await handleSessionIdle({ ctx, sessionID: "ulw5", sessionStateStore: store, backgroundManager: bg, skipAgents: [] })
+    expect(toastMock).not.toHaveBeenCalled()
+    expect(store.getState("ulw5").countdownTimer).toBeUndefined()
+    store.shutdown()
+    rmSync(dir, { recursive: true, force: true })
+  })
+
+  test("bootstraps when explorer and worker bg tasks mix", async () => {
+    const dir = mkdtempSync(join(tmpdir(), "ulw-boot-"))
+    const toastMock = mock(async () => ({} as never))
+    const ctx = {
+      directory: dir,
+      client: {
+        tui: { showToast: toastMock },
+        session: { messages: async () => ({ data: [] } as unknown as never) as never },
+      },
+    } as unknown as PluginInput
+    const store = createSessionStateStore()
+    const bg = {
+      getTasksByParentSession: () => [
+        { status: "completed", agent: "trinity" },
+        { status: "completed", agent: "mouse" },
+      ],
+    } as never
+    await handleSessionIdle({ ctx, sessionID: "ulw6", sessionStateStore: store, backgroundManager: bg, skipAgents: [] })
+    expect(toastMock).toHaveBeenCalledTimes(1)
+    store.shutdown()
+    rmSync(dir, { recursive: true, force: true })
+  })
 })
