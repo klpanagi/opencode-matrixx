@@ -28,12 +28,13 @@ describe("wake-scheduler config resolution", () => {
     expect(interval).toBe(60000)
   })
 
-  test("scheduler is enabled by default", () => {
+  test("scheduler is disabled by default (opt-in)", () => {
     //#given no config
     //#when checking enabled
-    //#then the scheduler defaults to on
-    expect(isWakeSchedulerEnabled(undefined)).toBe(true)
+    //#then the scheduler defaults to off (token conservation)
+    expect(isWakeSchedulerEnabled(undefined)).toBe(false)
     expect(isWakeSchedulerEnabled({ enabled: false })).toBe(false)
+    expect(isWakeSchedulerEnabled({ enabled: true })).toBe(true)
   })
 
   test("next wake delay waits a full interval", () => {

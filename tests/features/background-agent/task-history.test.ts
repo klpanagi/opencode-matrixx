@@ -44,7 +44,7 @@ describe("TaskHistory", () => {
       expect(entries[0].category).toBe("quick")
     })
 
-    it("caps entries at MAX_ENTRIES_PER_PARENT (100)", () => {
+    it("caps entries at MAX_ENTRIES_PER_PARENT (50)", () => {
       //#given
       const history = new TaskHistory()
 
@@ -55,9 +55,9 @@ describe("TaskHistory", () => {
 
       //#then
       const entries = history.getByParentSession("parent-1")
-      expect(entries).toHaveLength(100)
-      expect(entries[0].id).toBe("t5")
-      expect(entries[99].id).toBe("t104")
+      expect(entries).toHaveLength(50)
+      expect(entries[0].id).toBe("t55")
+      expect(entries[49].id).toBe("t104")
     })
   })
 
@@ -271,6 +271,23 @@ describe("TaskHistory", () => {
       expect(snapshot).toBeNull()
     })
 
+    it("caps the job board block to 5 entries with a +N more line", () => {
+      //#given 8 recorded tasks
+      const history = new TaskHistory()
+      for (let i = 0; i < 8; i++) {
+        history.record("parent-1", { id: `t${i}`, agent: "explore", description: `Task ${i}`, status: "completed" })
+      }
+      //#when building the snapshot
+      const snapshot = history.buildJobBoardSnapshot("parent-1")
+      //#then the block lists the 5 most recent entries and collapses the rest
+      expect(snapshot?.block).toContain("Task 3")
+      expect(snapshot?.block).toContain("Task 7")
+      expect(snapshot?.block).not.toContain("Task 0")
+      expect(snapshot?.block).not.toContain("Task 1")
+      expect(snapshot?.block).not.toContain("Task 2")
+      expect(snapshot?.block).toContain("- ... +3 more")
+    })
+
     it("compaction format unchanged for existing fixtures", () => {
       //#given
       const history = new TaskHistory()
@@ -281,6 +298,25 @@ describe("TaskHistory", () => {
 
       //#then
       expect(result).toBe("- **oracle**[quick](completed): Review arch | session: `ses_abc123`")
+    })
+
+    it("caps compaction format to 5 entries with a +N more line", () => {
+      //#given 8 recorded tasks
+      const history = new TaskHistory()
+      for (let i = 0; i < 8; i++) {
+        history.record("parent-1", { id: `t${i}`, agent: "explore", description: `Task ${i}`, status: "completed" })
+      }
+
+      //#when formatting for compaction
+      const result = history.formatForCompaction("parent-1")
+
+      //#then only the 5 most recent entries appear with the rest collapsed
+      expect(result).toContain("Task 3")
+      expect(result).toContain("Task 7")
+      expect(result).not.toContain("Task 0")
+      expect(result).not.toContain("Task 1")
+      expect(result).not.toContain("Task 2")
+      expect(result).toContain("- ... +3 more")
     })
   })
 })

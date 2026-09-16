@@ -19,6 +19,7 @@ import { resolveTasksConfig } from "../../shared/task-system-gating"
 import { TaskObjectSchema } from "../../tools/task/types"
 import {
   BOOTSTRAP_PROMPT,
+  CONTINUATION_COOLDOWN_MS,
   CONTINUATION_PROMPT,
   DEFAULT_SKIP_AGENTS,
   HOOK_NAME,
@@ -80,6 +81,20 @@ export async function injectContinuation(args: {
   if (hasRunningBgTasks) {
     log(`[${HOOK_NAME}] Skipped injection: background tasks running`, { sessionID })
     return
+  }
+
+  const earlyInjectionState = sessionStateStore.getExistingState(sessionID)
+  if (earlyInjectionState?.lastInjectedAt !== undefined) {
+    const now = Date.now()
+    const elapsedMs = now - earlyInjectionState.lastInjectedAt
+    if (elapsedMs < CONTINUATION_COOLDOWN_MS) {
+      log(`[${HOOK_NAME}] Skipped injection: cooldown active`, {
+        sessionID,
+        cooldownMs: CONTINUATION_COOLDOWN_MS,
+        elapsedMs,
+      })
+      return
+    }
   }
 
   const tasks: Task[] = []
@@ -214,6 +229,9 @@ ${taskList}${staleNote}`
   }
 
   if (isAwaitingUser(sessionStateStore.getExistingState(sessionID))) {
+    if (injectionState) {
+      injectionState.inFlight = false
+    }
     log(`[${HOOK_NAME}] Skipped injection: awaiting user (race)`, { sessionID })
     return
   }

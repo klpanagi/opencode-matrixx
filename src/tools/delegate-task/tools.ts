@@ -5,7 +5,7 @@ import type {
 } from "../../agents/dynamic-agent-prompt-builder"
 import { log } from "../../shared/logger"
 import { mergeCategories } from "../../shared/merge-categories"
-import { CATEGORY_DESCRIPTIONS } from "./constants"
+import { CATEGORY_DESCRIPTIONS, SHORT_CATEGORY_HINTS } from "./constants"
 import {
   executeBackgroundContinuation,
   executeBackgroundTask,
@@ -31,6 +31,9 @@ export function createDelegateTask(options: DelegateTaskToolOptions): ToolDefini
   const allCategories = mergeCategories(userCategories)
   const categoryNames = Object.keys(allCategories)
   const categoryExamples = categoryNames.join(", ")
+  const categoryHints = categoryNames
+    .map((name) => (SHORT_CATEGORY_HINTS[name] ? `${name}(${SHORT_CATEGORY_HINTS[name]})` : name))
+    .join(", ")
 
   const availableCategories: AvailableCategory[] = options.availableCategories
     ?? Object.entries(allCategories).map(([name, categoryConfig]) => {
@@ -46,13 +49,6 @@ export function createDelegateTask(options: DelegateTaskToolOptions): ToolDefini
 
   const availableSkills: AvailableSkill[] = options.availableSkills ?? []
 
-  const categoryList = categoryNames.map(name => {
-    const userDesc = userCategories?.[name]?.description
-    const builtinDesc = CATEGORY_DESCRIPTIONS[name]
-    const desc = userDesc || builtinDesc
-    return desc ? `  - ${name}: ${desc}` : `  - ${name}`
-  }).join("\n")
-
       const description = `[DELEGATION — spawns a subagent that does work. Does NOT create a tracking record.]
 Spawn agent task with category-based or direct agent selection.
 
@@ -62,22 +58,15 @@ REQUIRED: You MUST provide EITHER category OR subagent_type (one of them is REQU
 - Providing NEITHER is INVALID and will fail.
 
 - load_skills: ALWAYS REQUIRED. Pass at least one skill name (e.g., ["playwright"], ["git-master", "frontend-ui-ux"]).
-- category: Use predefined category → Spawns Mouse with category config
-  Available categories:
-${categoryList}
+- category: Use predefined category → Spawns Mouse with category config. Available: ${categoryHints} (full per-category guidance is injected at execution time; see category arg).
 - subagent_type: Use specific agent directly (e.g., "oracle", "trinity")
 - run_in_background: true=async (returns task_id), false=sync (waits for result). Default: false. Use true for ANY parallel independent work (exploration, fan-out, multi-agent waves); false awaits the result inline.
-- session_id: Existing Task session to continue (from previous task output). Continues agent with FULL CONTEXT PRESERVED - saves tokens, maintains continuity.
+- session_id: Existing Task session to continue (from previous task output). Continues agent with FULL CONTEXT PRESERVED - saves tokens, maintains continuity. See session_id arg for when to use it.
 - command: The command that triggered this task (optional, for slash command tracking).
-
-**WHEN TO USE session_id:**
-- Task failed/incomplete → session_id with "fix: [specific issue]"
-- Need follow-up on previous result → session_id with additional question
-- Multi-turn conversation with same agent → always session_id instead of new task
 
 Prompts MUST be in English.
 
-Do NOT confuse with task_create/task_update/task_list/task_get/task_cleanup (the [TRACKING] family): those only write local T-{uuid} progress records and execute nothing. To get work done by another agent, use THIS tool (task). To record/track your own progress, use task_create/task_update.`
+Do NOT confuse with task_create/task_update/task_list/task_get/task_cleanup (the [TRACKING] family): those only write local T-{uuid} progress records and execute nothing. To get work done by another agent, use THIS tool (task).`
 
   return tool({
     description,
@@ -86,9 +75,9 @@ Do NOT confuse with task_create/task_update/task_list/task_get/task_cleanup (the
       description: tool.schema.string().describe("Short task description (3-5 words)"),
       prompt: tool.schema.string().describe("Full detailed prompt for the agent"),
       run_in_background: tool.schema.boolean().default(false).describe("true=async (returns task_id), false=sync (waits). Default: false"),
-      category: tool.schema.string().optional().describe(`REQUIRED if subagent_type not provided. Do NOT provide both category and subagent_type.`),
+      category: tool.schema.string().optional().describe(`REQUIRED if subagent_type not provided. Do NOT provide both category and subagent_type. Available: ${categoryExamples}. Per-category model/temperature/skills guidance is injected at execution time.`),
       subagent_type: tool.schema.string().optional().describe("REQUIRED if category not provided. Do NOT provide both category and subagent_type."),
-      session_id: tool.schema.string().optional().describe("Existing Task session to continue"),
+      session_id: tool.schema.string().optional().describe("Existing Task session to continue (full context preserved). Use when: task failed/incomplete (fix: <issue>), follow-up on previous result, or multi-turn with same agent. NEVER start fresh for follow-ups."),
       command: tool.schema.string().optional().describe("The command that triggered this task"),
       complexity: tool.schema.union([
         tool.schema.literal(1),

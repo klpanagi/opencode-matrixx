@@ -31,9 +31,14 @@ export function buildCompletionNotification(
   errorInfo: string,
 ): string {
   if (allComplete) {
-    const completedTasksText = completedTasks
-      .map((t) => `- \`${t.id}\`: ${t.description}`)
-      .join("\n")
+    // Cap the completed list to the 5 most recent tasks to bound notification
+    // size (token conservation); older completions collapse into a count line.
+    const MAX_COMPLETED_LISTED = 5
+    const visibleTasks = completedTasks.slice(-MAX_COMPLETED_LISTED)
+    const hiddenCount = completedTasks.length - visibleTasks.length
+    const lines = visibleTasks.map((t) => `- \`${t.id}\`: ${t.description}`)
+    if (hiddenCount > 0) lines.push(`- ... +${hiddenCount} more tasks`)
+    const completedTasksText = lines.join("\n")
 
     return `<system-reminder>
 [ALL BACKGROUND TASKS COMPLETE]
