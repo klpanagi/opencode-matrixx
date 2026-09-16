@@ -20,12 +20,12 @@ function makeMessage(role: "user" | "assistant", sessionID: string, id: string):
   }
 }
 
-describe("createMessagesTransformHandler — T3.25 idempotency", () => {
+describe("createMessagesTransformHandler — P2 cache removed, hooks run every call", () => {
   afterEach(() => {
     _resetMessagesTransformCacheForTesting()
   })
 
-  test("messages.transform idempotent on (sessionID, messagesHash)", async () => {
+  test("messages.transform runs hooks on every call (no dedup cache)", async () => {
     //#given
     let callCount = 0
     const contextInjectorHook = mock(async () => {
@@ -58,9 +58,9 @@ describe("createMessagesTransformHandler — T3.25 idempotency", () => {
 
     //#then
     expect(callsAfterFirst).toBe(2)
-    expect(callsAfterSecond).toBe(2)
-    expect(contextInjectorHook).toHaveBeenCalledTimes(1)
-    expect(thinkingBlockValidatorHook).toHaveBeenCalledTimes(1)
+    expect(callsAfterSecond).toBe(4)
+    expect(contextInjectorHook).toHaveBeenCalledTimes(2)
+    expect(thinkingBlockValidatorHook).toHaveBeenCalledTimes(2)
   })
 })
 
