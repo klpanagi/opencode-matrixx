@@ -47,7 +47,7 @@ export const DELEGATE_TASK_ERROR_PATTERNS: DelegateTaskErrorPattern[] = [
     pattern: "Cannot call primary agent",
     errorType: "primary_agent",
     fixHint:
-      "Primary agents cannot be called via task. Use a subagent like 'explore', 'oracle', or 'librarian'",
+      "Primary agents cannot be called via task. Use a subagent like 'explore', 'oracle', or 'librarian'. For 'architect', use /start-work to run Architect as session agent",
   },
   {
     pattern: "Operation timed out",

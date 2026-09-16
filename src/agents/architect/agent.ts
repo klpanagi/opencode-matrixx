@@ -12,7 +12,6 @@
 import type { AgentConfig } from "@opencode-ai/sdk"
 import type { CategoryConfig } from "../../config/schema"
 import { mergeCategories } from "../../shared/merge-categories"
-import { createAgentToolRestrictions } from "../../shared/permission-compat"
 import type { AvailableAgent, AvailableCategory, AvailableSkill } from "../dynamic-agent-prompt-builder"
 import { buildCategorySkillsDelegationGuide } from "../dynamic-agent-prompt-builder"
 import type { AgentMode, AgentPromptMetadata } from "../types"
@@ -92,9 +91,11 @@ function buildDynamicOrchestratorPrompt(ctx?: OrchestratorContext): string {
 }
 
 export function createArchitectAgent(ctx: OrchestratorContext): AgentConfig {
-  const restrictions = createAgentToolRestrictions([
-    "task",
-  ])
+  // No outgoing tool denies: Architect orchestrates via task(). Factory is single
+  // source of truth for outgoing-task allow (see #111 option b). Handler
+  // (tool-config-handler.ts) is fill-only and must not override; incoming
+  // task(subagent_type="architect") remains rejected at subagent-resolver.ts:57
+  // (different axis).
 
   const baseConfig = {
     description:
@@ -104,7 +105,6 @@ export function createArchitectAgent(ctx: OrchestratorContext): AgentConfig {
     temperature: 0.1,
     prompt: buildDynamicOrchestratorPrompt(ctx),
     color: "#10B981",
-    ...restrictions,
   }
 
   return baseConfig as AgentConfig

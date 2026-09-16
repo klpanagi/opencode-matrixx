@@ -8,6 +8,7 @@ import { resolveGrepGlobUsable } from "../shared/context-mode-enforcement"
 import type { AvailableAgent, AvailableCategory, AvailableSkill, AvailableTool } from "./dynamic-agent-prompt-builder"
 import {
   buildAntiPatternsSection,
+  buildArchitectReferralSection,
   buildCategorySkillsDelegationGuide,
   buildContextDisciplineSection,
   buildDelegationTable,
@@ -153,6 +154,7 @@ function buildDynamicMorpheusPrompt(
   const categorySkillsGuide = buildCategorySkillsDelegationGuide(availableCategories, availableSkills)
   const delegationTable = buildDelegationTable(availableAgents)
   const oracleSection = buildOracleSection(availableAgents)
+  const architectReferral = buildArchitectReferralSection()
   const hardBlocks = buildHardBlocksSection()
   const antiPatterns = buildAntiPatternsSection()
   const hasContextMode = availableTools.some((t) => t.name.startsWith("ctx_"))
@@ -451,6 +453,8 @@ If verification fails:
 </Behavior_Instructions>
 
 ${oracleSection}
+
+${architectReferral}
 
 ${taskManagementSection}
 

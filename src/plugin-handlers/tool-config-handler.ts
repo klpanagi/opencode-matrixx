@@ -47,12 +47,17 @@ export function applyToolConfig(params: {
   }
   const architect = agentByKey(params.agentResult, "architect");
   if (architect) {
-    architect.permission = {
-      ...architect.permission,
-      ...(isTaskSystem
-        ? { task: "allow", "task_*": "allow", teammate: "allow", ...denyTodoTools }
-        : { todowrite: "allow", todoread: "allow", ...denyTaskTools }),
-    };
+    // Fill-only: factory owns outgoing-task allow (see architect/agent.ts #111
+    // option b). Fill gaps per key with ?? so a factory value or explicit user
+    // override is never overwritten here.
+    const defaults = isTaskSystem
+      ? { task: "allow", "task_*": "allow", teammate: "allow", ...denyTodoTools }
+      : { todowrite: "allow", todoread: "allow", ...denyTaskTools };
+    const permission = (architect.permission ?? {}) as Record<string, unknown>;
+    for (const [key, value] of Object.entries(defaults)) {
+      permission[key] ??= value;
+    }
+    architect.permission = permission;
   }
   const morpheus = agentByKey(params.agentResult, "morpheus");
   if (morpheus) {

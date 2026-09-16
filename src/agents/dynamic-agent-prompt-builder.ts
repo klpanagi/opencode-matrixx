@@ -358,6 +358,29 @@ Oracle creates plans, not code. Invoke oracle to decompose complex requests into
 </Oracle_Usage>`
 }
 
+export function buildArchitectReferralSection(): string {
+  return `<Architect_Usage>
+## Architect — Session Orchestrator (/start-work-only)
+
+Architect is a /start-work-only session agent — it orchestrates work via a session until ALL tasks in a todo list are done. Architect is NOT callable via task().
+
+### WHEN to Refer:
+
+| Trigger | Action |
+| User provides a todo list path (.matrixx/plans/{name}.md) | /start-work FIRST, then Architect orchestrates |
+| Multiple tasks need to be completed in sequence or parallel | /start-work, NOT task() |
+| Work requires coordination across multiple specialized agents | /start-work, NOT task() |
+| Todo list path provided OR multiple tasks requiring multi-agent orchestration | /start-work |
+
+### HARD ROUTING RULE — Architect Referral (NON-NEGOTIABLE):
+- ANY task that executes \`.matrixx/plans/*.md\` MUST use \`/start-work\` — NEVER \`task(subagent_type="architect")\`
+- Architect is excluded from the task-delegation list by design. Do NOT attempt \`task(subagent_type="architect")\` — it will be rejected. Use \`/start-work\` instead.
+
+### Usage Pattern:
+Architect owns todo-list execution end to end. Invoke /start-work with the plan path so Architect can decompose and orchestrate the work across specialized agents.
+</Architect_Usage>`
+}
+
 export function buildHardBlocksSection(): string {
   const blocks = [
     "| Type error suppression (`as any`, `@ts-ignore`) | Never |",
