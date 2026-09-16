@@ -172,4 +172,25 @@ describe("buildJobBoardNotification", () => {
 Use \`background_output(task_id="<id>")\` to retrieve each result.
 </system-reminder>`)
   })
+
+  test("allComplete truncates the completed list to 5 with a +N more line", () => {
+    //#given 8 completed sibling tasks
+    const tasks = Array.from({ length: 8 }, (_, i) => ({ id: `task-${i + 1}`, description: `Task ${i + 1}` }))
+    //#when building the all-complete notification
+    const output = buildCompletionNotification(
+      { id: "task-1", description: "background task", error: undefined, status: "completed" },
+      true,
+      tasks,
+      0,
+      "1s",
+      "",
+    )
+    //#then only the 5 most recent tasks are listed and the rest collapse into a count line
+    expect(output).toContain("- `task-4`: Task 4")
+    expect(output).toContain("- `task-8`: Task 8")
+    expect(output).not.toContain("- `task-1`: Task 1")
+    expect(output).not.toContain("- `task-2`: Task 2")
+    expect(output).not.toContain("- `task-3`: Task 3")
+    expect(output).toContain("- ... +3 more tasks")
+  })
 })

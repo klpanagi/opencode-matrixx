@@ -19,12 +19,16 @@ export const DEFAULT_WALL_CLOCK_ABORT_GRACE_MS = 5000
 export const DEFAULT_NESTED_ADMISSION_ENABLED = true
 export const DEFAULT_NESTED_ADMISSION_MODE = "bypass" as const
 export const DEFAULT_NESTED_MAX_DEPTH = 2
-export const DEFAULT_WAKE_SCHEDULER_ENABLED = true
+// Wake scheduler is opt-in (default OFF) to conserve tokens: the periodic
+// <system-reminder> nudge costs context on every idle parent. Enable via
+// background_task.wakeScheduler.enabled = true.
+export const DEFAULT_WAKE_SCHEDULER_ENABLED = false
 export const DEFAULT_WAKE_INTERVAL_MS = 300000
 export const MIN_WAKE_INTERVAL_MS = 60000
 export const DEFAULT_JOB_BOARD_ENABLED = true
 export const DEFAULT_JOB_BOARD_STRATEGY = "latest" as const
-export const DEFAULT_MAX_RETAINED_SNAPSHOTS = 20
+// Lower snapshot retention bounds job-board ledger growth (token conservation).
+export const DEFAULT_MAX_RETAINED_SNAPSHOTS = 10
 export const RECONCILE_CONFIRMATION_GRACE_MS = 5000
 
 export type ProcessCleanupEvent = NodeJS.Signals | "beforeExit" | "exit"

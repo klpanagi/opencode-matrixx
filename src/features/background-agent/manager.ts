@@ -51,7 +51,7 @@ import type {
   ResumeInput,
   ReviveInput,
 } from "./types"
-import { resolveWakeIntervalMs, shouldWakeForParent, WAKE_REMINDER_TEXT, WakeScheduler } from "./wake-scheduler"
+import { isWakeSchedulerEnabled, resolveWakeIntervalMs, shouldWakeForParent, WAKE_REMINDER_TEXT, WakeScheduler } from "./wake-scheduler"
 import { WallclockSupervisor } from "./wallclock"
 
 type ProcessCleanupEvent = NodeJS.Signals | "beforeExit" | "exit"
@@ -1498,7 +1498,7 @@ export class BackgroundManager {
   }
 
   private refreshParentWake(parentSessionID: string): void {
-    if (this.config?.wakeScheduler?.enabled === false) return
+    if (!isWakeSchedulerEnabled(this.config?.wakeScheduler)) return
     const readState = () => ({
       hasPendingChildren: (this.pendingByParent.get(parentSessionID)?.size ?? 0) > 0,
       hasUndeliveredNotifications: (this.notifications.get(parentSessionID)?.length ?? 0) > 0,

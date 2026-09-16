@@ -1,6 +1,6 @@
 import type { BackgroundTaskStatus } from "./types"
 
-const MAX_ENTRIES_PER_PARENT = 100
+const MAX_ENTRIES_PER_PARENT = 50
 
 // Row cap vs snapshot-retention cap: MAX_ENTRIES_PER_PARENT bounds how many
 // history rows are retained per parent (oldest rows evicted on overflow),
@@ -85,7 +85,9 @@ export class TaskHistory {
     const list = this.getByParentSession(parentSessionID)
     if (list.length === 0) return null
 
-    const lines = list.map((e) => {
+    const visible = list.slice(-MAX_JOB_BOARD_ENTRIES)
+    const hiddenCount = list.length - visible.length
+    const lines = visible.map((e) => {
       const desc = e.description.replace(/[\n\r]+/g, " ").trim()
       const parts = [
         `- **${e.agent}**`,
@@ -96,6 +98,7 @@ export class TaskHistory {
       ]
       return parts.filter(Boolean).join("")
     })
+    if (hiddenCount > 0) lines.push(`- ... +${hiddenCount} more`)
 
     return lines.join("\n")
   }
@@ -123,12 +126,16 @@ export class TaskHistory {
 }
 
 function clampMaxRetainedSnapshots(value: number | undefined): number {
-  if (value === undefined || !Number.isFinite(value)) return 20
+  if (value === undefined || !Number.isFinite(value)) return 10
   return Math.min(100, Math.max(1, Math.floor(value)))
 }
 
+const MAX_JOB_BOARD_ENTRIES = 5
+
 function formatJobBoardBlock(entries: JobBoardRow[]): string {
-  const lines = entries.map((row) => {
+  const visible = entries.slice(-MAX_JOB_BOARD_ENTRIES)
+  const hiddenCount = entries.length - visible.length
+  const lines = visible.map((row) => {
     const parts = [
       `- **${row.agent}**`,
       row.category ? `[${row.category}]` : null,
@@ -138,5 +145,6 @@ function formatJobBoardBlock(entries: JobBoardRow[]): string {
     ]
     return parts.filter(Boolean).join("")
   })
+  if (hiddenCount > 0) lines.push(`- ... +${hiddenCount} more`)
   return `**Background task board (${entries.length} task${entries.length === 1 ? "" : "s"}):**\n${lines.join("\n")}`
 }

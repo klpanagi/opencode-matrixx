@@ -238,6 +238,17 @@ export const CATEGORY_DESCRIPTIONS: Record<string, string> = {
   "broadcast": "Documentation, prose, technical writing",
 }
 
+export const SHORT_CATEGORY_HINTS: Record<string, string> = {
+  "construct": "frontend/UI",
+  "source": "hard logic",
+  "deep-jack": "deep research",
+  "matrix-bend": "creative",
+  "bullet-time": "trivial 1-file",
+  "blue-pill": "easy misc",
+  "red-pill": "hard misc",
+  "broadcast": "docs",
+}
+
 /**
  * System prompt prepended to plan agent invocations.
  * Instructs the plan agent to first gather context via explore/librarian agents,
