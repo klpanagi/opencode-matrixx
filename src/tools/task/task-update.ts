@@ -22,7 +22,8 @@ export function createTaskUpdateTool(
   ctx?: PluginInput,
 ): ToolDefinition {
    return tool({
-     description: `Update an existing task with new values.
+     description: `[TRACKING — local progress record only. Spawns nothing, executes nothing.]
+Update an existing task with new values.
 
 Supports updating: subject, description, status, activeForm, owner, metadata.
 For blocks/blockedBy: use addBlocks/addBlockedBy to append (additive, not replacement).

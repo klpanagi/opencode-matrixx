@@ -7,7 +7,7 @@ import { getAgentFromSession } from "./agent-resolution"
 import { BLOCKED_TOOLS, HOOK_NAME, ORACLE_WORKFLOW_REMINDER, PLANNING_CONSULT_WARNING } from "./constants"
 import { isAllowedFile } from "./path-policy"
 
-const TASK_TOOLS = ["task", "delegate_agent"]
+const TASK_TOOLS = ["task"]
 
 export function createOracleMdOnlyHook(ctx: PluginInput) {
   return {

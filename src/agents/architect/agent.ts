@@ -94,7 +94,6 @@ function buildDynamicOrchestratorPrompt(ctx?: OrchestratorContext): string {
 export function createArchitectAgent(ctx: OrchestratorContext): AgentConfig {
   const restrictions = createAgentToolRestrictions([
     "task",
-    "delegate_agent",
   ])
 
   const baseConfig = {

@@ -37,16 +37,6 @@ describe("createBddContractAgent", () => {
     expect(createBddContractAgent.mode).toBe("all")
   })
 
-  //#given empty tool restrictions
-  //#when creating the agent
-  //#then delegate_agent should not be denied
-  test("does not deny delegate_agent (empty restrictions)", () => {
-    const config = createBddContractAgent("anthropic/claude-sonnet-4-5")
-
-    expect(config.permission).toBeDefined()
-    expect(config.permission?.delegate_agent).toBeUndefined()
-  })
-
   //#given a model
   //#when creating the agent
   //#then prompt should contain BDD/Gherkin/Contract keywords

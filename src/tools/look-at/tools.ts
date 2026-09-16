@@ -113,7 +113,7 @@ Original error: ${createResult.error}`
             agent: CONSTRUCT_AGENT,
             tools: {
               task: false,
-              delegate_agent: false,
+
               look_at: false,
               read: false,
             },

@@ -2,7 +2,7 @@
 
 ## OVERVIEW
 
-23 tool dirs (LSP ×6, AST-grep ×2, grep/glob, session-manager ×4, task ×5 `create/list/get/update/cleanup`, plan ×5 `create/read/update/list/delete` for `.matrixx/plans/*.md`, delegate-task/agent, background-task, handoff, hashline-edit, interactive-bash, look-at, skill/slashcommand, assembly, bdd-*/dcp-switch/pdf-extract). Two patterns: Direct ToolDefinition (static) and Factory Function (context-dependent).
+23 tool dirs (LSP ×6, AST-grep ×2, grep/glob, session-manager ×4, task ×5 `create/list/get/update/cleanup`, plan ×5 `create/read/update/list/delete` for `.matrixx/plans/*.md`, delegate-task, background-task, handoff, hashline-edit, interactive-bash, look-at, skill/slashcommand, assembly, bdd-*/dcp-switch/pdf-extract). Two patterns: Direct ToolDefinition (static) and Factory Function (context-dependent).
 
 ## STRUCTURE
 ```
@@ -15,7 +15,6 @@ tools/
 ├── grep/             # Custom grep (60s timeout, 10MB limit)
 ├── glob/             # File search (60s timeout, 100 file limit)
 ├── session-manager/  # 4 tools: list, read, search, info (151 lines)
-├── delegate-agent/   # Background agent delegation (68 lines)
 ├── background-task/  # background_output, background_cancel
 ├── handoff/          # Multi-action handoff: create, read, list, archive
 ├── hashline-edit/    # Hash-based line-precise file editing
@@ -41,7 +40,6 @@ tools/
 | `task_list` | Task | Factory | List active tasks with summary (excludes completed/deleted) |
 | `task_get` | Task | Factory | Retrieve full task object by ID |
 | `task_update` | Task | Factory | Update task fields, supports addBlocks/addBlockedBy for dependencies |
-| `delegate_agent` | Agent | Factory | Direct operator/trinity invocation |
 | `handoff` | Session | Factory | Multi-action: create, read, list, archive |
 | `background_output` | Background | Factory | Retrieve background task result |
 | `background_cancel` | Background | Factory | Cancel running background tasks |
@@ -185,7 +183,7 @@ Each category defines: model, variant, temperature, max tokens, thinking/reasoni
 
 ### Queue-Saturated Launch Outcome
 
-When `delegate_task` or `delegate_agent` launches into a saturated queue (root launch past `admissionTimeoutMs`), the tool returns a machine-readable block instead of throwing:
+When `delegate_task` launches into a saturated queue (root launch past `admissionTimeoutMs`), the tool returns a machine-readable block instead of throwing:
 
 ```
 Background task NOT admitted (queue saturated).

@@ -44,7 +44,6 @@ type OpencodeClient = PluginInput["client"]
 
 export { createAssemblyTool } from "./assembly"
 export { createDcpSwitchProfileTool } from "./dcp-switch-profile"
-export { createDelegateAgent } from "./delegate-agent"
 export { createDelegateTask } from "./delegate-task"
 export { createHashlineEditTool } from "./hashline-edit"
 export { createLookAt } from "./look-at"

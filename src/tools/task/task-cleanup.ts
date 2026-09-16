@@ -43,7 +43,8 @@ export function createTaskCleanupTool(
   ctx?: PluginInput,
 ): ToolDefinition {
   return tool({
-    description: `Delete completed task files from storage.
+    description: `[TRACKING — local progress records only. Spawns nothing, executes nothing.]
+Delete completed task files from storage.
 
 Scans getTaskDir()/*.json, filters status==="completed" and optionally olderThan.
 olderThan supports "7d", "24h", "30m" format (regex ^(\\d+)(d|h|m)$).

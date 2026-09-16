@@ -725,8 +725,7 @@ export class BackgroundManager {
         system: input.skillContent,
         tools: (() => {
           const tools = {
-            task: false,
-            delegate_agent: true,
+            task: true,
             question: false,
             ...getAgentToolRestrictions(input.agent),
           }
@@ -1001,8 +1000,7 @@ export class BackgroundManager {
         ...(resumeVariant ? { variant: resumeVariant } : {}),
         tools: (() => {
           const tools = {
-            task: false,
-            delegate_agent: true,
+            task: true,
             question: false,
             ...getAgentToolRestrictions(existingTask.agent),
           }
@@ -1136,7 +1134,7 @@ export class BackgroundManager {
     this.startPolling()
     const toastManager = getTaskToastManager()
     if (toastManager) toastManager.addTask({ id: task.id, description: task.description, agent: task.agent, isBackground: true })
-    const tools = { task: false, delegate_agent: true, question: false, ...getAgentToolRestrictions(task.agent) }
+    const tools = { task: true, question: false, ...getAgentToolRestrictions(task.agent) }
     setSessionTools(sessionID, tools)
     const reviveModel = task.model ? { providerID: task.model.providerID, modelID: task.model.modelID } : undefined
     const reviveVariant = task.model?.variant

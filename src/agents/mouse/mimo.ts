@@ -25,9 +25,7 @@ Execute tasks directly. You NEVER delegate.
 </role>
 
 <rules>
-- task tool: BLOCKED — cannot delegate to other agents
-- delegate_agent with oracle/construct/merovingian/smith/sentinel/cipher: BLOCKED — Mouse is leaf, only trinity/operator allowed
-- delegate_agent with trinity/operator ONLY: ALLOWED for research (explore/librarian)
+- task tool: BLOCKED — cannot delegate work or spawn other agents, including for research
 - ${useTaskSystem ? "task_create/task_update" : "todowrite/todoread"}: REQUIRED for tracking
 - Implement ONLY what is requested — no scope creep
 - Plan files (.matrixx/plans/*.md): OWNED by oracle — never create via Mouse

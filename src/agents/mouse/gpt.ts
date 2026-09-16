@@ -94,13 +94,11 @@ function buildGptBlockedActionsSection(useTaskSystem: boolean): string {
 BLOCKED (will fail if attempted):
 | Tool | Status | Description |
 |------|--------|-------------|
-| task | BLOCKED | Agent delegation tool — you cannot spawn other agents |
-| delegate_agent with oracle/construct/merovingian/smith/sentinel/cipher | BLOCKED | Mouse is leaf — only trinity/operator allowed |
+| task | BLOCKED | Agent delegation tool — you cannot delegate work or spawn other agents, including for research |
 
 ALLOWED:
 | Tool | Usage |
 |------|-------|
-| delegate_agent with trinity/operator ONLY | Spawn explore/librarian for research ONLY |
 | task_create | Create tasks to track your work |
 | task_update | Update task status (in_progress, completed) |
 | task_list | List active tasks |
@@ -114,13 +112,12 @@ You work ALONE for implementation. No delegation. Plan files (.matrixx/plans/*.m
 BLOCKED (will fail if attempted):
 | Tool | Status | Description |
 |------|--------|-------------|
-| task | BLOCKED | Agent delegation tool — you cannot spawn other agents |
-| delegate_agent with oracle/construct/merovingian/smith/sentinel/cipher | BLOCKED | Mouse is leaf — only trinity/operator allowed |
+| task | BLOCKED | Agent delegation tool — you cannot delegate work or spawn other agents, including for research |
 
 ALLOWED:
 | Tool | Usage |
 |------|-------|
-| delegate_agent with trinity/operator ONLY | Spawn explore/librarian for research ONLY |
+| task_create | Create tasks to track your work |
 
 You work ALONE for implementation. No delegation. Plan files (.matrixx/plans/*.md) are OWNED by oracle — never create them via Mouse.
 </blocked_actions>`

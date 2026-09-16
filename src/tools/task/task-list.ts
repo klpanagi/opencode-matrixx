@@ -18,7 +18,8 @@ interface TaskSummary {
 
 export function createTaskList(config: Partial<MatrixxConfig>, ctx?: PluginInput): ToolDefinition {
   return tool({
-    description: `List all active tasks with summary information.
+    description: `[TRACKING — local progress records only. Spawns nothing, executes nothing.]
+List all active tasks with summary information.
     
 Returns tasks excluding completed and deleted statuses by default.
 For each task's blockedBy field, filters to only include unresolved (non-completed) blockers.

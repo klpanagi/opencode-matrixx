@@ -17,7 +17,6 @@ export const ulwResearchSkill: BuiltinSkill = {
     "grep",
     "glob",
     "look_at",
-    "delegate_agent",
     "websearch_web_search_exa",
     "white_rabbit_searchGitHub",
     "context7_resolve-library-id",

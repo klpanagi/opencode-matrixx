@@ -30,7 +30,6 @@ export function createTrinityAgent(model: string): AgentConfig {
     "edit",
     "task",
     "task",
-    "delegate_agent",
   ])
 
   return {

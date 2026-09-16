@@ -138,9 +138,7 @@ Dense and useful beats long and thorough.
 </delivery>`
 
 export function createCipherAgent(model: string): AgentConfig {
-  const restrictions = createAgentToolRestrictions([
-    "delegate_agent",
-  ])
+  const restrictions = createAgentToolRestrictions([])
 
   const base = {
     description:

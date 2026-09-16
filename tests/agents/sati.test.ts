@@ -39,13 +39,12 @@ describe("createSatiAgent", () => {
 
   //#given a model
   //#when creating the agent
-  //#then both task and delegate_agent are denied (Sati is self-contained)
-  test("denies task and delegate_agent for self-contained execution", () => {
+  //#then task is denied (Sati is self-contained, pure leaf)
+  test("denies task for self-contained execution", () => {
     const config = createSatiAgent("anthropic/claude-opus-4-6")
 
     expect(config.permission).toBeDefined()
     expect(config.permission?.task).toBe("deny")
-    expect(config.permission?.delegate_agent).toBe("deny")
   })
 
   //#given a model
