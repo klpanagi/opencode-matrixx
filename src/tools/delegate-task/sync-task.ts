@@ -4,6 +4,7 @@ import type { ModelFallbackInfo } from "../../features/task-toast-manager/types"
 import { storeToolMetadata } from "../../features/tool-metadata-store"
 import { formatDuration } from "../../shared"
 import { log } from "../../shared/logger"
+import { isPollTimeoutOutcome } from "../../shared/poll-timeout-outcome"
 import { getDeliverableTag } from "./constants"
 import { formatDetailedError } from "./error-formatting"
 import type { ExecutorContext, ParentContext } from "./executor-types"
@@ -117,7 +118,7 @@ export async function executeSyncTask(
         },
       })
       if (pollError) {
-        pollTimedOut = pollError.startsWith("Poll timeout reached")
+        pollTimedOut = isPollTimeoutOutcome(pollError)
         return pollError
       }
 
