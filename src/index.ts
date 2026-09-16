@@ -13,6 +13,7 @@ import { injectServerAuthIntoClient, log } from "./shared"
 import { setContextModeForPrompts } from "./shared/context-mode-enforcement"
 import { createFirstMessageVariantGate } from "./shared/first-message-variant"
 import { startTmuxCheck } from "./tools"
+import { switchProfile } from "./tools/dcp-switch-profile/tools"
 
 const MatrixxPlugin: Plugin = async (ctx) => {
   log("[MatrixxPlugin] ENTRY - plugin loading", {
@@ -22,8 +23,14 @@ const MatrixxPlugin: Plugin = async (ctx) => {
   injectServerAuthIntoClient(ctx.client)
   startTmuxCheck()
 
-  const pluginConfig = await loadPluginConfig(ctx.directory, ctx)
+const pluginConfig = await loadPluginConfig(ctx.directory, ctx)
   setContextModeForPrompts(pluginConfig.context_mode)
+
+  // Auto-activate DCP profile on startup if default_profile is configured
+  if (pluginConfig.dcp?.default_profile) {
+    switchProfile(pluginConfig.dcp.default_profile, { pluginConfig })
+  }
+
   const disabledHooks = new Set(pluginConfig.disabled_hooks ?? [])
 
   const isHookEnabled = (hookName: HookName): boolean => !disabledHooks.has(hookName)

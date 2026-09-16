@@ -152,7 +152,7 @@ function buildInlineConfig(profile: string, options?: DcpSwitchProfileOptions): 
  * Reads profile parameters from the Matrixx plugin configuration and writes
  * a full inline DCP config to ~/.config/opencode/dcp.jsonc.
  */
-function switchProfile(profile: string, options?: DcpSwitchProfileOptions): string {
+export function switchProfile(profile: string, options?: DcpSwitchProfileOptions): string {
   // Validate profile — accept built-ins OR custom profiles defined in config
   const customProfiles = Object.keys(options?.pluginConfig?.dcp?.profiles ?? {})
   const allValid = [...VALID_PROFILES, ...customProfiles]
