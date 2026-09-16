@@ -111,7 +111,7 @@ export const BUILTIN_DCP_PROFILES = {
   brutal: {
     pruneNotification: "off" as const,
     compress: {
-      maxContextLimit: "15%",
+      maxContextLimit: "20%",
       minContextLimit: "10%",
       nudgeFrequency: 1,
       nudgeForce: "strong" as const,
