@@ -49,7 +49,6 @@ export function applyToolConfig(params: {
   if (architect) {
     architect.permission = {
       ...architect.permission,
-      delegate_agent: "deny",
       ...(isTaskSystem
         ? { task: "allow", "task_*": "allow", teammate: "allow", ...denyTodoTools }
         : { todowrite: "allow", todoread: "allow", ...denyTaskTools }),
@@ -59,7 +58,6 @@ export function applyToolConfig(params: {
   if (morpheus) {
     morpheus.permission = {
       ...morpheus.permission,
-      delegate_agent: "deny",
       question: questionPermission,
       ...(isTaskSystem
         ? { task: "allow", "task_*": "allow", teammate: "allow", ...denyTodoTools }
@@ -70,7 +68,6 @@ export function applyToolConfig(params: {
   if (keymaker) {
     keymaker.permission = {
       ...keymaker.permission,
-      delegate_agent: "deny",
       question: questionPermission,
       ...(isTaskSystem ? { task: "allow", ...denyTodoTools } : { todowrite: "allow", todoread: "allow", ...denyTaskTools }),
     };
@@ -79,7 +76,6 @@ export function applyToolConfig(params: {
   if (oracle) {
     oracle.permission = {
       ...oracle.permission,
-      delegate_agent: "deny",
       question: questionPermission,
       ...(isTaskSystem
         ? { task: "allow", "task_*": "allow", teammate: "allow", ...denyTodoTools }

@@ -69,9 +69,7 @@ function buildQwenBlockedActions(useTaskSystem: boolean): string {
   if (useTaskSystem) {
     return `| Tool | Status | Notes |
 |------|--------|-------|
-| task | BLOCKED | Cannot delegate implementation |
-| delegate_agent with oracle/construct/merovingian/smith/sentinel/cipher | BLOCKED | Mouse is leaf — only trinity/operator allowed |
-| delegate_agent with trinity/operator ONLY | ALLOWED | Research only (explore/librarian) |
+| task | BLOCKED | Cannot delegate work or spawn other agents, including for research |
 | task_create | ALLOWED | Track your work |
 | task_update | ALLOWED | Update status |
 | task_list / task_get | ALLOWED | View tasks |
@@ -81,9 +79,7 @@ Plan files (.matrixx/plans/*.md) are OWNED by oracle — never create them via M
 
   return `| Tool | Status | Notes |
 |------|--------|-------|
-| task | BLOCKED | Cannot delegate implementation |
-| delegate_agent with oracle/construct/merovingian/smith/sentinel/cipher | BLOCKED | Mouse is leaf — only trinity/operator allowed |
-| delegate_agent with trinity/operator ONLY | ALLOWED | Research only (explore/librarian) |
+| task | BLOCKED | Cannot delegate work or spawn other agents, including for research |
 
 Plan files (.matrixx/plans/*.md) are OWNED by oracle — never create them via Mouse.`
 }

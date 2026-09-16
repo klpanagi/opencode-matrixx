@@ -13,7 +13,8 @@ function parseTaskId(id: string): string | null {
 
 export function createTaskGetTool(config: Partial<MatrixxConfig>, ctx?: PluginInput): ToolDefinition {
   return tool({
-    description: `Retrieve a task by ID.
+    description: `[TRACKING — local progress record only. Spawns nothing, executes nothing.]
+Retrieve a task by ID.
 
 Returns the full task object including all fields: id, subject, description, status, activeForm, blocks, blockedBy, owner, metadata, repoURL, parentID, and threadID.
 

@@ -154,13 +154,12 @@ describe("createMouseAgentWithOverrides", () => {
     })
   })
 
-  describe("tool safety (task blocked, delegate_agent allowed)", () => {
-    test("task remains blocked, delegate_agent is allowed via tools format", () => {
+  describe("tool safety (task blocked, pure leaf)", () => {
+    test("task remains blocked via tools format", () => {
       // given
       const override = {
         tools: {
           task: true,
-          delegate_agent: true,
           read: true,
         },
       }
@@ -173,14 +172,10 @@ describe("createMouseAgentWithOverrides", () => {
       const permission = result.permission as Record<string, string> | undefined
       if (tools) {
         expect(tools.task).toBe(false)
-        // delegate_agent is NOW ALLOWED for subagents to spawn explore/librarian
-        expect(tools.delegate_agent).toBe(true)
         expect(tools.read).toBe(true)
       }
       if (permission) {
         expect(permission.task).toBe("deny")
-        // delegate_agent is NOW ALLOWED for subagents to spawn explore/librarian
-        expect(permission.delegate_agent).toBe("allow")
       }
     })
 
@@ -189,7 +184,6 @@ describe("createMouseAgentWithOverrides", () => {
       const override = {
         permission: {
           task: "allow",
-          delegate_agent: "allow",
           read: "allow",
         },
       } as { permission: Record<string, string> }
@@ -197,16 +191,14 @@ describe("createMouseAgentWithOverrides", () => {
       // when
       const result = createMouseAgentWithOverrides(override as Parameters<typeof createMouseAgentWithOverrides>[0])
 
-      // then - task blocked, but delegate_agent allowed for explore/librarian spawning
+      // then - task blocked, pure leaf with no delegation
       const tools = result.tools as Record<string, boolean> | undefined
       const permission = result.permission as Record<string, string> | undefined
       if (tools) {
         expect(tools.task).toBe(false)
-        expect(tools.delegate_agent).toBe(true)
       }
       if (permission) {
         expect(permission.task).toBe("deny")
-        expect(permission.delegate_agent).toBe("allow")
       }
     })
   })
@@ -669,10 +661,10 @@ describe("createMouseAgentWithOverrides (DeepSeek thinking)", () => {
 });
 
 describe("shared prompt utilities", () => {
-  test("buildConstraintsSection blocks task and allows delegate_agent", () => {
+  test("buildConstraintsSection blocks task delegation", () => {
     const constraints = buildConstraintsSection(false);
     expect(constraints).toContain("BLOCKED");
-    expect(constraints).toContain("delegate_agent");
+    expect(constraints).toContain("task");
     expect(constraints).toContain("You work ALONE");
   });
 

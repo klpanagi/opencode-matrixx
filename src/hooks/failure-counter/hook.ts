@@ -16,7 +16,7 @@ export function createFailureCounterHook(_ctx: PluginInput) {
       output: { title: string; output: string; metadata: unknown },
     ) => {
       const tool = input.tool.toLowerCase()
-      if (tool !== "task" && tool !== "delegate_agent") return
+      if (tool !== "task") return
       if (typeof output.output !== "string") return
 
       const isSuccess = isSuccessOutput(output.output)

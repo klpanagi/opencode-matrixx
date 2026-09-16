@@ -53,7 +53,8 @@ export function createDelegateTask(options: DelegateTaskToolOptions): ToolDefini
     return desc ? `  - ${name}: ${desc}` : `  - ${name}`
   }).join("\n")
 
-      const description = `Spawn agent task with category-based or direct agent selection.
+      const description = `[DELEGATION — spawns a subagent that does work. Does NOT create a tracking record.]
+Spawn agent task with category-based or direct agent selection.
 
 REQUIRED: You MUST provide EITHER category OR subagent_type (one of them is REQUIRED, but not both).
 - If using a predefined category → provide category
@@ -74,7 +75,9 @@ ${categoryList}
 - Need follow-up on previous result → session_id with additional question
 - Multi-turn conversation with same agent → always session_id instead of new task
 
-Prompts MUST be in English.`
+Prompts MUST be in English.
+
+Do NOT confuse with task_create/task_update/task_list/task_get/task_cleanup (the [TRACKING] family): those only write local T-{uuid} progress records and execute nothing. To get work done by another agent, use THIS tool (task). To record/track your own progress, use task_create/task_update.`
 
   return tool({
     description,

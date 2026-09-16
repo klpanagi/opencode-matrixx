@@ -44,7 +44,6 @@ export async function sendSyncPrompt(
   const allowTask = isPlanFamily(input.agentToUse)
   const tools = {
     task: allowTask,
-    delegate_agent: true,
     question: false,
     ...getAgentToolRestrictions(input.agentToUse),
   }

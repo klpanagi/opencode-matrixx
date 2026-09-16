@@ -18,7 +18,6 @@ import {
   createBddPipelineTool,
   createBddValidateContractTool,
   createDcpSwitchProfileTool,
-  createDelegateAgent,
   createDelegateTask,
   createGlobTools,
   createGrepTools,
@@ -61,7 +60,6 @@ export function createToolRegistry(args: {
   const { ctx, pluginConfig, managers, skillContext, availableCategories } = args
 
   const backgroundTools = createBackgroundTools(managers.backgroundManager, ctx.client, ctx.directory)
-  const delegateAgent = createDelegateAgent(ctx, managers.backgroundManager, pluginConfig.disabled_agents ?? [])
 
   const isMultimodalLookerEnabled = !(pluginConfig.disabled_agents ?? []).some(
     (agent) => agent.toLowerCase() === "construct",
@@ -157,7 +155,6 @@ export function createToolRegistry(args: {
     ...createDcpSwitchProfileTool({ pluginConfig }),
     ...createPresetTool({ pluginConfig, directory: ctx.directory }),
     ...backgroundTools,
-    delegate_agent: delegateAgent,
     ...(lookAt ? { look_at: lookAt } : {}),
     task: delegateTask,
     skill: skillTool,

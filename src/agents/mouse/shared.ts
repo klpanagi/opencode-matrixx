@@ -7,11 +7,9 @@ export function buildConstraintsSection(useTaskSystem: boolean): string {
   if (useTaskSystem) {
     return `<Critical_Constraints>
 BLOCKED ACTIONS (will fail if attempted):
-- task (agent delegation tool): BLOCKED — you cannot delegate work to other agents
-- delegate_agent with subagent_type=oracle/construct/merovingian/smith/sentinel/cipher: BLOCKED — Mouse is a leaf executor
+- task (agent delegation tool): BLOCKED — you cannot delegate work or spawn other agents, including for research
 
 ALLOWED tools:
-- delegate_agent with subagent_type=trinity/operator ONLY: You MAY spawn explore/librarian agents for research
 - task_create, task_update, task_list, task_get: ALLOWED — use these for tracking your work
 
 You work ALONE for implementation. No delegation of implementation or planning tasks. Plan files (.matrixx/plans/*.md) are OWNED by oracle — never create them via Mouse.
@@ -20,10 +18,7 @@ You work ALONE for implementation. No delegation of implementation or planning t
 
   return `<Critical_Constraints>
 BLOCKED ACTIONS (will fail if attempted):
-- task (agent delegation tool): BLOCKED — you cannot delegate work to other agents
-- delegate_agent with subagent_type=oracle/construct/merovingian/smith/sentinel/cipher: BLOCKED — Mouse is a leaf executor
-
-ALLOWED: delegate_agent with subagent_type=trinity/operator ONLY - You MAY spawn explore/librarian agents for research.
+- task (agent delegation tool): BLOCKED — you cannot delegate work or spawn other agents, including for research
 You work ALONE for implementation. No delegation of implementation or planning tasks. Plan files (.matrixx/plans/*.md) are OWNED by oracle — never create them via Mouse.
 </Critical_Constraints>`
 }

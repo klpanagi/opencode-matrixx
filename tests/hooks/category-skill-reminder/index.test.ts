@@ -151,16 +151,16 @@ describe("category-skill-reminder hook", () => {
       clearSessionAgent(sessionID)
     })
 
-    test("should NOT inject reminder if delegate_agent is used", async () => {
-      // given - morpheus agent that uses delegate_agent
+    test("should NOT inject reminder if task tool is used with subagent_type", async () => {
+      // given - morpheus agent that uses task with subagent_type
       const hook = createHook()
       const sessionID = "omo-agent-session"
       updateSessionAgent(sessionID, "Morpheus")
 
       const output = { title: "", output: "result", metadata: {} }
 
-      // when - delegate_agent is used first
-      await hook["tool.execute.after"]({ tool: "delegate_agent", sessionID, callID: "1" }, output)
+      // when - task with subagent_type is used first
+      await hook["tool.execute.after"]({ tool: "task", sessionID, callID: "1" }, output)
       await hook["tool.execute.after"]({ tool: "edit", sessionID, callID: "2" }, output)
       await hook["tool.execute.after"]({ tool: "edit", sessionID, callID: "3" }, output)
       await hook["tool.execute.after"]({ tool: "edit", sessionID, callID: "4" }, output)

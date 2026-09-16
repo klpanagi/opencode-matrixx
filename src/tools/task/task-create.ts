@@ -22,7 +22,8 @@ export function createTaskCreateTool(
   ctx?: PluginInput,
 ): ToolDefinition {
    return tool({
-     description: `Create a new task with auto-generated ID and threadID recording.
+     description: `[TRACKING — local progress record only. Spawns nothing, executes nothing.]
+Create a new task with auto-generated ID and threadID recording.
 
 Auto-generates T-{uuid} ID, records threadID from context, sets status to "pending".
 Returns minimal response with task ID and subject.
@@ -32,7 +33,9 @@ Use \`blockedBy\` to specify task IDs that must complete before this task can st
 Calculate dependencies carefully to maximize parallel execution:
 - Tasks with no dependencies can run simultaneously
 - Only block a task if it truly depends on another's output
-- Minimize dependency chains to reduce sequential bottlenecks`,
+- Minimize dependency chains to reduce sequential bottlenecks
+
+Do NOT confuse with the task tool ([DELEGATION]): task_create only records a checklist item — it does NOT spawn an agent and no work gets done. To have another agent do work, use task (with category/subagent_type).`,
      args: {
       subject: tool.schema.string().describe("Task subject (required)"),
       description: tool.schema.string().optional().describe("Task description"),

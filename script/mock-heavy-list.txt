@@ -1,8 +1,6 @@
 tests/plugin-handlers/
 tests/hooks/compaction-context-injector/
 tests/features/tmux-subagent/
-tests/tools/delegate-agent/sync-executor.test.ts
-tests/tools/delegate-agent/session-creator.test.ts
 tests/tools/session-manager/storage.test.ts
 tests/hooks/oracle-md-only/index.test.ts
 tests/hooks/architect/index.test.ts
