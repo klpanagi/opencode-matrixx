@@ -80,4 +80,38 @@ describe("resolveSubagentExecution", () => {
       error: "network timeout",
     })
   })
+
+  test("rejects incoming task(subagent_type=architect) with /start-work hint", async () => {
+    //#given
+    const args = createBaseArgs({ subagent_type: "architect" })
+    const executorCtx = createExecutorContext(async () => [
+      { name: "architect", mode: "primary" },
+      { name: "explore", mode: "subagent" },
+    ])
+
+    //#when
+    const result = await resolveSubagentExecution(args, executorCtx, "morpheus", "deep")
+
+    //#then
+    expect(result.agentToUse).toBe("")
+    expect(result.error).toContain("Cannot call primary agent")
+    expect(result.error).toContain("/start-work")
+  })
+
+  test("rejects other primaries without architect hint", async () => {
+    //#given
+    const args = createBaseArgs({ subagent_type: "morpheus" })
+    const executorCtx = createExecutorContext(async () => [
+      { name: "morpheus", mode: "primary" },
+      { name: "explore", mode: "subagent" },
+    ])
+
+    //#when
+    const result = await resolveSubagentExecution(args, executorCtx, "explore", "deep")
+
+    //#then
+    expect(result.agentToUse).toBe("")
+    expect(result.error).toContain("Cannot call primary agent")
+    expect(result.error).not.toContain("/start-work")
+  })
 })

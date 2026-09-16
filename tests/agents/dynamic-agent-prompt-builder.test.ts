@@ -5,6 +5,7 @@ import {
   type AvailableAgent,
   type AvailableCategory,
   type AvailableSkill,
+  buildArchitectReferralSection,
   buildCategorySkillsDelegationGuide,
   buildUltraworkSection,
   formatCustomSkillsBlock,
@@ -493,5 +494,18 @@ describe("categorizeTools extended", () => {
     expect(byCategory("sandbox")).toEqual(["ctx_search", "headroom_retrieve"])
     expect(byCategory("search")).toEqual(["grep"])
     expect(byCategory("other")).toEqual(["read"])
+  })
+})
+
+describe("buildArchitectReferralSection (issue #111 option b)", () => {
+  it("points Morpheus to /start-work and forbids task(subagent_type=architect)", () => {
+    //#given
+    //#when
+    const result = buildArchitectReferralSection()
+
+    //#then
+    expect(result).toContain("/start-work")
+    expect(result).toContain("rchitect")
+    expect(result).toContain('task(subagent_type="architect")')
   })
 })
