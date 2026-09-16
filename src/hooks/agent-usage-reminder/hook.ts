@@ -1,5 +1,5 @@
 import type { PluginInput } from "@opencode-ai/plugin";
-import { AGENT_TOOLS, REMINDER_MESSAGE, TARGET_TOOLS } from "./constants";
+import { AGENT_TOOLS, MAX_AGENT_USAGE_REMINDERS, REMINDER_MESSAGE, TARGET_TOOLS } from "./constants";
 import {
   clearAgentUsageState,
   loadAgentUsageState,
@@ -75,6 +75,10 @@ export function createAgentUsageReminderHook(_ctx: PluginInput) {
     const state = getOrCreateState(sessionID);
 
     if (state.agentUsed) {
+      return;
+    }
+
+    if (state.reminderCount >= MAX_AGENT_USAGE_REMINDERS) {
       return;
     }
 

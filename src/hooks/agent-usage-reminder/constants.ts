@@ -23,6 +23,8 @@ export const AGENT_TOOLS = new Set([
   "task",
 ]);
 
+export const MAX_AGENT_USAGE_REMINDERS = 3;
+
 export const REMINDER_MESSAGE = `
 [Agent Usage Reminder]
 

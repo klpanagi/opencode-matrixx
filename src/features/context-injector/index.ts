@@ -1,4 +1,4 @@
-export { ContextCollector, contextCollector } from "./collector"
+export { ContextCollector, contextCollector, MAX_MERGED_CHARS, MAX_PER_SOURCE_CHARS } from "./collector"
 export {
   createContextInjectorMessagesTransformHook,
 } from "./injector"

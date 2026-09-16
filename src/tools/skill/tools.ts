@@ -18,20 +18,9 @@ function loadedSkillToInfo(skill: BuiltinSkill): SkillInfo {
 function formatSkillsXml(skills: SkillInfo[]): string {
   if (skills.length === 0) return ""
 
-  const skillsXml = skills.map(skill => {
-    const lines = [
-      "  <skill>",
-      `    <name>${skill.name}</name>`,
-      `    <description>${skill.description}</description>`,
-    ]
-    if (skill.compatibility) {
-      lines.push(`    <compatibility>${skill.compatibility}</compatibility>`)
-    }
-    lines.push("  </skill>")
-    return lines.join("\n")
-  }).join("\n")
+  const skillsXml = skills.map(skill => `  <skill>${skill.name}</skill>`).join("\n")
 
-  return `\n\n<available_skills>\n${skillsXml}\n</available_skills>`
+  return `\n\n<available_skills>\n${skillsXml}\n</available_skills>\n\nCall skill(name) for detail on a specific skill. Names only are listed to save context; descriptions load lazily.`
 }
 
 export function createSkillTool(options: SkillLoadOptions = {}): ToolDefinition {

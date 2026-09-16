@@ -1,5 +1,5 @@
 import { beforeEach, describe, expect, it } from "bun:test"
-import { ContextCollector } from "../../../src/features/context-injector/collector"
+import { ContextCollector, MAX_MERGED_CHARS, MAX_PER_SOURCE_CHARS } from "../../../src/features/context-injector/collector"
 import type { ContextSourceType } from "../../../src/features/context-injector/types"
 
 describe("ContextCollector", () => {
@@ -325,6 +325,47 @@ describe("ContextCollector", () => {
 
       // then
       expect(collector.hasPending(sessionID)).toBe(false)
+    })
+  })
+
+  describe("budget", () => {
+    it("truncates a single oversized entry to MAX_PER_SOURCE_CHARS with notice", () => {
+      // given
+      const sessionID = "ses_budget_persource"
+      collector.register(sessionID, {
+        id: "big",
+        source: "keyword-detector",
+        content: "x".repeat(MAX_PER_SOURCE_CHARS + 500),
+      })
+
+      // when
+      const pending = collector.getPending(sessionID)
+
+      // then
+      expect(pending.merged.length).toBeLessThanOrEqual(MAX_MERGED_CHARS)
+      expect(pending.merged).toContain("[context truncated:")
+    })
+
+    it("caps merged output at MAX_MERGED_CHARS dropping lowest priority first", () => {
+      // given
+      const sessionID = "ses_budget_global"
+      const priorities = ["critical", "high", "normal", "low", "low"] as const
+      for (let i = 0; i < 5; i++) {
+        collector.register(sessionID, {
+          id: `ctx-${i}`,
+          source: "custom",
+          content: `${priorities[i]}-`.padEnd(MAX_PER_SOURCE_CHARS, "x"),
+          priority: priorities[i],
+        })
+      }
+
+      // when
+      const pending = collector.getPending(sessionID)
+
+      // then
+      expect(pending.merged.length).toBeLessThanOrEqual(MAX_MERGED_CHARS)
+      expect(pending.merged).toContain("critical-")
+      expect(pending.merged).toContain("[context truncated:")
     })
   })
 })

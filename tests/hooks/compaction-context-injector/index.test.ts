@@ -76,7 +76,7 @@ describe("createCompactionContextInjector", () => {
   })
 
   describe("Delegated Agent Sessions", () => {
-    it("includes delegated sessions section in compaction prompt", async () => {
+    it("keeps static prompt to 4 sections with delegated sessions via dynamic history only", async () => {
       //#given
       const injector = createCompactionContextInjector()
 
@@ -84,9 +84,13 @@ describe("createCompactionContextInjector", () => {
       const prompt = injector()
 
       //#then
-      expect(prompt).toContain("Delegated Agent Sessions")
-      expect(prompt).toContain("RESUME, DON'T RESTART")
-      expect(prompt).toContain("session_id")
+      // Static §8 boilerplate removed by Step-5 trim; delegated sessions
+      // arrive via dynamic `### Active/Recent Delegated Sessions` history append.
+      const sections = prompt.match(/^## \d\./gm) ?? []
+      expect(sections).toHaveLength(4)
+      expect(prompt).not.toContain("Delegated Agent Sessions")
+      expect(prompt).not.toContain("RESUME, DON'T RESTART")
+      expect(prompt).toContain("Agent Verification State")
     })
 
     it("injects actual task history when backgroundManager and sessionID provided", async () => {
