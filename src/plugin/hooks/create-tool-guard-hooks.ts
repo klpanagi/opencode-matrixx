@@ -5,6 +5,7 @@ import {
   createCommentCheckerHooks,
   createContextModeEnforcerHook,
   createDirectoryAgentsInjectorHook,
+  createDocumentReaderGuardHook,
   createEmptyTaskResponseDetectorHook,
   createEnvFileWriteGuardHook,
   createEvolutionWatcherHook,
@@ -52,6 +53,7 @@ export type ToolGuardHooks = {
   qualityGate: ReturnType<typeof createQualityGateHook> | null
   taskNotepad: ReturnType<typeof createTaskNotepadHook> | null
   taskEditGuard: ReturnType<typeof createTaskEditGuardHook> | null
+  documentReaderGuard: ReturnType<typeof createDocumentReaderGuardHook> | null
   evolutionWatcher: ReturnType<typeof createEvolutionWatcherHook> | null
 }
 
@@ -161,6 +163,10 @@ export function createToolGuardHooks(args: {
     ? safeHook("task-edit-guard", () => createTaskEditGuardHook(ctx))
     : null
 
+  const documentReaderGuard = isHookEnabled("document-reader-guard")
+    ? safeHook("document-reader-guard", () => createDocumentReaderGuardHook(ctx))
+    : null
+
   const evolutionWatcher = evolutionEnabled && isHookEnabled("evolution-watcher")
     ? safeHook("evolution-watcher", () => createEvolutionWatcherHook(ctx, pluginConfig.evolution))
     : null
@@ -186,6 +192,7 @@ export function createToolGuardHooks(args: {
     qualityGate,
     taskNotepad,
     taskEditGuard,
+    documentReaderGuard,
     evolutionWatcher,
   }
 }

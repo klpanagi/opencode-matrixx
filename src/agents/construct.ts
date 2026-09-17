@@ -12,7 +12,7 @@ export const CONSTRUCT_PROMPT_METADATA: AgentPromptMetadata = {
 }
 
 export function createConstructAgent(model: string): AgentConfig {
-  const restrictions = createAgentToolAllowlist(["read"])
+  const restrictions = createAgentToolAllowlist(["read", "document_reader__convert_to_markdown"])
 
   return {
     description:
@@ -38,7 +38,7 @@ When NOT to use you:
 
 How you work:
 1. Receive a file path and a goal describing what to extract
-2. Read and analyze the file deeply
+2. For PDF/DOCX/XLSX/PPTX/media call document_reader__convert_to_markdown with file:///absolute/path, otherwise use Read
 3. Return ONLY the relevant extracted information
 4. The main agent never processes the raw file - you save context tokens
 
