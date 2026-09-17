@@ -409,6 +409,48 @@ describe("dcp_switch_profile tool", () => {
       expect(exp.allowSubAgents).toBe(true)
     })
 
+    //#given base sets allowSubAgents true and brutal builtin defaults false with no profile override
+    //#when switching to brutal
+    //#then base wins over the builtin default
+    test("base.experimental.allowSubAgents true applies to brutal without profile override", async () => {
+      const dcp = DcpConfigSchema.parse({
+        base: { experimental: { allowSubAgents: true } },
+      })
+      const tools = createDcpSwitchProfileTool({ pluginConfig: { dcp } })
+      await tools.dcp_switch_profile.execute({ profile: "brutal" }, mockContext)
+      const exp = extractWrittenConfig()!.experimental as AnyRecord
+      expect(exp.allowSubAgents).toBe(true)
+    })
+
+    //#given base sets allowSubAgents true and economy builtin defaults false with no profile override
+    //#when switching to economy
+    //#then base wins over the builtin default
+    test("base.experimental.allowSubAgents true applies to economy without profile override", async () => {
+      const dcp = DcpConfigSchema.parse({
+        base: { experimental: { allowSubAgents: true } },
+      })
+      const tools = createDcpSwitchProfileTool({ pluginConfig: { dcp } })
+      await tools.dcp_switch_profile.execute({ profile: "economy" }, mockContext)
+      const exp = extractWrittenConfig()!.experimental as AnyRecord
+      expect(exp.allowSubAgents).toBe(true)
+    })
+
+    //#given base sets allowSubAgents true but profiles.brutal explicitly sets false
+    //#when switching to brutal
+    //#then the explicit profile override wins over base
+    test("explicit profiles.brutal.experimental.allowSubAgents false wins over base true", async () => {
+      const dcp = DcpConfigSchema.parse({
+        base: { experimental: { allowSubAgents: true } },
+        profiles: {
+          brutal: { experimental: { allowSubAgents: false } },
+        },
+      })
+      const tools = createDcpSwitchProfileTool({ pluginConfig: { dcp } })
+      await tools.dcp_switch_profile.execute({ profile: "brutal" }, mockContext)
+      const exp = extractWrittenConfig()!.experimental as AnyRecord
+      expect(exp.allowSubAgents).toBe(false)
+    })
+
     test("base.experimental defaults to allowSubAgents: true when unset", async () => {
       const dcp = DcpConfigSchema.parse({})
       const tools = createDcpSwitchProfileTool({ pluginConfig: { dcp } })

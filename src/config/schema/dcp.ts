@@ -152,8 +152,8 @@ export const DcpConfigSchema = z.object({
   /** Enable the DCP profile switcher. Default: true */
   enabled: z.boolean().default(true),
 
-  /** Profile definitions keyed by name. Defaults to the four built-in profiles. */
-  profiles: z.record(z.string(), DcpProfileDefinitionSchema).default(BUILTIN_DCP_PROFILES),
+  /** Per-profile user overrides keyed by name. Builtins apply when unset. */
+  profiles: z.record(z.string(), DcpProfileDefinitionSchema).default({}),
 
   /** Default profile to activate when the command is invoked without arguments. Default: "balanced" */
   default_profile: z.string().optional(),
@@ -276,7 +276,7 @@ export const DcpConfigSchema = z.object({
       /** Glob patterns for files that should be protected from compression (default: []) */
       protectedFilePatterns: z.array(z.string()).default([]),
 
-      /** Experimental settings that apply across all profiles (profile-level takes precedence) */
+      /** Experimental settings shared across profiles: explicit dcp.profiles[name] wins, then base, then builtin default */
       experimental: DcpExperimentalSchema.default({ allowSubAgents: true }),
     })
     .default({
