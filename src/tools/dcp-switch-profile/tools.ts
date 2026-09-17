@@ -89,6 +89,10 @@ function buildInlineConfig(profile: string, options?: DcpSwitchProfileOptions): 
   const profilePurge = ((profileConfig.strategies as Record<string, unknown>)?.purgeErrors as Record<string, unknown>) ?? {}
   const basePurge = ((strategiesBase.purgeErrors as Record<string, unknown>)) ?? {}
   const baseExp = (base.experimental as Record<string, unknown>) ?? {}
+  // Explicit per-profile override (dcp.profiles[profile]) wins over base;
+  // base wins over builtin defaults. profileExp is the merged builtin+override,
+  // so userExpRaw is needed to distinguish "user explicitly set" from builtin.
+  const userExpRaw = ((userOverride as Record<string, unknown> | undefined)?.experimental as Record<string, unknown> | undefined) ?? {}
 
   return {
     $schema:
@@ -121,7 +125,7 @@ function buildInlineConfig(profile: string, options?: DcpSwitchProfileOptions): 
     },
     experimental: {
       allowSubAgents:
-        (profileExp.allowSubAgents as boolean) ?? (baseExp.allowSubAgents as boolean) ?? true,
+        (userExpRaw.allowSubAgents as boolean) ?? (baseExp.allowSubAgents as boolean) ?? (profileExp.allowSubAgents as boolean) ?? true,
       customPrompts: false,
     },
     protectedFilePatterns: (base.protectedFilePatterns as string[]) ?? [],
