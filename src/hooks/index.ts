@@ -15,6 +15,7 @@ export { createContextWindowMonitorHook } from "./context-window-monitor";
 export { createDelegateTaskRetryHook } from "./delegate-task-retry";
 export { createDesignIntentPreserverHook } from "./design-intent-preserver"
 export { createDirectoryAgentsInjectorHook } from "./directory-agents-injector";
+export { createDocumentReaderGuardHook } from "./document-reader-guard";
 export { createEditErrorRecoveryHook } from "./edit-error-recovery";
 export { createEmptyTaskResponseDetectorHook } from "./empty-task-response-detector";
 export { createEnvContextInjectorHook } from "./env-context-injector";
