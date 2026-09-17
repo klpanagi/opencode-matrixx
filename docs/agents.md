@@ -53,7 +53,7 @@ The 14 names above match `BuiltinAgentNameSchema` in `src/config/schema/agent-na
 - Task Continuation Enforcer — file-backed `.matrixx/tasks` keep the agent on mission (survives `/clear`; see [Task System](./task-system.md))
 
 - Claude Code Compatibility — commands, agents, skills, MCPs, hooks
-- Curated MCPs: Exa (web search), Context7 (official docs), Grep.app (GitHub code search), Document Reader
+- Curated MCPs: Exa (web search), Context7 (official docs), Document Reader + native `github_search` tool (local gh/git/rg, no third-party services)
 - Interactive terminal via Tmux integration
 - Async background agents
 

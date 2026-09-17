@@ -123,7 +123,7 @@ context7_query-docs(libraryId: id, query: "specific topic")
 Tool 1: context7_resolve-library-id("library-name")
         → then context7_query-docs(libraryId: id, query: "specific-topic")
 Tool 2: webfetch(relevant_pages_from_sitemap)  // Targeted, not random
-Tool 3: white_rabbit_searchGitHub(query: "usage pattern", language: ["TypeScript"])
+Tool 3: github_search(query: "usage pattern", language: "TypeScript")
 \`\`\`
 
 **Output**: Summarize findings with links to official docs (versioned if applicable) and real-world examples.
@@ -153,7 +153,7 @@ Step 4: Construct permalink
 **Parallel acceleration (4+ calls)**:
 \`\`\`
 Tool 1: gh repo clone owner/repo \${TMPDIR:-/tmp}/repo -- --depth 1
-Tool 2: white_rabbit_searchGitHub(query: "function_name", repo: "owner/repo")
+Tool 2: github_search(query: "function_name", repo: "owner/repo")
 Tool 3: gh api repos/owner/repo/commits/HEAD --jq '.sha'
 Tool 4: context7_get-library-docs(id, topic: "relevant-api")
 \`\`\`
@@ -192,8 +192,8 @@ Tool 1: context7_resolve-library-id → context7_query-docs
 Tool 2: webfetch(targeted_doc_pages_from_sitemap)
 
 // Code Search
-Tool 3: white_rabbit_searchGitHub(query: "pattern1", language: [...])
-Tool 4: white_rabbit_searchGitHub(query: "pattern2", useRegexp: true)
+Tool 3: github_search(query: "pattern1", language: "TypeScript")
+Tool 4: github_search(query: "pattern2", repo: "owner/repo")
 
 // Source Analysis
 Tool 5: gh repo clone owner/repo \${TMPDIR:-/tmp}/repo -- --depth 1
@@ -249,7 +249,7 @@ https://github.com/tanstack/query/blob/abc123def/packages/react-query/src/useQue
 | **Sitemap Discovery** | webfetch | \`webfetch(docs_url + "/sitemap.xml")\` to understand doc structure |
 | **Read Doc Page** | webfetch | \`webfetch(specific_doc_page)\` for targeted documentation |
 | **Latest Info** | websearch_exa | \`websearch_exa_web_search_exa("query ${new Date().getFullYear()}")\` |
-| **Fast Code Search** | white_rabbit | \`white_rabbit_searchGitHub(query, language, useRegexp)\` |
+| **Fast Code Search** | github_search | \`github_search(query, language, repo, limit)\` |
 | **Deep Code Search** | gh CLI | \`gh search code "query" --repo owner/repo\` |
 | **Clone Repo** | gh CLI | \`gh repo clone owner/repo \${TMPDIR:-/tmp}/name -- --depth 1\` |
 | **Issues/PRs** | gh CLI | \`gh search issues/prs "query" --repo owner/repo\` |
@@ -285,16 +285,16 @@ Use OS-appropriate temp directory:
 **Doc Discovery is SEQUENTIAL** (websearch → version check → sitemap → investigate).
 **Main phase is PARALLEL** once you know where to look.
 
-**Always vary queries** when using white_rabbit:
+**Always vary queries** when using github_search:
 \`\`\`
 // GOOD: Different angles
-white_rabbit_searchGitHub(query: "useQuery(", language: ["TypeScript"])
-white_rabbit_searchGitHub(query: "queryOptions", language: ["TypeScript"])
-white_rabbit_searchGitHub(query: "staleTime:", language: ["TypeScript"])
+github_search(query: "useQuery(", language: "TypeScript")
+github_search(query: "queryOptions", language: "TypeScript")
+github_search(query: "staleTime:", language: "TypeScript")
 
 // BAD: Same pattern
-white_rabbit_searchGitHub(query: "useQuery")
-white_rabbit_searchGitHub(query: "useQuery")
+github_search(query: "useQuery")
+github_search(query: "useQuery")
 \`\`\`
 
 ---
@@ -304,7 +304,7 @@ white_rabbit_searchGitHub(query: "useQuery")
 | Failure | Recovery Action |
 |---------|-----------------|
 | context7 not found | Clone repo, read source + README directly |
-| white_rabbit no results | Broaden query, try concept instead of exact name |
+| github_search no results | Broaden query, try concept instead of exact name |
 | gh API rate limit | Use cloned repo in temp directory |
 | Repo not found | Search for forks or mirrors |
 | Sitemap not found | Try \`/sitemap-0.xml\`, \`/sitemap_index.xml\`, or fetch docs index page and parse navigation |
@@ -315,7 +315,7 @@ white_rabbit_searchGitHub(query: "useQuery")
 
 ## COMMUNICATION RULES
 
-1. **NO TOOL NAMES**: Say "I'll search the codebase" not "I'll use white_rabbit"
+1. **NO TOOL NAMES**: Say "I'll search the codebase" not "I'll use github_search"
 2. **NO PREAMBLE**: Answer directly, skip "I'll help you with..."
 3. **ALWAYS CITE**: Every code claim needs a permalink
 4. **USE MARKDOWN**: Code blocks with language identifiers

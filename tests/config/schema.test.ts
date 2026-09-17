@@ -13,7 +13,7 @@ describe("disabled_mcps schema", () => {
   test("should accept built-in MCP names", () => {
     // given
     const config = {
-      disabled_mcps: ["context7", "white_rabbit"],
+      disabled_mcps: ["context7", "document_reader"],
     }
 
     // when
@@ -22,7 +22,7 @@ describe("disabled_mcps schema", () => {
     // then
     expect(result.success).toBe(true)
     if (result.success) {
-      expect(result.data.disabled_mcps).toEqual(["context7", "white_rabbit"])
+      expect(result.data.disabled_mcps).toEqual(["context7", "document_reader"])
     }
   })
 

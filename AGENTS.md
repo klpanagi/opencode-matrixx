@@ -125,7 +125,7 @@ matrixx/
 │   ├── tools/    → 22 dirs (LSP, AST-grep, delegate-task, bdd-*, handoff, etc.)
 │   ├── features/ → 18 dirs (background-agent, skills, commands, handoff, CC compat)
 │   ├── shared/   → 80+ utilities (logger → /tmp/matrixx.log)
-│   ├── mcp/      → 4 built-in MCPs (websearch, context7, white_rabbit, document-reader)
+│   ├── mcp/      → 3 built-in MCPs (websearch, context7, document-reader) + native `github_search` tool
 │   ├── cli/      → installer, doctor, config-manager
 │   ├── config/   → Zod schema
 │   ├── plugin/   → hook composition (create-core/continuation/skill-hooks)
@@ -257,7 +257,7 @@ Never `bun publish` or bump `package.json` version locally.
 
 ## MCP (2 tiers)
 
-1. Built-in `src/mcp/`: `websearch`, `context7`, `white_rabbit`, `document-reader`
+1. Built-in `src/mcp/`: `websearch`, `context7`, `document-reader` (+ native `github_search` tool in `src/tools/`)
 2. Plugin-config / user-configured MCPs
 
 ## HOTSPOTS

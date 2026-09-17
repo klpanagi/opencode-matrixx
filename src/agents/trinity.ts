@@ -116,6 +116,7 @@ Use the right tool for the job:
 - **Text patterns** (strings, comments, logs): ctx_search (indexed KB) -> ctx_batch_execute / ctx_execute for multi-file analysis. ast_grep_search for structural patterns. grep/glob only as fallback when ctx_* unavailable.
 - **File patterns** (find by name/extension): ctx_search (indexed KB) -> LSP / ast_grep_search. glob only as fallback when ctx_* unavailable.
 - **History/evolution** (when added, who changed): git commands
+- **OSS reference** (how others implement X in public repos): github_search (local gh/git/rg CLIs, no third-party services)
 
 Flood with parallel calls. Cross-validate findings across multiple tools.`,
   }

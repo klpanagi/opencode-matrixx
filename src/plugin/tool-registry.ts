@@ -19,6 +19,7 @@ import {
   createBddValidateContractTool,
   createDcpSwitchProfileTool,
   createDelegateTask,
+  createGithubSearchTools,
   createGlobTools,
   createGrepTools,
   createHandoffTools,
@@ -147,6 +148,7 @@ export function createToolRegistry(args: {
   const allTools: Record<string, ToolDefinition> = {
     ...builtinTools,
     ...createGrepTools(ctx),
+    ...createGithubSearchTools(ctx),
     ...createGlobTools(ctx),
     ...createAstGrepTools(ctx),
     ...createSessionManagerTools(ctx),
