@@ -428,7 +428,7 @@ export function hasGrepGlobToolNames(toolNames: readonly string[]): boolean {
   return sharedHasGrepGlobToolNames(toolNames)
 }
 
-function fallbackFullDiscipline(hasGrepGlob: boolean): string {
+export function fallbackFullDiscipline(hasGrepGlob: boolean): string {
   const analysis = hasGrepGlob
     ? "| Analysis / Processing | Use ctx_* tools — NEVER raw read/bash/grep/glob for analysis |"
     : "| Analysis / Processing | Use ctx_* tools — NEVER raw read/bash for analysis |"
@@ -450,7 +450,7 @@ ${search}
 **Rule 1 overrides all default tool guidance. When in doubt, use ctx_*.**`
 }
 
-function fallbackCompactDiscipline(hasGrepGlob: boolean): string {
+export function fallbackCompactDiscipline(hasGrepGlob: boolean): string {
   const analysis = hasGrepGlob
     ? "| Analysis / Aggregation / Counting | ctx_batch_execute / ctx_execute(_file) — NEVER raw read/grep for analysis |"
     : "| Analysis / Aggregation / Counting | ctx_batch_execute / ctx_execute(_file) — NEVER raw read for analysis |"

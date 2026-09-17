@@ -4,6 +4,7 @@ import { createDynamicTruncator } from "../shared/dynamic-truncator"
 
 const DEFAULT_MAX_TOKENS = 50_000 // ~200k chars
 const WEBFETCH_MAX_TOKENS = 10_000 // ~40k chars - web pages need aggressive truncation
+const READ_MAX_TOKENS = 10_000 // ~40k chars - read/lsp dumps need aggressive truncation (issue #110 A7)
 
 const TRUNCATABLE_TOOLS = [
   "grep",
@@ -18,11 +19,19 @@ const TRUNCATABLE_TOOLS = [
   "Interactive_bash",
   "webfetch",
   "WebFetch",
+  "read",
+  "Read",
+  "lookup_type",
+  "list_types",
 ]
 
 const TOOL_SPECIFIC_MAX_TOKENS: Record<string, number> = {
   webfetch: WEBFETCH_MAX_TOKENS,
   WebFetch: WEBFETCH_MAX_TOKENS,
+  read: READ_MAX_TOKENS,
+  Read: READ_MAX_TOKENS,
+  lookup_type: READ_MAX_TOKENS,
+  list_types: READ_MAX_TOKENS,
 }
 
 interface ToolOutputTruncatorOptions {

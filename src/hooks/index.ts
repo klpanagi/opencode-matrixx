@@ -35,6 +35,7 @@ export { createMouseNotepadHook } from "./mouse-notepad";
 export { createNonInteractiveEnvHook } from "./non-interactive-env";
 export { createOracleMdOnlyHook } from "./oracle-md-only";
 export { createPlanPersister } from "./plan-persister"
+export { createPostReadInjectorHook } from "./post-read-injector";
 export { createPreemptiveCompactionHook } from "./preemptive-compaction";
 export { createQualityGateHook } from "./quality-gate/hook"
 export { createReadImageResizerHook } from "./read-image-resizer"
