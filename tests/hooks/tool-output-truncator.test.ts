@@ -1,4 +1,4 @@
-import { beforeEach, describe, expect, it, mock, spyOn } from "bun:test"
+import { afterEach, beforeEach, describe, expect, it, mock, spyOn } from "bun:test"
 import * as dynamicTruncator from "../../src/shared/dynamic-truncator"
 import { createToolOutputTruncatorHook } from "../../src/hooks/tool-output-truncator"
 
@@ -17,6 +17,10 @@ describe("createToolOutputTruncatorHook", () => {
       truncateSync: mock(() => ({ result: "", truncated: false })),
     })
     hook = createToolOutputTruncatorHook({} as never)
+  })
+
+  afterEach(() => {
+    truncateSpy.mockRestore()
   })
 
   describe("tool.execute.after", () => {
@@ -129,7 +133,7 @@ describe("createToolOutputTruncatorHook", () => {
           })
           hook = createToolOutputTruncatorHook({} as never)
 
-          const input = createInput("Read")
+          const input = createInput("write")
           const output = createOutput("file content")
 
           await hook["tool.execute.after"](input, output)

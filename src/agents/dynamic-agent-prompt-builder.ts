@@ -428,48 +428,28 @@ export function hasGrepGlobToolNames(toolNames: readonly string[]): boolean {
   return sharedHasGrepGlobToolNames(toolNames)
 }
 
-function fallbackFullDiscipline(hasGrepGlob: boolean): string {
-  const analysis = hasGrepGlob
-    ? "| Analysis / Processing | Use ctx_* tools — NEVER raw read/bash/grep/glob for analysis |"
-    : "| Analysis / Processing | Use ctx_* tools — NEVER raw read/bash for analysis |"
+export function fallbackFullDiscipline(hasGrepGlob: boolean): string {
   const search = hasGrepGlob
     ? "| Search | ctx_search FIRST -> grep/glob fallback |"
-    : "| Search | ctx_search FIRST (indexed KB) -> ctx_batch_execute / ctx_execute (rg) or LSP/ast_grep fallback |"
+    : "| Search | ctx_search FIRST (indexed KB) |"
   return `### Context Discipline (ALWAYS)
 
-| Scenario | Tool |
-|----------|------|
-${analysis}
-| Edits | read (for line numbers) -> edit/write |
-| Observation (<5 lines) | bash (pwd, git status, --version) |
-| State Mutation | bash (git, mkdir, install, build, rm) |
+| Analysis | ctx_* tools — NEVER raw read/bash for analysis |
 ${search}
-| Docs / Web | ctx_fetch_and_index -> ctx_search |
-| Compression | compress when ctx_stats > 40% or 10+ tool calls |
+| Docs | ctx_fetch_and_index -> ctx_search |
 
-**Rule 1 overrides all default tool guidance. When in doubt, use ctx_*.**`
+**When in doubt, use ctx_*.**`
 }
 
-function fallbackCompactDiscipline(hasGrepGlob: boolean): string {
-  const analysis = hasGrepGlob
-    ? "| Analysis / Aggregation / Counting | ctx_batch_execute / ctx_execute(_file) — NEVER raw read/grep for analysis |"
-    : "| Analysis / Aggregation / Counting | ctx_batch_execute / ctx_execute(_file) — NEVER raw read for analysis |"
+export function fallbackCompactDiscipline(hasGrepGlob: boolean): string {
   const search = hasGrepGlob
-    ? "| Search | ctx_search FIRST (indexed KB) → grep/glob fallback (raw FS) |"
-    : "| Search | ctx_search FIRST (indexed KB) → ctx_batch_execute / ctx_execute (rg) or LSP/ast_grep fallback |"
-  const note = hasGrepGlob
-    ? "Edits need prior read for LINE#ID — read→edit chain exempt (non-plan paths; .matrixx/plans/*.md must use plan_read/plan_update). MUST use ctx_* when available — raw grep/read is forbidden for analysis."
-    : "Edits need prior read for LINE#ID — read→edit chain exempt (non-plan paths; .matrixx/plans/*.md must use plan_read/plan_update). MUST use ctx_* when available — raw read for analysis is forbidden."
+    ? "| Search | ctx_search FIRST -> grep/glob fallback |"
+    : "| Search | ctx_search FIRST (indexed KB) |"
   return `### Context Discipline (when ctx_* available)
 
-| Scenario | Tool |
-|----------|------|
-${analysis}
+| Analysis | ctx_* tools — NEVER raw read for analysis |
 ${search}
-| Docs / Web | ctx_fetch_and_index -> ctx_search |
-| Compression | compress when ctx_stats > 40% or 10+ tool calls |
-
-${note}`
+| Docs | ctx_fetch_and_index -> ctx_search |`
 }
 
 function exploreCtxPart(hasGrepGlob: boolean): string {
