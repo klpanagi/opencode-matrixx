@@ -1173,18 +1173,19 @@ parse and act as fallback — explicit `tasks.*` always wins.
 
 ## MCPs
 
-Four built-in MCP servers (`src/mcp/`; names in `McpNameSchema`, `src/mcp/types.ts`): `websearch`, `context7`, `white_rabbit`, `document_reader`. All enabled by default.
+Three built-in MCP servers (`src/mcp/`; names in `McpNameSchema`, `src/mcp/types.ts`): `websearch`, `context7`, `document_reader`. All enabled by default.
 
 - **websearch**: Real-time web search powered by [Exa AI](https://exa.ai) - searches the web and returns relevant content
 - **context7**: Fetches up-to-date official documentation for libraries
-- **white_rabbit**: Ultra-fast code search across millions of public GitHub repositories via [grep.app](https://grep.app)
 - **document_reader**: Document extraction for PDFs and other files (used by the `document-reader` skill and the Construct agent)
+
+GitHub code search is provided by the native `github_search` tool (`src/tools/github-search/`, local `gh`/`git`/`rg` CLIs only, no third-party remote services).
 
 Don't want them? Disable via `disabled_mcps` in `~/.config/opencode/matrixx.json` or `.opencode/matrixx.json`:
 
 ```json
 {
-  "disabled_mcps": ["websearch", "context7", "white_rabbit", "document_reader"]
+  "disabled_mcps": ["websearch", "context7", "document_reader"]
 }
 ```
 

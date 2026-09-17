@@ -357,7 +357,7 @@ Every agent, model, temperature, and permission is fully customizable. [**Meet t
 | **Developer Tools** | LSP (goto def, rename, diagnostics), AST-Grep (search & replace), Tmux terminal |
 | **64 Lifecycle Hooks** | Context injection, think mode, comment checking, task/todo continuation enforcement, error recovery, quality gate, preemptive compaction, session recovery |
 | **36 Built-in Skills** | DSL engineering (11), security (9), browser, git, frontend (7 via **Sati**), BDD (4: `bdd-contract`/`backend`/`frontend`/`tests` + pipeline), saturation research, AI slop detection, TDD (`tdd-enforcer` opt-in), software dev pipeline |
-| **Curated MCPs** | Exa (web search), Context7 (official docs), Grep.app (GitHub code search), Document Reader |
+| **Curated MCPs** | Exa (web search), Context7 (official docs), Document Reader + native `github_search` (local gh/git/rg) |
 | **Claude Code Compat** | Full compatibility — commands, agents, skills, MCPs, hooks from `settings.json` |
 | **Software Dev Pipeline** | 6-phase TDD workflow (PLAN→BUILD→VERIFY→REVIEW→SECURE→SHIP), 5 team roles, adaptive phases |
 ||| **Assembly Tool** | Multi-model debate that spawns 3-5 parallel voters from different providers, collects independent reasoning, and synthesizes unified decisions with confidence scoring |

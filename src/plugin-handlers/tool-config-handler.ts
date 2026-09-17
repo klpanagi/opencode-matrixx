@@ -22,7 +22,7 @@ export function applyToolConfig(params: {
 
   params.config.tools = {
     ...(params.config.tools as Record<string, unknown>),
-    "white_rabbit_*": false,
+    github_search: false,
     LspHover: false,
     LspCodeActions: false,
     LspCodeActionResolve: false,
@@ -39,7 +39,11 @@ export function applyToolConfig(params: {
 
   const operator = agentByKey(params.agentResult, "operator");
   if (operator) {
-    operator.permission = { ...operator.permission, "white_rabbit_*": "allow" };
+    operator.permission = { ...operator.permission, github_search: "allow" };
+  }
+  const trinity = agentByKey(params.agentResult, "trinity");
+  if (trinity) {
+    trinity.permission = { ...trinity.permission, github_search: "allow" };
   }
   const construct = agentByKey(params.agentResult, "construct");
   if (construct) {

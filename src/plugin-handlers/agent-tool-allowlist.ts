@@ -14,6 +14,7 @@ const READ_ONLY_SEARCH_TOOLS: ToolsMap = {
   lsp_symbols: true,
   lsp_diagnostics: true,
   ast_grep_search: true,
+  github_search: true,
   session_list: true,
   session_read: true,
   session_search: true,

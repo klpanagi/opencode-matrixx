@@ -961,9 +961,9 @@ Real-time web search powered by [Exa AI](https://exa.ai). Provider is configurab
 
 Official documentation lookup for any library/framework.
 
-### white_rabbit
+### github_search
 
-Ultra-fast code search across public GitHub repos. Great for finding implementation examples.
+GitHub code search via local CLIs only (`gh`/`git`/`rg`, no third-party remote services). Great for finding implementation examples.
 
 ### document_reader
 

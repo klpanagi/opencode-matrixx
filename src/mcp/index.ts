@@ -3,7 +3,6 @@ import { context7 } from "./context7"
 import { document_reader } from "./document-reader"
 import { isCommandAvailable, type McpCreationFailure, validateWebsearchConfig } from "./mcp-validator"
 import { createWebsearchConfig } from "./websearch"
-import { white_rabbit } from "./white-rabbit"
 
 export type { McpCreationFailure } from "./mcp-validator"
 export { type McpName, McpNameSchema } from "./types"
@@ -86,10 +85,6 @@ export function createBuiltinMcps(
 
   if (!disabledMcps.includes("context7")) {
     mcps.context7 = context7
-  }
-
-  if (!disabledMcps.includes("white_rabbit")) {
-    mcps.white_rabbit = white_rabbit
   }
 
   if (!disabledMcps.includes("document_reader")) {
