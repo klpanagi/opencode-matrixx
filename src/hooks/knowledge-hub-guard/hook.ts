@@ -4,6 +4,7 @@ import type { PluginInput } from "@opencode-ai/plugin"
 import picomatch from "picomatch"
 import type { LoadedHub } from "../../features/knowledge-hub/loader"
 import { log } from "../../shared/logger"
+import { isHubWriteApproved } from "./approvals"
 
 const HOOK_NAME = "knowledge-hub-guard"
 
@@ -99,11 +100,16 @@ export function createKnowledgeHubGuardHook(ctx: PluginInput, options: Knowledge
     return null
   }
 
-  const deny = (hub: LoadedHub, absPath: string, tool: string, sessionID: string): never => {
-    log(`[${HOOK_NAME}] blocked write inside hub`, { sessionID, tool, hub: hub.name })
+  const deny = (hub: LoadedHub, absPath: string, tool: string, sessionID: string): void => {
+    if (isHubWriteApproved(sessionID, absPath)) {
+      log(`[${HOOK_NAME}] allowed hub write with user approval`, { sessionID, tool, hub: hub.name, path: absPath })
+      return
+    }
+    log(`[${HOOK_NAME}] blocked write inside hub`, { sessionID, tool, hub: hub.name, path: absPath })
     throw new Error(
-      `[${HOOK_NAME}] Write blocked: "${absPath}" is inside knowledge hub "${hub.name}" (${hub.root}). ` +
-        `Knowledge hubs are read-only; only paths matching the hub exclude list may be modified.`,
+      `[${HOOK_NAME}] Write blocked: "${absPath}" is inside knowledge hub "${hub.name}". ` +
+        `1. Ask the user via the question tool for confirmation. ` +
+        `2. If approved, call knowledge_hub_confirm with the path then retry the write.`,
     )
   }
 

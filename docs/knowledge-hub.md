@@ -109,6 +109,18 @@ inside a hub root are denied unless the target matches the hub `exclude` list.
 Reads are never blocked, paths outside all hubs are never blocked, and a
 missing `knowledge` config fails open (writes allowed, one warning logged).
 
+### Confirm flow (user-approved writes)
+
+The deny error names the hub and the blocked path, then instructs the agent:
+
+1. Ask the user via the question tool for confirmation.
+2. If the user approves, call `knowledge_hub_confirm` with the path, then
+   retry the blocked write.
+
+Approvals are session-scoped and in-memory only (10 min TTL, exact path or
+parent dir covers children); without a recorded approval the guard keeps
+denying. Never bypass the guard without asking the user first.
+
 ### Verification
 
 ```bash
