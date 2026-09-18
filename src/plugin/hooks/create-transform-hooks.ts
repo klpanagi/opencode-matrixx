@@ -8,6 +8,7 @@ import {
   createDesignIntentPreserverHook,
   createEnvContextInjectorHook,
   createKeywordDetectorHook,
+  createKnowledgeHubInjectorHook,
   createThinkingBlockValidatorHook,
   createToolPairValidatorHook,
 } from "../../hooks"
@@ -19,6 +20,7 @@ export type TransformHooks = {
   inputSecretGuard: ReturnType<typeof createInputSecretGuardHook> | null
   keywordDetector: ReturnType<typeof createKeywordDetectorHook> | null
   contextInjectorMessagesTransform: ReturnType<typeof createContextInjectorMessagesTransformHook>
+  knowledgeHubInjector: ReturnType<typeof createKnowledgeHubInjectorHook> | null
   envContextInjector: ReturnType<typeof createEnvContextInjectorHook> | null
   thinkingBlockValidator: ReturnType<typeof createThinkingBlockValidatorHook> | null
   toolPairValidator: ReturnType<typeof createToolPairValidatorHook> | null
@@ -52,6 +54,18 @@ export function createTransformHooks(args: {
 
   const contextInjectorMessagesTransform =
     createContextInjectorMessagesTransformHook(contextCollector)
+
+  const knowledgeHubInjector = isHookEnabled("knowledge-hub-injector")
+    ? safeCreateHook(
+        "knowledge-hub-injector",
+        () =>
+          createKnowledgeHubInjectorHook(ctx, {
+            getHubs: () => pluginConfig.knowledge?.hubs ?? [],
+            collector: contextCollector,
+          }),
+        { enabled: safeHookEnabled },
+      )
+    : null
 
   const envContextInjector = isHookEnabled("env-context-injector")
     ? safeCreateHook(
@@ -89,6 +103,7 @@ export function createTransformHooks(args: {
     inputSecretGuard,
     keywordDetector,
     contextInjectorMessagesTransform,
+    knowledgeHubInjector,
     envContextInjector,
     thinkingBlockValidator,
     toolPairValidator,

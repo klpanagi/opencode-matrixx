@@ -96,10 +96,21 @@ Declare hubs in `matrixx.jsonc` (project `.opencode/matrixx.jsonc` or user
 |---|---|---|---|
 | `name` | yes | — | Hub handle used in `hub:<name>/path` and `@<name>/path` references |
 | `path` | yes | — | Hub root. `~`/`~/` expand to home, `$VAR`/`${VAR}` from env, relative paths resolve against the project dir |
-| `index` | no | `_index.md` | Router file injected on read, truncated to ~6000 tokens |
+| `index` | no | `_index.md` | Router file delivered via messages-transform, truncated to ~6000 tokens |
 | `scope` | no | `global` | `global` (shared KB) or `project` (repo-local) |
 | `mode` | no | `router-only` | `router-only` injects the index only; `pinned` additionally injects configured pinned files |
 | `exclude` | no | `[]` | Extra picomatch patterns merged over `DEFAULT_KNOWLEDGE_EXCLUDES`; matched paths stay writable |
+
+### Delivery
+
+`knowledge-hub-injector` (`experimental.chat.messages.transform`) registers
+the router payload into the shared `ContextCollector` once per session, so the
+`<knowledge-hub>` index lands as a hidden synthetic part before the first
+reasoning step — no `read` call required. The per-session dedupe cache is
+cleared on compaction and session delete, so the router re-injects after
+compaction. Empty `knowledge` config fails open (nothing registered). The
+payload starts with a one-line directive: consult hubs before
+websearch/webfetch, resolve files via `@hub/path` on demand, never bulk-read.
 
 ### Guard behavior
 
@@ -125,5 +136,5 @@ denying. Never bypass the guard without asking the user first.
 
 ```bash
 bun test src/hooks/knowledge-hub-guard/ src/hooks/knowledge-hub-injector/
-rg knowledge-hub-injector src/plugin/tool-execute-after.ts
+rg knowledge-hub-injector src/plugin/messages-transform.ts
 ```

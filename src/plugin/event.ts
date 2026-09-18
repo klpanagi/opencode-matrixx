@@ -39,6 +39,7 @@ export function createEventHandler(args: {
     await Promise.resolve(hooks.contextWindowMonitor?.event?.(input))
     await Promise.resolve(hooks.directoryAgentsInjector?.event?.(input))
     await Promise.resolve(hooks.rulesInjector?.event?.(input))
+    await Promise.resolve(hooks.knowledgeHubInjector?.event?.(input))
     await Promise.resolve(hooks.thinkMode?.event?.(input))
     await Promise.resolve(hooks.contextWindowLimitRecovery?.event?.(input))
     await Promise.resolve(hooks.agentUsageReminder?.event?.(input))
