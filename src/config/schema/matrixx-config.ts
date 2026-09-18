@@ -17,6 +17,7 @@ import { ExperimentalConfigSchema } from "./experimental"
 import { FailureCounterConfigSchema } from "./failure-counter"
 import { HeadroomConfigSchema } from "./headroom"
 import { HookNameSchema } from "./hooks"
+import { KnowledgeConfigSchema } from "./knowledge"
 import { MatrixLoopConfigSchema } from "./matrix-loop"
 import { MatrixxSelfConfigSkillConfigSchema } from "./matrixx-self-config"
 import { ComplexityDowngradesSchema, ModelRequirementsSchema } from "./model-config"
@@ -63,6 +64,7 @@ export const MatrixxConfigSchema = z.object({
   dcp: DcpConfigSchema.optional(),
   auto_update: z.boolean().optional(),
   skills: SkillsConfigSchema.optional(),
+  knowledge: KnowledgeConfigSchema.optional(),
   matrix_loop: MatrixLoopConfigSchema.optional(),
   failure_counter: FailureCounterConfigSchema.optional(),
   background_task: BackgroundTaskConfigSchema.optional(),

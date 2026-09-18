@@ -47,6 +47,7 @@ export function createToolExecuteBeforeHandler(args: {
   const envFileWriteGuardHook = hooks.envFileWriteGuard?.["tool.execute.before"]
   const writeExistingFileGuardHook = hooks.writeExistingFileGuard?.["tool.execute.before"]
   const taskEditGuardHook = hooks.taskEditGuard?.["tool.execute.before"]
+  const knowledgeHubGuardHook = hooks.knowledgeHubGuard?.["tool.execute.before"]
   const tasksTodowriteDisablerHook = hooks.tasksTodowriteDisabler?.["tool.execute.before"]
   const oracleMdOnlyHook = hooks.oracleMdOnly?.["tool.execute.before"]
   const backgroundTaskBlockerHook = hooks.backgroundTaskBlocker?.["tool.execute.before"]
@@ -96,6 +97,7 @@ const rtkBashRewriterHook = hooks.rtkBashRewriter?.["tool.execute.before"]
       envFileWriteGuardHook?.(input, output),
       writeExistingFileGuardHook?.(input, output),
       taskEditGuardHook?.(input, output),
+      knowledgeHubGuardHook?.(input, output),
       tasksTodowriteDisablerHook?.(input, output),
       oracleMdOnlyHook?.(input, output),
       contextModeEnforcerHook?.(input as never, output as never),

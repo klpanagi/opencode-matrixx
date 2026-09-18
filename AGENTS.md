@@ -274,3 +274,4 @@ Never `bun publish` or bump `package.json` version locally.
 - Flaky: `matrix-loop` (timeout), `session-state` (parallel pollution)
 - Project skills: `github-issue-triage`, `github-pr-triage`
 - Sati skills: `frontend-ui-ux`, `dev-browser`, `playwright`, `software-dev`, `quality-gate`
+- Knowledge hubs: `docs/knowledge-hub.md` — external KB routing (router index, pinned files, read-only guard)

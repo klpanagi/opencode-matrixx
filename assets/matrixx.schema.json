@@ -4541,6 +4541,66 @@
         }
       ]
     },
+    "knowledge": {
+      "type": "object",
+      "properties": {
+        "hubs": {
+          "default": [],
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "name": {
+                "type": "string"
+              },
+              "path": {
+                "type": "string"
+              },
+              "index": {
+                "default": "_index.md",
+                "type": "string"
+              },
+              "scope": {
+                "default": "global",
+                "type": "string",
+                "enum": [
+                  "global",
+                  "project"
+                ]
+              },
+              "mode": {
+                "default": "router-only",
+                "type": "string",
+                "enum": [
+                  "router-only",
+                  "pinned"
+                ]
+              },
+              "exclude": {
+                "default": [],
+                "type": "array",
+                "items": {
+                  "type": "string"
+                }
+              }
+            },
+            "required": [
+              "name",
+              "path",
+              "index",
+              "scope",
+              "mode",
+              "exclude"
+            ],
+            "additionalProperties": false
+          }
+        }
+      },
+      "required": [
+        "hubs"
+      ],
+      "additionalProperties": false
+    },
     "matrix_loop": {
       "type": "object",
       "properties": {
