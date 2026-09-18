@@ -33,6 +33,7 @@ export { createJsonErrorRecoveryHook } from "./json-error-recovery"
 export { createKeywordDetectorHook } from "./keyword-detector";
 export { createKnowledgeHubGuardHook } from "./knowledge-hub-guard";
 export { createKnowledgeHubInjectorHook } from "./knowledge-hub-injector";
+export { createKnowledgeHubSearchNudgeHook } from "./knowledge-hub-search-nudge";
 export { createMatrixLoopHook, type MatrixLoopHook } from "./matrix-loop";
 export { createMouseNotepadHook } from "./mouse-notepad";
 export { createNonInteractiveEnvHook } from "./non-interactive-env";

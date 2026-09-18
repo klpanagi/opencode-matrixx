@@ -14,6 +14,7 @@ import {
   createHashlineReadEnhancerHook,
   createJsonErrorRecoveryHook,
   createKnowledgeHubGuardHook,
+  createKnowledgeHubSearchNudgeHook,
   createQualityGateHook,
   createReadImageResizerHook,
   createRulesInjectorHook,
@@ -57,6 +58,7 @@ export type ToolGuardHooks = {
   taskEditGuard: ReturnType<typeof createTaskEditGuardHook> | null
   documentReaderGuard: ReturnType<typeof createDocumentReaderGuardHook> | null
   knowledgeHubGuard: ReturnType<typeof createKnowledgeHubGuardHook> | null
+  knowledgeHubSearchNudge: ReturnType<typeof createKnowledgeHubSearchNudgeHook> | null
   evolutionWatcher: ReturnType<typeof createEvolutionWatcherHook> | null
 }
 
@@ -177,6 +179,13 @@ export function createToolGuardHooks(args: {
         }))
     : null
 
+  const knowledgeHubSearchNudge = isHookEnabled("knowledge-hub-search-nudge")
+    ? safeHook("knowledge-hub-search-nudge", () =>
+        createKnowledgeHubSearchNudgeHook(ctx, {
+          getHubs: () => loadKnowledgeHubs(pluginConfig.knowledge ?? { hubs: [] }, ctx.directory),
+        }))
+    : null
+
   const evolutionWatcher = evolutionEnabled && isHookEnabled("evolution-watcher")
     ? safeHook("evolution-watcher", () => createEvolutionWatcherHook(ctx, pluginConfig.evolution))
     : null
@@ -204,6 +213,7 @@ export function createToolGuardHooks(args: {
     taskEditGuard,
     documentReaderGuard,
     knowledgeHubGuard,
+    knowledgeHubSearchNudge,
     evolutionWatcher,
   }
 }

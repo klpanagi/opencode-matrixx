@@ -138,3 +138,13 @@ denying. Never bypass the guard without asking the user first.
 bun test src/hooks/knowledge-hub-guard/ src/hooks/knowledge-hub-injector/
 rg knowledge-hub-injector src/plugin/messages-transform.ts
 ```
+
+### Search nudge (web-first backstop)
+
+`knowledge-hub-search-nudge` (`tool.execute.before`) warns — never blocks —
+whenever an agent reaches for `websearch`/`webfetch`: it sets
+`output.message` naming the registered hub(s) with the `@hub/path`
+resolution convention on one line (<300 chars, no secrets). Silent when no
+hubs are configured (fail-open) or for unrelated tools. The transform
+delivery already puts the router in context; this nudge is the backstop for
+agents that habitually reach for web first.
