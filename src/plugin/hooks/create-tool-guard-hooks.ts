@@ -1,4 +1,5 @@
 import type { HookName, MatrixxConfig } from "../../config"
+import { loadKnowledgeHubs } from "../../features/knowledge-hub/loader"
 import {
   createBackgroundTaskBlockerHook,
   createBashFileReadGuardHook,
@@ -12,6 +13,8 @@ import {
   createHashlineEditDiffEnhancerHook,
   createHashlineReadEnhancerHook,
   createJsonErrorRecoveryHook,
+  createKnowledgeHubGuardHook,
+  createKnowledgeHubSearchNudgeHook,
   createQualityGateHook,
   createReadImageResizerHook,
   createRulesInjectorHook,
@@ -54,6 +57,8 @@ export type ToolGuardHooks = {
   taskNotepad: ReturnType<typeof createTaskNotepadHook> | null
   taskEditGuard: ReturnType<typeof createTaskEditGuardHook> | null
   documentReaderGuard: ReturnType<typeof createDocumentReaderGuardHook> | null
+  knowledgeHubGuard: ReturnType<typeof createKnowledgeHubGuardHook> | null
+  knowledgeHubSearchNudge: ReturnType<typeof createKnowledgeHubSearchNudgeHook> | null
   evolutionWatcher: ReturnType<typeof createEvolutionWatcherHook> | null
 }
 
@@ -167,6 +172,20 @@ export function createToolGuardHooks(args: {
     ? safeHook("document-reader-guard", () => createDocumentReaderGuardHook(ctx))
     : null
 
+  const knowledgeHubGuard = isHookEnabled("knowledge-hub-guard")
+    ? safeHook("knowledge-hub-guard", () =>
+        createKnowledgeHubGuardHook(ctx, {
+          getHubs: () => loadKnowledgeHubs(pluginConfig.knowledge ?? { hubs: [] }, ctx.directory),
+        }))
+    : null
+
+  const knowledgeHubSearchNudge = isHookEnabled("knowledge-hub-search-nudge")
+    ? safeHook("knowledge-hub-search-nudge", () =>
+        createKnowledgeHubSearchNudgeHook(ctx, {
+          getHubs: () => loadKnowledgeHubs(pluginConfig.knowledge ?? { hubs: [] }, ctx.directory),
+        }))
+    : null
+
   const evolutionWatcher = evolutionEnabled && isHookEnabled("evolution-watcher")
     ? safeHook("evolution-watcher", () => createEvolutionWatcherHook(ctx, pluginConfig.evolution))
     : null
@@ -193,6 +212,8 @@ export function createToolGuardHooks(args: {
     taskNotepad,
     taskEditGuard,
     documentReaderGuard,
+    knowledgeHubGuard,
+    knowledgeHubSearchNudge,
     evolutionWatcher,
   }
 }

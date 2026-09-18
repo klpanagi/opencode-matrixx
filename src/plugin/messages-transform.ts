@@ -16,6 +16,10 @@ export function createMessagesTransformHandler(args: {
   hooks: CreatedHooks
 }): (input: Record<string, never>, output: MessagesTransformOutput) => Promise<void> {
   return async (input, output): Promise<void> => {
+    await args.hooks.knowledgeHubInjector?.[
+      "experimental.chat.messages.transform"
+    ]?.(input, output)
+
     await args.hooks.contextInjectorMessagesTransform?.[
       "experimental.chat.messages.transform"
     ]?.(input, output)
