@@ -32,6 +32,14 @@ jobs:
         env:
           BUN_INSTALL_ALLOW_SCRIPTS: "@ast-grep/napi"
 
+      - name: Build matrixx schema
+        working-directory: .
+        run: |
+          bun install
+          bun run build:schema
+        env:
+          BUN_INSTALL_ALLOW_SCRIPTS: "@ast-grep/napi"
+
       - name: Sync schema
         run: bun run scripts/sync-schema.mjs
 
@@ -59,6 +67,14 @@ jobs:
 
       - name: Install dependencies
         run: bun install
+        env:
+          BUN_INSTALL_ALLOW_SCRIPTS: "@ast-grep/napi"
+
+      - name: Build matrixx schema
+        working-directory: .
+        run: |
+          bun install
+          bun run build:schema
         env:
           BUN_INSTALL_ALLOW_SCRIPTS: "@ast-grep/napi"
 
@@ -94,6 +110,14 @@ jobs:
         env:
           BUN_INSTALL_ALLOW_SCRIPTS: "@ast-grep/napi"
 
+      - name: Build matrixx schema
+        working-directory: .
+        run: |
+          bun install
+          bun run build:schema
+        env:
+          BUN_INSTALL_ALLOW_SCRIPTS: "@ast-grep/napi"
+
       - name: Sync schema
         run: bun run scripts/sync-schema.mjs
 
@@ -123,6 +147,14 @@ jobs:
 
       - name: Install dependencies
         run: bun install
+        env:
+          BUN_INSTALL_ALLOW_SCRIPTS: "@ast-grep/napi"
+
+      - name: Build matrixx schema
+        working-directory: .
+        run: |
+          bun install
+          bun run build:schema
         env:
           BUN_INSTALL_ALLOW_SCRIPTS: "@ast-grep/napi"
 
