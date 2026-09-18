@@ -6,6 +6,9 @@
   import BooleanEditor from "$lib/components/config/BooleanEditor.svelte"
   import EnumEditor from "$lib/components/config/EnumEditor.svelte"
   import NumberEditor from "$lib/components/config/NumberEditor.svelte"
+  import ArrayEditor from "$lib/components/config/ArrayEditor.svelte"
+  import ThinkingEditor from "$lib/components/config/ThinkingEditor.svelte"
+  import ToolsEditor from "$lib/components/config/ToolsEditor.svelte"
 
   const BUILTIN_CATEGORIES = [
     "construct", "source", "deep-jack", "matrix-bend",
@@ -17,19 +20,17 @@
 
   let expanded = $state<Set<string>>(new Set())
 
-  const TIER_OPTIONS = [
-    { value: "free", label: "Free" },
-    { value: "fast", label: "Fast" },
-    { value: "standard", label: "Standard" },
-    { value: "premium", label: "Premium" },
-    { value: "frontier", label: "Frontier" },
-  ]
-
   const EFFORT_OPTIONS = [
     { value: "low", label: "Low" },
     { value: "medium", label: "Medium" },
     { value: "high", label: "High" },
     { value: "xhigh", label: "X-High" },
+  ]
+
+  const VERBOSITY_OPTIONS = [
+    { value: "low", label: "Low" },
+    { value: "medium", label: "Medium" },
+    { value: "high", label: "High" },
   ]
 
   function toggle(name: string) {
@@ -55,7 +56,7 @@
 
 <div class="section">
   <h2 class="section-title">Categories</h2>
-  <p class="section-desc">Domain-specific task delegation categories with model and tier overrides.</p>
+  <p class="section-desc">Domain-specific task delegation categories with model and behavior overrides.</p>
 
   <div class="category-list">
     {#each BUILTIN_CATEGORIES as name}
@@ -69,8 +70,8 @@
         >
           <div class="category-info">
             <span class="category-name">{name}</span>
-            {#if cat.tier}
-              <span class="category-tier">{cat.tier}</span>
+            {#if cat.model}
+              <span class="category-tier">{cat.model}</span>
             {/if}
             {#if cat.disable}
               <span class="cat-badge cat-badge--disabled">Disabled</span>
@@ -103,13 +104,13 @@
               />
             </FieldEditor>
 
-            <FieldEditor label="Tier" description="Tier alias resolved at config-load">
-              <EnumEditor
-                value={cat.tier ?? ""}
-                options={TIER_OPTIONS}
-                onChange={(v) => updateCategory(name, { tier: (v || undefined) as typeof cat.tier })}
-                label="Tier"
-                placeholder="Inherited"
+            <FieldEditor label="Variant" description="Model variant string">
+              <StringEditor
+                value={cat.variant ?? ""}
+                onChange={(v) => updateCategory(name, { variant: v || undefined })}
+                label="Variant"
+                placeholder="variant…"
+                monospace
               />
             </FieldEditor>
 
@@ -156,6 +157,85 @@
                 value={cat.prompt_append ?? ""}
                 onChange={(v) => updateCategory(name, { prompt_append: v || undefined })}
                 label="Prompt append"
+                multiline
+                monospace
+              />
+            </FieldEditor>
+
+            <FieldEditor label="Top P" description="Nucleus sampling threshold (0-1)" advanced>
+              <NumberEditor
+                value={cat.top_p ?? 1}
+                onChange={(v) => updateCategory(name, { top_p: v })}
+                label="Top P"
+                min={0}
+                max={1}
+                step={0.05}
+                showSlider
+              />
+            </FieldEditor>
+
+            <FieldEditor label="Max Tokens" description="Maximum response tokens" advanced>
+              <NumberEditor
+                value={cat.maxTokens ?? 4096}
+                onChange={(v) => updateCategory(name, { maxTokens: v })}
+                label="Max tokens"
+                min={256}
+                max={128000}
+                step={1024}
+              />
+            </FieldEditor>
+
+            <FieldEditor label="Thinking" description="Extended thinking config" advanced>
+              <ThinkingEditor
+                value={cat.thinking}
+                onChange={(v) => updateCategory(name, { thinking: v })}
+              />
+            </FieldEditor>
+
+            <FieldEditor label="Text Verbosity" description="Text verbosity level" advanced>
+              <EnumEditor
+                value={cat.textVerbosity ?? ""}
+                options={VERBOSITY_OPTIONS}
+                onChange={(v) => updateCategory(name, { textVerbosity: (v || undefined) as typeof cat.textVerbosity })}
+                label="Text verbosity"
+                placeholder="Default"
+              />
+            </FieldEditor>
+
+            <FieldEditor label="Tools" description="Per-tool enable/disable overrides" advanced>
+              <ToolsEditor
+                value={cat.tools}
+                onChange={(v) => updateCategory(name, { tools: v })}
+                label="Category tools"
+              />
+            </FieldEditor>
+
+            <FieldEditor label="Fallback Models" description="Ordered fallback models (string or list)" advanced>
+              <ArrayEditor
+                value={Array.isArray(cat.fallback_models)
+                  ? cat.fallback_models
+                  : cat.fallback_models
+                    ? [cat.fallback_models]
+                    : []}
+                onChange={(v) => updateCategory(name, { fallback_models: v.length > 0 ? v : undefined })}
+                label="Fallback models"
+                placeholder="provider/model…"
+              />
+            </FieldEditor>
+
+            <FieldEditor label="Complexity Downgrades" description="JSON map of level to model" advanced>
+              <StringEditor
+                value={cat.complexity_downgrades ? JSON.stringify(cat.complexity_downgrades, null, 2) : ""}
+                onChange={(v) => {
+                  if (!v.trim()) {
+                    updateCategory(name, { complexity_downgrades: undefined })
+                    return
+                  }
+                  try {
+                    updateCategory(name, { complexity_downgrades: JSON.parse(v) })
+                  } catch { /* keep draft */ }
+                }}
+                label="Downgrades JSON"
                 multiline
                 monospace
               />

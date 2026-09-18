@@ -11,13 +11,6 @@ export interface ValidationResult {
   errors: ValidationError[];
 }
 
-const VALID_TIERS = [
-  "free",
-  "fast",
-  "standard",
-  "premium",
-  "frontier",
-] as const;
 const VALID_MODES = ["subagent", "primary", "all"] as const;
 const VALID_PERMISSIONS = ["ask", "allow", "deny"] as const;
 const VALID_REASONING = ["low", "medium", "high", "xhigh"] as const;
@@ -41,12 +34,14 @@ const AGENT_NAMES = new Set([
   "cipher",
   "sentinel",
   "sati",
+  "bdd-contract",
 ]);
 
 const OBJECT_PROPS = new Set([
   "experimental",
   "dcp",
   "morpheus_agent",
+  "morpheus",
   "tdd_enforcer",
   "matrix_loop",
   "tmux",
@@ -60,6 +55,18 @@ const OBJECT_PROPS = new Set([
   "assembly",
   "notification",
   "babysitting",
+  "model_presets",
+  "tasks",
+  "task",
+  "knowledge",
+  "failure_counter",
+  "headroom",
+  "rtk",
+  "comment_checker",
+  "websearch",
+  "matrixx_self_config",
+  "modelRequirements",
+  "complexityDowngrades",
 ]);
 
 function e(
@@ -92,13 +99,6 @@ function validateAgent(
   }
   const a = cfg as Record<string, unknown>;
 
-  if (a.tier !== undefined && !inSet(VALID_TIERS, a.tier))
-    e(
-      errs,
-      `${path}.tier`,
-      `Must be one of: ${VALID_TIERS.join(", ")}`,
-      a.tier,
-    );
   if (a.mode !== undefined && !inSet(VALID_MODES, a.mode))
     e(
       errs,
@@ -238,18 +238,6 @@ export function validateConfig(data: unknown): ValidationResult {
 
   const config = data as Record<string, unknown>;
 
-  if (
-    config.default_tier !== undefined &&
-    !inSet(VALID_TIERS, config.default_tier)
-  ) {
-    e(
-      errs,
-      "default_tier",
-      `Must be one of: ${VALID_TIERS.join(", ")}`,
-      config.default_tier,
-    );
-  }
-
   if (config.agents !== undefined) {
     if (!isRecord(config.agents)) {
       e(errs, "agents", "Must be an object");
@@ -267,24 +255,6 @@ export function validateConfig(data: unknown): ValidationResult {
           continue;
         }
         validateAgent(`agents.${name}`, agentCfg, errs);
-      }
-    }
-  }
-
-  if (config.tiers !== undefined) {
-    if (!isRecord(config.tiers)) {
-      e(errs, "tiers", "Must be an object");
-    } else {
-      for (const [tn, tc] of Object.entries(
-        config.tiers as Record<string, unknown>,
-      )) {
-        if (!isRecord(tc)) {
-          e(errs, `tiers.${tn}`, "Must be an object", tc);
-          continue;
-        }
-        const t = tc as Record<string, unknown>;
-        if (t.model !== undefined && typeof t.model !== "string")
-          e(errs, `tiers.${tn}.model`, "Must be a string", t.model);
       }
     }
   }

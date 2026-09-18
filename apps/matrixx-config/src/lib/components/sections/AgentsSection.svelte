@@ -6,6 +6,11 @@
   import BooleanEditor from "$lib/components/config/BooleanEditor.svelte"
   import EnumEditor from "$lib/components/config/EnumEditor.svelte"
   import NumberEditor from "$lib/components/config/NumberEditor.svelte"
+  import ArrayEditor from "$lib/components/config/ArrayEditor.svelte"
+  import ThinkingEditor from "$lib/components/config/ThinkingEditor.svelte"
+  import PermissionEditor from "$lib/components/config/PermissionEditor.svelte"
+  import ToolsEditor from "$lib/components/config/ToolsEditor.svelte"
+  import FallbackChainEditor from "$lib/components/config/FallbackChainEditor.svelte"
 
   const BUILTIN_AGENTS = [
     "morpheus", "keymaker", "oracle", "merovingian", "operator", "trinity",
@@ -19,24 +24,10 @@
   let expanded = $state<Set<string>>(new Set())
   let searchQuery = $state("")
 
-  const TIER_OPTIONS = [
-    { value: "free", label: "Free" },
-    { value: "fast", label: "Fast" },
-    { value: "standard", label: "Standard" },
-    { value: "premium", label: "Premium" },
-    { value: "frontier", label: "Frontier" },
-  ]
-
   const MODE_OPTIONS = [
     { value: "subagent", label: "Subagent" },
     { value: "primary", label: "Primary" },
     { value: "all", label: "All" },
-  ]
-
-  const PERMISSION_OPTIONS = [
-    { value: "ask", label: "Ask" },
-    { value: "allow", label: "Allow" },
-    { value: "deny", label: "Deny" },
   ]
 
   const EFFORT_OPTIONS = [
@@ -106,8 +97,8 @@
         >
           <div class="agent-info">
             <span class="agent-name">{name}</span>
-            {#if agent.tier}
-              <span class="agent-tier">{agent.tier}</span>
+            {#if agent.model}
+              <span class="agent-tier">{agent.model}</span>
             {/if}
             {#if agent.disable}
               <span class="agent-badge agent-badge--disabled">Disabled</span>
@@ -128,13 +119,32 @@
               />
             </FieldEditor>
 
-            <FieldEditor label="Tier" description="Tier alias resolved at config-load">
-              <EnumEditor
-                value={agent.tier ?? ""}
-                options={TIER_OPTIONS}
-                onChange={(v) => updateAgent(name, { tier: (v || undefined) as typeof agent.tier })}
-                label="Tier"
-                placeholder="Inherited"
+            <FieldEditor label="Variant" description="Model variant string (provider-specific)">
+              <StringEditor
+                value={agent.variant ?? ""}
+                onChange={(v) => updateAgent(name, { variant: v || undefined })}
+                label="Variant"
+                placeholder="variant…"
+                monospace
+              />
+            </FieldEditor>
+
+            <FieldEditor label="Category" description="Inherit model and settings from a category">
+              <StringEditor
+                value={agent.category ?? ""}
+                onChange={(v) => updateAgent(name, { category: v || undefined })}
+                label="Category"
+                placeholder="Category name…"
+                monospace
+              />
+            </FieldEditor>
+
+            <FieldEditor label="Skills" description="Skill names injected into the agent prompt">
+              <ArrayEditor
+                value={agent.skills ?? []}
+                onChange={(v) => updateAgent(name, { skills: v.length > 0 ? v : undefined })}
+                label="Skills"
+                placeholder="Skill name…"
               />
             </FieldEditor>
 
@@ -215,6 +225,75 @@
                 onChange={(v) => updateAgent(name, { reasoningEffort: (v || undefined) as typeof agent.reasoningEffort })}
                 label="Reasoning effort"
                 placeholder="Default"
+              />
+            </FieldEditor>
+
+            <FieldEditor label="Top P" description="Nucleus sampling threshold (0-1)" advanced>
+              <NumberEditor
+                value={agent.top_p ?? 1}
+                onChange={(v) => updateAgent(name, { top_p: v })}
+                label="Top P"
+                min={0}
+                max={1}
+                step={0.05}
+                showSlider
+              />
+            </FieldEditor>
+
+            <FieldEditor label="Prompt" description="Full prompt override (replaces built-in prompt)" advanced>
+              <StringEditor
+                value={agent.prompt ?? ""}
+                onChange={(v) => updateAgent(name, { prompt: v || undefined })}
+                label="Prompt"
+                multiline
+                monospace
+              />
+            </FieldEditor>
+
+            <FieldEditor label="Tools" description="Per-tool enable/disable overrides" advanced>
+              <ToolsEditor
+                value={agent.tools}
+                onChange={(v) => updateAgent(name, { tools: v })}
+                label="Agent tools"
+              />
+            </FieldEditor>
+
+            <FieldEditor label="Permission" description="Tool permission policy per capability" advanced>
+              <PermissionEditor
+                value={agent.permission}
+                onChange={(v) => updateAgent(name, { permission: v })}
+              />
+            </FieldEditor>
+
+            <FieldEditor label="Thinking" description="Extended thinking config (Anthropic)" advanced>
+              <ThinkingEditor
+                value={agent.thinking}
+                onChange={(v) => updateAgent(name, { thinking: v })}
+              />
+            </FieldEditor>
+
+            <FieldEditor label="Fallback chain" description="Custom model fallback chain for this agent" advanced>
+              <FallbackChainEditor
+                value={agent.fallbackChain}
+                onChange={(v) => updateAgent(name, { fallbackChain: v })}
+              />
+            </FieldEditor>
+
+            <FieldEditor label="Provider Options (JSON)" description="Provider-specific options passed to the SDK" advanced>
+              <StringEditor
+                value={agent.providerOptions ? JSON.stringify(agent.providerOptions, null, 2) : ""}
+                onChange={(v) => {
+                  if (!v.trim()) {
+                    updateAgent(name, { providerOptions: undefined })
+                    return
+                  }
+                  try {
+                    updateAgent(name, { providerOptions: JSON.parse(v) as Record<string, unknown> })
+                  } catch { /* keep draft */ }
+                }}
+                label="Provider options"
+                multiline
+                monospace
               />
             </FieldEditor>
 

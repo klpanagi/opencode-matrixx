@@ -6,10 +6,16 @@
   import PresetSelector from "$lib/components/presets/PresetSelector.svelte"
   import JsonPreview from "$lib/components/layout/JsonPreview.svelte"
   import CoreSection from "$lib/components/sections/CoreSection.svelte"
+  import ModelsSection from "$lib/components/sections/ModelsSection.svelte"
   import AgentsSection from "$lib/components/sections/AgentsSection.svelte"
   import CategoriesSection from "$lib/components/sections/CategoriesSection.svelte"
-  import TiersSection from "$lib/components/sections/TiersSection.svelte"
-  import SkillsSection from "$lib/components/sections/SkillsSection.svelte"
+  import TasksSection from "$lib/components/sections/TasksSection.svelte"
+  import FeaturesSection from "$lib/components/sections/FeaturesSection.svelte"
+  import BackgroundSection from "$lib/components/sections/BackgroundSection.svelte"
+  import SecuritySection from "$lib/components/sections/SecuritySection.svelte"
+  import DcpSection from "$lib/components/sections/DcpSection.svelte"
+  import KnowledgeSection from "$lib/components/sections/KnowledgeSection.svelte"
+  import AdvancedSection from "$lib/components/sections/AdvancedSection.svelte"
 
   let activeSection = $state<SectionId>("dashboard")
   let saving = $state(false)
@@ -60,17 +66,29 @@
 
   {:else if activeSection === "core"}
     <CoreSection />
+  {:else if activeSection === "models"}
+    <ModelsSection />
   {:else if activeSection === "agents"}
     <AgentsSection />
   {:else if activeSection === "categories"}
     <CategoriesSection />
-  {:else if activeSection === "tiers"}
-    <TiersSection />
-  {:else if activeSection === "skills"}
-    <SkillsSection />
+  {:else if activeSection === "tasks"}
+    <TasksSection />
+  {:else if activeSection === "features"}
+    <FeaturesSection />
+  {:else if activeSection === "background"}
+    <BackgroundSection />
+  {:else if activeSection === "security"}
+    <SecuritySection />
+  {:else if activeSection === "dcp"}
+    <DcpSection />
+  {:else if activeSection === "knowledge"}
+    <KnowledgeSection />
+  {:else if activeSection === "advanced"}
+    <AdvancedSection />
   {/if}
 
-  {#if activeSection !== "dashboard" && activeSection !== "tiers"}
+  {#if activeSection !== "dashboard"}
     <div class="action-bar">
       {#if dirty}
         <span class="unsaved-badge" role="status">Unsaved changes</span>

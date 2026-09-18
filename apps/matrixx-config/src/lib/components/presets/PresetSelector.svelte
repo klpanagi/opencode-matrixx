@@ -35,7 +35,7 @@
       >
         <div class="preset-card-header">
           <span class="preset-name">{meta.label}</span>
-          <span class="preset-tier">{meta.tier}</span>
+          <span class="preset-tier">{meta.model}</span>
         </div>
         <p class="preset-desc">{meta.description}</p>
       </button>

@@ -12,7 +12,7 @@ export interface PresetMeta {
   name: PresetName;
   label: string;
   description: string;
-  tier: string;
+  model: string;
 }
 
 export const PRESET_METAS: PresetMeta[] = [
@@ -20,77 +20,60 @@ export const PRESET_METAS: PresetMeta[] = [
     name: "minimal",
     label: "Minimal",
     description:
-      "Fast tier by default, free agents for trinity/operator. Lowest cost.",
-    tier: "fast",
+      "Cost-effective defaults with lightweight models for trinity/operator.",
+    model: "provider/model",
   },
   {
     name: "balanced",
     label: "Balanced",
     description:
-      "Standard tier default. Premium agents for core roles. Best for daily use.",
-    tier: "standard",
+      "Balanced quality and cost. Strong models for core roles. Best for daily use.",
+    model: "provider/model",
   },
   {
     name: "performance",
     label: "Performance",
-    description: "Premium tier default. Maximum quality for most agents.",
-    tier: "premium",
+    description: "High-quality defaults. Maximum quality for most agents.",
+    model: "provider/model",
   },
   {
     name: "frontier",
     label: "Frontier",
     description:
-      "Frontier tier default. Top models everywhere. Highest quality & cost.",
-    tier: "frontier",
+      "Cutting-edge defaults. Top models everywhere. Highest quality & cost.",
+    model: "provider/model",
   },
 ];
 
 const PRESETS: Record<PresetName, MatrixxConfig> = {
   minimal: {
-    default_tier: "fast",
-    agents: {
-      trinity: { tier: "free" },
-      operator: { tier: "free" },
-    },
+    tasks: { enabled: true, scope: "project" },
+    experimental: { task_system: true },
+    failure_counter: { enabled: true },
   } as MatrixxConfig,
 
   balanced: {
-    default_tier: "standard",
-    agents: {
-      morpheus: { tier: "premium" },
-      oracle: { tier: "premium" },
-      seraph: { tier: "premium" },
-      trinity: { tier: "fast" },
-      operator: { tier: "fast" },
-    },
-    categories: {
-      source: { tier: "premium" },
-      "red-pill": { tier: "premium" },
-      "blue-pill": { tier: "standard" },
-      "bullet-time": { tier: "fast" },
-    },
+    tasks: { enabled: true, scope: "project" },
+    experimental: { task_system: true },
+    failure_counter: { enabled: true },
+    background_task: { wakeScheduler: { enabled: true } },
   } as MatrixxConfig,
 
   performance: {
-    default_tier: "premium",
-    agents: {
-      trinity: { tier: "fast" },
-      operator: { tier: "fast" },
-    },
-    categories: {
-      "bullet-time": { tier: "fast" },
-    },
+    tasks: { enabled: true, scope: "project" },
+    experimental: { task_system: true, preemptive_compaction: true },
+    failure_counter: { enabled: true },
+    background_task: { wakeScheduler: { enabled: true } },
+    runtime_fallback: { enabled: true },
   } as MatrixxConfig,
 
   frontier: {
-    default_tier: "frontier",
-    agents: {
-      trinity: { tier: "fast" },
-      operator: { tier: "fast" },
-    },
-    categories: {
-      "bullet-time": { tier: "fast" },
-    },
+    tasks: { enabled: true, scope: "project", session_scoped: false },
+    experimental: { task_system: true, preemptive_compaction: true },
+    failure_counter: { enabled: true },
+    background_task: { wakeScheduler: { enabled: true } },
+    runtime_fallback: { enabled: true },
+    security: { secret_scanning: { enabled: true } },
   } as MatrixxConfig,
 };
 

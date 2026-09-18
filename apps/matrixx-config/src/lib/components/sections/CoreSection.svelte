@@ -1,22 +1,13 @@
 <script lang="ts">
   import { configStore } from "$lib/store/config-store"
-  import type { MatrixxConfig, TierName } from "$lib/types"
+  import type { MatrixxConfig } from "$lib/types"
   import FieldEditor from "$lib/components/config/FieldEditor.svelte"
   import StringEditor from "$lib/components/config/StringEditor.svelte"
   import BooleanEditor from "$lib/components/config/BooleanEditor.svelte"
-  import EnumEditor from "$lib/components/config/EnumEditor.svelte"
   import ArrayEditor from "$lib/components/config/ArrayEditor.svelte"
 
   let config = $state(configStore.getSnapshot())
   configStore.subscribe((v) => (config = v))
-
-  const TIER_OPTIONS = [
-    { value: "free", label: "Free" },
-    { value: "fast", label: "Fast" },
-    { value: "standard", label: "Standard" },
-    { value: "premium", label: "Premium" },
-    { value: "frontier", label: "Frontier" },
-  ]
 
   function update<K extends keyof MatrixxConfig>(key: K, value: MatrixxConfig[K]) {
     configStore.updateConfig((c) => ({ ...c, [key]: value }))
@@ -37,17 +28,17 @@
     />
   </FieldEditor>
 
-  <FieldEditor label="Default Tier" description="Default tier applied to agents/categories without explicit model or tier">
-    <EnumEditor
-      value={config.default_tier ?? ""}
-      options={TIER_OPTIONS}
-      onChange={(v) => update("default_tier", (v || undefined) as TierName)}
-      label="Default tier"
-      placeholder="Not set"
+  <FieldEditor label="$schema" description="JSON schema URL for autocomplete and validation" advanced>
+    <StringEditor
+      value={config.$schema ?? ""}
+      onChange={(v) => update("$schema", v || undefined)}
+      label="Schema URL"
+      placeholder="https://…/matrixx.schema.json"
+      monospace
     />
   </FieldEditor>
 
-  <FieldEditor label="Default Run Agent" description="Default agent for `opencode run`">
+  <FieldEditor label="Default Run Agent" description="Default agent used by opencode run">
     <StringEditor
       value={config.default_run_agent ?? ""}
       onChange={(v) => update("default_run_agent", v || undefined)}
@@ -64,11 +55,11 @@
     />
   </FieldEditor>
 
-  <FieldEditor label="Task System" description="Enable experimental file-backed task system">
+  <FieldEditor label="Legacy task flag" description="Deprecated fallback for tasks.enabled. Prefer the Tasks section." advanced>
     <BooleanEditor
-      value={config.experimental?.task_system ?? true}
-      onChange={(v) => update("experimental", { ...config.experimental, task_system: v })}
-      label="Task system"
+      value={config.new_task_system_enabled ?? false}
+      onChange={(v) => update("new_task_system_enabled", v || undefined)}
+      label="Legacy task flag"
     />
   </FieldEditor>
 

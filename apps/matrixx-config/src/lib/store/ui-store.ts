@@ -4,10 +4,16 @@ import type { SectionId } from "$lib/types";
 export const SECTIONS: Array<{ id: SectionId; label: string; icon: string }> = [
   { id: "dashboard", label: "Dashboard", icon: "layout-dashboard" },
   { id: "core", label: "Core", icon: "settings" },
+  { id: "models", label: "Models & Presets", icon: "layers" },
   { id: "agents", label: "Agents", icon: "bot" },
   { id: "categories", label: "Categories", icon: "tags" },
-  { id: "tiers", label: "Tiers", icon: "layers" },
-  { id: "skills", label: "Skills", icon: "wrench" },
+  { id: "tasks", label: "Tasks", icon: "check-square" },
+  { id: "features", label: "Features", icon: "toggle" },
+  { id: "background", label: "Background", icon: "activity" },
+  { id: "security", label: "Security", icon: "shield" },
+  { id: "dcp", label: "DCP", icon: "zap" },
+  { id: "knowledge", label: "Knowledge & Skills", icon: "wrench" },
+  { id: "advanced", label: "Advanced", icon: "sliders" },
 ];
 
 function createUiStore() {

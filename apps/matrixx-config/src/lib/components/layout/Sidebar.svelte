@@ -8,10 +8,16 @@
   const SECTION_ICONS: Record<string, string> = {
     dashboard: "◉",
     core: "⚙",
+    models: "⊟",
     agents: "◆",
     categories: "⊞",
-    tiers: "⊟",
-    skills: "⚡",
+    tasks: "☑",
+    features: "◈",
+    background: "⬢",
+    security: "⛨",
+    dcp: "⚡",
+    knowledge: "✎",
+    advanced: "⋯",
   }
 
   function isActive(id: SectionId): boolean {
@@ -26,7 +32,7 @@
 <aside class="sidebar" role="navigation" aria-label="Configuration sections">
   <div class="sidebar-header">
     <span class="sidebar-brand">Matrixx Config</span>
-    <span class="sidebar-version">v2.6.4</span>
+    <span class="sidebar-version">v2.6.10</span>
   </div>
 
   <div class="sidebar-search">

@@ -11,15 +11,66 @@
     "global_model": {
       "type": "string"
     },
-    "default_tier": {
+    "model_presets": {
+      "type": "object",
+      "propertyNames": {
+        "type": "string"
+      },
+      "additionalProperties": {
+        "type": "object",
+        "properties": {
+          "default_model": {
+            "type": "string"
+          },
+          "agents": {
+            "type": "object",
+            "propertyNames": {
+              "type": "string"
+            },
+            "additionalProperties": {
+              "type": "object",
+              "properties": {
+                "model": {
+                  "type": "string"
+                },
+                "variant": {
+                  "type": "string"
+                }
+              },
+              "required": [
+                "model"
+              ],
+              "additionalProperties": false
+            }
+          },
+          "categories": {
+            "type": "object",
+            "propertyNames": {
+              "type": "string"
+            },
+            "additionalProperties": {
+              "type": "object",
+              "properties": {
+                "model": {
+                  "type": "string"
+                },
+                "variant": {
+                  "type": "string"
+                }
+              },
+              "required": [
+                "model"
+              ],
+              "additionalProperties": false
+            }
+          }
+        },
+        "additionalProperties": false
+      }
+    },
+    "active_preset": {
       "type": "string",
-      "enum": [
-        "free",
-        "fast",
-        "standard",
-        "premium",
-        "frontier"
-      ]
+      "minLength": 1
     },
     "new_task_system_enabled": {
       "type": "boolean"
@@ -122,6 +173,7 @@
               "preemptive-compaction",
               "rules-injector",
               "background-notification",
+              "background-task-blocker",
               "auto-update-checker",
               "startup-toast",
               "keyword-detector",
@@ -168,7 +220,11 @@
               "evolution-hitl",
               "context-mode-enforcer",
               "task-edit-guard",
-              "failure-counter"
+              "document-reader-guard",
+              "failure-counter",
+              "knowledge-hub-guard",
+              "knowledge-hub-injector",
+              "knowledge-hub-search-nudge"
             ]
           },
           {}
@@ -187,7 +243,7 @@
           "refactor",
           "start-work",
           "stop-continuation",
-          "profile",
+          "preset",
           "end-ultrawork",
           "handoff",
           "research",
@@ -216,16 +272,6 @@
           "properties": {
             "model": {
               "type": "string"
-            },
-            "tier": {
-              "type": "string",
-              "enum": [
-                "free",
-                "fast",
-                "standard",
-                "premium",
-                "frontier"
-              ]
             },
             "variant": {
               "type": "string"
@@ -434,16 +480,6 @@
             "model": {
               "type": "string"
             },
-            "tier": {
-              "type": "string",
-              "enum": [
-                "free",
-                "fast",
-                "standard",
-                "premium",
-                "frontier"
-              ]
-            },
             "variant": {
               "type": "string"
             },
@@ -650,16 +686,6 @@
           "properties": {
             "model": {
               "type": "string"
-            },
-            "tier": {
-              "type": "string",
-              "enum": [
-                "free",
-                "fast",
-                "standard",
-                "premium",
-                "frontier"
-              ]
             },
             "variant": {
               "type": "string"
@@ -868,16 +894,6 @@
             "model": {
               "type": "string"
             },
-            "tier": {
-              "type": "string",
-              "enum": [
-                "free",
-                "fast",
-                "standard",
-                "premium",
-                "frontier"
-              ]
-            },
             "variant": {
               "type": "string"
             },
@@ -1084,16 +1100,6 @@
           "properties": {
             "model": {
               "type": "string"
-            },
-            "tier": {
-              "type": "string",
-              "enum": [
-                "free",
-                "fast",
-                "standard",
-                "premium",
-                "frontier"
-              ]
             },
             "variant": {
               "type": "string"
@@ -1302,16 +1308,6 @@
             "model": {
               "type": "string"
             },
-            "tier": {
-              "type": "string",
-              "enum": [
-                "free",
-                "fast",
-                "standard",
-                "premium",
-                "frontier"
-              ]
-            },
             "variant": {
               "type": "string"
             },
@@ -1518,16 +1514,6 @@
           "properties": {
             "model": {
               "type": "string"
-            },
-            "tier": {
-              "type": "string",
-              "enum": [
-                "free",
-                "fast",
-                "standard",
-                "premium",
-                "frontier"
-              ]
             },
             "variant": {
               "type": "string"
@@ -1736,16 +1722,6 @@
             "model": {
               "type": "string"
             },
-            "tier": {
-              "type": "string",
-              "enum": [
-                "free",
-                "fast",
-                "standard",
-                "premium",
-                "frontier"
-              ]
-            },
             "variant": {
               "type": "string"
             },
@@ -1952,16 +1928,6 @@
           "properties": {
             "model": {
               "type": "string"
-            },
-            "tier": {
-              "type": "string",
-              "enum": [
-                "free",
-                "fast",
-                "standard",
-                "premium",
-                "frontier"
-              ]
             },
             "variant": {
               "type": "string"
@@ -2170,16 +2136,6 @@
             "model": {
               "type": "string"
             },
-            "tier": {
-              "type": "string",
-              "enum": [
-                "free",
-                "fast",
-                "standard",
-                "premium",
-                "frontier"
-              ]
-            },
             "variant": {
               "type": "string"
             },
@@ -2386,16 +2342,6 @@
           "properties": {
             "model": {
               "type": "string"
-            },
-            "tier": {
-              "type": "string",
-              "enum": [
-                "free",
-                "fast",
-                "standard",
-                "premium",
-                "frontier"
-              ]
             },
             "variant": {
               "type": "string"
@@ -2604,16 +2550,6 @@
             "model": {
               "type": "string"
             },
-            "tier": {
-              "type": "string",
-              "enum": [
-                "free",
-                "fast",
-                "standard",
-                "premium",
-                "frontier"
-              ]
-            },
             "variant": {
               "type": "string"
             },
@@ -2820,16 +2756,6 @@
           "properties": {
             "model": {
               "type": "string"
-            },
-            "tier": {
-              "type": "string",
-              "enum": [
-                "free",
-                "fast",
-                "standard",
-                "premium",
-                "frontier"
-              ]
             },
             "variant": {
               "type": "string"
@@ -3038,16 +2964,6 @@
             "model": {
               "type": "string"
             },
-            "tier": {
-              "type": "string",
-              "enum": [
-                "free",
-                "fast",
-                "standard",
-                "premium",
-                "frontier"
-              ]
-            },
             "variant": {
               "type": "string"
             },
@@ -3254,16 +3170,6 @@
           "properties": {
             "model": {
               "type": "string"
-            },
-            "tier": {
-              "type": "string",
-              "enum": [
-                "free",
-                "fast",
-                "standard",
-                "premium",
-                "frontier"
-              ]
             },
             "variant": {
               "type": "string"
@@ -3472,16 +3378,6 @@
             "model": {
               "type": "string"
             },
-            "tier": {
-              "type": "string",
-              "enum": [
-                "free",
-                "fast",
-                "standard",
-                "premium",
-                "frontier"
-              ]
-            },
             "variant": {
               "type": "string"
             },
@@ -3688,16 +3584,6 @@
           "properties": {
             "model": {
               "type": "string"
-            },
-            "tier": {
-              "type": "string",
-              "enum": [
-                "free",
-                "fast",
-                "standard",
-                "premium",
-                "frontier"
-              ]
             },
             "variant": {
               "type": "string"
@@ -3917,16 +3803,6 @@
           "model": {
             "type": "string"
           },
-          "tier": {
-            "type": "string",
-            "enum": [
-              "free",
-              "fast",
-              "standard",
-              "premium",
-              "frontier"
-            ]
-          },
           "variant": {
             "type": "string"
           },
@@ -4103,96 +3979,7 @@
           "type": "boolean"
         },
         "profiles": {
-          "default": {
-            "economy": {
-              "pruneNotification": "off",
-              "compress": {
-                "maxContextLimit": "30%",
-                "minContextLimit": "20%",
-                "nudgeFrequency": 2,
-                "nudgeForce": "strong",
-                "iterationNudgeThreshold": 7
-              },
-              "turnProtection": {
-                "enabled": false
-              },
-              "experimental": {
-                "allowSubAgents": false
-              },
-              "strategies": {
-                "purgeErrors": {
-                  "turns": 1
-                }
-              }
-            },
-            "balanced": {
-              "pruneNotification": "minimal",
-              "compress": {
-                "maxContextLimit": "60%",
-                "minContextLimit": "30%",
-                "nudgeFrequency": 3,
-                "nudgeForce": "strong",
-                "iterationNudgeThreshold": 10
-              },
-              "turnProtection": {
-                "enabled": true,
-                "turns": 2
-              },
-              "experimental": {
-                "allowSubAgents": true
-              },
-              "strategies": {
-                "purgeErrors": {
-                  "turns": 2
-                }
-              }
-            },
-            "performance": {
-              "pruneNotification": "minimal",
-              "compress": {
-                "maxContextLimit": "80%",
-                "minContextLimit": "35%",
-                "nudgeFrequency": 4,
-                "nudgeForce": "strong",
-                "iterationNudgeThreshold": 12
-              },
-              "turnProtection": {
-                "enabled": true,
-                "turns": 3
-              },
-              "experimental": {
-                "allowSubAgents": true
-              },
-              "strategies": {
-                "purgeErrors": {
-                  "turns": 2
-                }
-              }
-            },
-            "ultimate": {
-              "pruneNotification": "detailed",
-              "compress": {
-                "maxContextLimit": "85%",
-                "minContextLimit": "40%",
-                "nudgeFrequency": 5,
-                "nudgeForce": "strong",
-                "iterationNudgeThreshold": 15,
-                "protectTags": true
-              },
-              "turnProtection": {
-                "enabled": true,
-                "turns": 5
-              },
-              "experimental": {
-                "allowSubAgents": true
-              },
-              "strategies": {
-                "purgeErrors": {
-                  "turns": 4
-                }
-              }
-            }
-          },
+          "default": {},
           "type": "object",
           "propertyNames": {
             "type": "string"
@@ -4312,6 +4099,46 @@
         "default_profile": {
           "type": "string"
         },
+        "handoffCompression": {
+          "default": {
+            "enabled": true,
+            "maxMessages": 6,
+            "keepFirst": 2,
+            "keepLast": 3
+          },
+          "type": "object",
+          "properties": {
+            "enabled": {
+              "default": true,
+              "type": "boolean"
+            },
+            "maxMessages": {
+              "default": 6,
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 9007199254740991
+            },
+            "keepFirst": {
+              "default": 2,
+              "type": "integer",
+              "minimum": 0,
+              "maximum": 9007199254740991
+            },
+            "keepLast": {
+              "default": 3,
+              "type": "integer",
+              "minimum": 0,
+              "maximum": 9007199254740991
+            }
+          },
+          "required": [
+            "enabled",
+            "maxMessages",
+            "keepFirst",
+            "keepLast"
+          ],
+          "additionalProperties": false
+        },
         "base": {
           "default": {
             "autoUpdate": false,
@@ -4345,7 +4172,10 @@
               "enabled": false,
               "automaticStrategies": true
             },
-            "protectedFilePatterns": []
+            "protectedFilePatterns": [],
+            "experimental": {
+              "allowSubAgents": true
+            }
           },
           "type": "object",
           "properties": {
@@ -4564,6 +4394,18 @@
               "items": {
                 "type": "string"
               }
+            },
+            "experimental": {
+              "default": {
+                "allowSubAgents": true
+              },
+              "type": "object",
+              "properties": {
+                "allowSubAgents": {
+                  "type": "boolean"
+                }
+              },
+              "additionalProperties": false
             }
           },
           "required": [
@@ -4574,7 +4416,8 @@
             "strategies",
             "commands",
             "manualMode",
-            "protectedFilePatterns"
+            "protectedFilePatterns",
+            "experimental"
           ],
           "additionalProperties": false
         }
@@ -4582,6 +4425,7 @@
       "required": [
         "enabled",
         "profiles",
+        "handoffCompression",
         "base"
       ],
       "additionalProperties": false
@@ -4700,6 +4544,66 @@
         }
       ]
     },
+    "knowledge": {
+      "type": "object",
+      "properties": {
+        "hubs": {
+          "default": [],
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "name": {
+                "type": "string"
+              },
+              "path": {
+                "type": "string"
+              },
+              "index": {
+                "default": "_index.md",
+                "type": "string"
+              },
+              "scope": {
+                "default": "global",
+                "type": "string",
+                "enum": [
+                  "global",
+                  "project"
+                ]
+              },
+              "mode": {
+                "default": "router-only",
+                "type": "string",
+                "enum": [
+                  "router-only",
+                  "pinned"
+                ]
+              },
+              "exclude": {
+                "default": [],
+                "type": "array",
+                "items": {
+                  "type": "string"
+                }
+              }
+            },
+            "required": [
+              "name",
+              "path",
+              "index",
+              "scope",
+              "mode",
+              "exclude"
+            ],
+            "additionalProperties": false
+          }
+        }
+      },
+      "required": [
+        "hubs"
+      ],
+      "additionalProperties": false
+    },
     "matrix_loop": {
       "type": "object",
       "properties": {
@@ -4806,6 +4710,91 @@
             }
           },
           "additionalProperties": false
+        },
+        "admissionTimeoutMs": {
+          "anyOf": [
+            {
+              "type": "number",
+              "const": 0
+            },
+            {
+              "type": "number",
+              "minimum": 60000
+            }
+          ]
+        },
+        "nestedAdmission": {
+          "type": "object",
+          "properties": {
+            "enabled": {
+              "type": "boolean"
+            },
+            "mode": {
+              "type": "string",
+              "enum": [
+                "bypass",
+                "reserve"
+              ]
+            },
+            "maxDepth": {
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 5
+            }
+          },
+          "additionalProperties": false
+        },
+        "wakeScheduler": {
+          "type": "object",
+          "properties": {
+            "enabled": {
+              "type": "boolean"
+            },
+            "intervalMs": {
+              "type": "number",
+              "minimum": 60000
+            }
+          },
+          "additionalProperties": false
+        },
+        "jobBoard": {
+          "type": "object",
+          "properties": {
+            "enabled": {
+              "type": "boolean"
+            },
+            "strategy": {
+              "type": "string",
+              "enum": [
+                "latest",
+                "checkpoint-compatible"
+              ]
+            },
+            "maxRetainedSnapshots": {
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 100
+            }
+          },
+          "additionalProperties": false
+        },
+        "wallClockTimeoutMs": {
+          "anyOf": [
+            {
+              "type": "number",
+              "const": 0
+            },
+            {
+              "type": "integer",
+              "minimum": 60000,
+              "maximum": 2147483647
+            }
+          ]
+        },
+        "wallClockAbortGraceMs": {
+          "type": "integer",
+          "minimum": 1000,
+          "maximum": 60000
         }
       },
       "additionalProperties": false
@@ -4829,6 +4818,49 @@
       },
       "required": [
         "timeout_ms"
+      ],
+      "additionalProperties": false
+    },
+    "tasks": {
+      "type": "object",
+      "properties": {
+        "enabled": {
+          "default": true,
+          "type": "boolean"
+        },
+        "scope": {
+          "description": "Task storage scope: project → .matrixx/tasks per project (default), global → <opencode-config>/tasks/{listId}",
+          "default": "project",
+          "type": "string",
+          "enum": [
+            "global",
+            "project"
+          ]
+        },
+        "storage_path": {
+          "type": "string"
+        },
+        "task_list_id": {
+          "type": "string"
+        },
+        "stale_after_hours": {
+          "description": "Pending tasks with no file activity for this many hours are considered stale (default: 24). Stale tasks are excluded from task-continuation directives.",
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 9007199254740991
+        },
+        "session_scoped": {
+          "description": "When true, the task-continuation-enforcer only considers tasks created by the current session (or its subagent sessions). When false, all project tasks are considered regardless of session origin.",
+          "default": true,
+          "type": "boolean"
+        },
+        "pollTimeoutMs": {
+          "type": "number",
+          "minimum": 60000
+        }
+      },
+      "required": [
+        "enabled"
       ],
       "additionalProperties": false
     },
@@ -5291,7 +5323,6 @@
         },
         "blocked_tools": {
           "default": [
-            "read",
             "grep",
             "glob"
           ],
@@ -5569,61 +5600,6 @@
       "type": "array",
       "items": {
         "type": "string"
-      }
-    },
-    "tiers": {
-      "type": "object",
-      "propertyNames": {
-        "type": "string"
-      },
-      "additionalProperties": {
-        "type": "object",
-        "properties": {
-          "providerPriority": {
-            "type": "array",
-            "items": {
-              "type": "string"
-            }
-          },
-          "modelPattern": {
-            "type": "string"
-          },
-          "fallbackTier": {
-            "type": "string"
-          },
-          "fallback": {
-            "type": "array",
-            "items": {
-              "type": "object",
-              "properties": {
-                "providers": {
-                  "type": "array",
-                  "items": {
-                    "type": "string",
-                    "minLength": 1
-                  }
-                },
-                "model": {
-                  "type": "string",
-                  "minLength": 1
-                },
-                "variant": {
-                  "type": "string"
-                }
-              },
-              "required": [
-                "providers",
-                "model"
-              ],
-              "additionalProperties": false
-            }
-          }
-        },
-        "required": [
-          "providerPriority",
-          "modelPattern"
-        ],
-        "additionalProperties": false
       }
     },
     "modelRequirements": {

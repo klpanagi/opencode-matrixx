@@ -223,7 +223,8 @@
               "document-reader-guard",
               "failure-counter",
               "knowledge-hub-guard",
-              "knowledge-hub-injector"
+              "knowledge-hub-injector",
+              "knowledge-hub-search-nudge"
             ]
           },
           {}
