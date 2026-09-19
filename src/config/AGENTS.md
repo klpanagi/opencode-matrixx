@@ -9,10 +9,10 @@ Zod schema definitions for plugin configuration. Schema component files composin
 config/
 ├── schema/                    # schema component files
 │   ├── matrixx-config.ts         # Root schema composition (57 lines)
-│   ├── agent-names.ts         # BuiltinAgentNameSchema (14 agents), BuiltinSkillNameSchema (36 skills)
+│   ├── agent-names.ts         # BuiltinAgentNameSchema (14 agents), BuiltinSkillNameSchema (37 skills)
 │   ├── agent-overrides.ts     # AgentOverrideConfigSchema (model, variant, temp, thinking...)
 │   ├── categories.ts          # 8 categories: construct, source, deep-jack, matrix-bend, bullet-time, ...
-│   ├── hooks.ts               # HookNameSchema (64 hooks, 58 dirs + loose .ts)
+│   ├── hooks.ts               # HookNameSchema (66 literals; 80 hook entries in 63 dirs + loose .ts on disk)
 │   ├── commands.ts            # BuiltinCommandNameSchema
 │   ├── experimental.ts        # ExperimentalConfigSchema
 │   ├── background-task.ts     # BackgroundTaskConfigSchema

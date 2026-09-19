@@ -2,7 +2,7 @@
 
 ## OVERVIEW
 
-~54 lifecycle hooks intercepting/modifying agent behavior across 7 event types. Three-tier registration: Core (31+) → Continuation (8) → Skill (2).
+80 hook entries (63 dirs + loose files) intercepting/modifying agent behavior across 7 event types. Three-tier registration: Core (session ~21 + tool-guard ~24 + transform 8) → Continuation (11) → Skill (2). HookNameSchema holds 66 literals (incl. 1 duplicate + 1 legacy alias).
 
 ## STRUCTURE
 ```
