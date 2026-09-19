@@ -249,11 +249,7 @@
           "research",
           "assembly",
           "ultrawork",
-          "bdd-backend",
-          "bdd-contract",
-          "bdd-frontend",
-          "bdd-pipeline",
-          "bdd-tests"
+          "bdd-pipeline"
         ]
       }
     },

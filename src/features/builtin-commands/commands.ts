@@ -1,10 +1,6 @@
 import type { CommandDefinition } from "../command-loader"
 import { ASSEMBLY_TEMPLATE } from "./templates/assembly"
-import { BDD_BACKEND_TEMPLATE } from "./templates/bdd-backend"
-import { BDD_CONTRACT_TEMPLATE } from "./templates/bdd-contract"
-import { BDD_FRONTEND_TEMPLATE } from "./templates/bdd-frontend"
 import { BDD_PIPELINE_TEMPLATE } from "./templates/bdd-pipeline"
-import { BDD_TESTS_TEMPLATE } from "./templates/bdd-tests"
 import { CLEANUP_TASKS_TEMPLATE } from "./templates/cleanup-tasks"
 import { END_ULTRAWORK_TEMPLATE } from "./templates/end-ultrawork"
 import { EVOLUTION_TEMPLATE } from "./templates/evolution"
@@ -185,39 +181,6 @@ $ARGUMENTS
 </user-request>`,
     argumentHint: "[enable|disable|status]",
   },
-  "bdd-backend": {
-    description: "(builtin) Typed API service generation from BDD Contract JSON. Use when generating backend services for a feature.",
-    template: `<command-instruction>
-${BDD_BACKEND_TEMPLATE}
-</command-instruction>
-
-<user-request>
-$ARGUMENTS
-</user-request>`,
-    argumentHint: "<contract.json>",
-  },
-  "bdd-contract": {
-    description: "(builtin) BDD contract creation: parse .feature files into structured Contract JSON with semantic enrichment.",
-    template: `<command-instruction>
-${BDD_CONTRACT_TEMPLATE}
-</command-instruction>
-
-<user-request>
-$ARGUMENTS
-</user-request>`,
-    argumentHint: "<feature-path> [--force]",
-  },
-  "bdd-frontend": {
-    description: "(builtin) React component generation from BDD Contract JSON using @ui:* annotations.",
-    template: `<command-instruction>
-${BDD_FRONTEND_TEMPLATE}
-</command-instruction>
-
-<user-request>
-$ARGUMENTS
-</user-request>`,
-    argumentHint: "<contract.json>",
-  },
   "bdd-pipeline": {
     description: "(builtin) Full BDD pipeline: contract, tests, frontend, and backend from a .feature file.",
     template: `<command-instruction>
@@ -228,17 +191,6 @@ ${BDD_PIPELINE_TEMPLATE}
 $ARGUMENTS
 </user-request>`,
     argumentHint: "<feature-path> [--force]",
-  },
-  "bdd-tests": {
-    description: "(builtin) Cucumber step definition + page object generation from BDD Contract JSON.",
-    template: `<command-instruction>
-${BDD_TESTS_TEMPLATE}
-</command-instruction>
-
-<user-request>
-$ARGUMENTS
-</user-request>`,
-    argumentHint: "<contract.json>",
   },
   evolution: {
     description: "(builtin) Manage self-evolution proposals: approve, reject, list, audit pending skills",
