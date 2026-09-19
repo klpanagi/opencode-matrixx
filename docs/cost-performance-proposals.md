@@ -1,8 +1,9 @@
 # Matrixx Cost/Performance Improvement Proposals
 
 **Status:** Living document — per-proposal status tracked inline (Implemented / Partial / Proposed with source evidence)
-**Date:** 2026-07-09 (status refresh: v2.6.5)
-**Scope:** Matrixx v2.6.5 + 15 comparator projects
+> Point-in-time analysis as of v2.6.10: historical dates, version stamps, and v2.0.0 evidences below are preserved as written; counts re-verified against current `src/` where noted.
+**Date:** 2026-07-09 (status refresh: v2.6.10)
+**Scope:** Matrixx v2.6.10 + 15 comparator projects
 **Authors:** Morpheus research mode
 
 ---
@@ -73,7 +74,7 @@ Total: 15 proposals across 3 tiers, plus a recommended implementation sequence a
 > **Status:** Implemented (v2.0.0). Evidence: `src/features/builtin-skills/skills.ts` (lazy loaders), `src/features/builtin-skills/lazy-skill-helper.ts`. See `docs/features.md` § "Lazy Skill Loading".
 
 
-- **What:** Defer loading of 45 skills + 4 MCPs until first reference. Register lightweight stubs at init, hydrate on demand.
+- **What:** Defer loading of 45 skills + 3 MCPs until first reference. Register lightweight stubs at init, hydrate on demand.
 - **Cost impact:** **~6.6K tokens saved per session startup** (barkain-validated). Multiplied across long sessions.
 - **Performance impact:** Faster plugin init, smaller first-message context.
 - **Complexity:** **Low.** Already have registry pattern; just split into "registered" vs "loaded".

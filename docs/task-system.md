@@ -2,7 +2,7 @@
 
 > **Scope:** Persistent, file-backed task management for Matrixx agent orchestration.
 > **Audience:** Engineers evolving the task system: storage, tools, hooks, scheduling, and agent integration.
-> **Version:** 2.6.5 (branch `docs/refresh-from-codebase`), verified against source. Canonical config now lives in `tasks.*` (`src/config/schema/tasks.ts`); `experimental.task_system` and `morpheus.tasks.*` remain as lower-precedence legacy fallbacks (see §3).
+> **Version:** 2.6.10, verified against source. Canonical config now lives in `tasks.*` (`src/config/schema/tasks.ts`); `experimental.task_system` and `morpheus.tasks.*` remain as lower-precedence legacy fallbacks (see §3).
 
 Every normative claim below traces to the source path cited beside it. Where behavior belongs to another doc, this spec cross-links instead of duplicating: hook internals → `docs/hooks.md`, orchestration and wave planning flow → `docs/orchestration.md`, command reference → `docs/command-reference.md`.
 

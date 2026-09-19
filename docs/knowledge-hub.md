@@ -6,11 +6,11 @@
 ## Phase-0: AGENTS.md Pointer (no code)
 
 Workers get KB routing today by pointing at the router index. No files under
-`src/` are touched, and nothing under `/home/klpanagi/Dropbox/_knowledge/` is modified.
+`src/` are touched, and nothing under `<your-knowledge-dir>/` is modified.
 
 ### Router format
 
-`/home/klpanagi/Dropbox/_knowledge/_index.md` is the single entry point. Its
+`<your-knowledge-dir>/_index.md` is the single entry point. Its
 `## Reference Documents` section is a routing table with columns:
 
 `| File | Content | When to consult |`
@@ -24,7 +24,7 @@ demand — never bulk-read the corpus.
 Add this line to `AGENTS.md` (or project instructions) for immediate routing:
 
 ```markdown
-Consult /home/klpanagi/Dropbox/_knowledge/_index.md as router before answering domain questions; read single files on demand, never bulk.
+Consult <your-knowledge-dir>/_index.md as router before answering domain questions; read single files on demand, never bulk.
 ```
 
 ### Symlink alternative (optional)
@@ -33,11 +33,11 @@ If a relative path is preferred, link the KB into the repo root (link only,
 never copy):
 
 ```bash
-ln -s /home/klpanagi/Dropbox/_knowledge ./knowledge-hub
+ln -s <your-knowledge-dir> ./knowledge-hub
 ```
 
 Then the pointer becomes `knowledge-hub/_index.md`. The symlink is convenience
-only; the canonical path remains `/home/klpanagi/Dropbox/_knowledge/_index.md`.
+only; the canonical path remains `<your-knowledge-dir>/_index.md`.
 
 ### Rules
 
@@ -54,7 +54,7 @@ only; the canonical path remains `/home/klpanagi/Dropbox/_knowledge/_index.md`.
 ```bash
 cat docs/knowledge-hub.md
 git status --porcelain src/
-ls /home/klpanagi/Dropbox/_knowledge/_index.md
+ls <your-knowledge-dir>/_index.md
 ```
 
 Expected: pointer line visible in the doc, `git status --porcelain src/` empty
@@ -72,7 +72,7 @@ Declare hubs in `matrixx.jsonc` (project `.opencode/matrixx.jsonc` or user
     "hubs": [
       {
         "name": "kb",
-        "path": "/home/klpanagi/Dropbox/_knowledge",
+        "path": "<your-knowledge-dir>",
         "index": "_index.md",
         "scope": "global",
         "mode": "router-only"

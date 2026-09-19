@@ -2,22 +2,22 @@
 
 > Source-verified reference for the matrixx hook system: what each hook does,
 > when it runs, how to enable or disable it, and what it costs.
-> Package version 2.6.5 (`package.json`). English only.
+> Package version 2.6.10 (`package.json`). English only.
 > Scope: `src/hooks/`, `src/create-hooks.ts`, `src/plugin/hooks/*`,
 > `src/plugin-interface.ts`, `src/plugin/tool-execute-{before,after}.ts`,
 > `src/config/schema/hooks.ts`, `src/index.ts`.
 
 ## 0. TL;DR
 
-- `HookNameSchema` (`src/config/schema/hooks.ts`) holds 63 entries, 62 unique
+- `HookNameSchema` (`src/config/schema/hooks.ts`) holds 67 raw entries, 66 unique
   (`context-mode-enforcer` is listed twice) plus 1 deprecated alias
   (`anthropic-context-window-limit-recovery` maps to
   `context-window-limit-recovery`).
-- `src/hooks/` holds 75 entries: 58 hook directories, 14 loose `.ts` files
-  (5 `preemptive-compaction*`, 5 `session-notification*`, plus
+- `src/hooks/` holds 63 subdirectories (62 hook dirs + `shared/`) and 16 loose
+  `.ts` files (5 `preemptive-compaction*`, 5 `session-notification*`, plus
   `bash-file-read-guard.ts`, `context-window-monitor.ts`,
-  `empty-task-response-detector.ts`, `tool-output-truncator.ts`), plus
-  `index.ts`, `AGENTS.md`, and `shared/`.
+  `empty-task-response-detector.ts`, `tool-output-truncator.ts`,
+  `session-todo-status.ts`), plus `index.ts`, `AGENTS.md`.
 - Every tool call passes through `tool.execute.before` (18 invocations over
   17 unique hooks in 3 waves, `src/plugin/tool-execute-before.ts`) **and**
   `tool.execute.after` (19 invocations, `src/plugin/tool-execute-after.ts`).
@@ -58,7 +58,8 @@ createHooks()                       src/create-hooks.ts
 - Core/transform builds message-shape hooks (secret guard, keyword detector,
   validators, design intent).
 - Continuation builds 11 entries: stop guard, two compaction helpers, two
-  enforcers (only one active at a time, gated by `experimental.task_system`),
+  enforcers (only one active at a time, gated by canonical `tasks.enabled`
+  via `isTaskSystemEnabled`, with `experimental.task_system` as legacy fallback),
   babysitter, background notification, architect, plan persister, and two
   evolution hooks (only when `evolution.enabled` is true).
 - Skill builds 2 entries: `category-skill-reminder`, `auto-slash-command`.
@@ -451,4 +452,4 @@ Table 5.1, results placeholder (fill after Exp-4):
 - `src/hooks/AGENTS.md`, `src/hooks/index.ts`,
   `docs/cost-performance-proposals.md`
 - Related docs: `docs/orchestration.md`, `docs/task-system.md`,
-  `docs/configurations.md`, `docs/architecture-analysis.md` Section 3
+  `docs/configurations.md`

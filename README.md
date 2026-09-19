@@ -365,7 +365,7 @@ Every agent, model, temperature, and permission is fully customizable. [**Meet t
 | **AI Slop Detection** | remove-ai-slops skill detects and removes 7 categories of AI-generated code smells — verbose comments, redundant error handling, over-engineered patterns, generic AI phrasing, cargo-cult boilerplate |
 | **Context Management (L0-L4)** | 5-layer stack: Native + [RTK](https://github.com/rtk-ai/rtk) + [context-mode](https://github.com/tarquinen/context-mode) + [DCP](https://github.com/tarquinen/opencode-dcp) + [Headroom](https://github.com/headroomlabs-ai/headroom) — zero overlap, <10ms Matrixx bridge, 60-95% JSON via `CacheAligner→CCR` |
 
-[**Full feature list →**](docs/features.md) · [**Configuration guide →**](docs/configurations.md) · [**Architecture diagram →**](docs/agent-architecture.md)
+[**Full feature list →**](docs/features.md) · [**Configuration guide →**](docs/configurations.md) · [**Architecture diagram →**](docs/agents.md)
 
 ---
 
@@ -657,7 +657,7 @@ To disable, set `headroom.enabled: false` or run OpenCode without `headroom wrap
 |---|---|
 | [Overview](docs/guide/overview.md) | What Matrixx does, workflows, getting started |
 | [Agents Deep Dive](docs/agents.md) | Full agent descriptions, skills, workflows, example prompts |
-| [Architecture](docs/agent-architecture.md) | System diagrams, delegation flows, model routing |
+| [Agents & Architecture](docs/agents.md) | Agent reference, system diagrams, delegation flows, model routing |
 | [Features](docs/features.md) | Complete feature reference |
 | [Configuration](docs/configurations.md) | All config options, agent overrides, hooks, categories |
 | [Config Studio](docs/config-studio.md) | Graphical desktop app setup — build, install, and run the Tauri config editor |

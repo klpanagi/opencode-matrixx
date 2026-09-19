@@ -1,6 +1,6 @@
 # Matrixx Configuration
 
-> Version 2.6.5. Every key below is validated by the Zod schemas in `src/config/schema/` (top-level keys: `src/config/schema/matrixx-config.ts`). Do not invent keys; unknown keys fail validation.
+> Version 2.6.10. Every key below is validated by the Zod schemas in `src/config/schema/` (top-level keys: `src/config/schema/matrixx-config.ts`). Do not invent keys; unknown keys fail validation.
 
 > **Full reference:** [`matrixx.example.jsonc`](../matrixx.example.jsonc) — exhaustive, commented example covering every `matrixx.jsonc` key (headroom, context-mode, DCP, RTK, all top-level and nested options) with defaults and descriptions. Use it as a starting point: copy sections you need.
 
@@ -593,21 +593,7 @@ For more details, see the [OpenCode Server documentation](https://opencode.ai/do
 
 ## Git Master
 
-Configure git-master skill behavior:
-
-```json
-{
-  "git_master": {
-    "commit_footer": true,
-    "include_co_authored_by": true
-  }
-}
-```
-
-| Option                   | Default | Description                                                                      |
-| ------------------------ | ------- | -------------------------------------------------------------------------------- |
-| `commit_footer`          | `true`  | Adds "Ultraworked with Morpheus" footer to commit messages.                      |
-| `include_co_authored_by` | `true`  | Adds `Co-authored-by: Morpheus <morpheus@matrixx.ai>` trailer to commits. |
+The `git-master` skill (`src/features/builtin-skills/skills/git-master.ts`) drives commit/rebase/history behavior through its prompt template. There is no `git_master` top-level key in `src/config/schema/matrixx-config.ts` — do not add one (unknown keys are stripped by validation). Commit style (footers, trailers) follows the skill instructions and your repo conventions.
 
 ## Morpheus Agent
 
@@ -1089,7 +1075,7 @@ Disable specific built-in hooks via `disabled_hooks` in `~/.config/opencode/matr
 }
 ```
 
-Available hooks (63 — see `src/config/schema/hooks.ts`): `agent-usage-reminder`, `context-window-limit-recovery`, `anthropic-context-window-limit-recovery`, `anthropic-effort`, `architect`, `auto-slash-command`, `auto-update-checker`, `background-notification`, `background-task-blocker`, `bash-file-read-guard`, `category-skill-reminder`, `comment-checker`, `compaction-context-injector`, `compaction-todo-preserver`, `context-mode-enforcer`, `context-window-monitor`, `delegate-task-retry`, `design-intent-preserver`, `directory-agents-injector`, `edit-error-recovery`, `empty-task-response-detector`, `env-context-injector`, `env-file-write-guard`, `input-secret-guard`, `evolution-compressor`, `evolution-hitl`, `evolution-watcher`, `failure-counter`, `hashline-edit-diff-enhancer`, `hashline-read-enhancer`, `interactive-bash-session`, `json-error-recovery`, `keyword-detector`, `matrix-loop`, `mouse-notepad`, `non-interactive-env`, `oracle-md-only`, `plan-persister`, `preemptive-compaction`, `quality-gate`, `read-image-resizer`, `rtk-bash-rewriter`, `rules-injector`, `runtime-fallback`, `secret-leak-guard`, `session-notification`, `session-recovery`, `start-work`, `startup-toast`, `stop-continuation-guard`, `task-continuation-enforcer`, `task-edit-guard`, `task-notepad`, `task-resume-info`, `tasks-todowrite-disabler`, `think-mode`, `thinking-block-validator`, `todo-continuation-enforcer`, `tool-output-truncator`, `tool-pair-validator`, `unstable-agent-babysitter`, `webfetch-redirect-guard`, `write-existing-file-guard`
+Available hooks (67 raw entries, 66 unique + 1 deprecated alias — see `src/config/schema/hooks.ts`): `agent-usage-reminder`, `context-window-limit-recovery`, `anthropic-context-window-limit-recovery`, `anthropic-effort`, `architect`, `auto-slash-command`, `auto-update-checker`, `background-notification`, `background-task-blocker`, `bash-file-read-guard`, `category-skill-reminder`, `comment-checker`, `compaction-context-injector`, `compaction-todo-preserver`, `context-mode-enforcer`, `context-window-monitor`, `delegate-task-retry`, `design-intent-preserver`, `directory-agents-injector`, `document-reader-guard`, `edit-error-recovery`, `empty-task-response-detector`, `env-context-injector`, `env-file-write-guard`, `input-secret-guard`, `evolution-compressor`, `evolution-hitl`, `evolution-watcher`, `failure-counter`, `hashline-edit-diff-enhancer`, `hashline-read-enhancer`, `interactive-bash-session`, `json-error-recovery`, `keyword-detector`, `knowledge-hub-guard`, `knowledge-hub-injector`, `knowledge-hub-search-nudge`, `matrix-loop`, `mouse-notepad`, `non-interactive-env`, `oracle-md-only`, `plan-persister`, `preemptive-compaction`, `quality-gate`, `read-image-resizer`, `rtk-bash-rewriter`, `rules-injector`, `runtime-fallback`, `secret-leak-guard`, `session-notification`, `session-recovery`, `start-work`, `startup-toast`, `stop-continuation-guard`, `task-continuation-enforcer`, `task-edit-guard`, `task-notepad`, `task-resume-info`, `tasks-todowrite-disabler`, `think-mode`, `thinking-block-validator`, `todo-continuation-enforcer`, `tool-output-truncator`, `tool-pair-validator`, `unstable-agent-babysitter`, `webfetch-redirect-guard`, `write-existing-file-guard`
 **Note on `directory-agents-injector`**: This hook is **automatically disabled** when running on OpenCode 1.1.37+ because OpenCode now has native support for dynamically resolving AGENTS.md files from subdirectories (PR #10678). This prevents duplicate AGENTS.md injection. For older OpenCode versions, the hook remains active to provide the same functionality.
 
 **Note on `auto-update-checker` and `startup-toast`**: The `startup-toast` hook is a sub-feature of `auto-update-checker`. To disable only the startup toast notification while keeping update checking enabled, add `"startup-toast"` to `disabled_hooks`. To disable all update checking features (including the toast), add `"auto-update-checker"` to `disabled_hooks`.
@@ -1256,7 +1242,7 @@ Matrixx adds refactoring tools (rename, code actions).
 All OpenCode LSP configs and custom settings (from `opencode.jsonc` / `opencode.json`) are supported, plus additional Matrixx-specific settings.
 For config discovery, `.jsonc` takes precedence over `.json` when both exist (applies to both `opencode.*` and `matrixx.*`).
 
-Add LSP servers via the `lsp` option in `~/.config/opencode/matrixx.jsonc` / `~/.config/opencode/matrixx.json` or `.opencode/matrixx.jsonc` / `.opencode/matrixx.json`:
+Add LSP servers via the OpenCode-native `lsp` option in `~/.config/opencode/opencode.jsonc` / `~/.config/opencode/opencode.json` (not `matrixx.jsonc` — Matrixx has no top-level `lsp` key; `src/config/schema/matrixx-config.ts` defines none):
 
 ```json
 {
@@ -1634,6 +1620,42 @@ Provider fallback on transient errors — retry with next provider in chain.
 | `max_fallback_attempts` | `number` | `3` | Max fallback attempts per call. |
 
 > Schema: `src/config/schema/runtime-fallback.ts`.
+
+## Additional Top-Level Keys
+
+Smaller or legacy top-level keys (`src/config/schema/matrixx-config.ts`):
+
+```jsonc
+{
+  "default_run_agent": "morpheus",  // default agent for `matrixx run` (env: OPENCODE_DEFAULT_AGENT)
+  "new_task_system_enabled": true,  // LEGACY (deprecated: use tasks.enabled) — fallback only, no runtime reader
+  "disabled_tools": ["todowrite"],  // hide specific tools by name
+  "task": { "pollTimeoutMs": 600000 },  // LEGACY (deprecated: use tasks.pollTimeoutMs)
+  "agent_definitions": ["./my-agents/extra.ts"],  // paths to external agent definition files
+  "matrixx_self_config": { "enabled": false, "proactive": false },  // opt-in self-config skill
+  "knowledge": {  // external knowledge hubs (see Knowledge Hub doc)
+    "hubs": [{ "name": "kb", "path": "<your-knowledge-dir>", "index": "_index.md", "scope": "global", "mode": "router-only" }]
+  },
+  "modelRequirements": {  // config-driven agent/category model requirements
+    "agents": { "oracle": { "fallbackChain": [{ "providers": ["anthropic"], "model": "claude-opus-4-6" }] } }
+  },
+  "complexityDowngrades": { "bullet-time": { "hard": "anthropic/claude-haiku-4-5" } },  // per-category downgrade targets (<provider>/<model>)
+  "_migrations": ["model-v2"]  // migration history (prevents re-applying migrations)
+}
+```
+
+| Key | Schema | Default | Notes |
+|-----|--------|---------|-------|
+| `default_run_agent` | `string` | — | `src/config/schema/matrixx-config.ts:50`. |
+| `new_task_system_enabled` | `boolean` | — | Legacy fallback for `tasks.enabled`; prefer `tasks.enabled`. |
+| `disabled_tools` | `string[]` | — | Top-level tool hiding (also referenced by `context_mode` docs). |
+| `task` | `TaskConfigSchema` (`src/config/schema/task.ts`) | — | Legacy; only `pollTimeoutMs` (min `60000`). Use `tasks.pollTimeoutMs`. |
+| `agent_definitions` | `string[]` | — | `AgentDefinitionsConfigSchema` (`src/config/schema/agent-definitions.ts`). |
+| `matrixx_self_config` | `MatrixxSelfConfigSkillConfigSchema` (`src/config/schema/matrixx-self-config.ts`) | `enabled: false, proactive: false` | Opt-in. |
+| `knowledge` | `KnowledgeConfigSchema` (`src/config/schema/knowledge.ts`) | `hubs: []` | Hub fields: `name`, `path` (required); `index` (`_index.md`), `scope` (`global`), `mode` (`router-only`), `exclude` (`[]`). |
+| `modelRequirements` | `ModelRequirementsSchema` (`src/config/schema/model-config.ts`) | — | `agents`/`categories` maps with `fallbackChain` (`providers[]` + `model`), `requiresModel`, `requiresAnyModel`, `requiresProvider`, `variant`. |
+| `complexityDowngrades` | `ComplexityDowngradesSchema` (`src/config/schema/model-config.ts`) | — | Nested maps to `<provider>/<model>` values. |
+| `_migrations` | `string[]` | — | Internal migration history. |
 
 ## Environment Variables
 
