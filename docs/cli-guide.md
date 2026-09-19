@@ -1,6 +1,6 @@
 # Matrixx CLI Guide
 
-> Version 2.6.5. The CLI entry is `src/cli/index.ts`. Real commands: `doctor`, `install`, `setup`, `version`, `help`.
+> Version 2.6.10. The CLI entry is `src/cli/index.ts`. Real commands: `doctor`, `install`, `setup`, `version`, `help`.
 
 This document provides a comprehensive guide to using the Matrixx CLI tools.
 
@@ -167,47 +167,11 @@ For Google Gemini, Matrixx recommends the external [`opencode-antigravity-auth`]
 
 ## 7. In-Session Slash Commands
 
-These are slash commands used within OpenCode sessions during active conversations.
+These are slash commands used within OpenCode sessions during active conversations. They are **not** CLI subcommands — see [Command Reference](command-reference.md) for the full documentation:
 
-### `/end-ultrawork`
-
-Deactivates ultrawork mode and returns to default Matrixx behavior for the current session.
-
-```
-Usage: /end-ultrawork
-Effect: Disables ultrawork mode, stops parallel background agent execution,
-        reverts to standard single-threaded processing
-```
-
-This is useful when ultrawork mode was activated (via `ulw` keyword or auto-detection) and you want to continue the session in normal mode without starting over.
-
-### `/handoff`
-
-Creates a structured context handoff with YAML frontmatter for continuing work in a new session.
-
-```
-Usage: /handoff
-Effect: Creates .matrixx/handoff.md with structured metadata including:
-        - topics, goal, work_completed
-        - current_state, pending_tasks
-        - key_files, important_decisions
-        - explicit_constraints, context_for_continuation
-```
-
-Use this when you need to preserve session state for continuation later. The handoff file can be consumed in a fresh session using `/pickup`.
-
-### `/pickup`
-
-Loads handoff context from a previous session.
-
-```
-Usage: /pickup
-Effect: Reads .matrixx/handoff.md and injects the stored context
-        into the current session, including pending tasks, key files,
-        and important decisions
-```
-
-This enables seamless session-to-session continuity without losing context.
+- [`/end-ultrawork`](command-reference.md) — deactivate ultrawork mode for the current session.
+- [`/handoff`](command-reference.md) — create `.matrixx/handoff.md` for continuation in a new session.
+- [`/pickup`](command-reference.md) — load handoff context from a previous session.
 
 ---
 
@@ -215,8 +179,8 @@ This enables seamless session-to-session continuity without losing context.
 
 The CLI searches for configuration files in the following locations (in priority order):
 
-1. **Project Level**: `.opencode/matrixx.json`
-2. **User Level**: `~/.config/opencode/matrixx.json`
+1. **Project Level**: `.opencode/matrixx.jsonc` (preferred) or `.opencode/matrixx.json`
+2. **User Level**: `~/.config/opencode/matrixx.jsonc` (preferred) or `~/.config/opencode/matrixx.json`
 
 ### JSONC Support
 

@@ -1,7 +1,7 @@
 # BDD Pipeline — Agent-Driven Implementation
 
 > **Status**: Shipped and verified
-> **Package**: `opencode-matrixx` (v2.6.5)
+> **Package**: `opencode-matrixx` (v2.6.10)
 > **Context**: Native matrixx feature — no Python, no external bundling
 
 ---
@@ -485,7 +485,7 @@ Run per-demo tests with the `run-tests.sh` inside each demo dir.
 
 ### Prerequisites
 
-- matrixx (opencode-matrixx v2.6.5+)
+- matrixx (opencode-matrixx v2.6.10+)
 - `@cucumber/gherkin` v34 (bundled dependency — auto-installed with matrixx)
 - `@cucumber/cucumber` and `@playwright/test` (user-installed per project)
 

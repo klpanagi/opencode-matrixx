@@ -1,8 +1,10 @@
 # Command Reference
 
-> Version 2.6.5. All 24 commands below are registered in `src/features/builtin-commands/commands.ts` (`BUILTIN_COMMAND_DEFINITIONS`) with names validated by `BuiltinCommandName` in `src/features/builtin-commands/types.ts`.
+> Version 2.6.10. All 24 commands below are registered in `src/features/builtin-commands/commands.ts` (`BUILTIN_COMMAND_DEFINITIONS`) with names validated by `BuiltinCommandName` in `src/features/builtin-commands/types.ts`.
 
 Matrixx provides 24 built-in slash commands covering orchestration, research, refactoring, handoffs, task management, BDD, and tool toggles.
+
+> **Count reconciliation (honest):** the Zod `BuiltinCommandNameSchema` in `src/config/schema/commands.ts` lists 19 names (used for `disabled_commands` validation). `BUILTIN_COMMAND_DEFINITIONS` in `src/features/builtin-commands/commands.ts` (and the local `BuiltinCommandName` union in `src/features/builtin-commands/types.ts`) registers 24 — the extra 5 are `pickup`, `remove-deadcode`, `evolution`, `cleanup-tasks`, and `task-list`. Templates live in `src/features/builtin-commands/templates/` (22 files; `matrix-loop`/`ulw-loop` share one template).
 
 ---
 
@@ -458,7 +460,7 @@ Generate a BDD Contract JSON from a Gherkin `.feature` file, with semantic enric
 | `<feature-path>` | Path to the `.feature` file |
 | `--force` | Overwrite existing contract output |
 
-Routes to the `bdd-contract` agent. **Related:** `/bdd-pipeline`, [BDD Pipeline](BDD_PIPELINE.md).
+Routes to the `bdd-contract` agent. **Related:** `/bdd-pipeline`, [BDD Pipeline](./bdd.md).
 
 ---
 
@@ -504,7 +506,7 @@ Run the full BDD pipeline from a single `.feature` file: contract, tests, fronte
 | `<feature-path>` | Path to the `.feature` file |
 | `--force` | Overwrite existing outputs |
 
-Runs the contract, tests, frontend, and backend stages in order. **Related:** [BDD Pipeline](BDD_PIPELINE.md).
+Runs the contract, tests, frontend, and backend stages in order. **Related:** [BDD Pipeline](./bdd.md).
 
 ---
 

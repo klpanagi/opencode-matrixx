@@ -1,6 +1,6 @@
 # Matrixx Orchestration
 
-**Version:** 2.6.5 · **Canonical entry point for understanding orchestration.**
+**Version:** 2.6.10 · **Canonical entry point for understanding orchestration.**
 If you read one orchestration doc, read this one.
 
 Matrixx implements a simple philosophy: **separation of planning and execution**.
@@ -197,8 +197,7 @@ The full registry (14 built-ins: `morpheus`, `keymaker`, `oracle`,
 `src/config/schema/agent-names.ts`. Mouse is created dynamically as the
 delegated executor. Models resolve from your configured providers with
 fallback chains; worker agents default to temperature 0.1 (Seraph uses 0.3).
-For per-agent detail, see [`docs/agents.md`](./agents.md) and
-[`docs/agent-architecture.md`](./agent-architecture.md).
+For per-agent detail, see [`docs/agents.md`](./agents.md).
 
 ## The task() Category + Skill System
 
@@ -324,12 +323,256 @@ explicit control.
 `ulw` for most tasks. Keymaker for deep architectural work that benefits
 from its autonomous reasoning style.
 
+## Appendix A: Figures
+
+Diagrams kept from the retired companion guide
+(`guide/understanding-orchestration-system.md`, merged here and deleted).
+Model labels inside figures are illustrative; actual models resolve from
+your configured providers with fallback chains. "Junior" in old prose is
+Mouse; "Frontend" in old diagrams is Sati.
+
+### Figure 1: Three-layer architecture
+
+```mermaid
+flowchart TB
+    subgraph Planning["Planning Layer (Human + Oracle)"]
+        User[("👤 User")]
+        Oracle["🔥 Oracle<br/>(Planner)"]
+        Seraph["🦉 Seraph<br/>(Consultant)"]
+        Smith["👁️ Smith<br/>(Reviewer)"]
+    end
+
+    subgraph Execution["Execution Layer (Orchestrator)"]
+        Orchestrator["⚡ Architect<br/>(Conductor)"]
+    end
+
+    subgraph Workers["Worker Layer (Specialized Agents)"]
+        Junior["🪨 Mouse<br/>(Task Executor)"]
+        Merovingian["🧠 Merovingian<br/>(Architecture)"]
+        Trinity["🔍 Trinity<br/>(Codebase Grep)"]
+        Operator["📚 Operator<br/>(Docs/OSS)"]
+        Frontend["🎨 Sati<br/>(UI/UX)"]
+    end
+
+    User -->|"Describe work"| Oracle
+    Oracle -->|"Consult"| Seraph
+    Oracle -->|"Interview"| User
+    Oracle -->|"Generate plan"| Plan[".matrixx/plans/*.md"]
+    Plan -->|"High accuracy?"| Smith
+    Smith -->|"OKAY / REJECT"| Oracle
+
+    User -->|"/start-work"| Orchestrator
+    Plan -->|"Read"| Orchestrator
+
+    Orchestrator -->|"task(category)"| Junior
+    Orchestrator -->|"task(agent)"| Merovingian
+    Orchestrator -->|"task(agent)"| Trinity
+    Orchestrator -->|"task(agent)"| Operator
+    Orchestrator -->|"task(agent)"| Frontend
+
+    Junior -->|"Results + Learnings"| Orchestrator
+    Merovingian -->|"Advice"| Orchestrator
+    Trinity -->|"Code patterns"| Orchestrator
+    Operator -->|"Documentation"| Orchestrator
+    Frontend -->|"UI code"| Orchestrator
+```
+
+### Figure 2: Oracle interview flow
+
+```mermaid
+stateDiagram-v2
+    [*] --> Interview: User describes work
+    Interview --> Research: Launch trinity/operator agents
+    Research --> Interview: Gather codebase context
+    Interview --> ClearanceCheck: After each response
+
+    ClearanceCheck --> Interview: Requirements unclear
+    ClearanceCheck --> PlanGeneration: All requirements clear
+
+    state ClearanceCheck {
+        [*] --> Check
+        Check: ✓ Core objective defined?
+        Check: ✓ Scope boundaries established?
+        Check: ✓ No critical ambiguities?
+        Check: ✓ Technical approach decided?
+        Check: ✓ Test strategy confirmed?
+    }
+
+    PlanGeneration --> SeraphConsult: Mandatory gap analysis
+    SeraphConsult --> WritePlan: Incorporate findings
+    WritePlan --> HighAccuracyChoice: Present to user
+
+    HighAccuracyChoice --> SmithLoop: User wants high accuracy
+    HighAccuracyChoice --> Done: User accepts plan
+
+    SmithLoop --> WritePlan: REJECTED - fix issues
+    SmithLoop --> Done: OKAY - plan approved
+
+    Done --> [*]: Guide to /start-work
+```
+
+### Figure 3: Architect conductor loop
+
+```mermaid
+flowchart LR
+    subgraph Orchestrator["Architect"]
+        Read["1. Read Plan"]
+        Analyze["2. Analyze Tasks"]
+        Wisdom["3. Accumulate Wisdom"]
+        Delegate["4. Delegate Tasks"]
+        Verify["5. Verify Results"]
+        Report["6. Final Report"]
+    end
+
+    Read --> Analyze
+    Analyze --> Wisdom
+    Wisdom --> Delegate
+    Delegate --> Verify
+    Verify -->|"More tasks"| Delegate
+    Verify -->|"All done"| Report
+
+    Delegate -->|"background=false"| Workers["Workers"]
+    Workers -->|"Results + Learnings"| Verify
+```
+
+### Figure 4: Orchestrator → Mouse workflow
+
+```mermaid
+sequenceDiagram
+    participant User
+    participant Orchestrator as Architect
+    participant Junior as Mouse
+    participant Notepad as .matrixx/notepads/
+
+    User->>Orchestrator: /start-work
+    Orchestrator->>Orchestrator: Read plan, build parallelization map
+
+    loop For each task (parallel when possible)
+        Orchestrator->>Notepad: Read accumulated wisdom
+        Orchestrator->>Orchestrator: Build 7-section prompt
+
+        Note over Orchestrator: Prompt Structure:<br/>1. TASK (exact checkbox)<br/>2. EXPECTED OUTCOME<br/>3. REQUIRED SKILLS<br/>4. REQUIRED TOOLS<br/>5. MUST DO<br/>6. MUST NOT DO<br/>7. CONTEXT + Wisdom
+
+        Orchestrator->>Junior: task(category, load_skills, prompt)
+
+        Junior->>Junior: Create todos, execute
+        Junior->>Junior: Verify (lsp_diagnostics, tests)
+        Junior->>Notepad: Append learnings
+        Junior->>Orchestrator: Results + completion status
+
+        Orchestrator->>Orchestrator: Verify independently
+        Note over Orchestrator: NEVER trust subagent claims<br/>Run lsp_diagnostics at PROJECT level<br/>Run full test suite<br/>Read actual changed files
+
+        alt Verification fails
+            Orchestrator->>Junior: Re-delegate with failure context
+        else Verification passes
+            Orchestrator->>Orchestrator: Mark task complete, continue
+        end
+    end
+
+    Orchestrator->>User: Final report with all results
+```
+
+## Appendix B: Companion Notes
+
+Condensed unique detail from the retired companion guide. Duplicated prose
+(same three layers, category/skill table, trust-but-verify) is not repeated;
+the body above keeps the best-written copy of each.
+
+### Why specialization: what raw prompting gets wrong
+
+Traditional single-agent flows (user asks, AI responds) break on complex
+work for four reasons: context overload on large tasks, cognitive drift away
+from requirements mid-task, verification gaps with no systematic completeness
+check, and the human as bottleneck requiring constant intervention. The
+layered system answers each: plans bound context per task, waves plus
+notepads hold requirements steady, Architect verifies independently, and
+file-backed state lets sessions pause and resume without babysitting.
+
+### Oracle intent strategies
+
+Oracle adapts its interview style to the kind of work:
+
+| Intent | Oracle Focus | Example Questions |
+|--------|------------------|-------------------|
+| **Refactoring** | Safety - behavior preservation | "What tests verify current behavior?" "Rollback strategy?" |
+| **Build from Scratch** | Discovery - patterns first | "Found pattern X in codebase. Follow it or deviate?" |
+| **Mid-sized Task** | Guardrails - exact boundaries | "What must NOT be included? Hard constraints?" |
+| **Architecture** | Strategic - long-term impact | "Expected lifespan? Scale requirements?" |
+
+### What Architect can do vs must delegate
+
+Architect CAN: read files for context, run commands to verify results, use
+`lsp_diagnostics` to check for errors, search patterns with grep/glob/ast-grep.
+
+Architect MUST delegate (never do itself): writing/editing code files,
+fixing bugs, creating tests, git commits.
+
+### Smith acceptance bar
+
+Smith says OKAY only when file references are verified, most tasks carry
+clear reference sources and concrete acceptance criteria, no task requires
+assumptions about business logic, and no critical red flags remain. On
+REJECTED, Oracle fixes the issues and resubmits with no retry limit.
+
+### Why categories beat model names
+
+Naming a model in the delegation call bakes in distributional bias: the
+worker knows its own limitations and performs to them. Naming the intent
+instead (`source` = think strategically, `construct` = design beautifully,
+`bullet-time` = just get it done fast) lets the system pick the model and
+prompt shape while the worker performs to the task.
+
+### Custom categories
+
+```json
+// matrixx.json
+{
+  "categories": {
+    "unity-game-dev": {
+      "model": "openai/gpt-5.2",
+      "temperature": 0.3,
+      "prompt_append": "You are a Unity game development expert..."
+    }
+  }
+}
+```
+
+### Skills evolution
+
+| Before | After |
+|--------|-------|
+| Hardcoded: `frontend-ui-ux-engineer` (one model, one domain) | `category="construct" + load_skills=["frontend-ui-ux"]` |
+| One-size-fits-all engineer | `category="construct" + load_skills=["unity-master"]` |
+| Model bias | Category-based: model abstraction eliminates bias |
+
+### Why a mid-tier worker is sufficient
+
+Mouse does not need to be the smartest model; it needs to be reliable.
+Detailed 50–200 line prompts, accumulated wisdom passed forward, clear MUST
+DO / MUST NOT DO constraints, and mandatory verification mean the
+intelligence lives in the system, not in any single agent.
+
+### Task-continuation pressure
+
+The hook system keeps workers from stopping halfway by re-injecting
+incomplete todos as a system reminder until every box is checked:
+
+```
+[SYSTEM REMINDER - TODO CONTINUATION]
+
+You have incomplete todos! Complete ALL before responding:
+- [ ] Implement user service ← IN PROGRESS
+- [ ] Add validation
+- [ ] Write tests
+
+DO NOT respond until all todos are marked completed.
+```
+
 ## Further Reading
 
 - [`docs/task-system.md`](./task-system.md): task storage, dependencies, hooks, wave discipline
-- [`docs/agents.md`](./agents.md): per-agent reference
-- [`docs/agent-architecture.md`](./agent-architecture.md): agent system internals
+- [`docs/agents.md`](./agents.md): per-agent reference, diagrams, delegation, roster
 - [`docs/category-skill-guide.md`](./category-skill-guide.md): categories and skills
-- [`docs/architecture-analysis.md`](./architecture-analysis.md): structural analysis
 - [`docs/guide/overview.md`](./guide/overview.md): quick start
-- [`docs/ultrawork-manifesto.md`](./ultrawork-manifesto.md): philosophy behind the system
+- [`docs/command-reference.md`](./command-reference.md#14-ultrawork): `/ultrawork` philosophy and usage

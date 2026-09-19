@@ -1,5 +1,7 @@
 # Category & Skill System Guide
 
+> Version 2.6.10.
+
 This document provides a comprehensive guide to the **Category** and **Skill** systems, which form the extensibility core of Matrixx. For delegation flows, see [Orchestration](orchestration.md). For the agent roster, see [Agents](agents.md).
 
 ## 1. Overview
@@ -67,16 +69,13 @@ A Skill is a mechanism that injects **specialized knowledge (Context)** and **to
 - **`software-dev`** — Structured 6-phase development pipeline (PLAN → BUILD → VERIFY → REVIEW → SECURE → SHIP).
 - **`review-work`** — Post-implementation review orchestrator with 5 parallel agents.
 
-**Frontend & Browser (8):**
+**Frontend & Browser (4):**
 - **`playwright`** — Browser automation. Web page testing, screenshots, scraping. MCP: `@playwright/mcp` (auto-executed)
-- **`playwright-cli`** — Playwright CLI alternative.
 - **`dev-browser`** — Browser automation with persistent page state.
 - **`agent-browser`** — Agent-controlled browser automation.
 - **`frontend-ui-ux`** — Designer mindset. Color, typography, motion guidelines.
-- **`frontend-a11y`** — Accessibility (WCAG 2.2).
-- **`frontend-perf`** — Core Web Vitals & performance.
-- **`frontend-testing`** — Vitest + Playwright + Storybook.
-(+ `frontend-build-tooling`, `frontend-state-data`, `frontend-react-nextjs`, `frontend-svelte-sveltekit` variants — see `src/features/builtin-skills/skills/`)
+
+Skill counts, honest version: **37** names in `BuiltinSkillNameSchema` (grouped above as 6 + 4 + 11 + 9 + 5 + 2); **46** loader keys in `skillLoaders` (`src/features/builtin-skills/skills.ts` — adds `document-reader`, `frontend-a11y`, `frontend-build-tooling`, `frontend-perf`, `frontend-state-data`, `frontend-testing`, `playwright-cli`, `react-nextjs-patterns`, `svelte-sveltekit-patterns`); **45** skill modules on disk (`agent-browser` is provider-resolved and ships no module file).
 
 **DSL Engineering (11):**
 - **`dsl-core`**, **`dsl-grammar`**, **`dsl-codegen`**, **`dsl-metamodel`**, **`dsl-tooling`**
@@ -110,7 +109,7 @@ task(
 
 ### Skill Customization (SKILL.md)
 
-You can add custom skills directly to `.opencode/skills/` in your project root or `~/.claude/skills/` in your home directory.
+You can add custom skills directly to `.opencode/skills/` in your project root or `~/.config/opencode/skills/` in your home directory.
 
 **Example: `.opencode/skills/my-skill/SKILL.md`**
 

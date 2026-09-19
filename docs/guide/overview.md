@@ -104,7 +104,7 @@ When you run `bunx opencode-matrixx install`, the installer asks which providers
 - OpenCode Zen?
 - Z.ai Coding Plan?
 
-Based on your answers, it generates `~/.config/opencode/matrixx.json` with optimal model assignments for each agent and category.
+Based on your answers, it generates `~/.config/opencode/matrixx.jsonc` with optimal model assignments for each agent and category.
 
 **2. At Runtime (Fallback Chain)**
 
@@ -161,8 +161,8 @@ For detailed configuration options including per-agent settings, category custom
 
 ## Next Steps
 
-- [Understanding the Orchestration System](./understanding-orchestration-system.md) - Deep dive into Oracle → Orchestrator → Mouse workflow
-- [Ultrawork Manifesto](../ultrawork-manifesto.md) - Philosophy and principles behind Matrixx
+- [Matrixx Orchestration](../orchestration.md) - Deep dive into Oracle → Architect → Mouse workflow
+- [Ultrawork mode](../command-reference.md) - `/ultrawork` toggle and ultrawork workflow
 - [Installation Guide](./installation.md) - Detailed installation instructions
 - [Configuration Guide](../configurations.md) - Customize agents, models, and behaviors
 - [Features Reference](../features.md) - Complete feature documentation
