@@ -22,14 +22,11 @@ const sessionProcessedCommandExecutions = new Set<string>()
 
 export interface AutoSlashCommandHookOptions {
   skills?: BuiltinSkill[]
-  /** OpenCode SDK client for discovering plugin-registered commands */
-  client?: ReturnType<typeof import("@opencode-ai/sdk").createOpencodeClient>
 }
 
 export function createAutoSlashCommandHook(options?: AutoSlashCommandHookOptions) {
   const executorOptions: ExecutorOptions = {
     skills: options?.skills,
-    client: options?.client,
   }
 
   return {
