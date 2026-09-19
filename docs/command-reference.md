@@ -29,7 +29,6 @@ Matrixx provides 24 built-in slash commands covering orchestration, research, re
 | `/ultrawork` | Toggle ultrawork mode at runtime | ✅ | — |
 | `/task-list` | List active tasks (`task_list`) | — | — |
 | `/cleanup-tasks` | Clean completed tasks (`task_cleanup`) | — | — |
-| `/dcp-profile` | Switch DCP pruning tier | ✅ | — |
 | `/evolution` | Self-evolution proposals (approve/reject/list) | — | — |
 | `/bdd-contract` | BDD contract from Gherkin | — | bdd-contract |
 | `/bdd-frontend` | BDD React components | — | — |
@@ -404,26 +403,7 @@ Delete completed tasks. Thin wrapper over the `task_cleanup` tool. Never deletes
 
 ---
 
-## 18. `/dcp-profile`
-
-Set the DCP (Dynamic Context Pruning) tier: `economy`, `balanced`, `performance`, or `ultimate`. Takes effect after a session restart.
-
-```
-/dcp-profile balanced
-/dcp-profile ultimate
-```
-
-| Argument | Description |
-|----------|-------------|
-| `<profile-name>` | DCP tier to store as `dcp.default_profile` |
-
-This command stores the tier as `dcp.default_profile` in the Matrixx config; the plugin applies it on next startup (profile logic in `src/shared/dcp-switch-profile.ts`).
-
-**Related:** [Context Management](context-management.md), `dcp` key in [Configuration](configurations.md#dcp).
-
----
-
-## 19. `/evolution`
+## 18. `/evolution`
 
 Manage self-evolution proposals: list pending skill proposals, approve or reject them, audit the queue.
 
@@ -446,7 +426,7 @@ Evolution hooks only run when `evolution.enabled: true` in config. See [Evolutio
 
 ---
 
-## 20. `/bdd-contract`
+## 19. `/bdd-contract`
 
 Generate a BDD Contract JSON from a Gherkin `.feature` file, with semantic enrichment.
 
@@ -464,7 +444,7 @@ Routes to the `bdd-contract` agent. **Related:** `/bdd-pipeline`, [BDD Pipeline]
 
 ---
 
-## 21. `/bdd-frontend`
+## 20. `/bdd-frontend`
 
 Generate React components from a BDD Contract JSON file, using `@ui:*` annotations.
 
@@ -478,7 +458,7 @@ Generate React components from a BDD Contract JSON file, using `@ui:*` annotatio
 
 ---
 
-## 22. `/bdd-backend`
+## 21. `/bdd-backend`
 
 Generate a typed API service from a BDD Contract JSON file.
 
@@ -492,7 +472,7 @@ Generate a typed API service from a BDD Contract JSON file.
 
 ---
 
-## 23. `/bdd-pipeline`
+## 22. `/bdd-pipeline`
 
 Run the full BDD pipeline from a single `.feature` file: contract, tests, frontend, and backend.
 
@@ -510,7 +490,7 @@ Runs the contract, tests, frontend, and backend stages in order. **Related:** [B
 
 ---
 
-## 24. `/bdd-tests`
+## 23. `/bdd-tests`
 
 Generate Cucumber step definitions and page objects from a BDD Contract JSON file.
 
@@ -558,7 +538,6 @@ Commands with intercepts:
 - `/assembly` — toggles assembly state
 - `/ultrawork` — toggles ultrawork state
 - `/end-ultrawork` — disables ultrawork state
-- `/dcp-profile` — switches the active DCP tier
 
 ### State Lifecycle
 

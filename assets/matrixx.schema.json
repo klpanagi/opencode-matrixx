@@ -253,8 +253,7 @@
           "bdd-contract",
           "bdd-frontend",
           "bdd-pipeline",
-          "bdd-tests",
-          "dcp-profile"
+          "bdd-tests"
         ]
       }
     },

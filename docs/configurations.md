@@ -1092,7 +1092,7 @@ Disable specific built-in commands via `disabled_commands` in `~/.config/opencod
 }
 ```
 
-Available commands (24 — see `src/features/builtin-commands/commands.ts` and `BuiltinCommandName` in `src/features/builtin-commands/types.ts`): `init-deep`, `matrix-loop`, `ulw-loop`, `cancel-loop`, `refactor`, `start-work`, `stop-continuation`, `handoff`, `pickup`, `remove-deadcode`, `preset`, `end-ultrawork`, `research`, `assembly`, `ultrawork`, `bdd-backend`, `bdd-contract`, `bdd-frontend`, `bdd-pipeline`, `bdd-tests`, `dcp-profile`, `evolution`, `cleanup-tasks`, `task-list` (+ `ultrawork`/`ulw` keyword triggers)
+Available commands (23 — see `src/features/builtin-commands/commands.ts` and `BuiltinCommandName` in `src/features/builtin-commands/types.ts`): `init-deep`, `matrix-loop`, `ulw-loop`, `cancel-loop`, `refactor`, `start-work`, `stop-continuation`, `handoff`, `pickup`, `remove-deadcode`, `preset`, `end-ultrawork`, `research`, `assembly`, `ultrawork`, `bdd-backend`, `bdd-contract`, `bdd-frontend`, `bdd-pipeline`, `bdd-tests`, `evolution`, `cleanup-tasks`, `task-list` (+ `ultrawork`/`ulw` keyword triggers)
 ## Comment Checker
 
 Configure comment-checker hook behavior. The comment checker warns when excessive comments are added to code.
@@ -1393,7 +1393,7 @@ Bash output compression via [RTK](https://github.com/rtk-ai/rtk) (`rtk <cmd>` re
 
 ## DCP
 
-Dynamic Context Pruning — tiered pruning (`economy`/`balanced`/`performance`/`ultimate`) via [`@tarquinen/opencode-dcp`](https://github.com/tarquinen/opencode-dcp). Switch tiers with `/dcp-profile`.
+Dynamic Context Pruning — tiered pruning (`economy`/`balanced`/`performance`/`ultimate`) via [`@tarquinen/opencode-dcp`](https://github.com/tarquinen/opencode-dcp). Switch tiers by setting `dcp.default_profile` in `matrixx.jsonc` (applied on startup).
 
 ```jsonc
 {
@@ -1413,7 +1413,7 @@ Dynamic Context Pruning — tiered pruning (`economy`/`balanced`/`performance`/`
 | `profiles` | `object` | 4 built-in (`economy`/`balanced`/`performance`/`ultimate`) | Per-tier overrides for `compress`/`strategies`/`commands`/`manualMode`. |
 | `base` | `object` | — | Base overrides (`pruneNotificationType`, `autoUpdate`, `debug`, `compress`, `strategies`, `commands`, `manualMode`, `protectedFilePatterns`). |
 
-> Schema: `src/config/schema/dcp.ts` (~9.5k). Switch: `/dcp-profile <tier>` (sets `dcp.default_profile`, applied on startup by `src/shared/dcp-switch-profile.ts`). Docs: [Context Management](./context-management.md).
+> Schema: `src/config/schema/dcp.ts` (~9.5k). Switch: set `dcp.default_profile` (applied on startup by `src/shared/dcp-switch-profile.ts`). Docs: [Context Management](./context-management.md).
 
 ## Assembly
 

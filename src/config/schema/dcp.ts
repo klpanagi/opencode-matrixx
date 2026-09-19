@@ -3,8 +3,8 @@ import { z } from "zod"
 /**
  * DCP (Dynamic Context Pruning) configuration.
  *
- * Controls the optional `/dcp-profile` slash command for switching between
- * predefined DCP profile tiers (economy/balanced/performance/ultimate).
+ * Selects between predefined DCP profile tiers
+ * (economy/balanced/performance/ultimate) via `dcp.default_profile`.
  *
  * DCP must be installed as a plugin: `~/.config/opencode/node_modules/@tarquinen/opencode-dcp`
  */

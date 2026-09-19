@@ -27,7 +27,7 @@ Every layer handles one concern and delegates the rest. The result is orthogonal
 | L0 Native | Matrixx | 70% warning, 78% preemptive compaction, anthropic recovery, output truncators | Prevents OOM, keeps headroom | `experimental.*`, `disabled_hooks` | `context-window-monitor`, `preemptive-compaction`, `compaction-*`, `tool-output-truncator` |
 | L1 RTK | `rtk-ai/rtk` | Bash output rewrite via filtering, grouping, deduplication | 60-90% on bash | `rtk` | `rtk-bash-rewriter` (`tool.execute.before`) |
 | L2 context-mode | `mksglu/context-mode` | FTS5 sandbox, `ctx_*` tools, Think-in-Code | Up to 98% tool output | `context_mode` (`enabled`/`enforce`/`blocked_tools`) + external `plugin: ["context-mode"]` | `ctx_batch_execute`, `ctx_execute`, `ctx_search`, `ctx_stats`, `compress` + `context-mode-enforcer` hook |
-| L3 DCP | `@tarquinen/opencode-dcp` | Profile-tiered pruning `economy` to `ultimate` | Tiered, see profiles | `dcp` | `/dcp-profile`, `dcp.default_profile` |
+| L3 DCP | `@tarquinen/opencode-dcp` | Profile-tiered pruning `economy` to `ultimate` | Tiered, see profiles | `dcp` | `dcp.default_profile` |
 | L4 Headroom | `headroomlabs-ai/headroom` | Proxy `CacheAligner` to `ContentRouter` to `CCR` | 60-95% JSON, 15-20% coding | `headroom` | `headroom wrap opencode`, `headroom_retrieve` |
 
 Notes: bridge overhead stays below 10ms, layers are orthogonal (RTK is bash, L2 is sandbox, L3 is pruning, L4 is proxy, L0 is warnings and compaction), and you can enable any subset. Minimal is L0 plus L2, add L1 for bash heavy sessions, L3 for long runs, L4 for proxy compression.
@@ -236,7 +236,7 @@ L2 owns tool output sandboxing. It is orthogonal to L1 bash rewriting, L3 histor
 
 #### What is DCP?
 
-DCP ([@tarquinen/opencode-dcp](https://www.npmjs.com/package/@tarquinen/opencode-dcp)) is an external OpenCode plugin that prunes conversation history by tier. Matrixx provides a thin bridge: a config schema and a slash command `/dcp-profile`. On startup the plugin applies `dcp.default_profile` and writes `~/.config/opencode/dcp.jsonc`.
+DCP ([@tarquinen/opencode-dcp](https://www.npmjs.com/package/@tarquinen/opencode-dcp)) is an external OpenCode plugin that prunes conversation history by tier. Matrixx provides a thin bridge: a config schema plus startup application of `dcp.default_profile`, writing `~/.config/opencode/dcp.jsonc`.
 
 Four built-in tiers:
 
@@ -255,7 +255,7 @@ Four built-in tiers:
 - `base.strategies`: `deduplication` and `purgeErrors`, each with `enabled` and `protectedTools`.
 - `base.commands`, `base.manualMode`, `base.protectedFilePatterns`, `base.pruneNotificationType`, `base.autoUpdate`, `base.debug`.
 
-Switching tiers via `/dcp-profile <tier>` sets `dcp.default_profile`; on next startup the plugin writes an inline `dcp.jsonc` to `~/.config/opencode/dcp.jsonc` with the selected profile plus `base`. Matrixx bridge overhead stays below 10ms.
+Set `dcp.default_profile` in `matrixx.jsonc` to switch tiers; on next startup the plugin writes an inline `dcp.jsonc` to `~/.config/opencode/dcp.jsonc` with the selected profile plus `base`. Matrixx bridge overhead stays below 10ms.
 
 #### Performance Impact
 
@@ -272,7 +272,7 @@ npm install --prefix ~/.config/opencode @tarquinen/opencode-dcp
 
 # Verify
 ls ~/.config/opencode/node_modules/@tarquinen/opencode-dcp
-cat ~/.config/opencode/dcp.jsonc 2>/dev/null || echo "not yet written, run /dcp-profile and restart the session"
+cat ~/.config/opencode/dcp.jsonc 2>/dev/null || echo "not yet written — set dcp.default_profile and restart the session"
 ```
 
 Matrixx checks `existsSync` for the DCP install when the feature is enabled.
@@ -316,22 +316,22 @@ Configure in `matrixx.jsonc` (Matrixx bridge). Full defaults live in `src/config
 }
 ```
 
-Or switch via slash command without editing config by hand:
+Or switch tiers by editing `matrixx.jsonc` directly:
 
-```bash
-/dcp-profile balanced
-/dcp-profile economy
-/dcp-profile performance
-/dcp-profile ultimate
+```jsonc
+{
+  "dcp": {
+    "default_profile": "economy"   // economy | balanced | performance | ultimate
+  }
+}
 ```
 
-The command accepts `economy` | `balanced` | `performance` | `ultimate`, stores the tier as `dcp.default_profile`, and the plugin writes `~/.config/opencode/dcp.jsonc` on next startup — restart the session to apply.
+The plugin stores the tier as `dcp.default_profile` and writes `~/.config/opencode/dcp.jsonc` on next startup — restart the session to apply.
 
 #### Verification
 
 ```bash
-/dcp-profile balanced
-# then restart the session
+# set "dcp.default_profile" to "balanced" in matrixx.jsonc, then restart the session
 cat ~/.config/opencode/dcp.jsonc | grep -A2 compress
 # Expected: dcp.jsonc now contains the balanced tier compress block
 ```
@@ -644,8 +644,8 @@ Notes:
 | context-mode | `ctx stats` (in OpenCode) | Tools listed, chunks and index stats appear | Check `plugin: ["context-mode"]`, restart |
 | context-mode tools | `ctx stats` shows `ctx_*` | At least 11 tools present | Remove legacy `mcp.context-mode` duplication |
 | DCP install | `ls ~/.config/opencode/node_modules/@tarquinen/opencode-dcp` | Directory exists | Run `npm install --prefix ~/.config/opencode @tarquinen/opencode-dcp` |
-| DCP profile | `cat ~/.config/opencode/dcp.jsonc \| grep compress` | Compress block for active tier | Run `/dcp-profile balanced` |
-| DCP switch | `/dcp-profile economy` | `dcp.jsonc` rewritten with economy tier | Check write permissions on `~/.config/opencode/` |
+| DCP profile | `cat ~/.config/opencode/dcp.jsonc \| grep compress` | Compress block for active tier | Set `dcp.default_profile` in `matrixx.jsonc`, restart |
+| DCP switch | Set `"dcp": { "default_profile": "economy" }`, restart | `dcp.jsonc` rewritten with economy tier | Check write permissions on `~/.config/opencode/` |
 | Headroom binary | `headroom --version` | Version string | Reinstall via `uv tool install headroom-ai[all]` or `pipx` |
 | Headroom health | `headroom doctor` | All checks pass | Follow doctor hints, check proxy URL and project config |
 | Headroom proxy | `headroom wrap opencode` then check tools | `headroom_retrieve` and `headroom_stats` appear | Check `proxyUrl`, `HEADROOM_PROXY_URL` |
