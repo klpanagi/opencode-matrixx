@@ -5048,6 +5048,28 @@
       ],
       "additionalProperties": false
     },
+    "tool_gating": {
+      "type": "object",
+      "properties": {
+        "bdd_tools": {
+          "type": "boolean"
+        },
+        "pdf_figures": {
+          "type": "boolean"
+        },
+        "look_at": {
+          "type": "boolean"
+        },
+        "preset_tools": {
+          "default": false,
+          "type": "boolean"
+        }
+      },
+      "required": [
+        "preset_tools"
+      ],
+      "additionalProperties": false
+    },
     "security": {
       "type": "object",
       "properties": {

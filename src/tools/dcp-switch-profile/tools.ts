@@ -1,7 +1,6 @@
 import { existsSync, writeFileSync } from "node:fs"
 import { homedir } from "node:os"
 import { join } from "node:path"
-import { type ToolDefinition, tool } from "@opencode-ai/plugin/tool"
 import type { DcpConfig } from "../../config/schema/dcp"
 import { BUILTIN_DCP_PROFILES } from "../../config/schema/dcp"
 
@@ -175,28 +174,4 @@ export function switchProfile(profile: string, options?: DcpSwitchProfileOptions
   writeFileSync(DCP_SYMLINK, `${JSON.stringify(inlineConfig, null, 2)}\n`)
 
   return `\u2713 Switched to DCP profile: ${profile}\n\nRestart OpenCode session for changes to take effect.`
-}
-
-export function createDcpSwitchProfileTool(options?: DcpSwitchProfileOptions): Record<string, ToolDefinition> {
-  const dcp_switch_profile: ToolDefinition = tool({
-    description:
-      "Switch the active DCP (Dynamic Context Pruning) profile tier. " +
-      "Reads profile parameters from the Matrixx plugin configuration and writes a full inline DCP config " +
-      "to ~/.config/opencode/dcp.jsonc. No external files needed. " +
-      "Built-in profiles: economy, balanced, performance, ultimate. " +
-      "Custom profiles (e.g. brutal) are read from dcp.profiles in opencode.jsonc.",
-    args: {
-      profile: tool.schema
-        .string()
-        .describe(
-          "Target DCP profile tier: economy (most aggressive), balanced, performance, ultimate (least aggressive), or a custom profile name from config (e.g., brutal)",
-        ),
-    },
-    async execute(args) {
-      const profile = args.profile as string
-      return switchProfile(profile, options)
-    },
-  })
-
-  return { dcp_switch_profile }
 }

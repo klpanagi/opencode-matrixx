@@ -1,6 +1,6 @@
 export const DCP_PROFILE_TEMPLATE = `You are switching the active DCP (Dynamic Context Pruning) profile tier.
 
-This command is provided by the Matrixx plugin. It uses the built-in \`dcp_switch_profile\` tool to apply DCP profile configurations — no external scripts needed.
+This command is provided by the Matrixx plugin. It applies the tier by setting \`dcp.default_profile\` in the Matrixx configuration — the plugin writes the full inline DCP config to \`~/.config/opencode/dcp.jsonc\` on next startup. No external scripts needed.
 
 ## Step 1: Verify DCP is installed
 
@@ -24,22 +24,20 @@ Parse the arguments passed to this command. The user invoked \`/dcp-profile <arg
 - If the argument is empty or missing, read \`dcp.default_profile\` from the user's \`matrixx.jsonc\` config; if absent, default to \`balanced\`.
 - If the argument is not a recognized profile name, list the available profiles and stop. Do NOT guess or pass invalid names.
 
-## Step 3: Call the built-in \`dcp_switch_profile\` tool
+## Step 3: Set dcp.default_profile in the Matrixx config
 
-Use the \`dcp_switch_profile\` tool with the resolved profile name. This tool reads profile parameters from the Matrixx plugin configuration and writes the full inline DCP config to \`~/.config/opencode/dcp.jsonc\`.
-
-The tool will handle all file operations — you do NOT need to run any external scripts or edit DCP config files directly.
+Read the project Matrixx config (\`<project>/matrixx.jsonc\`, falling back to \`~/.config/opencode/matrixx.jsonc\`). Set \`"dcp": { "default_profile": "<tier>" }\`, preserving every other key. Use the edit tool — do NOT rewrite the file from scratch.
 
 ## Step 4: Confirm and instruct
 
-After a successful switch:
+After updating the config:
 
-1. Report the tool's output to the user.
-2. Tell the user that the new DCP configuration will take effect after they restart their OpenCode session (the active session has already loaded the previous config into memory).
+1. Report the new default profile to the user.
+2. Tell the user that the new DCP configuration will take effect after they restart their OpenCode session (the plugin applies \`default_profile\` on startup and writes \`~/.config/opencode/dcp.jsonc\`).
 3. Do not attempt to reload DCP in-place; a session restart is required.
 
 ## Important constraints
 
-- Use the built-in \`dcp_switch_profile\` tool. Do NOT bypass it by editing DCP config files directly.
+- Do NOT edit \`~/.config/opencode/dcp.jsonc\` directly — it is generated from the Matrixx config on plugin startup.
 - Do not install, upgrade, or modify the DCP plugin from this command. If the user needs to install or upgrade DCP, instruct them to run \`opencode plugin @tarquinen/opencode-dcp@<version>\` (or use \`npm install --prefix ~/.config/opencode\` for cached installs).
 `

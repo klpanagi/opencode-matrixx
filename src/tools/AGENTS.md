@@ -27,7 +27,7 @@ tools/
 ├── bdd-parse-gherkin/ # Gherkin parsing
 ├── bdd-pipeline/      # BDD pipeline
 ├── bdd-validate-contract/ # BDD validation
-├── dcp-switch-profile/ # DCP profile switch
+├── dcp-switch-profile/ # DCP profile switch logic (startup auto-activate, no LLM tool)
 ├── pdf-extract-figures/ # PDF figure extraction
 └── slashcommand/     # Slash command dispatch
 ```

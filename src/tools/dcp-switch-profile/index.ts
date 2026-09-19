@@ -1,1 +1,1 @@
-export { createDcpSwitchProfileTool } from "./tools"
+export { switchProfile } from "./tools"

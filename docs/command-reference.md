@@ -406,7 +406,7 @@ Delete completed tasks. Thin wrapper over the `task_cleanup` tool. Never deletes
 
 ## 18. `/dcp-profile`
 
-Switch the DCP (Dynamic Context Pruning) tier at runtime: `economy`, `balanced`, `performance`, or `ultimate`.
+Set the DCP (Dynamic Context Pruning) tier: `economy`, `balanced`, `performance`, or `ultimate`. Takes effect after a session restart.
 
 ```
 /dcp-profile balanced
@@ -415,9 +415,9 @@ Switch the DCP (Dynamic Context Pruning) tier at runtime: `economy`, `balanced`,
 
 | Argument | Description |
 |----------|-------------|
-| `<profile-name>` | DCP tier to activate for the current session |
+| `<profile-name>` | DCP tier to store as `dcp.default_profile` |
 
-This command has an **imperative intercept** — it switches the active DCP profile via the dcp-switch-profile tool (`src/tools/dcp-switch-profile/`).
+This command stores the tier as `dcp.default_profile` in the Matrixx config; the plugin applies it on next startup (profile logic in `src/tools/dcp-switch-profile/`).
 
 **Related:** [Context Management](context-management.md), `dcp` key in [Configuration](configurations.md#dcp).
 

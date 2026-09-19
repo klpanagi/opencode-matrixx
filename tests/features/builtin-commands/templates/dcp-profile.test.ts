@@ -35,14 +35,14 @@ describe("dcp-profile template", () => {
     expect(DCP_PROFILE_TEMPLATE).toContain("ultimate")
   })
 
-  test("should reference the DCP install location and built-in tool", () => {
+  test("should reference the DCP install location and config key", () => {
     //#given - the dcp-profile template
 
     //#when - we look for the install path and script path
 
     //#then - both should be present
     expect(DCP_PROFILE_TEMPLATE).toContain("@tarquinen/opencode-dcp")
-    expect(DCP_PROFILE_TEMPLATE).toContain("dcp_switch_profile")
+    expect(DCP_PROFILE_TEMPLATE).toContain("default_profile")
   })
 
   test("should not contain emojis", () => {

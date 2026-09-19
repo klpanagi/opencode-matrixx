@@ -27,7 +27,7 @@ Every layer handles one concern and delegates the rest. The result is orthogonal
 | L0 Native | Matrixx | 70% warning, 78% preemptive compaction, anthropic recovery, output truncators | Prevents OOM, keeps headroom | `experimental.*`, `disabled_hooks` | `context-window-monitor`, `preemptive-compaction`, `compaction-*`, `tool-output-truncator` |
 | L1 RTK | `rtk-ai/rtk` | Bash output rewrite via filtering, grouping, deduplication | 60-90% on bash | `rtk` | `rtk-bash-rewriter` (`tool.execute.before`) |
 | L2 context-mode | `mksglu/context-mode` | FTS5 sandbox, `ctx_*` tools, Think-in-Code | Up to 98% tool output | `context_mode` (`enabled`/`enforce`/`blocked_tools`) + external `plugin: ["context-mode"]` | `ctx_batch_execute`, `ctx_execute`, `ctx_search`, `ctx_stats`, `compress` + `context-mode-enforcer` hook |
-| L3 DCP | `@tarquinen/opencode-dcp` | Profile-tiered pruning `economy` to `ultimate` | Tiered, see profiles | `dcp` | `/dcp-profile`, `dcp_switch_profile` |
+| L3 DCP | `@tarquinen/opencode-dcp` | Profile-tiered pruning `economy` to `ultimate` | Tiered, see profiles | `dcp` | `/dcp-profile`, `dcp.default_profile` |
 | L4 Headroom | `headroomlabs-ai/headroom` | Proxy `CacheAligner` to `ContentRouter` to `CCR` | 60-95% JSON, 15-20% coding | `headroom` | `headroom wrap opencode`, `headroom_retrieve` |
 
 Notes: bridge overhead stays below 10ms, layers are orthogonal (RTK is bash, L2 is sandbox, L3 is pruning, L4 is proxy, L0 is warnings and compaction), and you can enable any subset. Minimal is L0 plus L2, add L1 for bash heavy sessions, L3 for long runs, L4 for proxy compression.
@@ -236,7 +236,7 @@ L2 owns tool output sandboxing. It is orthogonal to L1 bash rewriting, L3 histor
 
 #### What is DCP?
 
-DCP ([@tarquinen/opencode-dcp](https://www.npmjs.com/package/@tarquinen/opencode-dcp)) is an external OpenCode plugin that prunes conversation history by tier. Matrixx provides a thin bridge: a config schema, a slash command `/dcp-profile`, and a tool `dcp_switch_profile` that writes `~/.config/opencode/dcp.jsonc`.
+DCP ([@tarquinen/opencode-dcp](https://www.npmjs.com/package/@tarquinen/opencode-dcp)) is an external OpenCode plugin that prunes conversation history by tier. Matrixx provides a thin bridge: a config schema and a slash command `/dcp-profile`. On startup the plugin applies `dcp.default_profile` and writes `~/.config/opencode/dcp.jsonc`.
 
 Four built-in tiers:
 
@@ -255,7 +255,7 @@ Four built-in tiers:
 - `base.strategies`: `deduplication` and `purgeErrors`, each with `enabled` and `protectedTools`.
 - `base.commands`, `base.manualMode`, `base.protectedFilePatterns`, `base.pruneNotificationType`, `base.autoUpdate`, `base.debug`.
 
-Switching tiers via `/dcp-profile <tier>` or `dcp_switch_profile` writes an inline `dcp.jsonc` to `~/.config/opencode/dcp.jsonc` with the selected profile plus `base`. Matrixx bridge overhead stays below 10ms.
+Switching tiers via `/dcp-profile <tier>` sets `dcp.default_profile`; on next startup the plugin writes an inline `dcp.jsonc` to `~/.config/opencode/dcp.jsonc` with the selected profile plus `base`. Matrixx bridge overhead stays below 10ms.
 
 #### Performance Impact
 
@@ -272,7 +272,7 @@ npm install --prefix ~/.config/opencode @tarquinen/opencode-dcp
 
 # Verify
 ls ~/.config/opencode/node_modules/@tarquinen/opencode-dcp
-cat ~/.config/opencode/dcp.jsonc 2>/dev/null || echo "not yet written, run /dcp-profile"
+cat ~/.config/opencode/dcp.jsonc 2>/dev/null || echo "not yet written, run /dcp-profile and restart the session"
 ```
 
 Matrixx checks `existsSync` for the DCP install when the feature is enabled.
@@ -316,7 +316,7 @@ Configure in `matrixx.jsonc` (Matrixx bridge). Full defaults live in `src/config
 }
 ```
 
-Or switch at runtime without editing config:
+Or switch via slash command without editing config by hand:
 
 ```bash
 /dcp-profile balanced
@@ -325,13 +325,14 @@ Or switch at runtime without editing config:
 /dcp-profile ultimate
 ```
 
-The tool `dcp_switch_profile` accepts `profile: "economy" | "balanced" | "performance" | "ultimate"` and writes `~/.config/opencode/dcp.jsonc`.
+The command accepts `economy` | `balanced` | `performance` | `ultimate`, stores the tier as `dcp.default_profile`, and the plugin writes `~/.config/opencode/dcp.jsonc` on next startup — restart the session to apply.
 
 #### Verification
 
 ```bash
-cat ~/.config/opencode/dcp.jsonc | grep -A2 compress
 /dcp-profile balanced
+# then restart the session
+cat ~/.config/opencode/dcp.jsonc | grep -A2 compress
 # Expected: dcp.jsonc now contains the balanced tier compress block
 ```
 
