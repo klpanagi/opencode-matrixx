@@ -32,6 +32,7 @@ shared/
 ├── opencode-config-dir.ts     # ~/.config/opencode resolution (138 lines)
 ├── claude-config-dir.ts       # ~/.claude resolution
 ├── data-path.ts               # XDG-compliant storage (47 lines) — 11 imports
+├── dcp-switch-profile.ts      # DCP profile switch core (startup auto-activate, no LLM tool)
 ├── jsonc-parser.ts            # JSONC with comment support (66 lines)
 ├── frontmatter.ts             # YAML frontmatter extraction (31 lines) — 10 imports
 ├── deep-merge.ts              # Recursive merge (proto-pollution safe, MAX_DEPTH=50)

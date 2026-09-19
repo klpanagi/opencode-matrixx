@@ -15,7 +15,6 @@ mcp/
 ├── index.test.ts      # Tests
 ├── websearch.ts       # Exa AI / Tavily web search
 ├── context7.ts        # Library documentation
-├── grep-app.ts        # GitHub code search
 ├── document-reader.ts # Microsoft MarkItDown (PDF, DOCX, XLSX, PPTX, images)
 └── types.ts           # McpNameSchema
 ```

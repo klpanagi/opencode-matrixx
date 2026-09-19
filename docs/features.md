@@ -16,7 +16,7 @@ Matrixx is a multi-agent orchestration plugin for OpenCode: specialized agents, 
 | Self-evolution proposals (`/evolution`) | [Evolution](evolution.md) |
 | TDD enforcement | [TDD](tdd.md) |
 | Hooks (lifecycle automation, DCP, truncation, recovery) | [Hooks](hooks.md) |
-| Context management (DCP tiers, `/dcp-profile`, Headroom, `ctx_*` sandbox) | [Context Management](context-management.md) |
+| Context management (DCP tiers, Headroom, `ctx_*` sandbox) | [Context Management](context-management.md) |
 | Planning/execution model, delegation flows | [Orchestration](orchestration.md) |
 | Configuration (`matrixx.json`, presets, `browser_automation_engine`) | [Configuration](configurations.md) |
 
@@ -156,9 +156,9 @@ Use agent-browser to navigate to example.com and extract the main heading
 
 ## Commands (summary)
 
-Slash-triggered workflows. Counts, honest version: **19** names in `BuiltinCommandNameSchema` (`src/config/schema/commands.ts`); **24** entries in `BUILTIN_COMMAND_DEFINITIONS` (`src/features/builtin-commands/commands.ts` — adds `pickup`, `remove-deadcode`, `evolution`, `cleanup-tasks`, `task-list` beyond the schema); **22** template files in `src/features/builtin-commands/templates/`. Full argument reference: [Command Reference](command-reference.md). Custom commands load from `.opencode/command/*.md` (project) and `~/.config/opencode/command/*.md` (user).
+Slash-triggered workflows. Counts, honest version: **18** names in `BuiltinCommandNameSchema` (`src/config/schema/commands.ts`); **23** entries in `BUILTIN_COMMAND_DEFINITIONS` (`src/features/builtin-commands/commands.ts` — adds `pickup`, `remove-deadcode`, `evolution`, `cleanup-tasks`, `task-list` beyond the schema); **21** template files in `src/features/builtin-commands/templates/`. Full argument reference: [Command Reference](command-reference.md). Custom commands load from `.opencode/command/*.md` (project) and `~/.config/opencode/command/*.md` (user).
 
-Single-skill deep dives (`frontend-ui-ux`, `git-master`, `ulw-research`, `remove-ai-slops`) live in [Category & Skill System Guide](category-skill-guide.md). Runtime toggles (`/ultrawork`, `/assembly`, `/end-ultrawork`, `/preset`, `/dcp-profile`, `/stop-continuation`, `/remove-deadcode`, `/task-list`, `/cleanup-tasks`, `/evolution`, `/handoff`, `/pickup`, `/research`, loops, BDD commands) are documented canonically in [Command Reference](command-reference.md) and [Task System](task-system.md).
+Single-skill deep dives (`frontend-ui-ux`, `git-master`, `ulw-research`, `remove-ai-slops`) live in [Category & Skill System Guide](category-skill-guide.md). Runtime toggles (`/ultrawork`, `/assembly`, `/end-ultrawork`, `/preset`, `/stop-continuation`, `/remove-deadcode`, `/task-list`, `/cleanup-tasks`, `/evolution`, `/handoff`, `/pickup`, `/research`, loops, BDD commands) are documented canonically in [Command Reference](command-reference.md) and [Task System](task-system.md).
 
 ## Hooks, Tools, MCPs, Context (summaries)
 

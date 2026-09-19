@@ -249,12 +249,7 @@
           "research",
           "assembly",
           "ultrawork",
-          "bdd-backend",
-          "bdd-contract",
-          "bdd-frontend",
-          "bdd-pipeline",
-          "bdd-tests",
-          "dcp-profile"
+          "bdd-pipeline"
         ]
       }
     },
@@ -5045,6 +5040,28 @@
       },
       "required": [
         "enabled"
+      ],
+      "additionalProperties": false
+    },
+    "tool_gating": {
+      "type": "object",
+      "properties": {
+        "bdd_tools": {
+          "type": "boolean"
+        },
+        "pdf_figures": {
+          "type": "boolean"
+        },
+        "look_at": {
+          "type": "boolean"
+        },
+        "preset_tools": {
+          "default": false,
+          "type": "boolean"
+        }
+      },
+      "required": [
+        "preset_tools"
       ],
       "additionalProperties": false
     },

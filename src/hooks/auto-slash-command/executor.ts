@@ -1,12 +1,10 @@
 import { existsSync, readdirSync, readFileSync } from "node:fs"
 import { basename, dirname, join } from "node:path"
-import type { createOpencodeClient } from "@opencode-ai/sdk"
 import { loadBuiltinCommands } from "../../features/builtin-commands"
 import type { BuiltinSkill } from "../../features/builtin-skills"
 import type { CommandFrontmatter } from "../../features/command-loader/types"
 import {
   getOpenCodeConfigDir,
-  log,
   parseFrontmatter,
   resolveCommandsInText,
   resolveFileReferencesInText,
@@ -97,32 +95,18 @@ function skillToCommandInfo(skill: BuiltinSkill): CommandInfo {
 
 export interface ExecutorOptions {
   skills?: BuiltinSkill[]
-  /** OpenCode SDK client for discovering plugin-registered commands */
-  client?: ReturnType<typeof createOpencodeClient>
 }
 
-async function discoverPluginCommands(client?: ReturnType<typeof createOpencodeClient>): Promise<CommandInfo[]> {
-  if (!client) return []
-
-  try {
-    const result = await client.command.list()
-    const commands = result.data ?? []
-    return commands.map(cmd => ({
-      name: cmd.name,
-      metadata: {
-        name: cmd.name,
-        description: cmd.description || "",
-        model: typeof cmd.model === "string" ? cmd.model : undefined,
-        agent: cmd.agent,
-        subtask: cmd.subtask,
-      },
-      content: typeof cmd.template === "string" ? cmd.template : undefined,
-      scope: "plugin" as const,
-    }))
-  } catch (err) {
-    log(`[auto-slash-command] Failed to discover plugin commands:`, err)
-    return []
-  }
+/**
+ * Ownership rule: the hook expands only matrixx-owned scopes (builtin,
+ * markdown command dirs, skills). Plugin-scope commands belong to other
+ * plugins and must fall through so the owning plugin handles them natively —
+ * claiming them renders instruction-less blocks (e.g. /dcp-compress). Empty
+ * templates are declined in every scope for the same reason.
+ */
+export function isHookOwnedCommand(cmd: { scope: string; content?: string }): boolean {
+  if (cmd.scope === "plugin") return false
+  return (cmd.content?.trim().length ?? 0) > 0
 }
 
 async function discoverAllCommands(options?: ExecutorOptions): Promise<CommandInfo[]> {
@@ -149,21 +133,18 @@ async function discoverAllCommands(options?: ExecutorOptions): Promise<CommandIn
   const skills = options?.skills ?? []
   const skillCommands = skills.map(skillToCommandInfo)
 
-  const pluginCommands = await discoverPluginCommands(options?.client)
-
   return [
     ...builtinCommands,
     ...opencodeProjectCommands,
     ...opencodeGlobalCommands,
     ...skillCommands,
-    ...pluginCommands,
   ]
 }
 
 async function findCommand(commandName: string, options?: ExecutorOptions): Promise<CommandInfo | null> {
   const allCommands = await discoverAllCommands(options)
   return allCommands.find(
-    (cmd) => cmd.name.toLowerCase() === commandName.toLowerCase()
+    (cmd) => cmd.name.toLowerCase() === commandName.toLowerCase() && isHookOwnedCommand(cmd)
   ) ?? null
 }
 

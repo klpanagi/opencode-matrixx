@@ -19,8 +19,8 @@ export interface PresetToolOptions {
 /**
  * Resolve the config file path for a persistence scope.
  * Project scope targets `.opencode/matrixx.jsonc`; global scope targets
- * `~/.config/opencode/matrixx.jsonc` (mirrors the dcp-switch-profile path
- * resolution for the user config dir).
+ * `~/.config/opencode/matrixx.jsonc` (mirrors the path resolution in
+ * `src/shared/dcp-switch-profile.ts` for the user config dir).
  */
 function resolveConfigPath(scope: "global" | "project", directory?: string): string {
   if (scope === "global") {

@@ -100,7 +100,7 @@ Matrixx is a **plugin for OpenCode**. You will frequently need to examine OpenCo
 
 ## OVERVIEW
 
-Matrixx is a multi-agent orchestration **plugin for OpenCode**. 14 built-in agents (Morpheus, Sati, Sentinel, Cipher, etc.) via 64 lifecycle hooks and 22 custom tools. ~960 TS source files, 246 test files.
+Matrixx is a multi-agent orchestration **plugin for OpenCode**. 14 built-in agents (Morpheus, Sati, Sentinel, Cipher, etc.) via 80 hook entries (63 dirs) and 24 custom tool dirs (conditional registration via `src/plugin/tool-gating.ts`). ~960 TS source files, 246 test files.
 
 | Aspect | Value |
 |---|---|
@@ -121,9 +121,9 @@ matrixx/
 │   ├── plugin-config.ts            # Config load + Zod validation
 │   ├── plugin-state.ts             # Model context-limit cache
 │   ├── agents/   → 14 agents + AGENTS.md
-│   ├── hooks/    → 64 hooks (HookNameSchema, 58 dirs + loose .ts) in 3 tiers
-│   ├── tools/    → 22 dirs (LSP, AST-grep, delegate-task, bdd-*, handoff, etc.)
-│   ├── features/ → 18 dirs (background-agent, skills, commands, handoff, CC compat)
+│   ├── hooks/    → 80 entries (63 dirs + loose .ts; HookNameSchema 66 literals) in 3 tiers
+│   ├── tools/    → 24 dirs (LSP, AST-grep, delegate-task, bdd-*, handoff, etc.; conditional via tool-gating.ts)
+│   ├── features/ → 19 dirs (background-agent, builtin-skills/commands, task-storage, handoff, knowledge-hub, ...)
 │   ├── shared/   → 80+ utilities (logger → /tmp/matrixx.log)
 │   ├── mcp/      → 3 built-in MCPs (websearch, context7, document-reader) + native `github_search` tool
 │   ├── cli/      → installer, doctor, config-manager
