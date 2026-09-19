@@ -5,7 +5,8 @@ import { fallbackCompactDiscipline, fallbackFullDiscipline } from "../../src/age
 
 // TODO-4 (issue #110 A6): fallback discipline size regression guard —
 // content is pinned by existing contract tests, so this locks current
-// sizes (full 577/623, compact 593/617 chars) to catch future bloat.
+// sizes (full <=668, compact <=662 chars incl. ctx_stats usage signal)
+// to catch future bloat.
 describe("fallback discipline size", () => {
   test("full fallback stays under budget", () => {
     //#given both grep/glob variants and every DCP mode
@@ -14,7 +15,7 @@ describe("fallback discipline size", () => {
       for (const dcpMode of ["guided", "manual", "none"] as const) {
         const text = fallbackFullDiscipline(hasGrepGlob, dcpMode)
         //#then short, still carries routing signal
-        expect(text.length).toBeLessThanOrEqual(650)
+        expect(text.length).toBeLessThanOrEqual(700)
         expect(text).toContain("Context Discipline")
         expect(text).toContain("ctx_")
       }
@@ -28,7 +29,7 @@ describe("fallback discipline size", () => {
       for (const dcpMode of ["guided", "manual", "none"] as const) {
         const text = fallbackCompactDiscipline(hasGrepGlob, dcpMode)
         //#then short, still carries routing signal
-        expect(text.length).toBeLessThanOrEqual(650)
+        expect(text.length).toBeLessThanOrEqual(700)
         expect(text).toContain("Context Discipline")
         expect(text).toContain("ctx_")
       }

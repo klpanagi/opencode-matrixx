@@ -431,10 +431,10 @@ export function hasGrepGlobToolNames(toolNames: readonly string[]): boolean {
 
 function compressionRow(dcpMode: DcpCompressionMode): string {
   if (dcpMode === "guided")
-    return "| Compression | DCP's `compress` only with trigger/nudge context (message IDs); never bare |"
+    return "| Compression | DCP's `compress` only with trigger/nudge context (message IDs); never bare (watch ctx_stats) |"
   if (dcpMode === "manual")
-    return "| Compression | DCP manual mode: `compress` only after trigger prompt; never self-trigger |"
-  return "| Compression | No `compress` tool (DCP inactive) — never call it |"
+    return "| Compression | DCP manual mode: `compress` only after trigger prompt; never self-trigger (watch ctx_stats) |"
+  return "| Compression | No `compress` tool (DCP inactive) — never call it (watch ctx_stats) |"
 }
 
 function headroomDcpClause(dcpMode: DcpCompressionMode): string {
