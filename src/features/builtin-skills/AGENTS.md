@@ -2,11 +2,11 @@
 
 ## OVERVIEW
 
-45 specialized skills loaded by default into every Matrixx session. Each skill bundles domain expertise, optional MCPs, and (sometimes) a custom model/agent assignment.
+46 specialized skills loaded by default into every Matrixx session. Each skill bundles domain expertise, optional MCPs, and (sometimes) a custom model/agent assignment.
 
 | Scope | Count | Source |
 |------|-------|--------|
-| **Built-in (this dir)** | 45 | `src/features/builtin-skills/skills/*.ts` |
+| **Built-in (this dir)** | 46 | `src/features/builtin-skills/skills/*.ts` |
 | Opencode-project (`.opencode/skills/`) | varies | per-project |
 | Opencode-user (`~/.config/opencode/skills/`) | varies | per-user |
 | Claude Code compat (`.claude/skills/`) | varies | per-project |
@@ -22,7 +22,7 @@ builtin-skills/
 ├── lazy-skill-helper.ts          # Lazy template getter (54 LOC)
 ├── lazy-skill-helper.test.ts     # Helper tests
 ├── skills.test.ts                # Factory tests
-├── skills/                       # 45 individual skill files (export Skill objects)
+├── skills/                       # 46 individual skill files (export Skill objects)
 │   ├── playwright.ts             # Playwright MCP browser automation
 │   ├── playwright-cli.ts         # CLI variant
 │   ├── agent-browser.ts          # Vercel agent-browser variant
@@ -47,7 +47,7 @@ Since v2.0.0, all **non-browser** skills use lazy template resolution:
 - **Helper:** `createLazyTemplateSkill(name, factory)` in `lazy-skill-helper.ts`
 - **Cache:** module-level `Map<string, string>` keyed by skill name
 - **Eager:** Only the active browser skill (playwright/agent-browser/playwright-cli) — needed at init for the skill-context filter
-- **Lazy:** All other 42 skills — factory NOT called until first `.template` access
+- **Lazy:** All other non-browser skills — factory NOT called until first `.template` access
 
 **Behavior:**
 - First `.template` access invokes the factory, caches result, replaces getter with a data property

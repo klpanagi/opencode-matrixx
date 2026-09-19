@@ -29,7 +29,7 @@ export function createSkillHooks(args: {
 
   const autoSlashCommand = isHookEnabled("auto-slash-command")
     ? safeHook("auto-slash-command", () =>
-        createAutoSlashCommandHook({ skills: builtinSkills, client: ctx.client }))
+        createAutoSlashCommandHook({ skills: builtinSkills }))
     : null
 
   return { categorySkillReminder, autoSlashCommand }

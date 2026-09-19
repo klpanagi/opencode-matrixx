@@ -361,6 +361,26 @@ describe("buildHeadroomSection", () => {
     expect(result).toContain("CacheAligner")
     expect(result).toContain("L1 RTK")
   })
+
+  it("should disambiguate compression ownership (DCP tool vs bare call)", () => {
+    //#given headroom available
+    const result = buildHeadroomSection(true)
+    //#then compression ownership is explicit, never invoke foreign command
+    expect(result).toContain("Compression ownership")
+    expect(result).toContain("the `compress` tool is DCP's")
+    expect(result).toContain("invoke /dcp-compress")
+  })
+
+  it("should state per-mode compression guidance", () => {
+    //#given every DCP compression mode
+    const guided = buildHeadroomSection(true, "guided")
+    const manual = buildHeadroomSection(true, "manual")
+    const inactive = buildHeadroomSection(true, "none")
+    //#then each variant carries its own trigger/nudge context rule
+    expect(guided).toContain("only with trigger/nudge context")
+    expect(manual).toContain("only after the manual trigger")
+    expect(inactive).toContain("No `compress` tool exists (DCP inactive)")
+  })
 })
 
 describe("buildCompactContextDisciplineSection", () => {

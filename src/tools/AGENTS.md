@@ -2,7 +2,7 @@
 
 ## OVERVIEW
 
-23 tool dirs (LSP ×6, AST-grep ×2, grep/glob, session-manager ×4, task ×5 `create/list/get/update/cleanup`, plan ×5 `create/read/update/list/delete` for `.matrixx/plans/*.md`, delegate-task, background-task, handoff, hashline-edit, interactive-bash, look-at, skill/slashcommand, assembly, bdd-*/dcp-switch/pdf-extract). Two patterns: Direct ToolDefinition (static) and Factory Function (context-dependent).
+24 tool dirs (LSP ×6, AST-grep ×2, grep/glob/github-search, session-manager ×4, task ×5 `create/list/get/update/cleanup`, plan ×5 `create/read/update/list/delete` for `.matrixx/plans/*.md`, delegate-task (`task`), background-task ×3 `output/cancel/revive`, handoff, hashline-edit, interactive-bash, look-at, skill, slashcommand, assembly, knowledge-hub-confirm, preset, bdd-* ×4, pdf-extract-figures). Two patterns: Direct ToolDefinition (static) and Factory Function (context-dependent). Conditional registration via `src/plugin/tool-gating.ts` — bdd/pdf-figures/look_at/knowledge-hub-confirm/preset only load when relevant (see TOOL GATING).
 
 ## STRUCTURE
 ```
@@ -14,21 +14,22 @@ tools/
 ├── ast-grep/         # 2 tools: search, replace (25 languages)
 ├── grep/             # Custom grep (60s timeout, 10MB limit)
 ├── glob/             # File search (60s timeout, 100 file limit)
-├── session-manager/  # 4 tools: list, read, search, info (151 lines)
-├── background-task/  # background_output, background_cancel
+├── session-manager/  # 4 tools: list, read, search, info
+├── background-task/  # background_output, background_cancel, background_revive
 ├── handoff/          # Multi-action handoff: create, read, list, archive
 ├── hashline-edit/    # Hash-based line-precise file editing
-├── interactive-bash/ # Tmux session management (135 lines)
-├── look-at/          # Multimodal PDF/image analysis (156 lines)
-├── skill/            # Skill execution with MCP support (211 lines)
-├── skill-mcp/        # MCP tool/resource/prompt operations (182 lines)
-├── assembly/         # Multi-model voting (assembly tool)
-├── bdd-create-contract/ # BDD contract generation
-├── bdd-parse-gherkin/ # Gherkin parsing
-├── bdd-pipeline/      # BDD pipeline
-├── bdd-validate-contract/ # BDD validation
-├── dcp-switch-profile/ # DCP profile switch
-├── pdf-extract-figures/ # PDF figure extraction
+├── interactive-bash/ # Tmux session management
+├── look-at/          # Multimodal PDF/image analysis (gated: construct agent + media file)
+├── skill/            # Skill execution with MCP support
+├── assembly/         # Multi-model voting (assembly tool, gated by assembly.enabled)
+├── bdd-create-contract/ # BDD contract generation (gated: *.feature file or override)
+├── bdd-parse-gherkin/ # Gherkin parsing (gated)
+├── bdd-pipeline/      # BDD pipeline (gated)
+├── bdd-validate-contract/ # BDD validation (gated)
+├── github-search/     # Native GitHub code search (replaced white-rabbit MCP)
+├── knowledge-hub-confirm/ # Knowledge-hub write confirm gate (gated: hubs configured)
+├── pdf-extract-figures/ # PDF figure extraction (gated: *.pdf file or override)
+├── preset/            # Model preset switch (opt-in only)
 └── slashcommand/     # Slash command dispatch
 ```
 
@@ -40,9 +41,11 @@ tools/
 | `task_list` | Task | Factory | List active tasks with summary (excludes completed/deleted) |
 | `task_get` | Task | Factory | Retrieve full task object by ID |
 | `task_update` | Task | Factory | Update task fields, supports addBlocks/addBlockedBy for dependencies |
+| `task_cleanup` | Task | Factory | Delete completed tasks from storage |
 | `handoff` | Session | Factory | Multi-action: create, read, list, archive |
 | `background_output` | Background | Factory | Retrieve background task result |
 | `background_cancel` | Background | Factory | Cancel running background tasks |
+| `background_revive` | Background | Factory | Revive retained terminal task with new instruction |
 | `lsp_goto_definition` | LSP | Direct | Jump to symbol definition |
 | `lsp_find_references` | LSP | Direct | Find all usages across workspace |
 | `lsp_symbols` | LSP | Direct | Document or workspace symbol search |
@@ -60,7 +63,6 @@ tools/
 | `interactive_bash` | System | Direct | Tmux session management |
 | `look_at` | System | Factory | Multimodal PDF/image analysis |
 | `skill` | Skill | Factory | Execute skill with MCP capabilities |
-| `skill_mcp` | Skill | Factory | Call MCP tools/resources/prompts |
 | `slashcommand` | Command | Factory | Slash command dispatch |
 
 ## TASK TOOLS

@@ -17,7 +17,6 @@ import {
   createBddParseGherkinTool,
   createBddPipelineTool,
   createBddValidateContractTool,
-  createDcpSwitchProfileTool,
   createDelegateTask,
   createGithubSearchTools,
   createGlobTools,
@@ -45,6 +44,14 @@ import {
   interactive_bash,
 } from "../tools"
 import type { SkillContext } from "./skill-context"
+import {
+  isConstructAgentEnabled,
+  shouldEnableBddTools,
+  shouldEnableKnowledgeHubConfirm,
+  shouldEnableLookAt,
+  shouldEnablePdfFigures,
+  shouldEnablePresetTools,
+} from "./tool-gating"
 import type { PluginContext, ToolsRecord } from "./types"
 
 export type ToolRegistryResult = {
@@ -63,10 +70,28 @@ export function createToolRegistry(args: {
 
   const backgroundTools = createBackgroundTools(managers.backgroundManager, ctx.client, ctx.directory)
 
-  const isMultimodalLookerEnabled = !(pluginConfig.disabled_agents ?? []).some(
-    (agent) => agent.toLowerCase() === "construct",
-  )
-  const lookAt = isMultimodalLookerEnabled ? createLookAt(ctx) : null
+  const isMultimodalLookerEnabled = isConstructAgentEnabled(pluginConfig.disabled_agents)
+  const toolGating = pluginConfig.tool_gating
+  const bddEnabled = shouldEnableBddTools(ctx.directory, toolGating?.bdd_tools)
+  const pdfFiguresEnabled = shouldEnablePdfFigures(ctx.directory, toolGating?.pdf_figures)
+  const lookAtEnabled = shouldEnableLookAt(ctx.directory, isMultimodalLookerEnabled, toolGating?.look_at)
+  const knowledgeHubConfirmEnabled = shouldEnableKnowledgeHubConfirm(pluginConfig.knowledge?.hubs)
+  const presetToolsEnabled = shouldEnablePresetTools(toolGating?.preset_tools)
+  const lookAt = lookAtEnabled ? createLookAt(ctx) : null
+  const bddToolsRecord: Record<string, ToolDefinition> = bddEnabled
+    ? {
+        bdd_create_contract: createBddCreateContractTool(),
+        bdd_parse_gherkin: createBddParseGherkinTool(),
+        bdd_pipeline_run: createBddPipelineTool({ manager: managers.backgroundManager }),
+        bdd_validate_contract: createBddValidateContractTool(),
+      }
+    : {}
+  const pdfFiguresRecord: Record<string, ToolDefinition> = pdfFiguresEnabled
+    ? { ...createPdfExtractFiguresTool() }
+    : {}
+  const presetRecord: Record<string, ToolDefinition> = presetToolsEnabled
+    ? { ...createPresetTool({ pluginConfig, directory: ctx.directory }) }
+    : {}
 
   const delegateTask = createDelegateTask({
     manager: managers.backgroundManager,
@@ -154,10 +179,9 @@ export function createToolRegistry(args: {
     ...createAstGrepTools(ctx),
     ...createSessionManagerTools(ctx),
     ...createHandoffTools(ctx),
-    knowledge_hub_confirm: createKnowledgeHubConfirmTool(ctx),
-    ...createPdfExtractFiguresTool(),
-    ...createDcpSwitchProfileTool({ pluginConfig }),
-    ...createPresetTool({ pluginConfig, directory: ctx.directory }),
+    ...(knowledgeHubConfirmEnabled ? { knowledge_hub_confirm: createKnowledgeHubConfirmTool(ctx) } : {}),
+    ...pdfFiguresRecord,
+    ...presetRecord,
     ...backgroundTools,
     ...(lookAt ? { look_at: lookAt } : {}),
     task: delegateTask,
@@ -168,10 +192,7 @@ export function createToolRegistry(args: {
     ...hashlineToolsRecord,
     ...planToolsRecord,
     ...(assemblyTool ? { assembly: assemblyTool } : {}),
-    bdd_create_contract: createBddCreateContractTool(),
-    bdd_parse_gherkin: createBddParseGherkinTool(),
-    bdd_pipeline_run: createBddPipelineTool({ manager: managers.backgroundManager }),
-    bdd_validate_contract: createBddValidateContractTool(),
+    ...bddToolsRecord,
   }
 
   const filteredTools = filterDisabledTools(allTools, pluginConfig.disabled_tools)

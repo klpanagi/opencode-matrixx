@@ -12,6 +12,7 @@ import { _resetDisabledSetsCacheForTesting } from "../src/plugin-config"
 import { _resetMessagesTransformCacheForTesting } from "../src/plugin/messages-transform"
 import { _resetDisciplineCacheForTesting } from "../src/agents/dynamic-agent-prompt-builder"
 import { _resetContextModeEnforcementForTesting } from "../src/shared/context-mode-enforcement"
+import { _resetDcpGuidanceForTesting } from "../src/shared/dcp-guidance"
 
 beforeEach(() => {
   _resetForTesting()
@@ -28,4 +29,5 @@ beforeEach(() => {
   _resetMessagesTransformCacheForTesting()
   _resetDisciplineCacheForTesting()
   _resetContextModeEnforcementForTesting()
+  _resetDcpGuidanceForTesting()
 })

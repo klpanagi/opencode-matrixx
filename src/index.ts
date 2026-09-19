@@ -11,9 +11,9 @@ import { createPluginInterface } from "./plugin-interface"
 import { createModelCacheState } from "./plugin-state"
 import { injectServerAuthIntoClient, log } from "./shared"
 import { setContextModeForPrompts } from "./shared/context-mode-enforcement"
+import { switchProfile } from "./shared/dcp-switch-profile"
 import { createFirstMessageVariantGate } from "./shared/first-message-variant"
 import { startTmuxCheck } from "./tools"
-import { switchProfile } from "./tools/dcp-switch-profile/tools"
 
 const MatrixxPlugin: Plugin = async (ctx) => {
   log("[MatrixxPlugin] ENTRY - plugin loading", {

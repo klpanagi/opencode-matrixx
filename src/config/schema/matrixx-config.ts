@@ -33,6 +33,7 @@ import { TaskConfigSchema } from "./task"
 import { TasksConfigSchema } from "./tasks"
 import { TddEnforcerConfigSchema } from "./tdd-enforcer"
 import { TmuxConfigSchema } from "./tmux"
+import { ToolGatingConfigSchema } from "./tool-gating"
 import { WebsearchConfigSchema } from "./websearch"
 
 export const MatrixxConfigSchema = z.object({
@@ -84,6 +85,8 @@ export const MatrixxConfigSchema = z.object({
   morpheus: MorpheusConfigSchema.optional(),
   /** Assembly tool configuration — provider models for multi-model voting */
   assembly: AssemblyConfigSchema.optional(),
+  /** Startup-token tool auto-gating — defer rarely-needed tools until auto-detect or opt-in */
+  tool_gating: ToolGatingConfigSchema.optional(),
   /** Security scanning, secret detection, and sensitive file guards */
   security: SecurityConfigSchema.optional(),
   runtime_fallback: RuntimeFallbackConfigSchema.optional(),

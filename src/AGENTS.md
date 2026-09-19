@@ -18,13 +18,13 @@ src/
 ├── agents/                           # 14 AI agents (32 files) — see agents/AGENTS.md
 ├── cli/                              # CLI installer, doctor (107+ files) — see cli/AGENTS.md
 ├── config/                           # Zod schema — see config/AGENTS.md
-├── features/                         # Background agents, skills, commands (20 dirs) — see features/AGENTS.md
-│   ├── hooks/                            # 64 hooks (HookNameSchema, 58 dirs + loose .ts) in 3 tiers — see hooks/AGENTS.md
-├── mcp/                              # Built-in MCPs (4 MCPs) — see mcp/AGENTS.md
+├── features/                         # Background agents, skills, commands (19 dirs) — see features/AGENTS.md
+│   ├── hooks/                            # 80 entries (63 dirs + loose .ts; HookNameSchema 66 literals) in 3 tiers — see hooks/AGENTS.md
+├── mcp/                              # Built-in MCPs (3: websearch, context7, document-reader) — see mcp/AGENTS.md
 ├── plugin/                           # Plugin interface composition (21 files)
 ├── plugin-handlers/                  # Config loading, plan inheritance (15 files) — see plugin-handlers/AGENTS.md
 ├── shared/                           # Cross-cutting utilities (~85 files) — see shared/AGENTS.md
-└── tools/                            # 22 tools (16 dirs + MCP, task/*, assembly, bdd-*) — see tools/AGENTS.md
+└── tools/                            # 24 tool dirs (LSP, AST-grep, delegate-task, bdd-*, handoff, etc.; conditional via tool-gating.ts) — see tools/AGENTS.md
 ```
 
 ## PLUGIN INITIALIZATION (10 steps)
