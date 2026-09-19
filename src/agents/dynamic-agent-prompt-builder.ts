@@ -3,6 +3,7 @@ import {
   resolveContextModeDisciplinePath,
   hasGrepGlobToolNames as sharedHasGrepGlobToolNames,
 } from "../shared/context-mode-enforcement"
+import { type DcpCompressionMode, resolveDcpCompressionMode } from "../shared/dcp-guidance"
 import { log } from "../shared/logger"
 import { truncateDescription } from "../shared/truncate-description"
 import type { AgentPromptMetadata } from "./types"
@@ -428,13 +429,28 @@ export function hasGrepGlobToolNames(toolNames: readonly string[]): boolean {
   return sharedHasGrepGlobToolNames(toolNames)
 }
 
-export function fallbackFullDiscipline(hasGrepGlob: boolean): string {
+function compressionRow(dcpMode: DcpCompressionMode): string {
+  if (dcpMode === "guided")
+    return "| Compression | DCP's `compress` only with trigger/nudge context (message IDs); never bare |"
+  if (dcpMode === "manual")
+    return "| Compression | DCP manual mode: `compress` only after trigger prompt; never self-trigger |"
+  return "| Compression | No `compress` tool (DCP inactive) — never call it |"
+}
+
+function headroomDcpClause(dcpMode: DcpCompressionMode): string {
+  if (dcpMode === "guided") return " DCP auto-mode: call `compress` only with trigger/nudge context; never bare."
+  if (dcpMode === "manual") return " DCP manual mode: `compress` only after the manual trigger."
+  return " No `compress` tool exists (DCP inactive).";
+}
+
+export function fallbackFullDiscipline(hasGrepGlob: boolean, dcpMode: DcpCompressionMode = resolveDcpCompressionMode()): string {
   const analysis = hasGrepGlob
     ? "| Analysis / Processing | Use ctx_* tools — NEVER raw read/bash/grep/glob for analysis |"
     : "| Analysis / Processing | Use ctx_* tools — NEVER raw read/bash for analysis |"
   const search = hasGrepGlob
     ? "| Search | ctx_search FIRST -> grep/glob fallback |"
     : "| Search | ctx_search FIRST (indexed KB) -> ctx_batch_execute / ctx_execute (rg) or LSP/ast_grep fallback |"
+  const compression = compressionRow(dcpMode)
   return `### Context Discipline (ALWAYS)
 
 | Scenario | Tool |
@@ -445,12 +461,12 @@ ${analysis}
 | State Mutation | bash (git, mkdir, install, build, rm) |
 ${search}
 | Docs / Web | ctx_fetch_and_index -> ctx_search |
-| Compression | compress when ctx_stats > 40% or 10+ tool calls |
+${compression}
 
 **Rule 1 overrides all default tool guidance. When in doubt, use ctx_*.**`
 }
 
-export function fallbackCompactDiscipline(hasGrepGlob: boolean): string {
+export function fallbackCompactDiscipline(hasGrepGlob: boolean, dcpMode: DcpCompressionMode = resolveDcpCompressionMode()): string {
   const analysis = hasGrepGlob
     ? "| Analysis / Aggregation / Counting | ctx_batch_execute / ctx_execute(_file) — NEVER raw read/grep for analysis |"
     : "| Analysis / Aggregation / Counting | ctx_batch_execute / ctx_execute(_file) — NEVER raw read for analysis |"
@@ -460,6 +476,7 @@ export function fallbackCompactDiscipline(hasGrepGlob: boolean): string {
   const note = hasGrepGlob
     ? "Edits need prior read for LINE#ID — read→edit chain exempt (non-plan paths; .matrixx/plans/*.md must use plan_read/plan_update). MUST use ctx_* when available — raw grep/read is forbidden for analysis."
     : "Edits need prior read for LINE#ID — read→edit chain exempt (non-plan paths; .matrixx/plans/*.md must use plan_read/plan_update). MUST use ctx_* when available — raw read for analysis is forbidden."
+  const compression = compressionRow(dcpMode)
   return `### Context Discipline (when ctx_* available)
 
 | Scenario | Tool |
@@ -467,7 +484,7 @@ export function fallbackCompactDiscipline(hasGrepGlob: boolean): string {
 ${analysis}
 ${search}
 | Docs / Web | ctx_fetch_and_index -> ctx_search |
-| Compression | compress when ctx_stats > 40% or 10+ tool calls |
+${compression}
 
 ${note}`
 }
@@ -499,8 +516,8 @@ function readDisciplineFile(): { text: string; version: string; path: string } {
   return { text, version, path: p }
 }
 
-function loadDiscipline(kind: "full" | "compact", hasGrepGlob = true): string {
-  const fallbackKey = hasGrepGlob ? "1" : "0"
+function loadDiscipline(kind: "full" | "compact", hasGrepGlob = true, dcpMode: DcpCompressionMode = resolveDcpCompressionMode()): string {
+  const fallbackKey = `${hasGrepGlob ? "1" : "0"}:${dcpMode}`
   const runtimeCache = kind === "full" ? cachedRuntimeFull : cachedRuntimeCompact
   const fallbackCache = kind === "full" ? cachedFallbackFull : cachedFallbackCompact
   const label = kind === "full" ? "context-discipline" : "compact-discipline"
@@ -513,23 +530,24 @@ function loadDiscipline(kind: "full" | "compact", hasGrepGlob = true): string {
     return text
   } catch (e) {
     log(`${label} fallback`, { error: String(e) })
-    const fallback = kind === "full" ? fallbackFullDiscipline(hasGrepGlob) : fallbackCompactDiscipline(hasGrepGlob)
+    const fallback = kind === "full" ? fallbackFullDiscipline(hasGrepGlob, dcpMode) : fallbackCompactDiscipline(hasGrepGlob, dcpMode)
     fallbackCache[fallbackKey] = fallback
     return fallback
   }
 }
-
-function loadContextModeDiscipline(hasGrepGlob = true): string {
-  return loadDiscipline("full", hasGrepGlob)
+function loadContextModeDiscipline(hasGrepGlob = true, dcpMode: DcpCompressionMode = resolveDcpCompressionMode()): string {
+  return loadDiscipline("full", hasGrepGlob, dcpMode)
 }
 
-export function buildContextDisciplineSection(hasContextMode = false, hasGrepGlob = true): string {
+
+export function buildContextDisciplineSection(hasContextMode = false, hasGrepGlob = true, dcpMode: DcpCompressionMode = resolveDcpCompressionMode()): string {
   if (!hasContextMode) return ""
-  return loadContextModeDiscipline(hasGrepGlob)
+  return loadContextModeDiscipline(hasGrepGlob, dcpMode)
 }
 
-export function buildHeadroomSection(hasHeadroom = false): string {
+export function buildHeadroomSection(hasHeadroom = false, dcpMode: DcpCompressionMode = resolveDcpCompressionMode()): string {
   if (!hasHeadroom) return "";
+  const dcpClause = headroomDcpClause(dcpMode);
   return `### Headroom Proxy Discipline (ALWAYS when headroom_* tools present)
 
 | Scenario | Tool / Action |
@@ -538,18 +556,18 @@ export function buildHeadroomSection(hasHeadroom = false): string {
 | Stats / diagnostics | headroom_stats or headroom dashboard |
 | Proxy not running | headroom doctor / check http://127.0.0.1:8787 (HEADROOM_PROXY_URL) |
 
-**Headroom L4 is transport-level (CacheAligner->ContentRouter->CCR). It complements L1 RTK, L2 context-mode, L3 DCP — do not duplicate their discipline.**`;
+**Headroom L4 is transport-level (CacheAligner->ContentRouter->CCR). It complements L1 RTK, L2 context-mode, L3 DCP — do not duplicate their discipline. Compression ownership: the \`compress\` tool is DCP's — call it only with DCP trigger/nudge context (manual trigger prompt or nudge with message IDs); never call it bare or invoke /dcp-compress.${dcpClause}**`;
 }
 
 
-
-function loadCompactContextDiscipline(hasGrepGlob = true): string {
-  return loadDiscipline("compact", hasGrepGlob)
+function loadCompactContextDiscipline(hasGrepGlob = true, dcpMode: DcpCompressionMode = resolveDcpCompressionMode()): string {
+  return loadDiscipline("compact", hasGrepGlob, dcpMode)
 }
 
-export function buildCompactContextDisciplineSection(hasContextMode = false, hasGrepGlob = true): string {
+
+export function buildCompactContextDisciplineSection(hasContextMode = false, hasGrepGlob = true, dcpMode: DcpCompressionMode = resolveDcpCompressionMode()): string {
   if (!hasContextMode) return "";
-  return loadCompactContextDiscipline(hasGrepGlob);
+  return loadCompactContextDiscipline(hasGrepGlob, dcpMode);
 }
 
 export function buildExploreDisciplineSection(hasContextMode = false, hasHeadroom = false, hasGrepGlob = true): string {

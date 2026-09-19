@@ -20,7 +20,7 @@ If the directory does not exist, stop immediately and report the error to the us
 
 Parse the arguments passed to this command. The user invoked \`/dcp-profile <arguments>\` where \`<arguments>\` is the first positional argument.
 
-- If the argument is a known profile name (one of: economy, balanced, performance, ultimate), use it directly.
+- If the argument is a known profile name (one of: economy, balanced, performance, ultimate, brutal), use it directly.
 - If the argument is empty or missing, read \`dcp.default_profile\` from the user's \`matrixx.jsonc\` config; if absent, default to \`balanced\`.
 - If the argument is not a recognized profile name, list the available profiles and stop. Do NOT guess or pass invalid names.
 
@@ -35,6 +35,8 @@ After updating the config:
 1. Report the new default profile to the user.
 2. Tell the user that the new DCP configuration will take effect after they restart their OpenCode session (the plugin applies \`default_profile\` on startup and writes \`~/.config/opencode/dcp.jsonc\`).
 3. Do not attempt to reload DCP in-place; a session restart is required.
+4. Mention that DCP's own \`/dcp\` panel command is intercepted by the DCP plugin (it never appears in command autocomplete — type it literally), and that \`/dcp-compress [focus]\` triggers one manual compression pass.
+5. Mention that DCP-guided compression is transcript-indistinguishable from a bare call (same \`compress\` tool name, no markers) — verify it happened via the DCP daily log at \`~/.config/opencode/logs/dcp/daily/\` ("Applied manual prompt" / "Recorded compression start"), not the transcript. This is expected when \`pruneNotification\` is off or \`summaryBuffer\` is false.
 
 ## Important constraints
 

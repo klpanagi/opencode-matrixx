@@ -507,7 +507,7 @@ Do NOT guess. Do NOT ask unnecessary questions. Do NOT stop early.
 - No unnecessary features, but solve blockers creatively
 </output_contract>
 
-## Response Compaction (LONG CONTEXT HANDLING)
+## Response Checkpointing (LONG CONTEXT HANDLING — internal summary, not host compaction)
 
 When working on long sessions or complex multi-file tasks:
 - Periodically summarize your working state internally

@@ -8,26 +8,30 @@ import { fallbackCompactDiscipline, fallbackFullDiscipline } from "../../src/age
 // sizes (full 577/623, compact 593/617 chars) to catch future bloat.
 describe("fallback discipline size", () => {
   test("full fallback stays under budget", () => {
-    //#given both grep/glob variants
+    //#given both grep/glob variants and every DCP mode
     //#when measuring chars (~4 chars/token)
     for (const hasGrepGlob of [true, false]) {
-      const text = fallbackFullDiscipline(hasGrepGlob)
-      //#then short, still carries routing signal
-      expect(text.length).toBeLessThanOrEqual(650)
-      expect(text).toContain("Context Discipline")
-      expect(text).toContain("ctx_")
+      for (const dcpMode of ["guided", "manual", "none"] as const) {
+        const text = fallbackFullDiscipline(hasGrepGlob, dcpMode)
+        //#then short, still carries routing signal
+        expect(text.length).toBeLessThanOrEqual(650)
+        expect(text).toContain("Context Discipline")
+        expect(text).toContain("ctx_")
+      }
     }
   })
 
   test("compact fallback stays under budget", () => {
-    //#given both grep/glob variants
+    //#given both grep/glob variants and every DCP mode
     //#when measuring chars (~4 chars/token)
     for (const hasGrepGlob of [true, false]) {
-      const text = fallbackCompactDiscipline(hasGrepGlob)
-      //#then short, still carries routing signal
-      expect(text.length).toBeLessThanOrEqual(650)
-      expect(text).toContain("Context Discipline")
-      expect(text).toContain("ctx_")
+      for (const dcpMode of ["guided", "manual", "none"] as const) {
+        const text = fallbackCompactDiscipline(hasGrepGlob, dcpMode)
+        //#then short, still carries routing signal
+        expect(text.length).toBeLessThanOrEqual(650)
+        expect(text).toContain("Context Discipline")
+        expect(text).toContain("ctx_")
+      }
     }
   })
 
@@ -39,5 +43,59 @@ describe("fallback discipline size", () => {
     //#then no grep/glob fallback promise
     expect(full).not.toContain("grep/glob fallback")
     expect(compact).not.toContain("grep/glob fallback")
+  })
+
+  test("fallback compression row defers to DCP nudges before manual host compress", () => {
+    //#given both fallback variants
+    //#when building fallbacks
+    for (const hasGrepGlob of [true, false]) {
+      const full = fallbackFullDiscipline(hasGrepGlob)
+      const compact = fallbackCompactDiscipline(hasGrepGlob)
+      //#then compression row carries a compression signal either way
+      expect(full).toContain("Compression")
+      expect(compact).toContain("Compression")
+    }
+  })
+
+  test("guided fallback allows compress only with trigger/nudge context", () => {
+    //#given DCP actively guiding compression
+    //#when building guided fallbacks
+    for (const hasGrepGlob of [true, false]) {
+      const full = fallbackFullDiscipline(hasGrepGlob, "guided")
+      const compact = fallbackCompactDiscipline(hasGrepGlob, "guided")
+      //#then agents call DCP's compress tool only with trigger/nudge context, never bare
+      expect(full).toContain("only with trigger/nudge context")
+      expect(compact).toContain("only with trigger/nudge context")
+      expect(full).not.toContain("ctx_stats>40%")
+      expect(compact).not.toContain("ctx_stats>40%")
+    }
+  })
+
+  test("inactive fallback states no compress tool exists", () => {
+    //#given DCP inactive (absent, disabled, or denied)
+    //#when building inactive fallbacks
+    for (const hasGrepGlob of [true, false]) {
+      const full = fallbackFullDiscipline(hasGrepGlob, "none")
+      const compact = fallbackCompactDiscipline(hasGrepGlob, "none")
+      //#then agents are told no compress tool exists
+      expect(full).toContain("No `compress` tool (DCP inactive)")
+      expect(compact).toContain("No `compress` tool (DCP inactive)")
+      expect(full).not.toContain("ctx_stats>40%")
+      expect(compact).not.toContain("ctx_stats>40%")
+    }
+  })
+
+  test("manual fallback restricts compress to the manual trigger", () => {
+    //#given DCP manualMode with no autonomous nudges
+    //#when building manual fallbacks
+    for (const hasGrepGlob of [true, false]) {
+      const full = fallbackFullDiscipline(hasGrepGlob, "manual")
+      const compact = fallbackCompactDiscipline(hasGrepGlob, "manual")
+      //#then agents call compress only after the trigger prompt
+      expect(full).toContain("only after trigger prompt")
+      expect(compact).toContain("only after trigger prompt")
+      expect(full).not.toContain("ctx_stats>40%")
+      expect(compact).not.toContain("ctx_stats>40%")
+    }
   })
 })
