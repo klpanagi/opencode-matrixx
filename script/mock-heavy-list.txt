@@ -35,7 +35,7 @@ tests/hooks/auto-update-checker/checker/pinned-version-updater.test.ts
 tests/tools/pdf-extract-figures/tools.test.ts
 tests/cli/doctor/checks.test.ts
 tests/cli/install/index.test.ts
-tests/tools/dcp-switch-profile/tools.test.ts
+tests/shared/dcp-switch-profile.test.ts
 tests/shared/agent-config-handler.test.ts
 tests/shared/opencode-message-dir.test.ts
 tests/config/model-migration.test.ts

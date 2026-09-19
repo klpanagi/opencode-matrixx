@@ -1,5 +1,5 @@
 import { afterAll, beforeEach, describe, expect, mock, test } from "bun:test"
-import { BUILTIN_DCP_PROFILES, DcpConfigSchema } from "../../../src/config/schema/dcp"
+import { BUILTIN_DCP_PROFILES, DcpConfigSchema } from "../../src/config/schema/dcp"
 
 // ---------------------------------------------------------------------------
 // Mock fs BEFORE importing the module under test
@@ -16,7 +16,7 @@ mock.module("node:fs", () => ({
   writeFileSync: mockWriteFileSync,
 }))
 
-import { deepMergeProfile, switchProfile } from "../../../src/tools/dcp-switch-profile/tools"
+import { deepMergeProfile, switchProfile } from "../../src/shared/dcp-switch-profile"
 
 // ---------------------------------------------------------------------------
 // Helpers

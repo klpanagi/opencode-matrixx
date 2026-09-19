@@ -1413,7 +1413,7 @@ Dynamic Context Pruning — tiered pruning (`economy`/`balanced`/`performance`/`
 | `profiles` | `object` | 4 built-in (`economy`/`balanced`/`performance`/`ultimate`) | Per-tier overrides for `compress`/`strategies`/`commands`/`manualMode`. |
 | `base` | `object` | — | Base overrides (`pruneNotificationType`, `autoUpdate`, `debug`, `compress`, `strategies`, `commands`, `manualMode`, `protectedFilePatterns`). |
 
-> Schema: `src/config/schema/dcp.ts` (~9.5k). Switch: `/dcp-profile <tier>` (sets `dcp.default_profile`, applied on startup by `src/tools/dcp-switch-profile/`). Docs: [Context Management](./context-management.md).
+> Schema: `src/config/schema/dcp.ts` (~9.5k). Switch: `/dcp-profile <tier>` (sets `dcp.default_profile`, applied on startup by `src/shared/dcp-switch-profile.ts`). Docs: [Context Management](./context-management.md).
 
 ## Assembly
 

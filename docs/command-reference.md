@@ -417,7 +417,7 @@ Set the DCP (Dynamic Context Pruning) tier: `economy`, `balanced`, `performance`
 |----------|-------------|
 | `<profile-name>` | DCP tier to store as `dcp.default_profile` |
 
-This command stores the tier as `dcp.default_profile` in the Matrixx config; the plugin applies it on next startup (profile logic in `src/tools/dcp-switch-profile/`).
+This command stores the tier as `dcp.default_profile` in the Matrixx config; the plugin applies it on next startup (profile logic in `src/shared/dcp-switch-profile.ts`).
 
 **Related:** [Context Management](context-management.md), `dcp` key in [Configuration](configurations.md#dcp).
 

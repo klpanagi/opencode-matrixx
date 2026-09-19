@@ -1,8 +1,8 @@
 import { existsSync, writeFileSync } from "node:fs"
 import { homedir } from "node:os"
 import { join } from "node:path"
-import type { DcpConfig } from "../../config/schema/dcp"
-import { BUILTIN_DCP_PROFILES } from "../../config/schema/dcp"
+import type { DcpConfig } from "../config/schema/dcp"
+import { BUILTIN_DCP_PROFILES } from "../config/schema/dcp"
 
 const DCP_PLUGIN_DIR = join(homedir(), ".config", "opencode", "node_modules", "@tarquinen", "opencode-dcp")
 const DCP_SYMLINK = join(homedir(), ".config", "opencode", "dcp.jsonc")
