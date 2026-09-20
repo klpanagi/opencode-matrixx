@@ -1,4 +1,7 @@
 import { afterAll, beforeEach, describe, expect, mock, test } from "bun:test"
+import { readFileSync as realReadFileSync } from "node:fs"
+import { homedir } from "node:os"
+import { join } from "node:path"
 import { BUILTIN_DCP_PROFILES, DcpConfigSchema } from "../../src/config/schema/dcp"
 
 // ---------------------------------------------------------------------------
@@ -6,13 +9,26 @@ import { BUILTIN_DCP_PROFILES, DcpConfigSchema } from "../../src/config/schema/d
 // ---------------------------------------------------------------------------
 
 let capturedWriteData: string | null = null
+let writeCount = 0
 const mockExistsSync = mock((_path: string) => true)
+// DCP target mirrored from src/shared/dcp-switch-profile.ts (read-only routing key;
+// this suite never reads the real home file — the DCP path always throws or returns
+// canned content, every other path delegates to the real readFileSync so sibling
+// suites sharing this process keep working).
+const dcpTargetPath = join(homedir(), ".config", "opencode", "dcp.jsonc")
+function defaultReadBehavior(path: string, encoding: BufferEncoding): string {
+  if (path !== dcpTargetPath) return realReadFileSync(path, encoding)
+  throw new Error("ENOENT: no such file or directory")
+}
+const mockReadFileSync = mock(defaultReadBehavior)
 const mockWriteFileSync = mock((_path: string, data: string) => {
   capturedWriteData = data
+  writeCount += 1
 })
 
 mock.module("node:fs", () => ({
   existsSync: mockExistsSync,
+  readFileSync: mockReadFileSync,
   writeFileSync: mockWriteFileSync,
 }))
 
@@ -41,7 +57,9 @@ afterAll(() => {
 describe("switchProfile", () => {
   beforeEach(() => {
     capturedWriteData = null
+    writeCount = 0
     mockExistsSync.mockImplementation(() => true)
+    mockReadFileSync.mockImplementation(defaultReadBehavior)
   })
 
   // ── Built-in profile values (no pluginConfig — exercises fallback) ──
@@ -554,6 +572,56 @@ describe("switchProfile", () => {
         strategies: {},
       })
       expect(result).toEqual(builtin)
+    })
+  })
+
+  // ── Read-compare-write guard ──────────────────────────────────────
+
+  describe("read-compare-write guard", () => {
+    test("missing file => writes (first-install path)", async () => {
+      //#given no existing DCP target (read throws ENOENT via default behavior)
+      //#when switching profile
+      await switchProfile("balanced")
+      //#then exactly one write with parseable JSON content
+      expect(writeCount).toBe(1)
+      expect(capturedWriteData).not.toBeNull()
+      expect(() => JSON.parse(capturedWriteData as string)).not.toThrow()
+    })
+
+    test("identical content => no writeFileSync", async () => {
+      //#given the target already holds the exact prior serialization
+      await switchProfile("balanced")
+      const firstWrite = capturedWriteData as string
+      capturedWriteData = null
+      writeCount = 0
+      mockReadFileSync.mockImplementation((path, encoding) =>
+        path === dcpTargetPath ? firstWrite : realReadFileSync(path, encoding),
+      )
+      //#when switching to the same profile again
+      const result = await switchProfile("balanced")
+      //#then no rewrite, success message retained
+      expect(writeCount).toBe(0)
+      expect(capturedWriteData).toBeNull()
+      expect(result).toContain("balanced")
+    })
+
+    test("different content => one write with fresh serialization", async () => {
+      //#given stale target content
+      mockReadFileSync.mockImplementation((path, encoding) =>
+        path === dcpTargetPath ? `{"stale":true}` : realReadFileSync(path, encoding),
+      )
+      //#when switching profile
+      await switchProfile("balanced")
+      //#then exactly one write with the exact prior serialization (2-space JSON + newline)
+      expect(writeCount).toBe(1)
+      const written = capturedWriteData as string
+      expect(written).not.toBe(`{"stale":true}`)
+      expect(written.endsWith("\n")).toBe(true)
+      const config = JSON.parse(written) as AnyRecord
+      expect(config.enabled).toBe(true)
+      expect((config.compress as AnyRecord).maxContextLimit).toBe(
+        BUILTIN_DCP_PROFILES.balanced.compress.maxContextLimit,
+      )
     })
   })
 
