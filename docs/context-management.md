@@ -1,6 +1,10 @@
 # Context Management in Matrixx
 
-Matrixx orchestrates five complementary layers for context management, L0 Native plus L1 RTK plus L2 context-mode plus L3 DCP plus L4 Headroom, with zero overlap and less than 10ms Matrixx bridge overhead. Each layer owns a distinct slice of the context lifecycle, from bash output to tool sandboxing to pruning to network proxy compression. Together they prevent out-of-memory failures, keep per-turn context lean, and let agents work longer without losing coherence. For background and cost analysis see [cost-performance proposals](cost-performance-proposals.md) P6 (RTK), P7 (context-mode), and P16 (Headroom).
+> **Audience:** operators tuning context behavior and engineers working on the context stack.
+> **Version:** 2.6.10. Canonical page for all context topics; other docs summarize and link here.
+> **See also:** `hooks.md` (truncator, monitor, compaction hooks), `configurations.md` (`context_mode.*`, `tasks.*`, truncation keys), `research/cost-performance.md` (background analysis).
+
+Matrixx orchestrates five complementary layers for context management, L0 Native plus L1 RTK plus L2 context-mode plus L3 DCP plus L4 Headroom, with zero overlap and less than 10ms Matrixx bridge overhead. Each layer owns a distinct slice of the context lifecycle, from bash output to tool sandboxing to pruning to network proxy compression. Together they prevent out-of-memory failures, keep per-turn context lean, and let agents work longer without losing coherence. For background and cost analysis see [cost-performance proposals](research/cost-performance.md) P6 (RTK), P7 (context-mode), and P16 (Headroom).
 
 ## Table of Contents
 
@@ -670,7 +674,7 @@ Notes:
 ## 7. See Also
 
 - README sections: [RTK Integration](https://github.com/klpanagi/opencode-matrixx#rtk-integration--token-compression) and [Headroom Integration](https://github.com/klpanagi/opencode-matrixx#headroom-integration--network-proxy-compression) — 5-subsection templates this document mirrors
-- [cost-performance proposals](cost-performance-proposals.md) — P6 RTK, P7 context-mode, P16 Headroom, plus the 5-layer matrix and cumulative estimates
+- [cost-performance proposals](research/cost-performance.md) — P6 RTK, P7 context-mode, P16 Headroom, plus the 5-layer matrix and cumulative estimates
 - [configurations](configurations.md) — full `matrixx.jsonc` reference, agent overrides, hook disabling, JSONC support
 - [features](features.md) — complete hook table including Truncation and Context Management and Recovery rows
 - Specs: [headroomlabs-ai/headroom](https://github.com/headroomlabs-ai/headroom), [mksglu/context-mode](https://github.com/mksglu/context-mode), [rtk-ai/rtk](https://github.com/rtk-ai/rtk), [@tarquinen/opencode-dcp](https://www.npmjs.com/package/@tarquinen/opencode-dcp)

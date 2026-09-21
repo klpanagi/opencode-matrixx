@@ -1,6 +1,10 @@
 # Matrixx Self-Evolution Loop
 
-> Deterministic runtime + async evolutionary loop — every session makes the next smarter, with human-in-loop governance.
+> **Audience:** users opting into session learning and engineers extending the loop.
+> **Version:** 2.6.10. Default **off** (`evolution.enabled: false` = zero overhead).
+> **See also:** `command-reference.md` (`/evolution`), `hooks.md` §2.3 (`evolution-watcher`, `evolution-compressor`, `evolution-hitl`), `configurations.md` (`evolution.*`).
+
+Self-evolution records what happens in sessions, asks for approval before keeping anything, and compresses approved traces into reusable knowledge — so every session makes the next one smarter, with human-in-the-loop governance.
 
 _Registration gating_: all 3 hooks register only when `evolution.enabled:true` (default `false` = zero overhead; handlers keep defense-in-depth `if (!config?.enabled) return`).
 

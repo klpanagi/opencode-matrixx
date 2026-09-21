@@ -1,5 +1,7 @@
 # Matrixx Cost/Performance Improvement Proposals
 
+> **Research note — point-in-time analysis, not a usage reference.** Historical dates, version stamps, and evidences below are preserved as written; counts re-verified against current `src/` where noted. For current behavior see `../hooks.md`, `../context-management.md`, and `../features.md`.
+
 **Status:** Living document — per-proposal status tracked inline (Implemented / Partial / Proposed with source evidence)
 > Point-in-time analysis as of v2.6.10: historical dates, version stamps, and v2.0.0 evidences below are preserved as written; counts re-verified against current `src/` where noted.
 **Date:** 2026-07-09 (status refresh: v2.6.10)

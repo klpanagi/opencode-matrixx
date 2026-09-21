@@ -1,7 +1,9 @@
 # Matrixx Orchestration
 
-**Version:** 2.6.10 · **Canonical entry point for understanding orchestration.**
+**Version:** 2.6.10 · **Audience:** users running multi-step work and engineers extending the workflow.
+**Canonical entry point for understanding orchestration.**
 If you read one orchestration doc, read this one.
+**See also:** `agents.md` (the roster), `task-system.md` (execution state), `command-reference.md` (`/start-work`, `/matrix-loop`), `category-skill-guide.md` (categories × skills).
 
 Matrixx implements a simple philosophy: **separation of planning and execution**.
 A planner figures out what to do. An executor coordinates the work.

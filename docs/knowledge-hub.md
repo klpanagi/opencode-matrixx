@@ -1,12 +1,14 @@
-# Knowledge Hub (Phase-0 Workaround)
+# Knowledge Hub
 
-> Zero-code routing for the external knowledge base. No source changes required.
-> Configuration reference (registry) below.
+> **Audience:** users with an external knowledge corpus and engineers configuring `knowledge` hubs.
+> **Version:** 2.6.10.
+> **See also:** `configurations.md` (the `knowledge` key), `hooks.md` §2.3 (`knowledge-hub-guard`, `knowledge-hub-injector`, `knowledge-hub-search-nudge`).
 
-## Phase-0: AGENTS.md Pointer (no code)
+External knowledge-base routing with a read-only guard. Declare one or more hubs in config; agents consult the router index before answering domain questions and read single files on demand — never bulk-read the corpus. No source changes required.
 
-Workers get KB routing today by pointing at the router index. No files under
-`src/` are touched, and nothing under `<your-knowledge-dir>/` is modified.
+## AGENTS.md pointer (zero-code setup)
+
+Workers get KB routing today by pointing at the router index. No files under `src/` are touched, and nothing under `<your-knowledge-dir>/` is modified.
 
 ### Router format
 
@@ -45,7 +47,7 @@ only; the canonical path remains `<your-knowledge-dir>/_index.md`.
   stay untouched.
 - Router-only discipline: always check `_index.md` first; open only the rows
   whose `When to consult` column matches the task.
-- Frontmatter is optional for Phase-0; no metadata changes required.
+- Frontmatter is optional; no metadata changes required.
 - Secrets: `_index.md` references `api_access/.publisync_env` and
   `api_access/.alz_mongo_env` by filename only — never print or commit their contents.
 

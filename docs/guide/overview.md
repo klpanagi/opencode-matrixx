@@ -1,12 +1,15 @@
 # Matrixx Overview
 
+> **Audience:** new users. **Version:** 2.6.10.
+> **See also:** `installation.md` (setup), `../features.md` (capability index), `../orchestration.md` (how work runs).
+
 Learn about Matrixx, a plugin that transforms OpenCode into the best agent harness.
 
 ---
 
 ## TL;DR
 
-> **Morpheus agent strongly recommends Opus 4.6 model. Using other models may result in significantly degraded experience.**
+> **Model defaults matter.** The bundled config pins a model per agent and category (see the [Configuration Guide](../configurations.md)); run `opencode models` to see what is available in your environment. Swapping defaults may degrade orchestration quality.
 
 **Feeling lazy?** Just include `ultrawork` (or `ulw`) in your prompt. That's it. The agent figures out the rest.
 
