@@ -5,7 +5,7 @@ import type {
 } from "../../agents/dynamic-agent-prompt-builder"
 import { log } from "../../shared/logger"
 import { mergeCategories } from "../../shared/merge-categories"
-import { CATEGORY_DESCRIPTIONS, SHORT_CATEGORY_HINTS } from "./constants"
+import { CATEGORY_DESCRIPTIONS, isCodeWritingCategory, SHORT_CATEGORY_HINTS } from "./constants"
 import {
   executeBackgroundContinuation,
   executeBackgroundTask,
@@ -39,7 +39,7 @@ export function requireTddEnforcerForCodeWriting(
   // there would false-positive on non-code tasks. Category (not prompt sniffing)
   // is the signal. Fail-closed: an explicit global `tdd_enforcer.enabled === false`
   // opt-out does NOT exempt `source`, which by definition writes code.
-  if (category !== "source") {
+  if (!isCodeWritingCategory(category)) {
     return null
   }
   if (loadSkills.includes("tdd-enforcer")) {
@@ -252,6 +252,7 @@ Do NOT confuse with task_create/task_update/task_list/task_get/task_cleanup (the
             skillContent,
             categoryPromptAppend,
             agentName: agentToUse,
+            category: args.category,
             availableCategories,
             availableSkills,
           })
@@ -270,6 +271,7 @@ Do NOT confuse with task_create/task_update/task_list/task_get/task_cleanup (the
         skillContent,
         categoryPromptAppend,
         agentName: agentToUse,
+        category: args.category,
         availableCategories,
         availableSkills,
       })

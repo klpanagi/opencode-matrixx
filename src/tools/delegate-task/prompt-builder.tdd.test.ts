@@ -5,7 +5,7 @@ import { buildSystemContent } from "./prompt-builder"
 describe("buildSystemContent TDD banner", () => {
   test("includes test-first marker when skill content is absent", () => {
     //#given
-    const input = { skillContent: undefined }
+    const input = { skillContent: undefined, category: "source" }
 
     //#when
     const result = buildSystemContent(input)
@@ -18,7 +18,7 @@ describe("buildSystemContent TDD banner", () => {
 
   test("includes test-first marker when skill content is present", () => {
     //#given
-    const input = { skillContent: "some skill content" }
+    const input = { skillContent: "some skill content", category: "source" }
 
     //#when
     const result = buildSystemContent(input)
@@ -32,7 +32,7 @@ describe("buildSystemContent TDD banner", () => {
 
   test("includes test-first marker with category append and no skill", () => {
     //#given
-    const input = { categoryPromptAppend: "category context", skillContent: undefined }
+    const input = { categoryPromptAppend: "category context", skillContent: undefined, category: "source" }
 
     //#when
     const result = buildSystemContent(input)
@@ -46,7 +46,7 @@ describe("buildSystemContent TDD banner", () => {
 
   test("includes skill content, category append, and test-first marker when both present", () => {
     //#given
-    const input = { skillContent: "some skill content", categoryPromptAppend: "category context" }
+    const input = { skillContent: "some skill content", categoryPromptAppend: "category context", category: "source" }
 
     //#when
     const result = buildSystemContent(input)

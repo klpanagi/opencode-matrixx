@@ -53,6 +53,14 @@ Every test uses //#given (setup), //#when (action), //#then (assert) markers.
 Verify with \`bun test\` (0 failures) before reporting done.
 </TDD_Test_First>`
 
+/**
+ * Code-writing categories requiring TDD enforcement (issue #127).
+ * Single source of truth for banner gating + fail-closed guard.
+ */
+export function isCodeWritingCategory(category: string | undefined): boolean {
+  return category === "source"
+}
+
 const MATRIX_BEND_CATEGORY_PROMPT_APPEND = `<Category_Context>
 You are working on HIGHLY CREATIVE / ARTISTIC tasks.
 

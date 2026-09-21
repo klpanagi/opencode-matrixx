@@ -572,14 +572,14 @@ describe("morpheus-task", () => {
          abort: new AbortController().signal,
        }
        
-       // when delegating with a category
-       const result = await tool.execute(
-         {
-           description: "Test task",
-           prompt: "Do something",
-           category: "source",
-           run_in_background: true,
-           load_skills: [],
+      // when delegating with a category
+      const result = await tool.execute(
+        {
+          description: "Test task",
+          prompt: "Do something",
+          category: "source",
+          run_in_background: true,
+          load_skills: ["tdd-enforcer"],
          },
          toolContext
        )
@@ -1094,7 +1094,7 @@ describe("morpheus-task", () => {
           prompt: "Do something",
           category: "source",
           run_in_background: true,
-          load_skills: ["git-master"],
+          load_skills: ["git-master", "tdd-enforcer"],
         },
         toolContext
       )
@@ -1371,7 +1371,7 @@ describe("morpheus-task", () => {
           prompt: "Do something",
           category: "source",
           run_in_background: false,
-          load_skills: [],
+          load_skills: ["tdd-enforcer"],
         },
         toolContext
       )
@@ -1661,7 +1661,7 @@ describe("morpheus-task", () => {
           prompt: "Do something",
           category: "source",
           run_in_background: false,
-          load_skills: ["git-master"],
+          load_skills: ["git-master", "tdd-enforcer"],
         },
         toolContext
       )
@@ -1729,7 +1729,7 @@ describe("morpheus-task", () => {
           prompt: "Do something",
           category: "source",
           run_in_background: false,
-          load_skills: ["git-master"],
+          load_skills: ["git-master", "tdd-enforcer"],
         },
         toolContext
       )
@@ -1786,7 +1786,7 @@ describe("morpheus-task", () => {
           prompt: "Do something",
           category: "source",
           run_in_background: false,
-          load_skills: ["git-master"],
+          load_skills: ["git-master", "tdd-enforcer"],
         },
         toolContext
       )
@@ -2116,7 +2116,7 @@ describe("morpheus-task", () => {
           prompt: "Do something smart",
           category: "source",
           run_in_background: false,
-          load_skills: ["git-master"],
+          load_skills: ["git-master", "tdd-enforcer"],
         },
         toolContext
       )
@@ -2540,7 +2540,7 @@ const tool = createDelegateTask({
           prompt: "Do something",
           category: "source",
           run_in_background: true,
-          load_skills: [],
+          load_skills: ["tdd-enforcer"],
         },
         toolContext
       )
@@ -2606,7 +2606,7 @@ const tool = createDelegateTask({
           prompt: "Do something",
           category: "source",
           run_in_background: true,
-          load_skills: [],
+          load_skills: ["tdd-enforcer"],
         },
         toolContext
       )
@@ -2796,7 +2796,7 @@ const tool = createDelegateTask({
           prompt: "Do something",
           category: "source",
           run_in_background: false,
-          load_skills: ["agent-browser"],
+          load_skills: ["agent-browser", "tdd-enforcer"],
         },
         toolContext
       )
@@ -2848,7 +2848,7 @@ const tool = createDelegateTask({
           prompt: "Do something",
           category: "source",
           run_in_background: false,
-          load_skills: ["agent-browser"],
+          load_skills: ["agent-browser", "tdd-enforcer"],
         },
         toolContext
       )
@@ -4097,7 +4097,7 @@ const tool = createDelegateTask({
           description: "Default background test",
           prompt: "Do something",
           category: "source",
-          load_skills: [],
+          load_skills: ["tdd-enforcer"],
           // run_in_background intentionally omitted
         } as unknown as DelegateTaskArgs,
         toolContext

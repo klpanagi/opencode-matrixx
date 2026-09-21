@@ -1,17 +1,17 @@
-import { buildPlanAgentSystemPrepend, isPlanAgent, TDD_TEST_FIRST_APPEND } from "./constants"
+import { buildPlanAgentSystemPrepend, isCodeWritingCategory, isPlanAgent, TDD_TEST_FIRST_APPEND } from "./constants"
 import type { BuildSystemContentInput } from "./types"
 
 /**
  * Build the system content to inject into the agent prompt.
  * Combines skill content, category prompt append, and plan agent system prepend.
- * Always appends the TDD test-first banner LAST so the requirement is visible
- * even when the caller omitted the tdd-enforcer skill.
+ * Appends the TDD test-first banner LAST only for code-writing categories.
  */
 export function buildSystemContent(input: BuildSystemContentInput): string | undefined {
   const {
     skillContent,
     categoryPromptAppend,
     agentName,
+    category,
     availableCategories,
     availableSkills,
   } = input
@@ -34,7 +34,13 @@ export function buildSystemContent(input: BuildSystemContentInput): string | und
     parts.push(categoryPromptAppend)
   }
 
-  parts.push(TDD_TEST_FIRST_APPEND)
+  if (isCodeWritingCategory(category)) {
+    parts.push(TDD_TEST_FIRST_APPEND)
+  }
+
+  if (parts.length === 0) {
+    return undefined
+  }
 
   return parts.join("\n\n")
 }
