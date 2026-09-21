@@ -38,7 +38,7 @@ export function categorizeTools(toolNames: string[]): AvailableTool[] {
       category = "lsp"
     } else if (name.startsWith("ast_grep")) {
       category = "ast"
-    } else if (name.startsWith("ctx_") || name.startsWith("headroom_")) {
+    } else if (name.startsWith("ctx_") || name.startsWith("headroom_") || name === "n" || name === "n_file") {
       category = "sandbox"
     } else if (name === "grep" || name === "glob") {
       category = "search"
@@ -459,6 +459,7 @@ ${analysis}
 | Edits | read (for line numbers) -> edit/write |
 | Observation (<5 lines) | bash (pwd, git status, --version) |
 | State Mutation | bash (git, mkdir, install, build, rm) |
+| Run Scripts | ctx_execute (language=python/shell/ruby/go/rust/...) — NEVER bash+python for scripting |
 ${search}
 | Docs / Web | ctx_fetch_and_index -> ctx_search |
 ${compression}
@@ -483,6 +484,7 @@ export function fallbackCompactDiscipline(hasGrepGlob: boolean, dcpMode: DcpComp
 |----------|------|
 ${analysis}
 ${search}
+| Run Scripts | ctx_execute (language=python/shell/ruby/go/rust/...) — never bash+python for scripting |
 | Docs / Web | ctx_fetch_and_index -> ctx_search |
 ${compression}
 

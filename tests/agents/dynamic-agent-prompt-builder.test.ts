@@ -321,10 +321,37 @@ describe("buildContextDisciplineSection", () => {
       expect(result).toContain("Edits")
       expect(result).toContain("Observation")
       expect(result).toContain("State Mutation")
+      expect(result).toContain("Run Scripts")
       expect(result).toContain("Search")
       expect(result).toContain("Docs / Web")
       expect(result).toContain("Compression")
     }
+  })
+
+  it("should include Run Scripts row in fallbackFullDiscipline", () => {
+    //#given: full fallback table (no grep/glob)
+    const result = fallbackFullDiscipline(false)
+    //#then: Run Scripts row present with language options
+    expect(result).toContain("Run Scripts")
+    expect(result).toContain("python")
+    expect(result).toContain("shell")
+    expect(result).toContain("ruby")
+    expect(result).toContain("go")
+    expect(result).toContain("rust")
+    expect(result).toContain("bash+python")
+  })
+
+  it("should include Run Scripts row in fallbackCompactDiscipline", () => {
+    //#given: compact fallback table (no grep/glob)
+    const result = fallbackCompactDiscipline(false)
+    //#then: Run Scripts row present with language options
+    expect(result).toContain("Run Scripts")
+    expect(result).toContain("python")
+    expect(result).toContain("shell")
+    expect(result).toContain("ruby")
+    expect(result).toContain("go")
+    expect(result).toContain("rust")
+    expect(result).toContain("bash+python")
   })
 })
 
@@ -526,7 +553,7 @@ describe("buildCompactContextDisciplineSection", () => {
     expect(result).not.toContain("ALWAYS")
   })
 
-  it("should contain 4 compact scenarios", () => {
+  it("should contain 5 compact scenarios", () => {
     //#given (runtime file or fallback)
     const result = buildCompactContextDisciplineSection(true)
     //#then: ctx coverage in either form
@@ -617,6 +644,23 @@ describe("categorizeTools extended", () => {
     const result = categorizeTools(["ctx_stats", "ctx_index"])
     //#then
     expect(result.every((t) => t.category === "sandbox")).toBe(true)
+  })
+
+  it("should categorize n and n_file as sandbox", () => {
+    //#given: context-mode aliases
+    const result = categorizeTools(["n", "n_file"])
+    //#then: both sandbox
+    expect(result.every((t) => t.category === "sandbox")).toBe(true)
+  })
+
+  it("should categorize n and n_file alongside ctx_* as sandbox in mixed list", () => {
+    //#given: n/n_file mixed with ctx_* and other tools
+    const result = categorizeTools(["n", "ctx_execute", "n_file", "ctx_batch_execute", "grep", "read"])
+    //#then: n/n_file categorized as sandbox alongside ctx_* tools
+    const byCategory = (c: string) => result.filter((t) => t.category === c).map((t) => t.name)
+    expect(byCategory("sandbox")).toEqual(["n", "ctx_execute", "n_file", "ctx_batch_execute"])
+    expect(byCategory("search")).toEqual(["grep"])
+    expect(byCategory("other")).toEqual(["read"])
   })
 
   it("should categorize session_* as session and slashcommand as command", () => {
