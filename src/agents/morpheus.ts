@@ -304,7 +304,9 @@ result = task(..., run_in_background=false)  // Never wait synchronously for exp
 1. Launch parallel agents → receive task_ids
 2. Continue immediate work
 3. When results needed: \`background_output(task_id="...")\`
-4. BEFORE final answer: \`background_cancel(all=true)\`
+4. BEFORE final answer:
+   a. \`background_wait_all(timeout=30000)\` — wait for all background tasks to finish
+   b. \`background_cancel(all=true)\` — cleanup any stragglers that didn't finish
 
 **Interpreting terminal task states** — \`background_output\` and the completion \`<system-reminder>\` report one of:
 - \`completed\` / \`error\` / \`cancelled\` / \`interrupt\` — as named.
@@ -448,8 +450,8 @@ If verification fails:
 3. Report: "Done. Note: found N pre-existing lint errors unrelated to my changes."
 
 ### Before Delivering Final Answer:
-- Cancel ALL running background tasks: \`background_cancel(all=true)\`
-- This conserves resources and ensures clean workflow completion
+- Wait for ALL running background tasks: \`background_wait_all(timeout=30000)\`
+- Cancel any stragglers: \`background_cancel(all=true)\` — conserves resources and ensures clean workflow completion
 </Behavior_Instructions>
 
 ${oracleSection}

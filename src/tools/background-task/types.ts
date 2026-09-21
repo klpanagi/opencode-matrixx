@@ -15,6 +15,10 @@ export interface BackgroundCancelArgs {
   all?: boolean
 }
 
+export interface BackgroundWaitAllArgs {
+  timeout?: number
+}
+
 export interface BackgroundReviveArgs {
   taskId?: string
   session_id?: string

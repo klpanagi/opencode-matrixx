@@ -4576,3 +4576,178 @@ describe("BackgroundManager bounded admission (T7)", () => {
     manager.shutdown()
   })
 })
+
+describe("waitForAllDescendants", () => {
+  const PARENT_SESSION = "wait-all-parent-session"
+  const SESSION_A = "wait-all-session-a"
+  const SESSION_B = "wait-all-session-b"
+
+  function addTaskToManager(
+    manager: BackgroundManager,
+    overrides: Partial<BackgroundTask> & { id: string; parentSessionID: string; sessionID?: string },
+  ): void {
+    const taskMap = getTaskMap(manager)
+    const task: BackgroundTask = {
+      id: overrides.id,
+      parentSessionID: overrides.parentSessionID,
+      sessionID: overrides.sessionID,
+      parentMessageID: "mock-msg",
+      description: overrides.description ?? "test task",
+      prompt: "test prompt",
+      agent: overrides.agent ?? "test-agent",
+      status: overrides.status ?? "running",
+      startedAt: new Date(),
+    }
+    taskMap.set(task.id, task)
+  }
+
+  test("returns empty when no descendant tasks exist", async () => {
+    // #given
+    const manager = createBackgroundManager()
+    const timeout = 500
+
+    // #when
+    const result = await manager.waitForAllDescendants(PARENT_SESSION, timeout)
+
+    // #then
+    expect(result.completed).toEqual([])
+    expect(result.timedOut).toEqual([])
+
+    manager.shutdown()
+  })
+
+  test("returns empty when all descendants are terminal (completed)", async () => {
+    // #given
+    const manager = createBackgroundManager()
+    addTaskToManager(manager, {
+      id: "task-completed",
+      parentSessionID: PARENT_SESSION,
+      sessionID: SESSION_A,
+      status: "completed",
+      description: "completed task",
+    })
+    const timeout = 500
+
+    // #when
+    const result = await manager.waitForAllDescendants(PARENT_SESSION, timeout)
+
+    // #then
+    expect(result.completed).toHaveLength(1)
+    expect(result.completed[0].id).toBe("task-completed")
+    expect(result.completed[0].status).toBe("completed")
+    expect(result.timedOut).toEqual([])
+
+    manager.shutdown()
+  })
+
+  test("returns empty when all descendants are terminal (error)", async () => {
+    // #given
+    const manager = createBackgroundManager()
+    addTaskToManager(manager, {
+      id: "task-error",
+      parentSessionID: PARENT_SESSION,
+      sessionID: SESSION_A,
+      status: "error",
+      description: "errored task",
+    })
+    const timeout = 500
+
+    // #when
+    const result = await manager.waitForAllDescendants(PARENT_SESSION, timeout)
+
+    // #then
+    expect(result.completed).toHaveLength(1)
+    expect(result.completed[0].id).toBe("task-error")
+    expect(result.completed[0].status).toBe("error")
+    expect(result.timedOut).toEqual([])
+
+    manager.shutdown()
+  })
+
+  test("returns timedOut when some tasks are still running after timeout", async () => {
+    // #given
+    const manager = createBackgroundManager()
+    addTaskToManager(manager, {
+      id: "task-completed",
+      parentSessionID: PARENT_SESSION,
+      sessionID: SESSION_A,
+      status: "completed",
+      description: "completed task",
+    })
+    addTaskToManager(manager, {
+      id: "task-running",
+      parentSessionID: PARENT_SESSION,
+      sessionID: SESSION_B,
+      status: "running",
+      description: "still running",
+    })
+    const timeout = 100
+
+    // #when
+    const result = await manager.waitForAllDescendants(PARENT_SESSION, timeout)
+
+    // #then
+    expect(result.completed).toHaveLength(1)
+    expect(result.completed[0].id).toBe("task-completed")
+    expect(result.timedOut).toHaveLength(1)
+    expect(result.timedOut[0].id).toBe("task-running")
+    expect(result.timedOut[0].status).toBe("running")
+
+    manager.shutdown()
+  })
+
+  test("includes pending tasks in timedOut", async () => {
+    // #given
+    const manager = createBackgroundManager()
+    addTaskToManager(manager, {
+      id: "task-pending",
+      parentSessionID: PARENT_SESSION,
+      sessionID: undefined,
+      status: "pending",
+      description: "never started",
+    })
+    const timeout = 100
+
+    // #when
+    const result = await manager.waitForAllDescendants(PARENT_SESSION, timeout)
+
+    // #then
+    expect(result.completed).toEqual([])
+    expect(result.timedOut).toHaveLength(1)
+    expect(result.timedOut[0].id).toBe("task-pending")
+    expect(result.timedOut[0].status).toBe("pending")
+
+    manager.shutdown()
+  })
+
+  test("recurses into descendant sessions", async () => {
+    // #given
+    const manager = createBackgroundManager()
+    // Parent session launches a child that itself has a child
+    addTaskToManager(manager, {
+      id: "child-task",
+      parentSessionID: PARENT_SESSION,
+      sessionID: SESSION_A,
+      status: "completed",
+      description: "child",
+    })
+    addTaskToManager(manager, {
+      id: "grandchild-task",
+      parentSessionID: SESSION_A,
+      sessionID: SESSION_B,
+      status: "completed",
+      description: "grandchild",
+    })
+    const timeout = 500
+
+    // #when
+    const result = await manager.waitForAllDescendants(PARENT_SESSION, timeout)
+
+    // #then
+    expect(result.completed).toHaveLength(2)
+    expect(result.completed.map((t) => t.id).sort()).toEqual(["child-task", "grandchild-task"])
+    expect(result.timedOut).toEqual([])
+
+    manager.shutdown()
+  })
+})

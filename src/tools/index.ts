@@ -40,6 +40,7 @@ import {
   createBackgroundCancel,
   createBackgroundOutput,
   createBackgroundRevive,
+  createBackgroundWaitAll,
 } from "./background-task"
 
 type OpencodeClient = PluginInput["client"]
@@ -67,6 +68,7 @@ export function createBackgroundTools(
     background_output: createBackgroundOutput(outputManager, client),
     background_cancel: createBackgroundCancel(manager, cancelClient),
     background_revive: createBackgroundRevive(manager, directory),
+    background_wait_all: createBackgroundWaitAll(manager),
   }
 }
 

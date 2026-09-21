@@ -4,6 +4,7 @@ import type { PluginInput } from "@opencode-ai/plugin"
 import type { BackgroundTaskConfig, DcpHandoffCompression, TmuxConfig } from "../../config/schema"
 import { getAgentToolRestrictions, log, normalizeSDKResponse, promptWithModelSuggestionRetry } from "../../shared"
 import { hasPendingQuestionMessage } from "../../shared/awaiting-user"
+import { delay } from "../../shared/delay"
 import { formatDuration } from "../../shared/format-duration"
 import { setSessionTemperature, setSessionTools } from "../../shared/session-state"
 import { isInsideTmux } from "../../shared/tmux"
@@ -1647,6 +1648,61 @@ export class BackgroundManager {
       void this.cancelTask(taskId, { source: "stop-continuation", skipNotification: true })
     }
     return tasksToCancel.length
+  }
+
+  /**
+   * Wait for all descendant tasks (running/pending) to reach a terminal state.
+   * Polls every `pollIntervalMs` until all tasks are terminal or `timeoutMs` elapses.
+   * Returns per-task results: completed tasks and timed-out (still running) tasks.
+   */
+  async waitForAllDescendants(
+    sessionID: string,
+    timeoutMs = 30000,
+    pollIntervalMs = 1000,
+  ): Promise<{
+    completed: Array<{ id: string; description: string; agent: string; status: string }>
+    timedOut: Array<{ id: string; description: string; agent: string; status: string }>
+  }> {
+    const startTime = Date.now()
+
+    const getActiveDescendants = (): BackgroundTask[] => {
+      const all = this.getAllDescendantTasks(sessionID)
+      return all.filter((t) => t.status === "running" || t.status === "pending")
+    }
+
+    let active = getActiveDescendants()
+
+    if (active.length > 0) {
+      while (Date.now() - startTime < timeoutMs) {
+        await delay(pollIntervalMs)
+        active = getActiveDescendants()
+        if (active.length === 0) break
+      }
+    }
+
+    const allTasks = this.getAllDescendantTasks(sessionID)
+    const completed: Array<{ id: string; description: string; agent: string; status: string }> = []
+    const timedOut: Array<{ id: string; description: string; agent: string; status: string }> = []
+
+    for (const task of allTasks) {
+      if (task.status === "running" || task.status === "pending") {
+        timedOut.push({
+          id: task.id,
+          description: task.description,
+          agent: task.agent,
+          status: task.status,
+        })
+      } else {
+        completed.push({
+          id: task.id,
+          description: task.description,
+          agent: task.agent,
+          status: task.status,
+        })
+      }
+    }
+
+    return { completed, timedOut }
   }
 
   private startPolling(): void {

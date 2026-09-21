@@ -10,3 +10,5 @@ Revivable: cancelled, stopped, interrupt, error, completed — provided the task
 Not revivable: pending/running (still active — use background_output), statusUncertain (unknown liveness — pass force=true to acknowledge), and tasks that never produced a session (e.g. queue-saturated).
 
 Handles are retained for 30 minutes, so revive works after a task was pruned or the plugin restarted.`
+
+export const BACKGROUND_WAIT_ALL_DESCRIPTION = `Wait for ALL running/pending background tasks in the current session to complete. Polls until all tasks reach a terminal state or timeout. Use this BEFORE background_cancel(all=true) to allow exploration tasks to finish and return their results.`
