@@ -25,6 +25,33 @@ export { resolveCategoryConfig } from "./categories"
 export { buildSystemContent } from "./prompt-builder"
 export type { BuildSystemContentInput, DelegateTaskToolOptions, SyncSessionCreatedEvent } from "./types"
 
+/**
+ * Fail-closed TDD enforcement for code-writing delegations (issue #127).
+ * Returns a hard error string when the delegation must be rejected, else null.
+ * Complexity: 1 — single exception path (source without the skill).
+ */
+export function requireTddEnforcerForCodeWriting(
+  category: string | undefined,
+  loadSkills: string[],
+): string | null {
+  // Construct-scope decision: enforce `source` only. `construct` also produces
+  // UI code but shares prompts with design exploration, so requiring the skill
+  // there would false-positive on non-code tasks. Category (not prompt sniffing)
+  // is the signal. Fail-closed: an explicit global `tdd_enforcer.enabled === false`
+  // opt-out does NOT exempt `source`, which by definition writes code.
+  if (category !== "source") {
+    return null
+  }
+  if (loadSkills.includes("tdd-enforcer")) {
+    return null
+  }
+  return (
+    `TDD enforcement (issue #127): category "source" writes code and requires ` +
+    `load_skills to include "tdd-enforcer". Add "tdd-enforcer" to load_skills. ` +
+    `See docs/quality.md Part B.`
+  )
+}
+
 export function createDelegateTask(options: DelegateTaskToolOptions): ToolDefinition {
   const { userCategories } = options
 
@@ -57,7 +84,7 @@ REQUIRED: You MUST provide EITHER category OR subagent_type (one of them is REQU
 - If using a specific agent → provide subagent_type
 - Providing NEITHER is INVALID and will fail.
 
-- load_skills: ALWAYS REQUIRED. Pass at least one skill name (e.g., ["playwright"], ["git-master", "frontend-ui-ux"]).
+- load_skills: ALWAYS REQUIRED. Pass at least one skill name (e.g., ["playwright"], ["git-master", "frontend-ui-ux"]). Code-writing categories (source) MUST include "tdd-enforcer" (see docs/quality.md Part B).
 - category: Use predefined category → Spawns Mouse with category config. Available: ${categoryHints} (full per-category guidance is injected at execution time; see category arg).
 - subagent_type: Use specific agent directly (e.g., "oracle", "trinity")
 - run_in_background: true=async (returns task_id), false=sync (waits for result). Default: false. Use true for ANY parallel independent work (exploration, fan-out, multi-agent waves); false awaits the result inline.
@@ -145,6 +172,11 @@ Do NOT confuse with task_create/task_update/task_list/task_get/task_cleanup (the
       }
       if (args.load_skills === null) {
         throw new Error(`Invalid arguments: load_skills=null is not allowed. Pass [] if no skills needed.`)
+      }
+
+      const tddError = requireTddEnforcerForCodeWriting(args.category, args.load_skills)
+      if (tddError) {
+        throw new Error(tddError)
       }
 
       const runInBackground = args.run_in_background === true
