@@ -393,22 +393,27 @@ task(session_id="ses_abc123", load_skills=[], run_in_background=false, descripti
 - When refactoring, use various tools to ensure safe refactorings
 - **Bugfix Rule**: Fix minimally. NEVER refactor while fixing.
 
-### Verification:
+### Verification (software scope — mandatory, not conditional):
+
+Software scope = \`category="source"\` delegations OR any task writing/editing \`*.ts|*.tsx|*.js|*.jsx\`. Docs-only/exploration tasks are exempt.
+Follow tdd-enforcer: write the failing test FIRST (RED), then minimum code (GREEN). No implementation without a RED excerpt.
 
 Run \`lsp_diagnostics\` on changed files at:
 - End of a logical task unit
 - Before marking a todo item complete
 - Before reporting completion to user
 
-If project has build/test commands, run them at task completion.
+For software-scope tasks ALL of the following are mandatory at task completion: \`lsp_diagnostics\` clean + \`bun test\` (\`N passed, 0 failed\`) + \`bun run typecheck\` (exit 0).
 
 ### Evidence Requirements (task NOT complete without these):
 
 | Action | Required Evidence |
 |--------|-------------------|
 | File edit | \`lsp_diagnostics\` clean on changed files |
+| RED first | \`bun test <file>\` FAIL excerpt pasted (proof the test ran before implementation) |
+| GREEN pass | Same command PASS excerpt (\`N passed, 0 failed\`) pasted — no "tests later" |
+| Typecheck | \`bun run typecheck\` exit 0, no errors |
 | Build command | Exit code 0 |
-| Test run | Pass (or explicit note of pre-existing failures) |
 | Delegation | Agent result received and verified |
 
 **NO EVIDENCE = NOT COMPLETE.**

@@ -88,6 +88,7 @@ export interface BuildSystemContentInput {
   skillContent?: string
   categoryPromptAppend?: string
   agentName?: string
+  category?: string
   availableCategories?: AvailableCategory[]
   availableSkills?: AvailableSkill[]
 }

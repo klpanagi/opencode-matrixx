@@ -840,40 +840,52 @@ task(
 
 ### Config Gate
 
-The `tdd-enforcer` skill is **disabled by default**. It only activates when enabled in the matrixx config. Schema: `src/config/schema/tdd-enforcer.ts` (`TddEnforcerConfigSchema`, `enabled` defaults to `false`); wired as optional `tdd_enforcer` key in `src/config/schema/matrixx-config.ts`:
+The `tdd-enforcer` skill is **enabled by default** (fail-closed). It stays active unless you explicitly opt out in the matrixx config. Schema: `src/config/schema/tdd-enforcer.ts` (`TddEnforcerConfigSchema`, `enabled` defaults to `true`; set `enabled: false` to opt out); wired as optional `tdd_enforcer` key in `src/config/schema/matrixx-config.ts`:
 
 ```jsonc
-// matrixx.json or matrixx.jsonc
+// matrixx.json or matrixx.jsonc (default is enabled; only add this to opt out)
 {
   "tdd_enforcer": {
-    "enabled": true
+    "enabled": false
   }
 }
 ```
+
+See `matrixx.example.jsonc` (`tdd_enforcer` block, active `enabled: true`) for the canonical example.
 
 #### Gate Check Locations
 
 | File | Check |
 |------|-------|
-| `src/plugin/skill-context.ts` | Adds `tdd-enforcer` to `disabledSkills` if not enabled |
-| `src/plugin-handlers/agent-config-handler.ts` | Same gate for agent config |
+| `src/plugin/skill-context.ts` | Adds `tdd-enforcer` to `disabledSkills` only on explicit `enabled: false` |
+| `src/plugin-handlers/agent-config-handler.ts` | Same gate for agent config: strips only on explicit opt-out |
+| `src/tools/delegate-task/tools.ts` | Hard requirement: `category="source"` fails without `tdd-enforcer` in `load_skills`, even when globally opted out |
+| `src/tools/delegate-task/constants.ts` (`TDD_TEST_FIRST_APPEND`) | Test-first banner (`NO IMPLEMENTATION WITHOUT A FAILING TEST FIRST`) injected into `source` prompts, visible even if the skill is omitted |
 
-#### What Happens When Disabled
+#### What Happens When Opted Out (`enabled: false`)
 
 - Oracle still includes TDD instructions in plans (template is static)
-- Developer agent does NOT load the `tdd-enforcer` skill
-- No RED-GREEN-REFACTOR enforcement at execution time
-- Tests-after becomes acceptable
+- Developer agent does NOT load the `tdd-enforcer` skill for non-code categories
+- `category="source"` still errors without `tdd-enforcer` in `load_skills`: opt-out does not exempt code-writing delegations
+- RED-GREEN-REFACTOR enforcement stays active via the prompt banner and the Morpheus completion gate
+- Tests-after is never acceptable for software-scope tasks
 
 ---
 
 ### Evidence Requirements
 
-Task is NOT complete without:
+Task is NOT complete without (software-scope: any task writing or editing `*.ts|*.tsx|*.js|*.jsx`, or `category="source"`; docs-only and exploration exempt):
 
 ```bash
 bun test              # Must show: X tests passed, 0 failed
 bun run typecheck     # Must show: exit code 0, no errors
+```
+
+RED-first proof (both excerpts pasted, no "tests later"):
+
+```
+RED: bun test <file> FAIL excerpt (test ran before implementation, failed for the right reason)
+GREEN: same command PASS excerpt (N passed, 0 failed)
 ```
 
 **Reporting format:**
@@ -881,6 +893,7 @@ bun run typecheck     # Must show: exit code 0, no errors
 ```
 ✅ bun test — 42 tests passed, 0 failed (3.2s)
 ✅ bun run typecheck — no errors
+✅ RED: <file> failing test before fix, passing after (excerpts pasted)
 ```
 
 If ANY verification fails:
