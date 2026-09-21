@@ -36,7 +36,7 @@ config/
 
 ## ROOT SCHEMA
 
-`MatrixxConfigSchema` composes: `$schema`, `global_model`/`default_tier`, `experimental.task_system` (replaces legacy `new_task_system_enabled`), `default_run_agent`, `auto_update`, `disabled_{mcps,agents,skills,hooks,commands,tools}`, `agents` (14), `categories` (8), `tdd_enforcer` (`{enabled:false}` opt-in, now enabled in user config), `assembly`, `security`, `headroom`, `context_mode`, `rtk`, `evolution`, `morpheus`, `morpheus_agent`, `matrix_loop`, `background_task`, `babysitting`, `notification`, `browser_automation_engine`, `websearch`, `tmux`, `dcp`, `_migrations`
+`MatrixxConfigSchema` composes: `$schema`, `global_model`/`default_tier`, `experimental.task_system` (replaces legacy `new_task_system_enabled`), `default_run_agent`, `auto_update`, `disabled_{mcps,agents,skills,hooks,commands,tools}`, `agents` (14), `categories` (8), `tdd_enforcer` (`{enabled:true}` fail-closed; opt out via `{enabled:false}`), `assembly`, `security`, `headroom`, `context_mode`, `rtk`, `evolution`, `morpheus`, `morpheus_agent`, `matrix_loop`, `background_task`, `babysitting`, `notification`, `browser_automation_engine`, `websearch`, `tmux`, `dcp`, `_migrations`
 
 ## CONFIGURATION HIERARCHY
 

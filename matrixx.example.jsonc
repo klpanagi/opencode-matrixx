@@ -385,11 +385,13 @@
   // },
 
   // ─────────────────────────────────────────────────────────────────────────
-  // TDD enforcer — fail → implement → pass → refactor
+  // TDD enforcer — fail → implement → pass → refactor (default: true, fail-closed)
+  // To opt out explicitly: "tdd_enforcer": { "enabled": false }
+  // See docs/quality.md Part B for the RED-GREEN-REFACTOR workflow.
   // ─────────────────────────────────────────────────────────────────────────
-  // "tdd_enforcer": {
-  //   "enabled": true                       // (default: true when configured, not set globally)
-  // },
+  "tdd_enforcer": {
+    "enabled": true
+  },
 
   // ─────────────────────────────────────────────────────────────────────────
   // Browser automation — provider for `playwright` skill
