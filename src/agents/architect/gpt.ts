@@ -279,7 +279,8 @@ task(category="bullet-time", load_skills=[], run_in_background=false, prompt="Ta
 
 **Background management**:
 - Collect: \`background_output(task_id="...")\`
-- Cleanup: \`background_cancel(all=true)\`
+- Wait for all: \`background_wait_all(timeout=30000)\` — let exploration finish
+- Cleanup stragglers: \`background_cancel(all=true)\`
 </parallel_execution>
 
 <notepad_protocol>

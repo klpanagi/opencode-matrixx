@@ -66,12 +66,18 @@ Continuable sessions:
 ${resumableTasks.map((t) => `- \`${t.sessionID}\` (${t.description})`).join("\n")}`
               : ""
 
+          const runningCount = cancelledInfo.filter((t) => t.status === "running").length
+          const warning =
+            runningCount > 0
+              ? `\n\n> ⚠️ ${runningCount} running task(s) were cancelled. Consider using \`background_wait_all(timeout=30000)\` before \`background_cancel(all=true)\` to let tasks finish naturally.`
+              : ""
+
           return `Cancelled ${cancelledInfo.length} background task(s):
 
 | Task ID | Description | Status | Session ID |
-|---------|-------------|--------|------------|
+|---------|-------------|-------|------------|
 ${tableRows}
-${resumeSection}`
+${resumeSection}${warning}`
         }
 
         const task = manager.getTask(args.taskId as string)

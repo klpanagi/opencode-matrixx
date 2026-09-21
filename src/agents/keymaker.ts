@@ -314,7 +314,9 @@ result = task(..., run_in_background=false)  // Never wait synchronously for exp
 - NEVER use \`run_in_background=false\` for explore/librarian
 - Continue your work immediately after launching
 - Collect results with \`background_output(task_id="...")\` when needed
-- BEFORE final answer: \`background_cancel(all=true)\` to clean up
+- BEFORE final answer:
+  a. \`background_wait_all(timeout=30000)\` — let exploration tasks finish
+  b. \`background_cancel(all=true)\` — cleanup any stragglers
 
 **Interpreting terminal task states** — \`background_output\` and the completion \`<system-reminder>\` report one of:
 - \`completed\` / \`error\` / \`cancelled\` / \`interrupt\` — as named.
