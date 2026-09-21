@@ -41,6 +41,18 @@ Response format:
 - Risks and mitigations (if relevant)
 </Category_Context>`
 
+export const TDD_TEST_FIRST_APPEND = `<TDD_Test_First>
+**NO IMPLEMENTATION WITHOUT A FAILING TEST FIRST.**
+
+Mandatory RED-GREEN-REFACTOR cycle:
+- RED: write a failing test first; run it and confirm it fails for the right reason.
+- GREEN: write the minimum code to make the test pass.
+- REFACTOR: clean up; tests stay green throughout.
+
+Every test uses //#given (setup), //#when (action), //#then (assert) markers.
+Verify with \`bun test\` (0 failures) before reporting done.
+</TDD_Test_First>`
+
 const MATRIX_BEND_CATEGORY_PROMPT_APPEND = `<Category_Context>
 You are working on HIGHLY CREATIVE / ARTISTIC tasks.
 
