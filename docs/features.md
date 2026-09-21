@@ -12,9 +12,9 @@ Matrixx is a multi-agent orchestration plugin for OpenCode: specialized agents, 
 | Categories, skills, combos, task-prompt guide | [Category & Skill System Guide](category-skill-guide.md) |
 | Commands (full argument reference) | [Command Reference](command-reference.md) |
 | Tasks, mission state, continuation, `/task-list`, `/cleanup-tasks` | [Task System](task-system.md) |
-| BDD pipeline (`/bdd-contract`, `/bdd-tests`, `/bdd-frontend`, `/bdd-backend`, `/bdd-pipeline`) | [BDD](bdd.md) |
+| BDD pipeline (`/bdd-contract`, `/bdd-tests`, `/bdd-frontend`, `/bdd-backend`, `/bdd-pipeline`) | [Quality, Part A](quality.md) |
 | Self-evolution proposals (`/evolution`) | [Evolution](evolution.md) |
-| TDD enforcement | [TDD](tdd.md) |
+| TDD enforcement | [Quality, Part B](quality.md) |
 | Hooks (lifecycle automation, DCP, truncation, recovery) | [Hooks](hooks.md) |
 | Context management (DCP tiers, Headroom, `ctx_*` sandbox) | [Context Management](context-management.md) |
 | Planning/execution model, delegation flows | [Orchestration](orchestration.md) |
@@ -167,8 +167,8 @@ Single-skill deep dives (`frontend-ui-ux`, `git-master`, `ulw-research`, `remove
 - **MCPs** (`websearch`, `context7`, `github_search`, `document_reader`; skill-embedded MCPs): [Configuration](configurations.md).
 - **Context injection** (AGENTS.md, conditional rules) and DCP tiers: [Context Management](context-management.md).
 - **Handoff** (`/handoff` → `/pickup`, `.matrixx/handoff.md`): [Command Reference](command-reference.md) and [Task System](task-system.md).
-- **BDD pipeline** (`/bdd-contract`, `/bdd-tests`, `/bdd-frontend`, `/bdd-backend`, `/bdd-pipeline`): [BDD](bdd.md).
-- **TDD enforcement**: [TDD](tdd.md). **Self-evolution** (`/evolution`): [Evolution](evolution.md).
+- **BDD pipeline** (`/bdd-contract`, `/bdd-tests`, `/bdd-frontend`, `/bdd-backend`, `/bdd-pipeline`): [Quality, Part A](quality.md).
+- **TDD enforcement**: [Quality, Part B](quality.md). **Self-evolution** (`/evolution`): [Evolution](evolution.md).
 - Custom skills load from `.opencode/skills/*/SKILL.md` (project) and `~/.config/opencode/skills/*/SKILL.md` (user); disable built-ins via `disabled_skills` in config.
 
 ## Removed: Claude Code Compatibility

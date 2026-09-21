@@ -338,7 +338,7 @@ The 14-agent roster maps to **distinct cognitive functions** in software develop
 ### The Intelligence Layer (3 agents)
 
 - **Merovingian** (strategic advisor, Claude Sonnet 4.6): Read-only consultation for hard architecture decisions and debugging.
-- **Oracle** (planner, Claude Opus 4.6): Interview-mode plan generation. Structured output with RED-GREEN-REFACTOR built into plans (see [TDD](tdd.md)).
+- **Oracle** (planner, Claude Opus 4.6): Interview-mode plan generation. Structured output with RED-GREEN-REFACTOR built into plans (see [Quality, Part B](quality.md)).
 - **Seraph** (pre-planning, Claude Opus 4.6): Classifies intent BEFORE Oracle plans. Prevents AI failure patterns (ambiguity, scope creep, false assumptions).
 
 ### The Review Layer (2 agents)
@@ -708,6 +708,6 @@ flowchart TD
 
 - [Orchestration](orchestration.md) — planning/execution layers, `task()` categories, continuation
 - [Hooks](hooks.md) — lifecycle hook reference
-- [TDD](tdd.md) — Oracle plan templates, RED-GREEN-REFACTOR enforcement
+- [Quality](quality.md) — BDD pipeline and TDD discipline, Oracle plan templates, RED-GREEN-REFACTOR enforcement
 - [Task System](task-system.md) — `.matrixx/tasks` storage, waves, continuation
 - [Features](features.md) — full agent table with fallback chains

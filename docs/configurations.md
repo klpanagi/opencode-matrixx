@@ -140,7 +140,7 @@ If you encounter `JSON Parse error: Unexpected EOF`:
    curl -s http://localhost:11434/api/chat \
      -d '{"model": "qwen3-coder", "messages": [{"role": "user", "content": "Hello"}], "stream": false}'
    ```
-4. **See detailed troubleshooting**: [docs/troubleshooting/ollama-streaming-issue.md](troubleshooting/ollama-streaming-issue.md)
+4. **Known-issue tracking**: https://github.com/klpanagi/opencode-matrixx/issues/1124
 
 ### Future SDK Fix
 

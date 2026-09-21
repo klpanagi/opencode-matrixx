@@ -119,7 +119,7 @@ Install and configure matrixx by following the instructions here:
 https://raw.githubusercontent.com/klpanagi/opencode-matrixx/refs/heads/dev/docs/guide/installation.md
 ```
 
-[Installation guide →](docs/guide/installation.md) . [Uninstall →](docs/guide/uninstallation.md) . [CLI reference →](docs/cli-guide.md)
+[Installation guide →](docs/guide/installation.md) . [Uninstall →](docs/guide/installation.md#uninstalling) . [CLI reference →](docs/cli-guide.md)
 
 ---
 
@@ -660,12 +660,12 @@ To disable, set `headroom.enabled: false` or run OpenCode without `headroom wrap
 | [Agents & Architecture](docs/agents.md) | Agent reference, system diagrams, delegation flows, model routing |
 | [Features](docs/features.md) | Complete feature reference |
 | [Configuration](docs/configurations.md) | All config options, agent overrides, hooks, categories |
-| [Config Studio](docs/config-studio.md) | Graphical desktop app setup — build, install, and run the Tauri config editor |
-| [Orchestration](docs/orchestration-guide.md) | How agents coordinate, delegate, and recover |
+| [Config Studio](docs/config-studio.md) | Pointer to the Tauri config editor docs (setup, build, troubleshooting live in `apps/matrixx-config/`) |
+| [Orchestration](docs/orchestration.md) | How agents coordinate, delegate, and recover |
 | [Categories & Skills](docs/category-skill-guide.md) | Task categories, skill injection, delegation patterns |
 | [Context Management](docs/context-management.md) | 5-layer context stack (Native, RTK, context-mode, DCP, Headroom) — setup, config, verification |
 | [Task System](docs/task-system.md) | File-backed execution substrate (`.matrixx/tasks/T-{uuid}.json`), dependency graph, `task-continuation-enforcer` |
-| [TDD](docs/tdd.md) | RED→GREEN→REFACTOR planning (Oracle) + enforcement (`tdd-enforcer` opt-in) |
+| [Quality (BDD + TDD)](docs/quality.md) | BDD pipeline (`.feature` → contract → code) and TDD discipline (Oracle plans + `tdd-enforcer`) |
 
 ---
 

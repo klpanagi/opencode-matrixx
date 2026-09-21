@@ -1,5 +1,8 @@
 # Installation
 
+> **Audience:** new users (humans and LLM agents). **Version:** 2.6.10.
+> **See also:** `overview.md` (what you get), `../cli-guide.md` (`doctor`, `install --no-tui`), `../configurations.md` (post-install tuning).
+
 ## Prerequisites
 
 | Requirement | Version | Install |
@@ -183,5 +186,41 @@ bunx opencode-matrixx doctor --json
 opencode auth list
 cat ~/.config/opencode/opencode.jsonc
 cat ~/.local/share/opencode/auth.json | head -20
+```
+
+## Uninstalling
+
+### 1. Remove the plugin from OpenCode config
+
+Edit `~/.config/opencode/opencode.json` (or `opencode.jsonc`) and remove the matrixx plugin entry (either `"opencode-matrixx"` or the legacy `"matrixx"` form, with or without a `@<version>` suffix, or a `file://` local-dev path from `install --local`) from the `plugin` array:
+
+```bash
+# Using jq — strips both the current and the legacy plugin names, with or without version pins.
+# NOTE: this does not strip file:// local-dev entries (from install --local) — remove those by hand.
+jq '.plugin = [.plugin[] | select(
+        . != "opencode-matrixx"
+        and (startswith("opencode-matrixx@") | not)
+        and . != "matrixx"
+        and (startswith("matrixx@") | not)
+    )]' \
+    ~/.config/opencode/opencode.json > /tmp/oc.json && \
+    mv /tmp/oc.json ~/.config/opencode/opencode.json
+```
+
+### 2. Remove configuration files (optional)
+
+```bash
+# Remove user config
+rm -f ~/.config/opencode/matrixx.json ~/.config/opencode/matrixx.jsonc
+
+# Remove project config (if exists)
+rm -f .opencode/matrixx.json .opencode/matrixx.jsonc
+```
+
+### 3. Verify removal
+
+```bash
+opencode --version
+# Plugin should no longer be loaded
 ```
 

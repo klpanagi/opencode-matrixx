@@ -209,7 +209,7 @@ Safe-creation: `isHookEnabled("name") ? safeCreateHook("name", () => createHook(
 
 ## TDD
 
-Mandatory when `tdd_enforcer.enabled=true` (now enabled in `~/.config/opencode/matrixx.jsonc`). `*.test.ts` alongside source → BDD comments `//#given` `//#when` `//#then` → fail → implement → pass → refactor. Never delete failing tests. See `tdd-enforcer` skill + `docs/tdd.md`. When disabled, skill is stripped from `availableSkills` and Oracle still generates test decision but execution is not enforced.
+Mandatory when `tdd_enforcer.enabled=true` (now enabled in `~/.config/opencode/matrixx.jsonc`). `*.test.ts` alongside source → BDD comments `//#given` `//#when` `//#then` → fail → implement → pass → refactor. Never delete failing tests. See `tdd-enforcer` skill + `docs/quality.md` (Part B). When disabled, skill is stripped from `availableSkills` and Oracle still generates test decision but execution is not enforced.
 
 ## CONVENTIONS
 

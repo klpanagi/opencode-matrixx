@@ -440,7 +440,7 @@ Generate a BDD Contract JSON from a Gherkin `.feature` file, with semantic enric
 | `<feature-path>` | Path to the `.feature` file |
 | `--force` | Overwrite existing contract output |
 
-Routes to the `bdd-contract` agent. **Related:** `/bdd-pipeline`, [BDD Pipeline](./bdd.md).
+Routes to the `bdd-contract` agent. **Related:** `/bdd-pipeline`, [Quality, Part A](./quality.md).
 
 ---
 
@@ -486,7 +486,7 @@ Run the full BDD pipeline from a single `.feature` file: contract, tests, fronte
 | `<feature-path>` | Path to the `.feature` file |
 | `--force` | Overwrite existing outputs |
 
-Runs the contract, tests, frontend, and backend stages in order. **Related:** [BDD Pipeline](./bdd.md).
+Runs the contract, tests, frontend, and backend stages in order. **Related:** [Quality, Part A](./quality.md).
 
 ---
 
