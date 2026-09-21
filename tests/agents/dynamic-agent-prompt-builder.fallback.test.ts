@@ -58,17 +58,21 @@ describe("fallback discipline size", () => {
     }
   })
 
-  test("guided fallback allows compress only with trigger/nudge context", () => {
+  test("guided fallback permits proactive min-band compress with IDs, never bare", () => {
     //#given DCP actively guiding compression
     //#when building guided fallbacks
     for (const hasGrepGlob of [true, false]) {
       const full = fallbackFullDiscipline(hasGrepGlob, "guided")
       const compact = fallbackCompactDiscipline(hasGrepGlob, "guided")
-      //#then agents call DCP's compress tool only with trigger/nudge context, never bare
-      expect(full).toContain("only with trigger/nudge context")
-      expect(compact).toContain("only with trigger/nudge context")
-      expect(full).not.toContain("ctx_stats>40%")
-      expect(compact).not.toContain("ctx_stats>40%")
+      //#then agents may compress proactively on closed sections with IDs + usage signals, never bare
+      expect(full).toContain("never bare without message IDs")
+      expect(compact).toContain("never bare without message IDs")
+      expect(full).toContain("proactive on closed sections")
+      expect(compact).toContain("proactive on closed sections")
+      expect(full).not.toContain("only with trigger/nudge context")
+      expect(compact).not.toContain("only with trigger/nudge context")
+      expect(full).not.toContain("immediate")
+      expect(compact).not.toContain("immediate")
     }
   })
 

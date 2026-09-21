@@ -431,14 +431,14 @@ export function hasGrepGlobToolNames(toolNames: readonly string[]): boolean {
 
 function compressionRow(dcpMode: DcpCompressionMode): string {
   if (dcpMode === "guided")
-    return "| Compression | DCP's `compress` only with trigger/nudge context (message IDs); never bare (watch ctx_stats) |"
+    return "| Compression | DCP's `compress` never bare without message IDs; proactive on closed sections with IDs + ctx_stats/headroom signals |"
   if (dcpMode === "manual")
     return "| Compression | DCP manual mode: `compress` only after trigger prompt; never self-trigger (watch ctx_stats) |"
   return "| Compression | No `compress` tool (DCP inactive) — never call it (watch ctx_stats) |"
 }
 
 function headroomDcpClause(dcpMode: DcpCompressionMode): string {
-  if (dcpMode === "guided") return " DCP auto-mode: call `compress` only with trigger/nudge context; never bare."
+  if (dcpMode === "guided") return " DCP auto-mode: `compress` never bare without message IDs; proactive on closed sections with IDs + headroom/ctx_stats signals."
   if (dcpMode === "manual") return " DCP manual mode: `compress` only after the manual trigger."
   return " No `compress` tool exists (DCP inactive).";
 }
@@ -556,7 +556,7 @@ export function buildHeadroomSection(hasHeadroom = false, dcpMode: DcpCompressio
 | Stats / diagnostics | headroom_stats or headroom dashboard |
 | Proxy not running | headroom doctor / check http://127.0.0.1:8787 (HEADROOM_PROXY_URL) |
 
-**Headroom L4 is transport-level (CacheAligner->ContentRouter->CCR). It complements L1 RTK, L2 context-mode, L3 DCP — do not duplicate their discipline. Compression ownership: the \`compress\` tool is DCP's — call it only with DCP trigger/nudge context (manual trigger prompt or nudge with message IDs); never call it bare or invoke /dcp-compress.${dcpClause}**`;
+**Headroom L4 is transport-level (CacheAligner->ContentRouter->CCR). It complements L1 RTK, L2 context-mode, L3 DCP — do not duplicate their discipline. Compression ownership: the \`compress\` tool is DCP's — never call it bare without message IDs or invoke /dcp-compress; proactive on closed sections with IDs + headroom/ctx_stats signals.${dcpClause}**`;
 }
 
 

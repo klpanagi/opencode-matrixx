@@ -14,6 +14,8 @@ import {
   buildHeadroomSection,
   buildCompactContextDisciplineSection,
   buildExploreDisciplineSection,
+  fallbackCompactDiscipline,
+  fallbackFullDiscipline,
 } from "../../src/agents/dynamic-agent-prompt-builder"
 
 describe("buildCategorySkillsDelegationGuide", () => {
@@ -377,11 +379,130 @@ describe("buildHeadroomSection", () => {
     const manual = buildHeadroomSection(true, "manual")
     const inactive = buildHeadroomSection(true, "none")
     //#then each variant carries its own trigger/nudge context rule
-    expect(guided).toContain("only with trigger/nudge context")
+    // old->new (Wave 1 min-band reword): guided "only with trigger/nudge context"
+    // => "proactive on closed sections with IDs + headroom/ctx_stats signals".
+    // Min-band (10-20%) delivers anchors + message-ID tags with empty nudge
+    // bodies, so guided permits proactive compress instead of deadlocking on a
+    // trigger/nudge gate. Manual/inactive expectations unchanged.
+    expect(guided).toContain("proactive on closed sections")
     expect(manual).toContain("only after the manual trigger")
     expect(inactive).toContain("No `compress` tool exists (DCP inactive)")
   })
 })
+
+describe("DCP min-band semantics (guided proactive compress)", () => {
+  it("guided full-table row permits proactive compress on closed sections with IDs + usage signals", () => {
+    //#given guided DCP auto-mode fallback discipline
+    const guided = fallbackFullDiscipline(true, "guided")
+    //#when reading the Compression row
+    //#then proactive wording present, no CRITICAL WARNING, no sole-gate phrasing, no "immediate"
+    expect(guided).toContain("proactive on closed sections")
+    expect(guided).toContain("ctx_stats")
+    expect(guided).not.toContain("CRITICAL WARNING")
+    expect(guided).not.toContain("only with trigger/nudge")
+    expect(guided).not.toContain("only after")
+    expect(guided.toLowerCase()).not.toContain("immediate")
+  })
+
+  it("guided compact-table row permits proactive compress on closed sections with IDs + usage signals", () => {
+    //#given guided DCP auto-mode compact fallback discipline
+    const guided = fallbackCompactDiscipline(true, "guided")
+    //#when reading the Compression row
+    //#then same min-band wording as the full table
+    expect(guided).toContain("proactive on closed sections")
+    expect(guided).toContain("ctx_stats")
+    expect(guided).not.toContain("CRITICAL WARNING")
+    expect(guided).not.toContain("only with trigger/nudge")
+    expect(guided.toLowerCase()).not.toContain("immediate")
+  })
+
+  it("guided wording retains the never-bare-without-IDs ban in all three builders", () => {
+    //#given guided mode across full, compact, and headroom builders
+    const full = fallbackFullDiscipline(true, "guided")
+    const compact = fallbackCompactDiscipline(true, "guided")
+    const headroom = buildHeadroomSection(true, "guided")
+    //#when reading compression guidance
+    //#then bare calls without message IDs stay banned everywhere
+    expect(full).toContain("never bare without message IDs")
+    expect(compact).toContain("never bare without message IDs")
+    expect(headroom).toContain("never bare without message IDs")
+  })
+
+  it("headroom guided clause keeps DCP ownership and the /dcp-compress ban", () => {
+    //#given headroom available in guided mode
+    const guided = buildHeadroomSection(true, "guided")
+    //#when reading the ownership clause
+    //#then ownership + bans retained alongside proactive min-band wording
+    expect(guided).toContain("the `compress` tool is DCP's")
+    expect(guided).toContain("invoke /dcp-compress")
+    expect(guided).toContain("proactive on closed sections")
+    expect(guided).toContain("ctx_stats")
+    expect(guided).not.toContain("CRITICAL WARNING")
+    expect(guided).not.toContain("only with trigger/nudge")
+    expect(guided.toLowerCase()).not.toContain("immediate")
+  })
+
+  it("manual and none modes stay trigger-only / inactive (no proactive wording)", () => {
+    //#given manual and inactive modes
+    const manualFull = fallbackFullDiscipline(true, "manual")
+    const manualHeadroom = buildHeadroomSection(true, "manual")
+    const noneFull = fallbackFullDiscipline(true, "none")
+    const noneHeadroom = buildHeadroomSection(true, "none")
+    //#when reading their compression guidance
+    //#then manual gates on its trigger, none advertises no tool, neither is proactive
+    expect(manualFull).toContain("only after trigger prompt")
+    expect(manualHeadroom).toContain("only after the manual trigger")
+    expect(noneFull).toContain("No `compress` tool")
+    expect(noneHeadroom).toContain("No `compress` tool exists (DCP inactive)")
+    expect(manualFull).not.toContain("proactive on closed sections")
+    expect(noneFull).not.toContain("proactive on closed sections")
+  })
+
+  it("min-band synthetic context (IDs + closed sections + rising usage, zero CRIT text) => compress permitted", () => {
+    //#given guided guidance plus a synthetic min-band snapshot: anchors +
+    // message-ID tags, closed sections, rising usage signals, empty nudge bodies
+    const guidance = fallbackFullDiscipline(true, "guided")
+    const synthetic =
+      "[dcp min-band snapshot] anchors m0001 m0002 m0003; " +
+      "closed section: auth exploration (compressed); " +
+      "ctx_stats usage rising 42%->58%; headroom signals rising; " +
+      "turn/iteration nudge bodies empty"
+    //#when classifying with pure string logic (no DCP runtime)
+    //#then compress is permitted and no CRIT text is required
+    expect(synthetic).not.toContain("CRITICAL WARNING")
+    expect(classifyMinBandCompress(synthetic, guidance)).toBe("compress permitted")
+  })
+
+  it("synthetic context without message IDs => do not call bare", () => {
+    //#given guided guidance plus a snapshot lacking message-ID tags
+    const guidance = fallbackFullDiscipline(true, "guided")
+    const synthetic =
+      "[dcp min-band snapshot] anchors present but message-ID tags absent; " +
+      "closed section noted; ctx_stats usage rising"
+    //#when classifying with pure string logic (no DCP runtime)
+    //#then the never-bare ban holds
+    expect(classifyMinBandCompress(synthetic, guidance)).toBe("do not call bare")
+  })
+})
+
+/**
+ * Pure string-logic classifier for the min-band guidance contract.
+ * No DCP runtime: decides only from the synthetic snapshot text and the
+ * guided guidance strings produced by the prompt builders above.
+ */
+function classifyMinBandCompress(
+  syntheticContext: string,
+  guidedGuidance: string,
+): "compress permitted" | "do not call bare" {
+  const hasIds = /m\d{4,}/.test(syntheticContext)
+  const hasClosedSections = /closed section/i.test(syntheticContext)
+  const hasUsageSignal = /ctx_stats|headroom/i.test(syntheticContext)
+  const guidancePermitsProactive = guidedGuidance.includes("proactive on closed sections")
+  const guidanceBansBare = guidedGuidance.includes("never bare without message IDs")
+  if (hasIds && hasClosedSections && hasUsageSignal && guidancePermitsProactive) return "compress permitted"
+  if (!hasIds && guidanceBansBare) return "do not call bare"
+  return "do not call bare"
+}
 
 describe("buildCompactContextDisciplineSection", () => {
   it("should return empty string when not available", () => {

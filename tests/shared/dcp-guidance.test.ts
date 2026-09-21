@@ -85,4 +85,25 @@ describe("resolveDcpCompressionMode", () => {
     //#then trigger-only mode applies
     expect(resolveDcpCompressionMode()).toBe("manual")
   })
+
+  test("guided mode is config-driven: minimal enabled-only config needs no nudge text", async () => {
+    //#given DCP enabled with no nudge fields whatsoever
+    //#when resolving guidance
+    const path = await writeFixture("minimal-enabled", `{"enabled": true}`)
+    _setDcpConfigPathForTesting(path)
+    //#then guided still applies — no nudge text drives the mode
+    expect(resolveDcpCompressionMode()).toBe("guided")
+  })
+
+  test("extraneous nudge-like text does not change guided resolution", async () => {
+    //#given an enabled config carrying nudge-like prose in an unknown field
+    //#when resolving guidance
+    const path = await writeFixture(
+      "nudge-noise",
+      `{"enabled": true, "compress": {"permission": "allow"}, "note": "CRITICAL WARNING trigger nudge"}`,
+    )
+    _setDcpConfigPathForTesting(path)
+    //#then the mode still follows config fields, not nudge text
+    expect(resolveDcpCompressionMode()).toBe("guided")
+  })
 })

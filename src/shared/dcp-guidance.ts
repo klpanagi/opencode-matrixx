@@ -40,7 +40,7 @@ function resolveDcpConfigPath(): string | null {
 /**
  * How DCP compression is available in this environment.
  * True model (DCP owns the only `compress` tool — the host has none):
- * - "guided": DCP auto-mode — call `compress` only with trigger/nudge context; never bare.
+ * - "guided": DCP auto-mode — never bare without message IDs; proactive on closed sections with IDs + usage signals.
  * - "manual": DCP manualMode — call `compress` only after the manual trigger; no nudges.
  * - "none": no `compress` tool exists — never call it.
  */

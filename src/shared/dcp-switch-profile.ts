@@ -1,4 +1,4 @@
-import { existsSync, writeFileSync } from "node:fs"
+import { existsSync, readFileSync, writeFileSync } from "node:fs"
 import { homedir } from "node:os"
 import { join } from "node:path"
 import type { DcpConfig } from "../config/schema/dcp"
@@ -170,8 +170,17 @@ export function switchProfile(profile: string, options?: DcpSwitchProfileOptions
   // Build the full inline config from Matrixx configuration
   const inlineConfig = buildInlineConfig(profile, options)
 
-  // Write directly to the DCP config symlink target
-  writeFileSync(DCP_SYMLINK, `${JSON.stringify(inlineConfig, null, 2)}\n`)
+  // Read-compare-write guard: skip rewrite when content is identical
+  const newContent = `${JSON.stringify(inlineConfig, null, 2)}\n`
+  try {
+    const existing = readFileSync(DCP_SYMLINK, "utf-8")
+    if (existing === newContent) {
+      return `✓ Switched to DCP profile: ${profile}\n\nRestart OpenCode session for changes to take effect.`
+    }
+  } catch {
+    // Missing/unreadable target — fall through to write (first-install path)
+  }
+  writeFileSync(DCP_SYMLINK, newContent)
 
   return `\u2713 Switched to DCP profile: ${profile}\n\nRestart OpenCode session for changes to take effect.`
 }
