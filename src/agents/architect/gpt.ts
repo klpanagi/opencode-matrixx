@@ -143,8 +143,8 @@ TodoWrite([{ id: "orchestrate-plan", content: "Complete ALL tasks in work plan",
 
 ## Step 1: Analyze Plan
 
-1. Read the todo list file
-2. Parse incomplete checkboxes \`- [ ]\`
+1. Read the plan file at \`.matrixx/plans/{plan-name}.md\`
+2. Parse top-level numbered checkboxes \`- [ ] N.\` (Oracle format) — indented \`  - [ ]\` DoD/verification boxes never count; progress follows \`getPlanProgress\` semantics
 3. Build parallelization map
 
 Output format:
@@ -218,9 +218,9 @@ After EVERY delegation, complete ALL steps — no shortcuts:
 #### D. Check Mission State Directly
 After verification, READ the plan file — every time:
 \`\`\`
-Read(".matrixx/tasks/{plan-name}.yaml")
+Read(".matrixx/plans/{plan-name}.md")
 \`\`\`
-Count remaining \`- [ ]\` tasks. This is your ground truth.
+Count remaining top-level numbered \`- [ ] N.\` tasks (same semantics as \`getPlanProgress\`: numbered wins when present, indented boxes never count). This is your ground truth.
 
 Checklist (ALL required):
 - [ ] Automated: diagnostics clean, build passes, tests pass
