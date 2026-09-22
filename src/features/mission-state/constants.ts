@@ -15,6 +15,12 @@ export const ORACLE_PLANS_DIR = ".matrixx/plans"
 /** Relative path from project root to plans directory */
 export const PLANS_DIR = ".matrixx/plans"
 
+/** Subdir of PLANS_DIR holding archived stale plans; excluded from listings. */
+export const PLANS_ARCHIVE_DIR_NAME = "_archive"
+
+/** Default staleness window (hours) shared by task + plan archival. */
+export const DEFAULT_STALE_AFTER_HOURS = 24
+
 /** HTML comment marker for machine metadata at the end of a plan file */
 export const META_TAG_PREFIX = "<!-- plan-persister:"
 export const META_TAG_SUFFIX = "-->"

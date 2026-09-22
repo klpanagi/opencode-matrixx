@@ -12,6 +12,7 @@ import {
   readJsonSafe,
   writeJsonAtomic,
 } from "../../features/task-storage/storage";
+import { maybeSyncTaskToPlans } from "../../hooks/plan-persister/task-sync";
 import { log } from "../../shared/logger";
 import { DEDUP_WINDOW_MS } from "./constants";
 import type { TaskObject } from "./types";
@@ -86,6 +87,7 @@ async function handleCreate(
       return JSON.stringify({ error: "task_lock_unavailable" })
     }
 
+    let created: TaskObject | null = null
     try {
       const existingTask = findDuplicateTask(taskDir, validatedArgs.subject, directory)
       if (existingTask) {
@@ -113,16 +115,27 @@ async function handleCreate(
 
       const validatedTask = TaskObjectSchema.parse(task);
       writeJsonAtomic(join(taskDir, `${taskId}.json`), validatedTask);
-
-      return JSON.stringify({
-        task: {
-          id: validatedTask.id,
-          subject: validatedTask.subject,
-        },
-      });
+      created = validatedTask;
     } finally {
       lock.release();
     }
+
+    // Completion path (post-lock): no-op for fresh pending tasks, live for
+    // any future terminal-on-create flow. Never breaks task creation.
+    if (created !== null) {
+      try {
+        await maybeSyncTaskToPlans({ directory, task: created, config });
+      } catch (error) {
+        log(`[task-create] Plan sync failed, task kept`, { id: created.id, error: String(error) });
+      }
+      return JSON.stringify({
+        task: {
+          id: created.id,
+          subject: created.subject,
+        },
+      });
+    }
+    return JSON.stringify({ error: "internal_error" });
   } catch (error) {
     if (error instanceof z.ZodError) {
       return JSON.stringify({

@@ -1,6 +1,6 @@
 import { afterEach, beforeEach, describe, expect, spyOn, test } from "bun:test"
 import { randomUUID } from "node:crypto"
-import { existsSync, mkdirSync, rmSync, writeFileSync } from "node:fs"
+import { existsSync, mkdirSync, rmSync, utimesSync, writeFileSync } from "node:fs"
 import { tmpdir } from "node:os"
 import { join } from "node:path"
 import type { MissionState } from "../../../src/features/mission-state"
@@ -400,6 +400,122 @@ describe("start-work hook", () => {
       // then
       expect(updateSpy).toHaveBeenCalledWith("ses-oracle-to-morpheus", "architect")
       updateSpy.mockRestore()
+    })
+  })
+
+  describe("staleness-aware filter (Task 5)", () => {
+    test("auto-selects fresh incomplete when stale orphans exist", async () => {
+      //#given - one fresh incomplete plus one stale orphan
+      const plansDir = join(testDir, ".matrixx", "plans")
+      mkdirSync(plansDir, { recursive: true })
+      const freshPath = join(plansDir, "fresh-work.md")
+      writeFileSync(freshPath, "# Fresh\n- [ ] 1. Active work")
+      const stalePath = join(plansDir, "stale-orphan.md")
+      writeFileSync(stalePath, "# Stale\n- [ ] 1. Old work")
+      const old = new Date(Date.now() - 72 * 60 * 60 * 1000)
+      utimesSync(stalePath, old, old)
+
+      const hook = createStartWorkHook(createMockPluginInput())
+      const output = {
+        parts: [{ type: "text", text: "<session-context></session-context>" }],
+      }
+
+      //#when
+      await hook["chat.message"](
+        { sessionID: "session-123" },
+        output
+      )
+
+      //#then - stale orphan does not block auto-select of the fresh plan
+      expect(output.parts[0].text).toContain("Auto-Selected Plan")
+      expect(output.parts[0].text).toContain("fresh-work")
+      expect(output.parts[0].text).not.toContain("Multiple Plans Found")
+    })
+
+    test("shows stale candidate section with tags in Multiple Plans Found", async () => {
+      //#given - two fresh incomplete plus one stale orphan
+      const plansDir = join(testDir, ".matrixx", "plans")
+      mkdirSync(plansDir, { recursive: true })
+      writeFileSync(join(plansDir, "plan-a.md"), "# Plan A\n- [ ] 1. Task 1")
+      writeFileSync(join(plansDir, "plan-b.md"), "# Plan B\n- [ ] 1. Task 2")
+      const stalePath = join(plansDir, "stale-orphan.md")
+      writeFileSync(stalePath, "# Stale\n- [ ] 1. Old work")
+      const old = new Date(Date.now() - 72 * 60 * 60 * 1000)
+      utimesSync(stalePath, old, old)
+
+      const hook = createStartWorkHook(createMockPluginInput())
+      const output = {
+        parts: [{ type: "text", text: "<session-context></session-context>" }],
+      }
+
+      //#when
+      await hook["chat.message"](
+        { sessionID: "session-123" },
+        output
+      )
+
+      //#then - actionable listed with progress, stale demoted with tag
+      expect(output.parts[0].text).toContain("Multiple Plans Found")
+      expect(output.parts[0].text).toContain("0/1")
+      expect(output.parts[0].text).toContain("[stale]")
+      expect(output.parts[0].text).toContain("ago")
+    })
+
+    test("clears mission.json when the active plan is complete", async () => {
+      //#given - mission pointing at a now-complete plan plus a fresh plan
+      const plansDir = join(testDir, ".matrixx", "plans")
+      mkdirSync(plansDir, { recursive: true })
+      const donePath = join(plansDir, "done-plan.md")
+      writeFileSync(donePath, "# Done\n- [x] 1. Finished")
+      const freshPath = join(plansDir, "fresh-next.md")
+      writeFileSync(freshPath, "# Fresh Next\n- [ ] 1. New work")
+      const state: MissionState = {
+        active_plan: donePath,
+        started_at: "2026-01-01T10:00:00Z",
+        session_ids: ["old-session"],
+        plan_name: "done-plan",
+      }
+      writeMissionState(testDir, state)
+
+      const hook = createStartWorkHook(createMockPluginInput())
+      const output = {
+        parts: [{ type: "text", text: "<session-context></session-context>" }],
+      }
+
+      //#when
+      await hook["chat.message"](
+        { sessionID: "session-123" },
+        output
+      )
+
+      //#then - no zombie resume: rotated to the fresh plan
+      expect(output.parts[0].text).not.toContain("RESUMING")
+      expect(output.parts[0].text).toContain("Previous Work Complete")
+      expect(output.parts[0].text).toContain("Auto-Selected Plan")
+      expect(output.parts[0].text).toContain("fresh-next")
+    })
+
+    test("triage-empty plans are tagged and never auto-selected", async () => {
+      //#given - one fresh incomplete plus one empty prose-only plan
+      const plansDir = join(testDir, ".matrixx", "plans")
+      mkdirSync(plansDir, { recursive: true })
+      writeFileSync(join(plansDir, "fresh-work.md"), "# Fresh\n- [ ] 1. Active work")
+      writeFileSync(join(plansDir, "empty-notes.md"), "# Notes\nJust prose, no checkboxes.")
+
+      const hook = createStartWorkHook(createMockPluginInput())
+      const output = {
+        parts: [{ type: "text", text: "<session-context></session-context>" }],
+      }
+
+      //#when
+      await hook["chat.message"](
+        { sessionID: "session-123" },
+        output
+      )
+
+      //#then - fresh plan auto-selected; empty plan excluded from actionable
+      expect(output.parts[0].text).toContain("Auto-Selected Plan")
+      expect(output.parts[0].text).toContain("fresh-work")
     })
   })
 })
