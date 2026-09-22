@@ -25,6 +25,12 @@ export interface PlanProgress {
   completed: number
   /** Whether all tasks are done */
   isComplete: boolean
+  /**
+   * True when total is 0 (empty, prose-only, or missing plan).
+   * isComplete stays true by vacuity; callers should log/warn and
+   * route these plans to human triage instead of treating them as done.
+   */
+  needsTriage?: boolean
 }
 
 /**

@@ -6,7 +6,15 @@
 
 import { existsSync, mkdirSync, readdirSync, readFileSync, writeFileSync } from "node:fs"
 import { basename, dirname, join } from "node:path"
-import { MISSION_DIR, MISSION_FILE, ORACLE_PLANS_DIR } from "./constants"
+import {
+  MISSION_DIR,
+  MISSION_FILE,
+  NUMBERED_CHECKED_RE,
+  NUMBERED_UNCHECKED_RE,
+  ORACLE_PLANS_DIR,
+  TOP_CHECKED_RE,
+  TOP_UNCHECKED_RE,
+} from "./constants"
 import type { MissionState, PlanProgress } from "./types"
 
 function getMissionFilePath(directory: string): string {
@@ -114,15 +122,15 @@ export function findOraclePlans(directory: string): string[] {
  */
 export function getPlanProgress(planPath: string): PlanProgress {
   if (!existsSync(planPath)) {
-    return { total: 0, completed: 0, isComplete: true }
+    return { total: 0, completed: 0, isComplete: true, needsTriage: true }
   }
 
   try {
     const content = readFileSync(planPath, "utf-8")
 
     // Match markdown checkboxes: - [ ] or - [x] or - [X]
-    const uncheckedMatches = content.match(/^[-*]\s*\[\s*\]/gm) || []
-    const checkedMatches = content.match(/^[-*]\s*\[[xX]\]/gm) || []
+    const uncheckedMatches = content.match(TOP_UNCHECKED_RE) || []
+    const checkedMatches = content.match(TOP_CHECKED_RE) || []
 
     // Prefer numbered task lines (Oracle plan format: "- [ ] 1. Task").
     // Meta/verification checkboxes (Definition-of-Done, Final Checklist) are
@@ -130,8 +138,8 @@ export function getPlanProgress(planPath: string): PlanProgress {
     // functionally-complete plan never reports isComplete=true. Fall back to
     // all top-level checkboxes when the plan has no numbered tasks
     // (hand-written plans).
-    const numberedUnchecked = content.match(/^[-*]\s*\[\s*\]\s*\d+\./gm) || []
-    const numberedChecked = content.match(/^[-*]\s*\[[xX]\]\s*\d+\./gm) || []
+    const numberedUnchecked = content.match(NUMBERED_UNCHECKED_RE) || []
+    const numberedChecked = content.match(NUMBERED_CHECKED_RE) || []
 
     const useNumbered = numberedUnchecked.length + numberedChecked.length > 0
     const total = useNumbered
@@ -143,9 +151,10 @@ export function getPlanProgress(planPath: string): PlanProgress {
       total,
       completed,
       isComplete: total === 0 || completed === total,
+      needsTriage: total === 0,
     }
   } catch {
-    return { total: 0, completed: 0, isComplete: true }
+    return { total: 0, completed: 0, isComplete: true, needsTriage: true }
   }
 }
 
