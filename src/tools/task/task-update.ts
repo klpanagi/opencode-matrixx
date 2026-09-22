@@ -9,7 +9,10 @@ import {
   readJsonSafe,
   writeJsonAtomic,
 } from "../../features/task-storage/storage";
+import { maybeSyncTaskToPlans } from "../../hooks/plan-persister/task-sync";
+import { log } from "../../shared/logger";
 import { TASK_ID_PATTERN } from "./constants";
+import type { TaskObject } from "./types";
 import { TaskObjectSchema, TaskUpdateInputSchema } from "./types";
 
 function parseTaskId(id: string): string | null {
@@ -90,6 +93,7 @@ async function handleUpdate(
       return JSON.stringify({ error: "task_lock_unavailable" })
     }
 
+    let updated: TaskObject | null = null
     try {
       const taskPath = join(taskDir, `${taskId}.json`);
       const task = readJsonSafe(taskPath, TaskObjectSchema);
@@ -135,11 +139,20 @@ async function handleUpdate(
 
       const validatedTask = TaskObjectSchema.parse(task);
       writeJsonAtomic(taskPath, validatedTask);
-
-      return JSON.stringify({ task: validatedTask });
+      updated = validatedTask;
     } finally {
       lock.release();
     }
+
+    if (updated !== null) {
+      try {
+        await maybeSyncTaskToPlans({ directory, task: updated, config });
+      } catch (error) {
+        log(`[task-update] Plan sync failed, task update kept`, { id: taskId, error: String(error) });
+      }
+      return JSON.stringify({ task: updated });
+    }
+    return JSON.stringify({ error: "internal_error" });
   } catch (error) {
     if (error instanceof z.ZodError) {
       return JSON.stringify({

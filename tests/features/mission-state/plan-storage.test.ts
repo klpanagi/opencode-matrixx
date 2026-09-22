@@ -8,10 +8,14 @@ import { join } from "node:path"
 
 import {
   atomicWrite,
+  checkboxOverlap,
   ensurePlanDir,
+  isVerificationStyle,
+  normalizeCheckboxText,
   parseMetadataComment,
   readPlanFile,
   syncCheckboxes,
+  syncCheckboxesDetailed,
   upsertMetadataComment,
   writePlanFile,
 } from "../../../src/features/mission-state/plan-storage"
@@ -214,5 +218,116 @@ describe("parseMetadataComment", () => {
       "# Plan\n\n<!-- plan-persister: {not-json} -->\n"
     const meta = parseMetadataComment(content)
     expect(meta).toBeNull()
+  })
+})
+
+describe("syncCheckboxes token-overlap + verification guard", () => {
+  it("flips a numbered box on reordered wording via token overlap", () => {
+    //#given box "2. Implement retry" and a completed task "Implement retry with backoff"
+    const content = "- [ ] 2. Implement retry"
+    const todos = [{ content: "Implement retry with backoff", status: "completed" }]
+    //#when syncing
+    const result = syncCheckboxes(content, todos)
+    //#then overlap (implement, retry) flips the box
+    expect(result).toBe("- [x] 2. Implement retry")
+  })
+
+  it("flips on paraphrased wording with >= 2 shared content tokens", () => {
+    //#given a paraphrased box sharing retry/backoff/logic with the task
+    const content = "- [ ] Retry logic with backoff"
+    const todos = [{ content: "Implement retry backoff logic", status: "completed" }]
+    //#when syncing
+    const result = syncCheckboxes(content, todos)
+    //#then the box flips despite word order and extra words
+    expect(result).toBe("- [x] Retry logic with backoff")
+  })
+
+  it("matches exact single-concept boxes without cross-matching siblings", () => {
+    //#given "Task A" completed while sibling "Task D" has no todo
+    const content = "- [ ] Task A\n- [ ] Task D"
+    const todos = [{ content: "Task A", status: "completed" }]
+    //#when syncing
+    const result = syncCheckboxes(content, todos)
+    //#then only the exact box flips; shared generic "task" never cross-matches
+    expect(result).toBe("- [x] Task A\n- [ ] Task D")
+  })
+
+  it("keeps a verification-style box unchecked and flags it on zero overlap", () => {
+    //#given a verification box with only unrelated task subjects
+    const content = "- [ ] 5. Verify CI green"
+    const todos = [
+      { content: "Implement retry with backoff", status: "completed" },
+      { content: "Write docs", status: "completed" },
+    ]
+    //#when syncing with detail
+    const { content: synced, flaggedVerification } = syncCheckboxesDetailed(content, todos)
+    //#then the box stays unchecked and is flagged, never force-completed
+    expect(synced).toBe("- [ ] 5. Verify CI green")
+    expect(flaggedVerification).toEqual(["5. Verify CI green"])
+    expect(isVerificationStyle("5. Verify CI green")).toBe(true)
+  })
+
+  it("still syncs a verification-style box with genuine task overlap", () => {
+    //#given a verification box sharing retry/backoff with a completed task
+    const content = "- [ ] Verify retry backoff"
+    const todos = [{ content: "Implement retry with backoff", status: "completed" }]
+    //#when syncing with detail
+    const { content: synced, flaggedVerification } = syncCheckboxesDetailed(content, todos)
+    //#then genuine overlap wins: box flips and nothing is flagged
+    expect(synced).toBe("- [x] Verify retry backoff")
+    expect(flaggedVerification).toEqual([])
+  })
+
+  it("never force-checks on a bare substring without token overlap", () => {
+    //#given box "Latest news" where old includes() matched "test" inside "Latest"
+    const content = "- [ ] Latest news"
+    const todos = [{ content: "test", status: "completed" }]
+    //#when syncing
+    const result = syncCheckboxes(content, todos)
+    //#then no shared content token means the box stays unchecked
+    expect(result).toBe("- [ ] Latest news")
+    expect(checkboxOverlap("Latest news", "test").matched).toBe(false)
+  })
+
+  it("holds the threshold boundary: one shared token does not match", () => {
+    //#given box and task sharing only "write" (score 1/3 below 0.5)
+    const overlap = checkboxOverlap("Write unit tests", "Write integration guide")
+    //#when scoring
+    //#then below-threshold overlap leaves the box unchecked
+    expect(overlap.shared).toBe(1)
+    expect(overlap.matched).toBe(false)
+    const result = syncCheckboxes("- [ ] Write unit tests", [
+      { content: "Write integration guide", status: "completed" },
+    ])
+    expect(result).toBe("- [ ] Write unit tests")
+  })
+
+  it("never unchecks a checked verification box on todo regress", () => {
+    //#given a checked verification box whose only todo is pending
+    const content = "- [x] Verify CI green"
+    const todos = [{ content: "Unrelated work", status: "pending" }]
+    //#when syncing with detail
+    const { content: synced, flaggedVerification } = syncCheckboxesDetailed(content, todos)
+    //#then monotonic invariant holds: stays checked, nothing flagged
+    expect(synced).toBe("- [x] Verify CI green")
+    expect(flaggedVerification).toEqual([])
+  })
+
+  it("syncs indented boxes while leaving surrounding text alone", () => {
+    //#given an indented box matching a completed task
+    const content = "- [ ] 1. Parent\n  - [ ] Implement retry"
+    const todos = [{ content: "Implement retry with backoff", status: "completed" }]
+    //#when syncing
+    const result = syncCheckboxes(content, todos)
+    //#then the indented box flips and the parent keeps state
+    expect(result).toBe("- [ ] 1. Parent\n  - [x] Implement retry")
+  })
+
+  it("normalizes case, punctuation, numbers, and stop-words", () => {
+    //#given raw text with numbering, punctuation, and stop-words
+    //#when normalizing
+    const tokens = normalizeCheckboxText("2. Implement retry, with backoff!")
+    //#then only content tokens remain, lowercased
+    expect(tokens).toEqual(["implement", "retry", "backoff"])
   })
 })

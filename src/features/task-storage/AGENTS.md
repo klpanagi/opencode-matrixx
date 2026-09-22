@@ -78,6 +78,42 @@ Automatic bidirectional sync between tasks and OpenCode's todo system.
 
 Sync triggers: `task_create`, `task_update`.
 
+## PLAN PROGRESS CONTRACT (COUNTABLE CHECKBOXES)
+
+Single source of truth: `src/features/mission-state/constants.ts`
+(`TOP_UNCHECKED_RE` / `TOP_CHECKED_RE` / `NUMBERED_UNCHECKED_RE` /
+`NUMBERED_CHECKED_RE`, all `^`-anchored, `/gm`) behind
+`countPlanProgressFromContent` / `getPlanProgress` in
+`src/features/mission-state/storage.ts`. Do not inline checkbox regexes elsewhere.
+
+- Countable: top-level numbered Oracle TODOs `- [ ] N.` (e.g. `- [ ] 1. Do X`).
+  When numbered lines exist they win; otherwise all top-level `- [ ]` / `- [x]`
+  boxes count (hand-written plans). `total==0` -> `isComplete:true` + `needsTriage:true`.
+- Never countable: indented boxes (e.g. `  - [ ] DoD check`, acceptance criteria,
+  Definition-of-Done nests, verification checklists). All counting patterns are
+  anchored to column 0, so indented `- [ ]` never affects `total`/`completed`.
+- Example: `- [ ] 1. Do X` counts; `  - [ ] DoD check` does not.
+- Only writer: `plan_update` with hashline `LINE#ID` (after `plan_read`). Never
+  `sed`/`python`/`echo` on `.matrixx/plans/*.md` (`task-edit-guard` blocks bypass).
+- Auto-sync coverage: `task_update` (and `task_create`) run filtered auto-sync
+  (`maybeSyncTaskToPlans` in `src/hooks/plan-persister/`) AFTER the task lock is
+  released, so linked completed tasks flip their matching plan checkbox and the
+  plan recounts via the same contract. Unlinked or low-confidence updates are no-ops.
+- Stale/archival policy: plans older than `stale_after_hours` (default 24,
+  shared `DEFAULT_STALE_AFTER_HOURS`) with no linked active tasks are stale
+  candidates; archived plans live under `.matrixx/plans/_archive/` and are excluded
+  from `findOraclePlans` listings and every start-work bucket.
+
+## PLAN-FORMAT LINT CHECKLIST (ORACLE PLAN AUTHORING RULES)
+
+Before writing or accepting a plan file, verify ALL of these:
+
+- [ ] Every executable TODO is a top-level numbered box: `- [ ] N. <text>` (N starts at 1, sequential)
+- [ ] No unnumbered top-level `- [ ]` TODOs alongside numbered ones (they are ignored while numbered wins)
+- [ ] DoD / verification / acceptance boxes are indented (`  - [ ] ...`) so they never count
+- [ ] No bash-edit instructions in the plan body (`sed`/`python`/`echo >` on plans or tasks) — direct readers to `plan_*` / `task_*` tools only
+- [ ] Plan lives at `.matrixx/plans/{name}.md` (never `.matrixx/tasks/*.yaml`); archive path is `.matrixx/plans/_archive/`
+
 ## ANTI-PATTERNS
 
 - Direct fs operations (use storage utilities)

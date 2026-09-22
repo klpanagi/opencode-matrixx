@@ -6,22 +6,14 @@
  * for injection after compaction.
  */
 
-import { existsSync, readdirSync } from "node:fs"
+import { existsSync } from "node:fs"
 import type { PluginInput } from "@opencode-ai/plugin"
-import {
-  atomicWrite,
-  ensurePlanDir,
-  readMissionState,
-  readPlanFile,
-  syncCheckboxes,
-  upsertMetadataComment,
-} from "../../features/mission-state"
+import { readMissionState } from "../../features/mission-state"
 import { buildRehydrationContext } from "../../features/mission-state/rehydrate"
-import type { PlanMeta, PlanPersistenceOptions } from "../../features/mission-state/types"
-import { getTaskDir, readJsonSafe } from "../../features/task-storage/storage"
+import type { PlanPersistenceOptions } from "../../features/mission-state/types"
 import { log } from "../../shared/logger"
-import { getGitHead } from "../../tools/handoff/git"
-import { TaskObjectSchema } from "../../tools/task/types"
+import { collectLinkedTodos } from "./task-link"
+import { applyFilteredSync } from "./task-sync"
 
 const HOOK_NAME = "plan-persister"
 
@@ -49,91 +41,28 @@ export function createPlanPersister(
     const planPath = mission.active_plan
     if (!existsSync(planPath)) return
 
-    // Read current todo/task state — task-system-aware (fixes checklist left outdated)
+    // Filtered pipeline: strict task read + mission linkage only.
+    // Foreign sessions never vote; drifted files log as unknown.
+    const { todos } = collectLinkedTodos(directory, mission)
 
-    let todos: Array<{ content: string; status: string }> = []
-
-    // Try file-backed tasks first (task_system:true default). Falls back to session.todo for legacy.
-
-    try {
-
-      const taskDir = getTaskDir({}, directory)
-
-      if (existsSync(taskDir)) {
-
-        const files = readdirSync(taskDir).filter((f) => f.startsWith("T-") && f.endsWith(".json"))
-
-        const tasks: Array<{ content: string; status: string }> = []
-
-        for (const f of files) {
-
-          const parsed = readJsonSafe(`${taskDir}/${f}`, TaskObjectSchema)
-
-          if (parsed) tasks.push({ content: parsed.subject, status: parsed.status })
-
-        }
-
-        if (tasks.length > 0) {
-
-          todos = tasks
-
-        }
-
-      }
-
-    } catch {
-
-      // ignore task dir read errors, fallback to todos
-
-    }
-
-    if (todos.length === 0) {
-
+    let effective = todos
+    if (effective.length === 0) {
       try {
-
         const response = await ctx.client.session.todo({ path: { id: sessionID } })
-
-        todos = normalizeTodos(response)
-
+        effective = normalizeTodos(response)
       } catch (err) {
-
         log(`[${HOOK_NAME}] Failed to fetch todos`, { sessionID, error: String(err) })
-
         return
-
       }
-
     }
 
-    // Read current plan content
-    const content = readPlanFile(planPath)
-    if (!content) return
-
-    // Sync checkbox state
-    const syncedContent = syncCheckboxes(content, todos)
-
-    // Add/update metadata — count progress from synced content, not file
-    const total = (syncedContent.match(/^[-*]\s*\[[ xX]\]/gm) || []).length
-    const completed = (syncedContent.match(/^[-*]\s*\[[xX]\]/gm) || []).length
-    const gitHead = await getGitHead(directory)
-    const meta: PlanMeta = {
-      id: mission.plan_name,
-      updatedAt: new Date().toISOString(),
-      sessionId: sessionID,
-      todoTotal: total,
-      todoCompleted: completed,
-      gitHead: gitHead ?? undefined,
-    }
-    const finalContent = upsertMetadataComment(syncedContent, meta)
-
-    // Atomic write
-    ensurePlanDir(directory)
-    const ok = atomicWrite(planPath, finalContent)
-    if (ok) {
-      log(`[${HOOK_NAME}] Plan file updated`, { planPath, completed, total })
-    } else {
-      log(`[${HOOK_NAME}] Failed to write plan file`, { planPath })
-    }
+    await applyFilteredSync({
+      directory,
+      mission,
+      planPath,
+      todos: effective,
+      actorSessionId: sessionID,
+    })
   }
 
   const event = async ({ event: evt }: { event: { type: string; properties?: unknown } }): Promise<void> => {

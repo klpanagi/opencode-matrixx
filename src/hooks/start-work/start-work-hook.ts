@@ -7,10 +7,13 @@ import {
   getPlanName,
   getPlanProgress,
   readMissionState,
+  rotateMissionIfComplete,
+  shouldReconcileOnStartWork,
   writeMissionState,
 } from "../../features/mission-state"
 import { updateSessionAgent } from "../../features/session-state"
 import { log } from "../../shared/logger"
+import { classifyPlans, formatPlanListLine } from "./plan-filter"
 
 export const HOOK_NAME = "start-work" as const
 
@@ -117,12 +120,16 @@ All ${progress.total} tasks are done. Create a new plan with: /plan "your task"`
 mission.json has been created. Read the plan and begin execution.`
           }
         } else {
-          const incompletePlans = allPlans.filter(p => !getPlanProgress(p).isComplete)
-          if (incompletePlans.length > 0) {
-            const planList = incompletePlans.map((p, i) => {
-              const prog = getPlanProgress(p)
-              return `${i + 1}. [${getPlanName(p)}] - Progress: ${prog.completed}/${prog.total}`
-            }).join("\n")
+          const { actionable, staleCandidates, triage } = classifyPlans(allPlans)
+          const listed = [...actionable, ...staleCandidates, ...triage]
+          if (listed.length > 0) {
+            const planList = [
+              ...actionable.map((p, i) => formatPlanListLine(p, i)),
+              ...staleCandidates.map((p, i) => formatPlanListLine(p, actionable.length + i, "stale")),
+              ...triage.map((p, i) =>
+                formatPlanListLine(p, actionable.length + staleCandidates.length + i, "needsTriage"),
+              ),
+            ].join("\n")
             
             contextInfo = `
 ## Plan Not Found
@@ -159,6 +166,7 @@ No incomplete plans available. Create a new plan with: /plan "your task"`
 The current session (${sessionId}) has been added to session_ids.
 Read the plan file and continue from the first unchecked task.`
         } else {
+          rotateMissionIfComplete(ctx.directory)
           contextInfo = `
 ## Previous Work Complete
 
@@ -169,7 +177,7 @@ Looking for new plans...`
 
       if ((!existingState && !explicitPlanName) || (existingState && !explicitPlanName && getPlanProgress(existingState.active_plan).isComplete)) {
         const plans = findOraclePlans(ctx.directory)
-        const incompletePlans = plans.filter(p => !getPlanProgress(p).isComplete)
+        const { actionable: incompletePlans, staleCandidates, triage } = classifyPlans(plans)
         
         if (plans.length === 0) {
           contextInfo += `
@@ -178,12 +186,26 @@ Looking for new plans...`
 
 No Oracle plan files found at .matrixx/plans/
 Use Oracle to create a work plan first: /plan "your task"`
-        } else if (incompletePlans.length === 0) {
+        } else if (incompletePlans.length === 0 && staleCandidates.length === 0 && triage.length === 0) {
           contextInfo += `
 
 ## All Plans Complete
 
 All ${plans.length} plan(s) are complete. Create a new plan with: /plan "your task"`
+        } else if (incompletePlans.length === 0) {
+          const staleList = [
+            ...staleCandidates.map((p, i) => formatPlanListLine(p, i, "stale")),
+            ...triage.map((p, i) => formatPlanListLine(p, staleCandidates.length + i, "needsTriage")),
+          ].join("\n")
+          contextInfo += `
+
+## No Actionable Plans
+
+No fresh incomplete plans remain. Stale and triage candidates (not auto-selected):
+
+${staleList}
+
+Review stale candidates for archival; triage-empty plans need checkboxes or manual review.`
         } else if (incompletePlans.length === 1) {
           const planPath = incompletePlans[0]
           const progress = getPlanProgress(planPath)
@@ -202,12 +224,20 @@ All ${plans.length} plan(s) are complete. Create a new plan with: /plan "your ta
 
 mission.json has been created. Read the plan and begin execution.`
         } else {
-          const planList = incompletePlans.map((p, i) => {
-            const progress = getPlanProgress(p)
-            const stat = require("node:fs").statSync(p)
-            const modified = new Date(stat.mtimeMs).toISOString()
-            return `${i + 1}. [${getPlanName(p)}] - Modified: ${modified} - Progress: ${progress.completed}/${progress.total}`
-          }).join("\n")
+          if (shouldReconcileOnStartWork(incompletePlans.length)) {
+            log(`[${HOOK_NAME}] Multiple actionable plans — reconciler pass available`, {
+              sessionID: input.sessionID,
+              incompleteCount: incompletePlans.length,
+            })
+          }
+          const actionList = incompletePlans.map((p, i) => formatPlanListLine(p, i)).join("\n")
+          const staleList = staleCandidates.map((p, i) =>
+            formatPlanListLine(p, incompletePlans.length + i, "stale"),
+          ).join("\n")
+          const triageList = triage.map((p, i) =>
+            formatPlanListLine(p, incompletePlans.length + staleCandidates.length + i, "needsTriage"),
+          ).join("\n")
+          const planList = [actionList, staleList, triageList].filter((s) => s.length > 0).join("\n")
 
           contextInfo += `
 

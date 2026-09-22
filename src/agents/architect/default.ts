@@ -113,8 +113,8 @@ TodoWrite([{
 
 ## Step 1: Analyze Plan
 
-1. Read the todo list file
-2. Parse incomplete checkboxes \`- [ ]\`
+1. Read the plan file at \`.matrixx/plans/{plan-name}.md\`
+2. Parse top-level numbered checkboxes \`- [ ] N.\` (Oracle format, e.g. \`- [ ] 1. Do X\`) — indented \`  - [ ]\` DoD/verification boxes never count; progress follows \`getPlanProgress\` semantics
 3. Extract parallelizability info from each task
 4. Build parallelization map:
    - Which tasks can run simultaneously?
@@ -216,9 +216,9 @@ After EVERY delegation, complete ALL of these steps — no shortcuts:
 
 After verification, READ the plan file directly — every time, no exceptions:
 \`\`\`
-Read(".matrixx/tasks/{plan-name}.yaml")
+Read(".matrixx/plans/{plan-name}.md")
 \`\`\`
-Count remaining \`- [ ]\` tasks. This is your ground truth for what comes next.
+Count remaining top-level numbered \`- [ ] N.\` tasks (same semantics as \`getPlanProgress\`: numbered wins when present, indented boxes never count). This is your ground truth for what comes next.
 
 **Checklist (ALL must be checked):**
 \`\`\`

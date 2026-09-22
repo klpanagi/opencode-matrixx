@@ -72,31 +72,88 @@ export function writePlanFile(directory: string, planPath: string, content: stri
 }
 
 /**
- * Sync markdown checkbox status to match todos.
- *
- * For each `- [ ]` or `- [x]` line, finds the matching todo by content
- * and marks it completed if the todo status is completed/cancelled.
- * Lines without a matching todo keep their current state.
- * Checked boxes are never unchecked — sync only transitions [ ] → [x].
+ * Verification-style guard: boxes matching verify/verification/checklist/
+ * definition-of-done/final check with zero task overlap are never
+ * force-completed — state kept, line reported via `flaggedVerification`.
  */
+export const VERIFICATION_STYLE_RE = /verify|verification|checklist|definition-of-done|final check/i
+
+const SYNC_STOP_WORDS = new Set(["the", "a", "an", "to", "of", "and", "or", "for", "with", "on", "in"])
+const SYNC_OVERLAP_RATIO = 0.5
+const SYNC_MIN_SHARED = 2
+
+/** Lowercase, strip punctuation/numbers, split tokens, drop stop-words. */
+export function normalizeCheckboxText(text: string): string[] {
+  return text.toLowerCase().replace(/[^a-z\s]/g, " ").split(/\s+/).filter((t) => t.length > 0 && !SYNC_STOP_WORDS.has(t))
+}
+
+export const isVerificationStyle = (text: string): boolean => VERIFICATION_STYLE_RE.test(text)
+
+/**
+ * Token overlap: match on >= 2 shared content tokens, or on shorter-side
+ * ratio >= 0.5 with normalized-set equality (equality keeps exact matches
+ * like "Task A"; without it one generic word cross-matches every sibling,
+ * e.g. "Task D" would flip on completed "Task A").
+ */
+export function checkboxOverlap(a: string, b: string): { shared: number; score: number; matched: boolean } {
+  const aT = new Set(normalizeCheckboxText(a))
+  const bT = new Set(normalizeCheckboxText(b))
+  if (aT.size === 0 || bT.size === 0) return { shared: 0, score: 0, matched: false }
+  let shared = 0
+  for (const t of aT) if (bT.has(t)) shared += 1
+  const score = shared / Math.min(aT.size, bT.size)
+  const equal = shared === aT.size && aT.size === bT.size
+  return { shared, score, matched: shared >= SYNC_MIN_SHARED || (score >= SYNC_OVERLAP_RATIO && equal) }
+}
+
+export interface SyncCheckboxesResult {
+  content: string
+  flaggedVerification: string[]
+}
+
+/**
+ * Sync checkboxes to todos by token overlap (indented lines sync too, though
+ * Task 2 counting ignores them). Best overlap wins, ties go first. Checked
+ * boxes never uncheck ([ ] → [x] only); unmatched lines keep state.
+ */
+export function syncCheckboxesDetailed(
+  content: string,
+  todos: Array<{ content: string; status: string }>,
+): SyncCheckboxesResult {
+  const completedStatuses = new Set(["completed", "cancelled", "deleted"])
+  const flaggedVerification: string[] = []
+  const synced = content.replace(
+    /^(\s*[-*]\s*)\[([ xX])\]\s*(.*)$/gm,
+    (_match: string, prefix: string, current: string, text: string) => {
+      let best: { content: string; status: string } | undefined
+      let bestShared = 0
+      for (const t of todos) {
+        const { shared, matched } = checkboxOverlap(text, t.content)
+        if (matched && shared > bestShared) {
+          best = t
+          bestShared = shared
+        }
+      }
+      // No matching todo → preserve state (never revert manual marks);
+      // verification-style leftovers are flagged, never force-completed.
+      if (best === undefined) {
+        if (current === " " && isVerificationStyle(text)) flaggedVerification.push(text)
+        return `${prefix}[${current}] ${text}`
+      }
+      // Only check, never uncheck: a checked box stays checked
+      const done = completedStatuses.has(best.status) || current.toLowerCase() === "x"
+      return `${prefix}[${done ? "x" : " "}] ${text}`
+    },
+  )
+  return { content: synced, flaggedVerification }
+}
+
+/** String-only wrapper (backward compatible with plan-persister hook). */
 export function syncCheckboxes(
   content: string,
   todos: Array<{ content: string; status: string }>,
 ): string {
-  const completedStatuses = new Set(["completed", "cancelled", "deleted"])
-  return content.replace(
-    /^(\s*[-*]\s*)\[([ xX])\]\s*(.*)$/gm,
-    (_match: string, prefix: string, current: string, text: string) => {
-      const todo = todos.find(
-        (t) => text.includes(t.content) || t.content.includes(text),
-      )
-      // No matching todo → preserve current state (never revert manual marks)
-      if (todo === undefined) return `${prefix}[${current}] ${text}`
-      // Only check, never uncheck: a checked box stays checked
-      const done = completedStatuses.has(todo.status) || current.toLowerCase() === "x"
-      return `${prefix}[${done ? "x" : " "}] ${text}`
-    },
-  )
+  return syncCheckboxesDetailed(content, todos).content
 }
 
 /**
