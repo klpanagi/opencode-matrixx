@@ -1421,6 +1421,56 @@ Multi-model debate — 3-5 parallel voters from different providers, synthesis v
 
 > Schema: `src/config/schema/assembly.ts` (`AssemblyConfigSchema`). Tool: `src/tools/assembly/`.
 
+## Evolution
+
+Self-evolution loop: watches tool execution traces, compresses them into reusable knowledge skills, and governs promotion with human approval. Default **off** (`evolution.enabled: false` = zero overhead).
+
+```jsonc
+{
+  "evolution": {
+    "enabled": false,
+    "watcher": { "maxArgChars": 4000, "maxOutputChars": 8000, "skipTools": ["evolution-watcher", "evolution-compressor"] },
+    "compressor": { "provider": "llm", "minTraces": 5, "maxInputTokens": 32000, "trigger": "both" },
+    "writer": { "outputDir": ".matrixx/evolution/skills", "globalSkills": false, "allowToolGeneration": false, "allowAgentGeneration": false },
+    "governance": { "requireApproval": true, "autoPromote": false, "autoPromoteThreshold": 0.85, "minConfidence": 0.7 },
+    "retention": { "traceDays": 30, "maxPending": 50 },
+    "budget": { "maxCompressionsPerHour": 10, "maxCostCentsPerDay": 100 }
+  }
+}
+```
+
+| Option | Type | Default | Description |
+|--------|------|---------|-------------|
+| `enabled` | `boolean` | `false` | Master switch. All hooks and tools are disabled when `false`. |
+| `watcher.maxArgChars` | `number` | `4000` | Max characters captured from tool arguments per trace. |
+| `watcher.maxOutputChars` | `number` | `8000` | Max characters captured from tool outputs per trace. |
+| `watcher.skipTools` | `string[]` | `["evolution-watcher","evolution-compressor"]` | Tools excluded from trace capture (recursion guard). |
+| `compressor.provider` | `"llm" \| "dspy-gepa"` | `"llm"` | Compression backend. `dspy-gepa` is a placeholder for future use. |
+| `compressor.model` | `string?` | main model | Override the LLM model used for compression. |
+| `compressor.minTraces` | `number` | `5` | Minimum traces required before compression triggers. |
+| `compressor.maxInputTokens` | `number` | `32000` | Truncation cap for the compressor prompt. |
+| `compressor.trigger` | `"compacting" \| "idle" \| "both"` | `"both"` | Which session events fire the compressor. |
+| `writer.outputDir` | `string` | `".matrixx/evolution/skills"` | Directory for staged skill artifacts. |
+| `writer.globalSkills` | `boolean` | `false` | Also write promoted skills to `~/.agents/skills/`. |
+| `writer.allowToolGeneration` | `boolean` | `false` | Allow generation of new tools (gated). |
+| `writer.allowAgentGeneration` | `boolean` | `false` | Allow generation of new agents (gated). |
+| `governance.requireApproval` | `boolean` | `true` | Require human approval before promoting a skill. |
+| `governance.autoPromote` | `boolean` | `false` | Silently promote high-confidence skills without approval. |
+| `governance.autoPromoteThreshold` | `number` | `0.85` | Minimum confidence for auto-promotion. |
+| `governance.minConfidence` | `number` | `0.7` | Minimum confidence to stage a skill for approval. |
+| `retention.traceDays` | `number` | `30` | Days to retain trace JSONL files. Cleanup runs on compressor idle. |
+| `retention.maxPending` | `number` | `50` | Maximum pending proposals. Pipeline returns `max-pending` when full. |
+| `budget.maxCompressionsPerHour` | `number` | `10` | Hourly compression throttle. |
+| `budget.maxCostCentsPerDay` | `number` | `100` | Daily cost cap in cents. When exceeded, the paid LLM path is blocked but the free offline heuristic still runs. Resets on UTC day rollover. |
+
+**Enforcement behavior:**
+
+- **Pending queue full** (`>= maxPending`): pipeline returns `{ reason: "max-pending" }`, compressor not invoked.
+- **Daily cost exceeded** (`>= maxCostCentsPerDay`): LLM compressor is replaced by free offline heuristic (no charge recorded).
+- **Hourly cap exceeded**: compression skipped via `shouldThrottle`.
+
+> Schema: `src/config/schema/evolution.ts`. Tool: `src/tools/evolution/` (actions: `list`, `get`, `approve`, `reject`, `status`, `search`, `get_context`). Full docs: [Evolution](evolution.md).
+
 ## Security
 
 Three-tier security: reactive hooks + policies + Sentinel agent. Hooks run first in pipeline (`position: pre`).

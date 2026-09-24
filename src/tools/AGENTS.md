@@ -30,7 +30,7 @@ tools/
 ├── knowledge-hub-confirm/ # Knowledge-hub write confirm gate (gated: hubs configured)
 ├── pdf-extract-figures/ # PDF figure extraction (gated: *.pdf file or override)
 ├── preset/            # Model preset switch (opt-in only)
-├── evolution/         # Evolution governance: list/get/approve/reject/status (gated: evolution.enabled) + reserved search/query-context stubs (T9)
+├── evolution/         # Evolution governance: list/get/approve/reject/status + read-only retrieval (search/get_context, 4000-char cap) (gated: evolution.enabled)
 └── slashcommand/     # Slash command dispatch
 ```
 
@@ -65,7 +65,7 @@ tools/
 | `look_at` | System | Factory | Multimodal PDF/image analysis |
 | `skill` | Skill | Factory | Execute skill with MCP capabilities |
 | `slashcommand` | Command | Factory | Slash command dispatch |
-| `evolution` | Evolution | Factory | Govern pending proposals: list/get/approve/reject/status (reserved search/query-context for T9 retrieval) |
+| `evolution` | Evolution | Factory | Govern pending proposals: list/get/approve/reject/status + read-only retrieval (search scoped text, get_context with 4000-char cap + truncation marker) |
 
 ## TASK TOOLS
 
