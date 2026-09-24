@@ -83,6 +83,8 @@ export function createChatMessageHandler(args: {
     if (hooks.startWork && isStartWorkHookOutput(output)) {
       await hooks.startWork["chat.message"]?.(input, output)
     }
+    await hooks.designIntentPreserver?.["chat.message"]?.(input, output)
+    await hooks.runtimeFallback?.["chat.message"]?.(input, output)
 
     if (!hasConnectedProvidersCache()) {
       ctx.client.tui

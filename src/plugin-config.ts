@@ -12,11 +12,26 @@ import {
   log,
   parseJsonc,
 } from "./shared";
+import { migrateHookNames } from "./shared/migration/hook-names";
+
+function sanitizeDisabledHooks(
+  raw: Record<string, unknown>,
+): Record<string, unknown> {
+  const hooks = raw.disabled_hooks;
+  if (!Array.isArray(hooks)) return raw;
+  const result = migrateHookNames(hooks.filter((h): h is string => typeof h === "string"));
+  if (!result.changed) return raw;
+  if (result.removed.length > 0) {
+    log("Removed retired hooks from disabled_hooks:", result.removed);
+  }
+  return { ...raw, disabled_hooks: result.migrated };
+}
 
 export function parseConfigPartially(
   rawConfig: Record<string, unknown>
 ): MatrixxConfig | null {
-  const fullResult = MatrixxConfigSchema.safeParse(rawConfig);
+  const sanitized = sanitizeDisabledHooks(rawConfig);
+  const fullResult = MatrixxConfigSchema.safeParse(sanitized);
   if (fullResult.success) {
     return fullResult.data;
   }
@@ -24,8 +39,8 @@ export function parseConfigPartially(
   const partialConfig: Record<string, unknown> = {};
   const invalidSections: string[] = [];
 
-  for (const key of Object.keys(rawConfig)) {
-    const sectionResult = MatrixxConfigSchema.safeParse({ [key]: rawConfig[key] });
+  for (const key of Object.keys(sanitized)) {
+    const sectionResult = MatrixxConfigSchema.safeParse({ [key]: sanitized[key] });
     if (sectionResult.success) {
       const parsed = sectionResult.data as Record<string, unknown>;
       if (parsed[key] !== undefined) {
@@ -56,7 +71,7 @@ function loadConfigFromPath(
   try {
     if (fs.existsSync(configPath)) {
       const content = fs.readFileSync(configPath, "utf-8");
-      const rawConfig = parseJsonc<Record<string, unknown>>(content);
+      const rawConfig = sanitizeDisabledHooks(parseJsonc<Record<string, unknown>>(content));
 
 
       const result = MatrixxConfigSchema.safeParse(rawConfig);

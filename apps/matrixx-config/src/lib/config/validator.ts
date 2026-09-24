@@ -59,7 +59,6 @@ const OBJECT_PROPS = new Set([
   "tasks",
   "task",
   "knowledge",
-  "failure_counter",
   "headroom",
   "rtk",
   "comment_checker",

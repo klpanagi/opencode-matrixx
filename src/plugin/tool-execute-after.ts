@@ -33,6 +33,8 @@ export function createToolExecuteAfterHandler(args: {
     // on session.summarize() and should not block the other 16 hooks in the chain.
     // Total time: max(prepaction, remaining) instead of preemption + remaining.
     const remainingHooks = async () => {
+      await hooks.webfetchRedirectGuard?.["tool.execute.after"]?.(input, output)
+      await hooks.evolutionWatcher?.["tool.execute.after"]?.(input, output)
       await hooks.contextWindowMonitor?.["tool.execute.after"]?.(input, output)
       await hooks.commentChecker?.["tool.execute.after"]?.(input, output)
       await hooks.directoryAgentsInjector?.["tool.execute.after"]?.(input, output)

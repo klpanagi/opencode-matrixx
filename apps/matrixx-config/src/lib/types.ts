@@ -299,12 +299,6 @@ export interface MatrixLoopConfig {
   state_dir?: string;
 }
 
-export interface FailureCounterConfig {
-  enabled?: boolean;
-  threshold?: number;
-  resetOnSuccess?: boolean;
-}
-
 export interface KnowledgeHub {
   name: string;
   path: string;
@@ -423,7 +417,6 @@ export interface MatrixxConfig {
   babysitting?: BabysittingConfig;
   tasks?: TasksConfig;
   task?: TaskLegacyConfig;
-  failure_counter?: FailureCounterConfig;
   knowledge?: KnowledgeConfig;
   tdd_enforcer?: TddEnforcerConfig;
   browser_automation_engine?: BrowserAutomationConfig;

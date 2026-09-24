@@ -58,8 +58,15 @@ export function createToolExecuteBeforeHandler(args: {
   const mouseNotepadHook = hooks.mouseNotepad?.["tool.execute.before"]
   const architectHookHook = hooks.architectHook?.["tool.execute.before"]
 const rtkBashRewriterHook = hooks.rtkBashRewriter?.["tool.execute.before"]
+  const webfetchRedirectGuardHook = hooks.webfetchRedirectGuard?.["tool.execute.before"]
+  const evolutionWatcherHook = hooks.evolutionWatcher?.["tool.execute.before"]
 
   return async (input, output): Promise<void> => {
+    // webfetch-redirect-guard: MUTATOR + NETWORK (non-blocking, try/catch).
+    // Resolves output.args.url before any other hook inspects args; no other
+    // before-hook reads the webfetch URL, so running first is order-safe.
+    await webfetchRedirectGuardHook?.(input, output)
+
     // ---------------------------------------------------------------------
     // Fast-fail hooks (Task T1.1: 3-wave parallelization)
     //
@@ -78,6 +85,7 @@ const rtkBashRewriterHook = hooks.rtkBashRewriter?.["tool.execute.before"]
       commentCheckerHook?.(input, output),
       directoryAgentsInjectorHook?.(input, output),
       rulesInjectorHook?.(input, output),
+      evolutionWatcherHook?.(input, output),
     ])
 
     // Wave 2 (5 hooks): fail-fast BLOCKING — each guard throws on a
