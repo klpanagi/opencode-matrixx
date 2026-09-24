@@ -1,8 +1,12 @@
 import { describe, expect, test } from "bun:test"
+import { mkdtempSync } from "node:fs"
+import { tmpdir } from "node:os"
+import * as path from "node:path"
 import type { HookName, MatrixxConfig } from "../../src/config"
 import { EvolutionConfigSchema } from "../../src/config/schema/evolution"
 import { HookNameSchema } from "../../src/config/schema/hooks"
 import type { BackgroundManager } from "../../src/features/background-agent"
+import { readRetrievalRecords, searchRecords } from "../../src/features/evolution/store"
 import { EVOLUTION_TEMPLATE } from "../../src/features/builtin-commands/templates/evolution"
 import { createContinuationHooks } from "../../src/plugin/hooks/create-continuation-hooks"
 import { createToolGuardHooks } from "../../src/plugin/hooks/create-tool-guard-hooks"
@@ -119,5 +123,18 @@ describe("T2 evolution tool gating", () => {
     expect(pendingLs).toBe(false)
     expect(auditTail).toBe(false)
     expect(EVOLUTION_TEMPLATE).toContain("evolution` tool")
+  })
+})
+
+describe("T9 retrieval gating (zero-overhead)", () => {
+  test("enabled=false keeps the tool gated off and retrieval empty", () => {
+    //#given a disabled evolution gate and an empty store
+    const emptyRoot = mkdtempSync(path.join(tmpdir(), "evolution-disabled-"))
+    //#when evaluating the gate and querying the store
+    const enabled = shouldEnableEvolutionTool(false)
+    const hits = searchRecords(readRetrievalRecords(emptyRoot), { scope: { projectId: "proj-1" } })
+    //#then the tool is unregistered and no knowledge surfaces
+    expect(enabled).toBe(false)
+    expect(hits).toEqual([])
   })
 })

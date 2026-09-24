@@ -3,10 +3,12 @@ import * as path from "node:path";
 import type { PluginInput } from "@opencode-ai/plugin";
 import { type ToolDefinition, tool } from "@opencode-ai/plugin/tool";
 import { type EvolutionWriterConfig, EvolutionWriterConfigSchema } from "../../config/schema/evolution";
+import { KNOWLEDGE_KINDS } from "../../features/evolution/schema";
 import { EVOLUTION_DIR, PENDING_DIR, TraceStore } from "../../features/evolution/store";
 import type { SkillMeta } from "../../features/evolution/types";
 import { EvolutionWriter } from "../../features/evolution/writer";
 import { AUDIT_TAIL_LIMIT, EVOLUTION_DESCRIPTION, NO_PENDING_MESSAGE, SLUG_PATTERN } from "./constants";
+import { handleGetContext, handleSearch } from "./query-actions";
 import type { EvolutionToolArgs, PendingProposalSummary } from "./types";
 
 export type EvolutionToolOptions = {
@@ -37,13 +39,6 @@ function formatSummary(summary: PendingProposalSummary): string {
   const version = summary.version ?? "unknown";
   const confidence = summary.confidence ?? "unknown";
   return `- ${summary.slug} (version ${version}, confidence ${confidence})`;
-}
-
-function reservedMessage(action: "search" | "query-context"): string {
-  return (
-    `The '${action}' action is reserved for read-only retrieval and is not implemented yet. ` +
-    `Use list/get/status for governance.`
-  );
 }
 
 async function handleList(writer: EvolutionWriter, pendingDir: string): Promise<string> {
@@ -113,8 +108,9 @@ async function handleStatus(store: TraceStore, writer: EvolutionWriter, evolutio
  *
  * Wave1 exposes the governance actions `list/get/approve/reject/status`,
  * all delegated to the evolution store APIs (`EvolutionWriter`, `TraceStore`)
- * so no shell command ever touches evolution state. `search` and
- * `query-context` are reserved stubs until T9 implements read-only retrieval.
+ * so no shell command ever touches evolution state. T9 adds the read-only
+ * retrieval actions `search` and `get_context`, filtered through the T4a
+ * retrieval contract and scoped to the current project.
  */
 export function createEvolutionTool(ctx: PluginInput, options?: EvolutionToolOptions): Record<string, ToolDefinition> {
   const projectRoot = ctx.directory ?? process.cwd();
@@ -126,9 +122,9 @@ export function createEvolutionTool(ctx: PluginInput, options?: EvolutionToolOpt
     description: EVOLUTION_DESCRIPTION,
     args: {
       action: tool.schema
-        .enum(["list", "get", "approve", "reject", "status", "search", "query-context"])
+        .enum(["list", "get", "approve", "reject", "status", "search", "get_context"])
         .describe(
-          "Governance action: list pending proposals, get a staged proposal, approve (promote) or reject it, or show status. search and query-context are reserved for future retrieval.",
+          "Governance action: list pending proposals, get a staged proposal, approve (promote) or reject it, or show status. search and get_context are read-only retrieval queries.",
         ),
       slug: tool.schema
         .string()
@@ -138,6 +134,14 @@ export function createEvolutionTool(ctx: PluginInput, options?: EvolutionToolOpt
         .boolean()
         .optional()
         .describe("(action=approve) Also promote to the global skills dir (default: false)."),
+      query: tool.schema
+        .string()
+        .optional()
+        .describe("(action=search/get_context) Case-insensitive text match over id and body; omit to return all in scope."),
+      kind: tool.schema
+        .enum(KNOWLEDGE_KINDS)
+        .optional()
+        .describe("(action=search/get_context) Restrict results to one knowledge kind."),
     },
     execute: async (args: EvolutionToolArgs) => {
       try {
@@ -155,8 +159,9 @@ export function createEvolutionTool(ctx: PluginInput, options?: EvolutionToolOpt
           case "status":
             return await handleStatus(store, writer, evolutionDir);
           case "search":
-          case "query-context":
-            return reservedMessage(args.action);
+            return handleSearch(projectRoot, args);
+          case "get_context":
+            return handleGetContext(projectRoot, args);
         }
       } catch (e) {
         return `Error: ${e instanceof Error ? e.message : String(e)}`;

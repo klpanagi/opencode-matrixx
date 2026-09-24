@@ -155,16 +155,16 @@ describe("createEvolutionTool", () => {
     expect(result).toContain("staged");
   });
 
-  test("reserved query actions return a T9 stub message", async () => {
-    //#given the evolution tool
+  test("search and get_context return empty receipts on an empty store", async () => {
+    //#given the evolution tool rooted at a fresh project
     const dir = makeProject();
     const record = createEvolutionTool(makeCtx(dir));
-    //#when invoking the reserved retrieval actions
+    //#when invoking the retrieval actions with nothing approved
     const search = await record.evolution.execute({ action: "search" }, makeToolContext(dir));
-    const context = await record.evolution.execute({ action: "query-context" }, makeToolContext(dir));
-    //#then both report the reserved stub without touching the store
-    expect(search).toContain("reserved");
-    expect(context).toContain("reserved");
+    const context = await record.evolution.execute({ action: "get_context" }, makeToolContext(dir));
+    //#then both report no retrievable knowledge without throwing
+    expect(search).toContain("No retrievable");
+    expect(context).toContain("No retrievable");
   });
 
   test("rejects path-traversal slugs", async () => {

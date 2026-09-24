@@ -5,11 +5,11 @@
  * LLM-facing tool schema, so keep it factual, concise, and triggerable.
  */
 
-/** Tool description — covers the Wave1 governance actions. */
+/** Tool description — governance plus read-only retrieval actions. */
 export const EVOLUTION_DESCRIPTION =
-  "Govern self-evolution proposals staged in .matrixx/evolution/pending. Actions: 'list' (show pending proposals with version and confidence), 'get' (show a staged proposal), 'approve' (promote a pending skill and record the audit entry), 'reject' (discard a pending proposal), 'status' (state totals, pending count, and audit tail). Use this tool instead of shell commands for all evolution state. The 'search' and 'query-context' actions are reserved for future read-only retrieval.";
+  "Govern self-evolution proposals staged in .matrixx/evolution/pending, and retrieve approved knowledge. Actions: 'list' (show pending proposals with version and confidence), 'get' (show a staged proposal), 'approve' (promote a pending skill and record the audit entry), 'reject' (discard a pending proposal), 'status' (state totals, pending count, and audit tail), 'search' (read-only scoped search over approved knowledge), 'get_context' (read-only scoped context, truncated at a char cap). Use this tool instead of shell commands for all evolution state.";
 
-/** Allowlisted actions: Wave1 governance plus reserved T9 query stubs. */
+/** Allowlisted actions: Wave1 governance plus read-only retrieval queries. */
 export const EVOLUTION_TOOL_ACTIONS = [
   "list",
   "get",
@@ -17,11 +17,23 @@ export const EVOLUTION_TOOL_ACTIONS = [
   "reject",
   "status",
   "search",
-  "query-context",
+  "get_context",
 ] as const;
+
+/** The read-only retrieval surface — no action here may mutate evolution state. */
+export const EVOLUTION_QUERY_ACTIONS = ["search", "get_context"] as const;
 
 /** How many audit lines `status` reports. */
 export const AUDIT_TAIL_LIMIT = 20;
+
+/** Hard char cap for `get_context` output; cut text gets a truncation marker. */
+export const GET_CONTEXT_CHAR_CAP = 4000;
+
+/** Max records `search` reports. */
+export const SEARCH_RESULT_LIMIT = 20;
+
+/** Message when the scoped query finds nothing. */
+export const NO_RETRIEVABLE_MESSAGE = "No retrievable knowledge for this scope.";
 
 /** Slugs must stay inside the pending dir — no separators, no traversal. */
 export const SLUG_PATTERN = /^[A-Za-z0-9][A-Za-z0-9._-]*$/;
