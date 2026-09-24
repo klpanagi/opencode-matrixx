@@ -2,29 +2,16 @@ import * as fs from "node:fs"
 import * as os from "node:os"
 import * as path from "node:path"
 import type { EvolutionWriterConfig } from "../../config/schema/evolution"
+import { log } from "../../shared/logger"
+import { containsSecretForEval } from "./evaluator"
 import { normalizeKnowledgeKind } from "./schema"
 import { normalizeProjectId, PENDING_DIR, projectSlugSuffix, SKILLS_DIR, traceStore } from "./store"
 import type { DistilledKnowledge, SkillMeta } from "./types"
+import { hasProvenance, type ProvenanceMeta, toFrontmatter } from "./writer-frontmatter"
 
 function slugify(title: string): string {
   const s = title.toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/^-+|-+$/g, "")
   return s || "untitled"
-}
-
-function toFrontmatter(meta: SkillMeta): string {
-  const lines = [
-    "---",
-    `name: ${meta.name}`,
-    `version: ${meta.version}`,
-    `derived_from: [${meta.derived_from.map((d) => `"${d}"`).join(", ")}]`,
-    `created_at: ${meta.created_at}`,
-    `confidence: ${meta.confidence}`,
-    `eval_score: ${meta.eval_score ?? "null"}`,
-  ]
-  if (meta.tags?.length) lines.push(`tags: [${meta.tags.join(", ")}]`)
-  if (meta.prerequisites?.length) lines.push(`prerequisites: [${meta.prerequisites.join(", ")}]`)
-  lines.push("---")
-  return lines.join("\n")
 }
 
 function buildBody(k: DistilledKnowledge): string {
@@ -66,7 +53,11 @@ export class EvolutionWriter {
   private readMeta(slug: string): SkillMeta | null {
     try {
       const raw = fs.readFileSync(path.join(this.pendingDir, `${slug}.meta.json`), "utf-8")
-      return JSON.parse(raw) as SkillMeta
+      const meta = JSON.parse(raw) as SkillMeta
+      if (!hasProvenance(meta)) {
+        log(`[evolution] legacy meta ${slug} missing provenance; loading fail-open`)
+      }
+      return meta
     } catch {
       return null
     }
@@ -104,18 +95,36 @@ export class EvolutionWriter {
       parts[2] += 1
       version = parts.join(".")
     }
-    const meta: SkillMeta = {
+    const createdAt = new Date().toISOString()
+    const distilledAt = knowledge.distilledAt?.trim() ? knowledge.distilledAt : createdAt
+    if (!knowledge.distilledAt?.trim()) {
+      log("[evolution] knowledge missing distilledAt; defaulted to now")
+    }
+    const traceIds = knowledge.sourceTraceIDs ?? []
+    if (!knowledge.sourceTraceIDs) {
+      log("[evolution] knowledge missing sourceTraceIDs; defaulted to []")
+    }
+    const meta: ProvenanceMeta = {
       name: slug,
       version,
       derived_from: knowledge.sourceSessionIDs,
-      created_at: new Date().toISOString(),
+      created_at: createdAt,
       confidence: knowledge.confidence,
       eval_score: null,
       prerequisites: knowledge.prerequisites,
       kind: knowledge.kind,
       projectId,
+      session_ids: knowledge.sourceSessionIDs,
+      trace_ids: traceIds,
+      distilled_at: distilledAt,
     }
     const content = `${toFrontmatter(meta)}\n\n${buildBody(knowledge)}\n`
+    // Defense in depth: the quality gate runs first, but the writer must never
+    // emit secret-bearing provenance. Reuse the existing scanner (no new logic).
+    if (containsSecretForEval(content)) {
+      await traceStore.appendAudit({ action: "secret-blocked", slug })
+      throw new Error("potential secret detected in staged skill content")
+    }
     writeAtomic(pendingPath, content)
     writeAtomic(metaPath, JSON.stringify(meta, null, 2))
     const stagedDir = path.join(this.skillsDir, slug, "versions")
