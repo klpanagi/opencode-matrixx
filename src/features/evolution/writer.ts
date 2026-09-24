@@ -84,6 +84,7 @@ export class EvolutionWriter {
       confidence: knowledge.confidence,
       eval_score: null,
       prerequisites: knowledge.prerequisites,
+      kind: knowledge.kind,
     }
     const content = `${toFrontmatter(meta)}\n\n${buildBody(knowledge)}\n`
     writeAtomic(pendingPath, content)

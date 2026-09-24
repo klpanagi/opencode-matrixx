@@ -1,5 +1,6 @@
 import type { EvolutionCompressorConfig } from "../../../config/schema/evolution";
-import type { CompressionInput, DistilledKnowledge, TraceRecord } from "../types";
+import { KnowledgeKindSchema, normalizeKnowledgeKind } from "../schema";
+import type { CompressionInput, DistilledKnowledge, KnowledgeKind, TraceRecord } from "../types";
 import type { CompressionResult, Compressor, LlmCall, LlmResponse, LlmUsage } from "./interface";
 
 function truncate(value: string, maxChars: number): string {
@@ -27,6 +28,10 @@ function buildPrompt(input: CompressionInput, maxChars: number): string {
   if (input.notepads?.length) lines.push(`Notepads: ${input.notepads.join(" | ").slice(0, 1000)}`);
   lines.push("RULES:");
   lines.push("- Output JSON matching DistilledKnowledge schema.");
+  lines.push("- Emit exactly one kind per item plus confidence: kind MUST be one of workflow|correction|debugging_pattern|gotcha|convention.");
+  lines.push("- workflow: clean success path worth replaying; correction: partial run needing fixes before it worked;");
+  lines.push("  debugging_pattern: failures that recovered into a reusable fix; gotcha: unresolved or all-failed run worth warning about;");
+  lines.push("  convention: thin or inconclusive evidence, default when unsure.");
   lines.push("- Focus on what WORKED after failures — the final successful path.");
   lines.push("- Omit project-specific secrets/paths.");
   lines.push("- If confidence <0.6, set skillDraft to null.");
@@ -38,7 +43,7 @@ function buildPrompt(input: CompressionInput, maxChars: number): string {
   }
   return truncate(lines.join("\n"), maxChars);
 }
-function parseDistilled(raw: string, fallbackSessionID: string): DistilledKnowledge | null {
+function parseDistilled(raw: string, fallbackSessionID: string, traces: TraceRecord[]): DistilledKnowledge | null {
   let parsed: unknown;
   try {
     parsed = JSON.parse(raw);
@@ -54,6 +59,11 @@ function parseDistilled(raw: string, fallbackSessionID: string): DistilledKnowle
   if (!Array.isArray(obj.prerequisites)) return null;
   if (typeof obj.confidence !== "number") return null;
   const sourceSessionIDs = Array.isArray(obj.sourceSessionIDs) && obj.sourceSessionIDs.length > 0 ? (obj.sourceSessionIDs as string[]) : [fallbackSessionID];
+  // Unknown/missing kinds fail open to `convention` — never throw on LLM output.
+  // An explicitly invalid kind string falls back to the deterministic heuristic
+  // so trace evidence still decides; only absent kinds take the bare default.
+  const rawKind = (obj as { kind?: unknown }).kind;
+  const kind = rawKind === undefined ? normalizeKnowledgeKind(rawKind) : KnowledgeKindSchema.safeParse(rawKind).success ? (rawKind as KnowledgeKind) : heuristicKind(traces);
   return {
     title: obj.title,
     summary: obj.summary,
@@ -63,7 +73,26 @@ function parseDistilled(raw: string, fallbackSessionID: string): DistilledKnowle
     skillDraft: typeof obj.skillDraft === "string" ? obj.skillDraft : undefined,
     confidence: obj.confidence,
     sourceSessionIDs,
+    kind,
   };
+}
+
+/**
+ * Deterministic best-effort kind from trace signals (offline heuristic path).
+ * Rule (pure function of counts + final outcome, no randomness):
+ * - no traces at all → `convention` (nothing to learn from)
+ * - all failed → `gotcha` (warn about the dead end)
+ * - failures present and final trace succeeded → `debugging_pattern` (recovery worth replaying)
+ * - failures present and final trace still failed → `correction` (needs fixes first)
+ * - all succeeded → `workflow` (clean success path)
+ */
+export function heuristicKind(traces: TraceRecord[]): KnowledgeKind {
+  if (traces.length === 0) return "convention";
+  const failCount = traces.filter((t) => !t.success).length;
+  if (failCount === 0) return "workflow";
+  if (failCount === traces.length) return "gotcha";
+  const lastSucceeded = traces[traces.length - 1]?.success ?? false;
+  return lastSucceeded ? "debugging_pattern" : "correction";
 }
 function estimateUsage(promptChars: number, outputChars: number): LlmUsage {
   return {
@@ -96,6 +125,7 @@ export class LlmCompressor implements Compressor {
             prerequisites: [],
             confidence: 0,
             sourceSessionIDs: [input.sessionID],
+            kind: "convention",
           },
         };
       }
@@ -105,7 +135,7 @@ export class LlmCompressor implements Compressor {
         try {
           const model = this.config.model;
           const response = normalizeResponse(await this.llmCall(prompt, model));
-          const parsed = parseDistilled(response.text, input.sessionID);
+          const parsed = parseDistilled(response.text, input.sessionID, input.traces);
           if (parsed) return { knowledge: parsed, usage: response.usage ?? estimateUsage(prompt.length, response.text.length) };
         } catch {}
       }
@@ -140,6 +170,7 @@ export class LlmCompressor implements Compressor {
           skillDraft,
           confidence,
           sourceSessionIDs: [input.sessionID],
+          kind: heuristicKind(input.traces),
         },
       };
     } catch {
@@ -152,6 +183,7 @@ export class LlmCompressor implements Compressor {
           prerequisites: [],
           confidence: 0,
           sourceSessionIDs: [input.sessionID],
+          kind: "convention",
         },
       };
     }

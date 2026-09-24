@@ -13,6 +13,8 @@ export type TraceRecord = {
   model?: string
 }
 
+export type KnowledgeKind = "workflow" | "correction" | "debugging_pattern" | "gotcha" | "convention"
+
 export type DistilledKnowledge = {
   title: string
   summary: string
@@ -22,6 +24,7 @@ export type DistilledKnowledge = {
   skillDraft?: string
   confidence: number
   sourceSessionIDs: string[]
+  kind: KnowledgeKind
 }
 
 export type CompressionUsage = {
@@ -60,6 +63,7 @@ export type SkillMeta = {
   derived_from: string[]
   created_at: string
   confidence: number
+  kind?: KnowledgeKind
   eval_score?: number | null
   tags?: string[]
   prerequisites?: string[]
