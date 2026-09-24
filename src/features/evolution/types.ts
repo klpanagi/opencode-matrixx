@@ -24,6 +24,16 @@ export type DistilledKnowledge = {
   sourceSessionIDs: string[]
 }
 
+export type CompressionUsage = {
+  inputTokens: number
+  outputTokens: number
+  costCents: number
+}
+
+export type CompressResult = {
+  knowledge: DistilledKnowledge
+  usage?: CompressionUsage
+}
 export type CompressionInput = {
   sessionID: string
   traces: TraceRecord[]
@@ -34,7 +44,7 @@ export type CompressionInput = {
 }
 
 export interface Compressor {
-  compress(input: CompressionInput): Promise<DistilledKnowledge>
+  compress(input: CompressionInput): Promise<CompressResult>
 }
 
 export type EvolutionState = {

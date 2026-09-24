@@ -1,6 +1,6 @@
 import type { EvolutionCompressorConfig } from "../../../config/schema/evolution";
 import type { CompressionInput, DistilledKnowledge, TraceRecord } from "../types";
-import type { Compressor } from "./interface";
+import type { CompressionResult, Compressor, LlmCall, LlmResponse, LlmUsage } from "./interface";
 
 function truncate(value: string, maxChars: number): string {
   if (value.length <= maxChars) return value;
@@ -65,34 +65,48 @@ function parseDistilled(raw: string, fallbackSessionID: string): DistilledKnowle
     sourceSessionIDs,
   };
 }
+function estimateUsage(promptChars: number, outputChars: number): LlmUsage {
+  return {
+    inputTokens: Math.max(1, Math.ceil(promptChars / 4)),
+    outputTokens: Math.max(1, Math.ceil(outputChars / 4)),
+    costCents: 0,
+  };
+}
+function normalizeResponse(raw: string | LlmResponse): { text: string; usage?: LlmUsage } {
+  if (typeof raw === "string") return { text: raw };
+  return { text: raw.text, usage: raw.usage };
+}
 export class LlmCompressor implements Compressor {
   private config: EvolutionCompressorConfig;
-  private llmCall?: (prompt: string) => Promise<string>;
-  constructor(options: { config: EvolutionCompressorConfig; llmCall?: (prompt: string) => Promise<string> }) {
+  private llmCall?: LlmCall;
+  constructor(options: { config: EvolutionCompressorConfig; llmCall?: LlmCall }) {
     this.config = options.config;
     this.llmCall = options.llmCall;
   }
-  async compress(input: CompressionInput): Promise<DistilledKnowledge> {
+  async compress(input: CompressionInput): Promise<CompressionResult> {
     try {
       const minTraces = this.config.minTraces ?? 5;
       if (input.traces.length < minTraces) {
         return {
-          title: "insufficient-traces",
-          summary: `Only ${input.traces.length} traces`,
-          patterns: [],
-          pitfalls: [],
-          prerequisites: [],
-          confidence: 0,
-          sourceSessionIDs: [input.sessionID],
+          knowledge: {
+            title: "insufficient-traces",
+            summary: `Only ${input.traces.length} traces`,
+            patterns: [],
+            pitfalls: [],
+            prerequisites: [],
+            confidence: 0,
+            sourceSessionIDs: [input.sessionID],
+          },
         };
       }
       const maxInputTokens = this.config.maxInputTokens ?? 32000;
       const prompt = buildPrompt(input, maxInputTokens);
       if (this.llmCall) {
         try {
-          const raw = await this.llmCall(prompt);
-          const parsed = parseDistilled(raw, input.sessionID);
-          if (parsed) return parsed;
+          const model = this.config.model;
+          const response = normalizeResponse(await this.llmCall(prompt, model));
+          const parsed = parseDistilled(response.text, input.sessionID);
+          if (parsed) return { knowledge: parsed, usage: response.usage ?? estimateUsage(prompt.length, response.text.length) };
         } catch {}
       }
       const successCount = input.traces.filter((t) => t.success).length;
@@ -117,24 +131,28 @@ export class LlmCompressor implements Compressor {
         skillDraft = `# ${title}\n\n## Workflow\n${workflowSection}\n\n## Pitfalls\n${pitfallsSection}`;
       }
       return {
-        title,
-        summary,
-        patterns,
-        pitfalls,
-        prerequisites,
-        skillDraft,
-        confidence,
-        sourceSessionIDs: [input.sessionID],
+        knowledge: {
+          title,
+          summary,
+          patterns,
+          pitfalls,
+          prerequisites,
+          skillDraft,
+          confidence,
+          sourceSessionIDs: [input.sessionID],
+        },
       };
     } catch {
       return {
-        title: "insufficient-traces",
-        summary: `Only ${input.traces.length} traces`,
-        patterns: [],
-        pitfalls: [],
-        prerequisites: [],
-        confidence: 0,
-        sourceSessionIDs: [input.sessionID],
+        knowledge: {
+          title: "insufficient-traces",
+          summary: `Only ${input.traces.length} traces`,
+          patterns: [],
+          pitfalls: [],
+          prerequisites: [],
+          confidence: 0,
+          sourceSessionIDs: [input.sessionID],
+        },
       };
     }
   }

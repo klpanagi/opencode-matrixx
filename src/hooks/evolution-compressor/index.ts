@@ -1,9 +1,11 @@
 import type { EvolutionConfig } from "../../config/schema/evolution"
+import type { LlmCall } from "../../features/evolution/compressor/interface"
 import { runEvolutionPipeline } from "../../features/evolution/pipeline"
 import { traceStore } from "../../features/evolution/store"
 import type { CompressionInput } from "../../features/evolution/types"
 import type { PluginContext } from "../../plugin/types"
 import { log } from "../../shared/logger"
+import { createHostLlmCall } from "./host-llm-call"
 
 function resolveConfig(a?: unknown, b?: unknown): EvolutionConfig | undefined {
   if (b && typeof b === "object" && "enabled" in (b as Record<string, unknown>)) return b as EvolutionConfig
@@ -11,8 +13,17 @@ function resolveConfig(a?: unknown, b?: unknown): EvolutionConfig | undefined {
   return undefined
 }
 
+function resolveContext(a?: PluginContext | EvolutionConfig): PluginContext | undefined {
+  if (a && typeof a === "object" && "client" in (a as Record<string, unknown>)) return a as PluginContext
+  return undefined
+}
+
 export function createEvolutionCompressorHook(a?: PluginContext | EvolutionConfig, b?: EvolutionConfig) {
   const config = resolveConfig(a, b)
+  const ctx = resolveContext(a)
+  const hostLlmCall: LlmCall | undefined = ctx?.client
+    ? createHostLlmCall({ client: ctx.client, directory: ctx.directory, model: config?.compressor?.model })
+    : undefined
 
   const shouldThrottle = async (): Promise<boolean> => {
     try {
@@ -40,7 +51,7 @@ export function createEvolutionCompressorHook(a?: PluginContext | EvolutionConfi
       const minTraces = config.compressor?.minTraces ?? 5
       if (effective.length < minTraces) return null
       const input: CompressionInput = { sessionID, traces: effective }
-      const result = await runEvolutionPipeline(input, config)
+      const result = await runEvolutionPipeline(input, config, hostLlmCall)
       if (!result.staged && !result.promoted) return null
       const state = await traceStore.getState()
       await traceStore.updateState({ lastCompressionAt: new Date().toISOString(), totalCompressions: (state.totalCompressions ?? 0) + 1 })
