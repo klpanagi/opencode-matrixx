@@ -35,6 +35,9 @@ export const DistilledKnowledgeDataSchema = z.object({
   confidence: z.number(),
   sourceSessionIDs: z.array(z.string()),
   kind: KnowledgeKindSchema.optional().default(DEFAULT_KNOWLEDGE_KIND),
+  projectId: z.string().optional(),
+  sourceTraceIDs: z.array(z.string()).optional().default([]),
+  distilledAt: z.string().optional(),
 })
 
 export type DistilledKnowledgeData = z.infer<typeof DistilledKnowledgeDataSchema>

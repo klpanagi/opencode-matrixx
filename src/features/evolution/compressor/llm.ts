@@ -1,6 +1,7 @@
 import type { EvolutionCompressorConfig } from "../../../config/schema/evolution";
+import { log } from "../../../shared/logger";
 import { KnowledgeKindSchema, normalizeKnowledgeKind } from "../schema";
-import type { CompressionInput, DistilledKnowledge, KnowledgeKind, TraceRecord } from "../types";
+import { type CompressionInput, type DistilledKnowledge, type KnowledgeKind, type TraceRecord, UNSCOPED_LEGACY } from "../types";
 import type { CompressionResult, Compressor, LlmCall, LlmResponse, LlmUsage } from "./interface";
 
 function truncate(value: string, maxChars: number): string {
@@ -64,6 +65,17 @@ function parseDistilled(raw: string, fallbackSessionID: string, traces: TraceRec
   // so trace evidence still decides; only absent kinds take the bare default.
   const rawKind = (obj as { kind?: unknown }).kind;
   const kind = rawKind === undefined ? normalizeKnowledgeKind(rawKind) : KnowledgeKindSchema.safeParse(rawKind).success ? (rawKind as KnowledgeKind) : heuristicKind(traces);
+  const rawSourceTraceIDs = (obj as { sourceTraceIDs?: unknown }).sourceTraceIDs;
+  if (!Array.isArray(rawSourceTraceIDs) || rawSourceTraceIDs.length === 0) {
+    log("[evolution] distilled knowledge missing sourceTraceIDs; defaulted from input traces");
+  }
+  const sourceTraceIDs = Array.isArray(rawSourceTraceIDs) && rawSourceTraceIDs.length > 0 ? (rawSourceTraceIDs as string[]) : traces.map((t) => t.id);
+  const rawDistilledAt = (obj as { distilledAt?: unknown }).distilledAt;
+  if (typeof rawDistilledAt !== "string") {
+    log("[evolution] distilled knowledge missing distilledAt; defaulted to now");
+  }
+  const distilledAt = typeof rawDistilledAt === "string" ? rawDistilledAt : new Date().toISOString();
+  const projectId = typeof obj.projectId === "string" && obj.projectId.length > 0 ? obj.projectId : UNSCOPED_LEGACY;
   return {
     title: obj.title,
     summary: obj.summary,
@@ -74,6 +86,9 @@ function parseDistilled(raw: string, fallbackSessionID: string, traces: TraceRec
     confidence: obj.confidence,
     sourceSessionIDs,
     kind,
+    projectId,
+    sourceTraceIDs,
+    distilledAt,
   };
 }
 
@@ -105,6 +120,21 @@ function normalizeResponse(raw: string | LlmResponse): { text: string; usage?: L
   if (typeof raw === "string") return { text: raw };
   return { text: raw.text, usage: raw.usage };
 }
+function degenerateKnowledge(input: CompressionInput, distilledAt: string): DistilledKnowledge {
+  return {
+    title: "insufficient-traces",
+    summary: `Only ${input.traces.length} traces`,
+    patterns: [],
+    pitfalls: [],
+    prerequisites: [],
+    confidence: 0,
+    sourceSessionIDs: [input.sessionID],
+    kind: "convention",
+    projectId: UNSCOPED_LEGACY,
+    sourceTraceIDs: [],
+    distilledAt,
+  };
+}
 export class LlmCompressor implements Compressor {
   private config: EvolutionCompressorConfig;
   private llmCall?: LlmCall;
@@ -113,21 +143,11 @@ export class LlmCompressor implements Compressor {
     this.llmCall = options.llmCall;
   }
   async compress(input: CompressionInput): Promise<CompressionResult> {
+    const nowIso = new Date().toISOString();
     try {
       const minTraces = this.config.minTraces ?? 5;
       if (input.traces.length < minTraces) {
-        return {
-          knowledge: {
-            title: "insufficient-traces",
-            summary: `Only ${input.traces.length} traces`,
-            patterns: [],
-            pitfalls: [],
-            prerequisites: [],
-            confidence: 0,
-            sourceSessionIDs: [input.sessionID],
-            kind: "convention",
-          },
-        };
+        return { knowledge: degenerateKnowledge(input, nowIso) };
       }
       const maxInputTokens = this.config.maxInputTokens ?? 32000;
       const prompt = buildPrompt(input, maxInputTokens);
@@ -171,21 +191,13 @@ export class LlmCompressor implements Compressor {
           confidence,
           sourceSessionIDs: [input.sessionID],
           kind: heuristicKind(input.traces),
+          projectId: UNSCOPED_LEGACY,
+          sourceTraceIDs: input.traces.map((t) => t.id),
+          distilledAt: nowIso,
         },
       };
     } catch {
-      return {
-        knowledge: {
-          title: "insufficient-traces",
-          summary: `Only ${input.traces.length} traces`,
-          patterns: [],
-          pitfalls: [],
-          prerequisites: [],
-          confidence: 0,
-          sourceSessionIDs: [input.sessionID],
-          kind: "convention",
-        },
-      };
+      return { knowledge: degenerateKnowledge(input, nowIso) };
     }
   }
 }
