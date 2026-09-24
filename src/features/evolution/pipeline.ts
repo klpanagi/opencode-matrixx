@@ -2,7 +2,7 @@ import type { EvolutionConfig } from "../../config/schema/evolution"
 import { passesQualityGate } from "../../hooks/evolution-quality-gate"
 import { createCompressor } from "./compressor"
 import type { LlmCall, LlmUsage } from "./compressor/interface"
-import { traceStore } from "./store"
+import { resolveProjectIdentity, traceStore } from "./store"
 import type { CompressionInput } from "./types"
 import { EvolutionWriter } from "./writer"
 
@@ -14,6 +14,7 @@ export async function runEvolutionPipeline(
   try {
     const compressor = createCompressor(config.compressor, llmCall)
     const { knowledge, usage } = await compressor.compress(input)
+    knowledge.projectId = resolveProjectIdentity(process.cwd()).projectId
     const gate = passesQualityGate(knowledge, config.governance)
     if (!gate.pass) {
       await traceStore.appendAudit({ action: "gate-rejected", title: knowledge.title, reason: gate.reason })

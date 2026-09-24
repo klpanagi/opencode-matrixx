@@ -78,6 +78,8 @@ export type SkillMeta = {
   created_at: string
   confidence: number
   kind?: KnowledgeKind
+  /** Git-derived project scope; absent/failing back-compat normalizes to unscoped. */
+  projectId?: string
   eval_score?: number | null
   tags?: string[]
   prerequisites?: string[]

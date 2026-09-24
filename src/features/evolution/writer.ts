@@ -2,7 +2,8 @@ import * as fs from "node:fs"
 import * as os from "node:os"
 import * as path from "node:path"
 import type { EvolutionWriterConfig } from "../../config/schema/evolution"
-import { PENDING_DIR, SKILLS_DIR, traceStore } from "./store"
+import { normalizeKnowledgeKind } from "./schema"
+import { normalizeProjectId, PENDING_DIR, projectSlugSuffix, SKILLS_DIR, traceStore } from "./store"
 import type { DistilledKnowledge, SkillMeta } from "./types"
 
 function slugify(title: string): string {
@@ -62,20 +63,47 @@ export class EvolutionWriter {
     if (config.globalSkills) this.globalBase = path.join(os.homedir(), ".agents/skills")
   }
 
-  async stage(knowledge: DistilledKnowledge): Promise<{ slug: string; pendingPath: string; metaPath: string }> {
-    const slug = slugify(knowledge.title)
+  private readMeta(slug: string): SkillMeta | null {
+    try {
+      const raw = fs.readFileSync(path.join(this.pendingDir, `${slug}.meta.json`), "utf-8")
+      return JSON.parse(raw) as SkillMeta
+    } catch {
+      return null
+    }
+  }
+
+  async stage(
+    knowledge: DistilledKnowledge,
+  ): Promise<{ slug: string; pendingPath: string; metaPath: string; deduped?: boolean }> {
+    const baseSlug = slugify(knowledge.title)
+    const projectId = normalizeProjectId(knowledge.projectId)
+    const baseMeta = this.readMeta(baseSlug)
+    const slug =
+      baseMeta && normalizeProjectId(baseMeta.projectId) !== projectId
+        ? `${baseSlug}-${projectSlugSuffix(projectId)}`
+        : baseSlug
     const pendingPath = path.join(this.pendingDir, `${slug}.md`)
     const metaPath = path.join(this.pendingDir, `${slug}.meta.json`)
+
+    const existing = slug === baseSlug ? baseMeta : this.readMeta(slug)
+    if (
+      existing &&
+      normalizeProjectId(existing.projectId) === projectId &&
+      normalizeKnowledgeKind(existing.kind) === normalizeKnowledgeKind(knowledge.kind)
+    ) {
+      await traceStore.appendAudit({ action: "dedup-suppressed", slug, projectId })
+      return { slug, pendingPath, metaPath, deduped: true }
+    }
+
     let version = "1.0.0"
-    try {
-      const existing = JSON.parse(fs.readFileSync(metaPath, "utf-8")) as SkillMeta
+    if (existing) {
       if (knowledge.confidence < existing.confidence) {
         return { slug, pendingPath, metaPath }
       }
       const parts = existing.version.split(".").map(Number)
       parts[2] += 1
       version = parts.join(".")
-    } catch {}
+    }
     const meta: SkillMeta = {
       name: slug,
       version,
@@ -85,6 +113,7 @@ export class EvolutionWriter {
       eval_score: null,
       prerequisites: knowledge.prerequisites,
       kind: knowledge.kind,
+      projectId,
     }
     const content = `${toFrontmatter(meta)}\n\n${buildBody(knowledge)}\n`
     writeAtomic(pendingPath, content)
