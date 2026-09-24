@@ -83,4 +83,10 @@ export type SkillMeta = {
   eval_score?: number | null
   tags?: string[]
   prerequisites?: string[]
+  /** Live-head pointer set on an old artifact when a later re-distill replaces it. */
+  superseded_by?: string
+  /** Canonical title slug shared across a supersede chain (old + new coexist). */
+  base_slug?: string
+  /** Content hash used to detect byte-identical re-distills (idempotent suppression). */
+  content_hash?: string
 }

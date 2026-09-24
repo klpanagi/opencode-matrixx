@@ -195,8 +195,9 @@ describe("writer scoped dedup (T5)", () => {
       const first = await writer.stage(knowledge({ title: "Dedupe Me", projectId: "proj-1", kind: "workflow" }))
       const before = (await fs.readdir(PENDING_DIR)).sort()
 
-      //#when re-staging the same title+kind in the same project
-      const second = await writer.stage(knowledge({ title: "dedupe-me", projectId: "proj-1", kind: "workflow" }))
+      //#when re-staging byte-identical knowledge in the same project
+      // (T7: a same-key re-distill with DIFFERENT content now supersedes instead — see supersede.test.ts)
+      const second = await writer.stage(knowledge({ title: "Dedupe Me", projectId: "proj-1", kind: "workflow" }))
 
       //#then it resolves to the existing slug and adds no files
       expect(second.deduped).toBe(true)

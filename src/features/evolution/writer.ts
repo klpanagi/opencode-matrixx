@@ -3,25 +3,26 @@ import * as os from "node:os"
 import * as path from "node:path"
 import type { EvolutionWriterConfig } from "../../config/schema/evolution"
 import { log } from "../../shared/logger"
-import { containsSecretForEval } from "./evaluator"
 import { normalizeKnowledgeKind } from "./schema"
-import { normalizeProjectId, PENDING_DIR, projectSlugSuffix, SKILLS_DIR, traceStore } from "./store"
+import {
+  normalizeProjectId,
+  PENDING_DIR,
+  projectSlugSuffix,
+  SKILLS_DIR,
+  supersedeSkill,
+  traceStore,
+} from "./store"
 import type { DistilledKnowledge, SkillMeta } from "./types"
-import { hasProvenance, type ProvenanceMeta, toFrontmatter } from "./writer-frontmatter"
-
-function slugify(title: string): string {
-  const s = title.toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/^-+|-+$/g, "")
-  return s || "untitled"
-}
-
-function buildBody(k: DistilledKnowledge): string {
-  if (k.skillDraft) return k.skillDraft
-  const parts = [`# ${k.title}`, "", k.summary, ""]
-  if (k.patterns.length) parts.push("## Workflow", ...k.patterns.map((p) => `- ${p}`), "")
-  if (k.pitfalls.length) parts.push("## Pitfalls", ...k.pitfalls.map((p) => `- ${p}`), "")
-  if (k.prerequisites.length) parts.push("## Prerequisites", k.prerequisites.join(", "))
-  return parts.join("\n")
-}
+import { emitArtifact, slugify } from "./writer-emit"
+import { hasProvenance } from "./writer-frontmatter"
+import {
+  chainSlug,
+  contentHashFor,
+  findLiveHead,
+  listPendingMetas,
+  resolveHeadSlug,
+  uniqueSlug,
+} from "./writer-supersede"
 
 function ensureDir(dir: string): void {
   fs.mkdirSync(dir, { recursive: true })
@@ -39,11 +40,13 @@ export class EvolutionWriter {
   private skillsDir: string
   private promotedBase: string
   private globalBase?: string
+  private projectRoot: string
 
   constructor(
     config: EvolutionWriterConfig,
     projectRoot: string = process.cwd(),
   ) {
+    this.projectRoot = projectRoot
     this.pendingDir = path.resolve(projectRoot, PENDING_DIR)
     this.skillsDir = path.resolve(projectRoot, config.outputDir || SKILLS_DIR)
     this.promotedBase = path.resolve(projectRoot, ".opencode/skills")
@@ -63,91 +66,80 @@ export class EvolutionWriter {
     }
   }
 
+  private async emit(
+    slug: string,
+    knowledge: DistilledKnowledge,
+    projectId: string,
+    kind: ReturnType<typeof normalizeKnowledgeKind>,
+    contentHash: string,
+    baseSlug: string,
+  ): Promise<{ slug: string; pendingPath: string; metaPath: string }> {
+    return emitArtifact({
+      pendingDir: this.pendingDir,
+      skillsDir: this.skillsDir,
+      slug,
+      knowledge,
+      projectId,
+      kind,
+      contentHash,
+      baseSlug,
+    })
+  }
+
   async stage(
     knowledge: DistilledKnowledge,
   ): Promise<{ slug: string; pendingPath: string; metaPath: string; deduped?: boolean }> {
     const baseSlug = slugify(knowledge.title)
     const projectId = normalizeProjectId(knowledge.projectId)
+    const kind = normalizeKnowledgeKind(knowledge.kind)
+    const contentHash = contentHashFor(knowledge)
+    const metas = listPendingMetas(this.pendingDir)
+    const liveHead = findLiveHead(metas, { baseSlug, projectId, kind })
+
+    if (liveHead) {
+      if (liveHead.content_hash !== undefined && liveHead.content_hash !== contentHash) {
+        const taken = new Set(metas.map((meta) => meta.name))
+        const nextSlug = uniqueSlug(taken, chainSlug(baseSlug, contentHash))
+        const written = await this.emit(nextSlug, knowledge, projectId, kind, contentHash, baseSlug)
+        await supersedeSkill(liveHead.name, { projectRoot: this.projectRoot, supersededBy: nextSlug })
+        return written
+      }
+      await traceStore.appendAudit({ action: "dedup-suppressed", slug: liveHead.name, projectId })
+      return {
+        slug: liveHead.name,
+        pendingPath: path.join(this.pendingDir, `${liveHead.name}.md`),
+        metaPath: path.join(this.pendingDir, `${liveHead.name}.meta.json`),
+        deduped: true,
+      }
+    }
+
+    const taken = new Set(metas.map((meta) => meta.name))
     const baseMeta = this.readMeta(baseSlug)
-    const slug =
+    let slug =
       baseMeta && normalizeProjectId(baseMeta.projectId) !== projectId
         ? `${baseSlug}-${projectSlugSuffix(projectId)}`
         : baseSlug
-    const pendingPath = path.join(this.pendingDir, `${slug}.md`)
-    const metaPath = path.join(this.pendingDir, `${slug}.meta.json`)
-
-    const existing = slug === baseSlug ? baseMeta : this.readMeta(slug)
-    if (
-      existing &&
-      normalizeProjectId(existing.projectId) === projectId &&
-      normalizeKnowledgeKind(existing.kind) === normalizeKnowledgeKind(knowledge.kind)
-    ) {
-      await traceStore.appendAudit({ action: "dedup-suppressed", slug, projectId })
-      return { slug, pendingPath, metaPath, deduped: true }
-    }
-
-    let version = "1.0.0"
-    if (existing) {
-      if (knowledge.confidence < existing.confidence) {
-        return { slug, pendingPath, metaPath }
-      }
-      const parts = existing.version.split(".").map(Number)
-      parts[2] += 1
-      version = parts.join(".")
-    }
-    const createdAt = new Date().toISOString()
-    const distilledAt = knowledge.distilledAt?.trim() ? knowledge.distilledAt : createdAt
-    if (!knowledge.distilledAt?.trim()) {
-      log("[evolution] knowledge missing distilledAt; defaulted to now")
-    }
-    const traceIds = knowledge.sourceTraceIDs ?? []
-    if (!knowledge.sourceTraceIDs) {
-      log("[evolution] knowledge missing sourceTraceIDs; defaulted to []")
-    }
-    const meta: ProvenanceMeta = {
-      name: slug,
-      version,
-      derived_from: knowledge.sourceSessionIDs,
-      created_at: createdAt,
-      confidence: knowledge.confidence,
-      eval_score: null,
-      prerequisites: knowledge.prerequisites,
-      kind: knowledge.kind,
-      projectId,
-      session_ids: knowledge.sourceSessionIDs,
-      trace_ids: traceIds,
-      distilled_at: distilledAt,
-    }
-    const content = `${toFrontmatter(meta)}\n\n${buildBody(knowledge)}\n`
-    // Defense in depth: the quality gate runs first, but the writer must never
-    // emit secret-bearing provenance. Reuse the existing scanner (no new logic).
-    if (containsSecretForEval(content)) {
-      await traceStore.appendAudit({ action: "secret-blocked", slug })
-      throw new Error("potential secret detected in staged skill content")
-    }
-    writeAtomic(pendingPath, content)
-    writeAtomic(metaPath, JSON.stringify(meta, null, 2))
-    const stagedDir = path.join(this.skillsDir, slug, "versions")
-    ensureDir(stagedDir)
-    writeAtomic(path.join(this.skillsDir, slug, "SKILL.md"), content)
-    writeAtomic(path.join(stagedDir, `${version}.md`), content)
-    await traceStore.appendAudit({ action: "staged", slug, version, confidence: knowledge.confidence })
-    return { slug, pendingPath, metaPath }
+    if (taken.has(slug)) slug = chainSlug(baseSlug, contentHash)
+    slug = uniqueSlug(taken, slug)
+    return this.emit(slug, knowledge, projectId, kind, contentHash, baseSlug)
   }
 
   async promote(slug: string): Promise<{ promotedPath: string }> {
-    const pendingPath = path.join(this.pendingDir, `${slug}.md`)
-    const metaPath = path.join(this.pendingDir, `${slug}.meta.json`)
-    if (!fs.existsSync(pendingPath)) throw new Error(`pending ${slug} not found`)
+    const headSlug = resolveHeadSlug(listPendingMetas(this.pendingDir), slug)
+    const headPath = path.join(this.pendingDir, `${headSlug}.md`)
+    const effective = fs.existsSync(headPath) ? headSlug : slug
+    const pendingPath = path.join(this.pendingDir, `${effective}.md`)
+    const metaPath = path.join(this.pendingDir, `${effective}.meta.json`)
+    if (!fs.existsSync(pendingPath)) throw new Error(`pending ${effective} not found`)
     const content = fs.readFileSync(pendingPath, "utf-8")
-    const dest = path.join(this.promotedBase, slug, "SKILL.md")
+    const dest = path.join(this.promotedBase, effective, "SKILL.md")
     writeAtomic(dest, content)
-    if (this.globalBase) writeAtomic(path.join(this.globalBase, slug, "SKILL.md"), content)
+    if (this.globalBase) writeAtomic(path.join(this.globalBase, effective, "SKILL.md"), content)
     try {
       fs.unlinkSync(pendingPath)
       fs.unlinkSync(metaPath)
     } catch {}
-    await traceStore.appendAudit({ action: "promoted", slug })
+    await traceStore.appendAudit({ action: "promoted", slug: effective })
     return { promotedPath: dest }
   }
 

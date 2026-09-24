@@ -1,11 +1,11 @@
 // Per-file budget: ≤200 LOC (T4a structural split). The retrieval predicate is the
 // normative filter contract (T9 consumes it); supersede (T7) and quarantine (T6)
-// only expose their owning stubs here.
+// own their mutations here.
 import * as fs from "node:fs"
 import * as path from "node:path"
-import type { KnowledgeKind } from "../types"
+import type { KnowledgeKind, SkillMeta } from "../types"
 import { normalizeProjectId } from "./project-identity"
-import { EVOLUTION_DIR, TraceStore } from "./trace-store"
+import { EVOLUTION_DIR, PENDING_DIR, SKILLS_DIR, TraceStore } from "./trace-store"
 
 export const QUARANTINE_SEGMENT = "quarantine"
 
@@ -111,7 +111,37 @@ export async function restoreFromQuarantine(
   }
 }
 
-/** Supersede with live-head promotion. Owned by T7. */
-export function supersedeSkill(_slug: string): never {
-  throw new Error("supersedeSkill not implemented yet (T7)")
+export type SupersedeOptions = {
+  projectRoot?: string
+  supersededBy: string
+}
+
+export type SupersedeResult = {
+  slug: string
+  supersededBy: string
+  superseded: boolean
+}
+
+/** Point an old artifact at its live head. Updates meta atomically, audits, never unlinks. */
+export async function supersedeSkill(slug: string, opts: SupersedeOptions): Promise<SupersedeResult> {
+  const projectRoot = opts.projectRoot ?? process.cwd()
+  const metaPaths = [
+    path.resolve(projectRoot, PENDING_DIR, `${slug}.meta.json`),
+    path.resolve(projectRoot, SKILLS_DIR, slug, "meta.json"),
+  ]
+  let superseded = false
+  for (const metaPath of metaPaths) {
+    try {
+      const raw = await fs.promises.readFile(metaPath, "utf-8")
+      const meta = JSON.parse(raw) as SkillMeta
+      const next = { ...meta, superseded_by: opts.supersededBy }
+      const tmp = `${metaPath}.tmp`
+      await fs.promises.writeFile(tmp, JSON.stringify(next, null, 2), "utf-8")
+      await fs.promises.rename(tmp, metaPath)
+      superseded = true
+    } catch {}
+  }
+  const audit = new TraceStore(path.resolve(projectRoot, EVOLUTION_DIR))
+  await audit.appendAudit({ action: "superseded", slug, supersededBy: opts.supersededBy, updated: superseded })
+  return { slug, supersededBy: opts.supersededBy, superseded }
 }
