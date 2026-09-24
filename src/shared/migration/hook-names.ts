@@ -7,6 +7,8 @@ export const LEGACY_HOOK_NAME_MAP: Record<string, string> = {
 // Backwards-compat alias for precedent (HOOK_NAME_MAP used by older migration consumers)
 export const HOOK_NAME_MAP: Record<string, string | null> = {
   ...LEGACY_HOOK_NAME_MAP,
+  "failure-counter": null,
+  "hashline-edit-diff-enhancer": null,
 }
 
 export function migrateHookNames(

@@ -10,7 +10,6 @@ import {
   createEmptyTaskResponseDetectorHook,
   createEnvFileWriteGuardHook,
   createEvolutionWatcherHook,
-  createHashlineEditDiffEnhancerHook,
   createHashlineReadEnhancerHook,
   createJsonErrorRecoveryHook,
   createKnowledgeHubGuardHook,
@@ -52,7 +51,6 @@ export type ToolGuardHooks = {
   contextModeEnforcer: ReturnType<typeof createContextModeEnforcerHook> | null
   readImageResizer: ReturnType<typeof createReadImageResizerHook> | null
   webfetchRedirectGuard: ReturnType<typeof createWebFetchRedirectGuardHook> | null
-  hashlineEditDiffEnhancer: ReturnType<typeof createHashlineEditDiffEnhancerHook> | null
   qualityGate: ReturnType<typeof createQualityGateHook> | null
   taskNotepad: ReturnType<typeof createTaskNotepadHook> | null
   taskEditGuard: ReturnType<typeof createTaskEditGuardHook> | null
@@ -151,11 +149,6 @@ export function createToolGuardHooks(args: {
     ? safeHook("webfetch-redirect-guard", () => createWebFetchRedirectGuardHook(ctx))
     : null
 
-  const hashlineEditDiffEnhancer = isHookEnabled("hashline-edit-diff-enhancer")
-    ? safeHook("hashline-edit-diff-enhancer", () =>
-        createHashlineEditDiffEnhancerHook({ hashline_edit: { enabled: pluginConfig.experimental?.hashline_edit ?? false } }))
-    : null
-
   const qualityGate = isHookEnabled("quality-gate")
     ? safeHook("quality-gate", () => createQualityGateHook())
     : null
@@ -207,7 +200,6 @@ export function createToolGuardHooks(args: {
     contextModeEnforcer,
     readImageResizer,
     webfetchRedirectGuard,
-    hashlineEditDiffEnhancer,
     qualityGate,
     taskNotepad,
     taskEditGuard,

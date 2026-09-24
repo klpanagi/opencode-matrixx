@@ -104,6 +104,8 @@ const pluginConfig = await loadPluginConfig(ctx.directory, ctx)
           output.context.push(planContext)
         }
       }
+
+      await hooks.evolutionCompressor?.["experimental.session.compacting"]?.(_input, output)
     },
   }
 }

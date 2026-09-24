@@ -49,20 +49,17 @@ const PRESETS: Record<PresetName, MatrixxConfig> = {
   minimal: {
     tasks: { enabled: true, scope: "project" },
     experimental: { task_system: true },
-    failure_counter: { enabled: true },
   } as MatrixxConfig,
 
   balanced: {
     tasks: { enabled: true, scope: "project" },
     experimental: { task_system: true },
-    failure_counter: { enabled: true },
     background_task: { wakeScheduler: { enabled: true } },
   } as MatrixxConfig,
 
   performance: {
     tasks: { enabled: true, scope: "project" },
     experimental: { task_system: true, preemptive_compaction: true },
-    failure_counter: { enabled: true },
     background_task: { wakeScheduler: { enabled: true } },
     runtime_fallback: { enabled: true },
   } as MatrixxConfig,
@@ -70,7 +67,6 @@ const PRESETS: Record<PresetName, MatrixxConfig> = {
   frontier: {
     tasks: { enabled: true, scope: "project", session_scoped: false },
     experimental: { task_system: true, preemptive_compaction: true },
-    failure_counter: { enabled: true },
     background_task: { wakeScheduler: { enabled: true } },
     runtime_fallback: { enabled: true },
     security: { secret_scanning: { enabled: true } },

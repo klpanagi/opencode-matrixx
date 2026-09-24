@@ -81,15 +81,6 @@
   <FieldEditor label="State Dir" advanced>
     <StringEditor value={config.matrix_loop?.state_dir ?? ""} onChange={(v) => configStore.updateConfig((c) => ({ ...c, matrix_loop: { ...c.matrix_loop, state_dir: v || undefined } }))} label="State dir" monospace />
   </FieldEditor>
-  <FieldEditor label="Failure Counter" description="Gate after consecutive failures">
-    <BooleanEditor value={config.failure_counter?.enabled ?? true} onChange={(v) => configStore.updateConfig((c) => ({ ...c, failure_counter: { ...c.failure_counter, enabled: v } }))} label="Failure counter" />
-  </FieldEditor>
-  <FieldEditor label="Failure Threshold" advanced>
-    <NumberEditor value={config.failure_counter?.threshold ?? 2} onChange={(v) => configStore.updateConfig((c) => ({ ...c, failure_counter: { ...c.failure_counter, threshold: v } }))} label="Threshold" min={1} max={10} step={1} />
-  </FieldEditor>
-  <FieldEditor label="Reset On Success" advanced>
-    <BooleanEditor value={config.failure_counter?.resetOnSuccess ?? true} onChange={(v) => configStore.updateConfig((c) => ({ ...c, failure_counter: { ...c.failure_counter, resetOnSuccess: v } }))} label="Reset on success" />
-  </FieldEditor>
   <FieldEditor label="Force Notifications" advanced>
     <BooleanEditor value={config.notification?.force_enable ?? false} onChange={(v) => configStore.updateConfig((c) => ({ ...c, notification: { ...c.notification, force_enable: v || undefined } }))} label="Force notifications" />
   </FieldEditor>

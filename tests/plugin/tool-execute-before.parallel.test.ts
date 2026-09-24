@@ -108,7 +108,6 @@ function buildStubHooks(spies: Record<FastFailHookName, ReturnType<typeof spyOn>
     "todoDescriptionOverride",
     "readImageResizer",
     "webfetchRedirectGuard",
-    "hashlineEditDiffEnhancer",
     "taskNotepad",
     "contextWindowMonitor",
     "preemptiveCompaction",

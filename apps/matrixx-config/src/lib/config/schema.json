@@ -209,7 +209,6 @@
               "runtime-fallback",
               "read-image-resizer",
               "webfetch-redirect-guard",
-              "hashline-edit-diff-enhancer",
               "tool-pair-validator",
               "quality-gate",
               "task-notepad",
@@ -221,7 +220,6 @@
               "context-mode-enforcer",
               "task-edit-guard",
               "document-reader-guard",
-              "failure-counter",
               "knowledge-hub-guard",
               "knowledge-hub-injector",
               "knowledge-hub-search-nudge"
@@ -249,12 +247,7 @@
           "research",
           "assembly",
           "ultrawork",
-          "bdd-backend",
-          "bdd-contract",
-          "bdd-frontend",
-          "bdd-pipeline",
-          "bdd-tests",
-          "dcp-profile"
+          "bdd-pipeline"
         ]
       }
     },
@@ -4627,31 +4620,6 @@
       ],
       "additionalProperties": false
     },
-    "failure_counter": {
-      "type": "object",
-      "properties": {
-        "enabled": {
-          "default": true,
-          "type": "boolean"
-        },
-        "threshold": {
-          "default": 2,
-          "type": "number",
-          "minimum": 1,
-          "maximum": 10
-        },
-        "resetOnSuccess": {
-          "default": true,
-          "type": "boolean"
-        }
-      },
-      "required": [
-        "enabled",
-        "threshold",
-        "resetOnSuccess"
-      ],
-      "additionalProperties": false
-    },
     "background_task": {
       "type": "object",
       "properties": {
@@ -4878,7 +4846,7 @@
       "type": "object",
       "properties": {
         "enabled": {
-          "default": false,
+          "default": true,
           "type": "boolean"
         }
       },
@@ -5045,6 +5013,28 @@
       },
       "required": [
         "enabled"
+      ],
+      "additionalProperties": false
+    },
+    "tool_gating": {
+      "type": "object",
+      "properties": {
+        "bdd_tools": {
+          "type": "boolean"
+        },
+        "pdf_figures": {
+          "type": "boolean"
+        },
+        "look_at": {
+          "type": "boolean"
+        },
+        "preset_tools": {
+          "default": false,
+          "type": "boolean"
+        }
+      },
+      "required": [
+        "preset_tools"
       ],
       "additionalProperties": false
     },

@@ -252,22 +252,25 @@ For orchestration behavior (architect, continuation enforcers, matrix loop)
 see `orchestration.md`; for the task substrate see
 `task-system.md`; for full config keys see `configurations.md`.
 
-### 2.4 Registered but currently unwired
+### 2.4 Previously unwired — now wired or removed
 
-These hooks are constructed by `create-*-hooks.ts`, honor `disabled_hooks`,
-and define handler methods, but no dispatcher under `src/plugin/` or
-`src/index.ts` calls them today, so they cost nothing at runtime:
+Six hooks formerly listed here are now wired into dispatchers (all honor
+`disabled_hooks`); two dead hooks were removed outright:
 
 | Hook | Defined handler | Status |
 |---|---|---|
-| `failure-counter` | `tool.execute.after` + `event` | No call site (`src/hooks/failure-counter/hook.ts`) |
-| `webfetch-redirect-guard` | `tool.execute.before` + `after` | No call site (`src/hooks/webfetch-redirect-guard/hook.ts:62-93`) |
-| `hashline-edit-diff-enhancer` | `tool.execute.before` + `after` | No call site (`src/hooks/hashline-edit-diff-enhancer/hook.ts:52-67`) |
-| `evolution-watcher` | `tool.execute.before` + `after` | No call site (also gated by `evolution.enabled`) |
-| `evolution-compressor` | module hook | No call site (also gated by `evolution.enabled`) |
-| `runtime-fallback` | module hook | No call site (`src/plugin/hooks/create-session-hooks.ts:163`) |
-| `design-intent-preserver` | `chat.message`-shaped | No call site in `src/plugin/chat-message.ts` |
-| `tool-pair-validator` | `experimental.chat.messages.transform`-shaped | No call site in `src/plugin/messages-transform.ts` |
+| `webfetch-redirect-guard` | `tool.execute.before` + `after` | Wired (`src/plugin/tool-execute-before.ts`, `src/plugin/tool-execute-after.ts`) |
+| `evolution-watcher` | `tool.execute.before` + `after` | Wired (also gated by `evolution.enabled`) |
+| `evolution-compressor` | module hook + `event` + compacting | Wired (`src/plugin/event.ts`, `src/index.ts`) (also gated by `evolution.enabled`) |
+| `runtime-fallback` | module hook + `event` + `chat.message` | Wired (`src/plugin/event.ts`, `src/plugin/chat-message.ts`) |
+| `design-intent-preserver` | `chat.message`-shaped | Wired in `src/plugin/chat-message.ts` |
+| `tool-pair-validator` | `experimental.chat.messages.transform`-shaped | Wired in `src/plugin/messages-transform.ts` |
+
+Removed: `failure-counter` (`tool.execute.after` + `event`) and
+`hashline-edit-diff-enhancer` (`tool.execute.before` + `after`) — no call
+site ever existed and both have been deleted. `disabled_hooks` entries for
+these names are silently dropped via `migrateHookNames` for backwards
+compatibility.
 
 Partials: `think-mode` exposes a `chat.params`-shaped handler with no call
 site (only its `event` handler is dispatched); `preemptive-compaction`
@@ -308,7 +311,6 @@ Schema: `disabled_hooks: z.array(HookNameSchema).optional()`
 | `experimental.task_system` (default true) | selects `task-continuation-enforcer` vs legacy `todo-continuation-enforcer` | `src/plugin/hooks/create-continuation-hooks.ts`, `src/config/schema/experimental.ts:10` |
 | `evolution.enabled` | `evolution-watcher`, `evolution-compressor`, `evolution-hitl` constructed only when true | `src/plugin/hooks/create-continuation-hooks.ts`, `create-tool-guard-hooks.ts` |
 | `rtk.enabled` | `rtk-bash-rewriter` constructed only when true (still passes through without binary) | `src/plugin/hooks/create-session-hooks.ts`, `src/hooks/rtk-bash-rewriter/hook.ts` |
-| `failure_counter.enabled` (default true) | `failure-counter` constructed unless explicitly false | `src/plugin/hooks/create-session-hooks.ts:140` |
 | `comment_checker`, `matrix_loop`, `context_mode`, `notification.force_enable` | per-feature config consumed by the matching hook | `src/config/schema/matrixx-config.ts` |
 
 `directory-agents-injector` auto-disables on OpenCode versions with native
