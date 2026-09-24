@@ -1,5 +1,6 @@
 import type { EvolutionConfig } from "../../config/schema/evolution"
 import type { LlmCall } from "../../features/evolution/compressor/interface"
+import { evaluatePromotedSkills } from "../../features/evolution/evaluator"
 import { runEvolutionPipeline } from "../../features/evolution/pipeline"
 import { traceStore } from "../../features/evolution/store"
 import type { CompressionInput } from "../../features/evolution/types"
@@ -87,6 +88,9 @@ export function createEvolutionCompressorHook(a?: PluginContext | EvolutionConfi
         if (type !== "session.idle" && type !== "session.error" && type !== "session.compacted") return
         const props = evt.properties as Record<string, unknown> | undefined
         const sessionID = (props?.sessionID as string | undefined) ?? (props?.info as { id?: string } | undefined)?.id ?? "unknown"
+        if (config?.enabled && type === "session.idle") {
+          await evaluatePromotedSkills({ projectRoot: ctx?.directory })
+        }
         const triggerCfg = config?.compressor?.trigger ?? "both"
         if (triggerCfg === "compacting" && type === "session.idle") return
         if (triggerCfg === "idle" && type === "session.compacted") return
