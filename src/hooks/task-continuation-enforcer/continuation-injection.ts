@@ -18,12 +18,10 @@ import { isSqliteBackend } from "../../shared/opencode-storage-detection"
 import { resolveTasksConfig } from "../../shared/task-system-gating"
 import { TaskObjectSchema } from "../../tools/task/types"
 import {
-  BOOTSTRAP_PROMPT,
   CONTINUATION_COOLDOWN_MS,
   CONTINUATION_PROMPT,
   DEFAULT_SKIP_AGENTS,
   HOOK_NAME,
-  hasNonExplorerBgTasks,
 } from "./constants"
 import { getMessageDir } from "./message-directory"
 import type { SessionStateStore } from "./session-state"
@@ -100,22 +98,12 @@ export async function injectContinuation(args: {
   const tasks: Task[] = []
   let filteredTasks: Task[] = []
   let total = 0
-  let isBootstrap = false
   let taskDir = ""
   try {
     taskDir = getTaskDir(config, ctx.directory)
     if (!existsSync(taskDir)) {
-      const hadNonExplorerBgTasks = backgroundManager
-        ? hasNonExplorerBgTasks(backgroundManager.getTasksByParentSession(sessionID))
-        : false
-      if (hadNonExplorerBgTasks) {
-        log(`[${HOOK_NAME}] Bootstrap injection: no task dir (hadNonExplorerBgTasks)`, { sessionID, taskDir })
-        isBootstrap = true
-      } else {
-        log(`[${HOOK_NAME}] Skipped injection: no task dir`, { sessionID, taskDir })
-        return
-      }
-      total = 0
+      log(`[${HOOK_NAME}] Skipped injection: no task dir`, { sessionID, taskDir })
+      return
     } else {
       const files = readdirSync(taskDir).filter((f) => f.startsWith("T-") && f.endsWith(".json"))
       for (const f of files) {
@@ -129,16 +117,8 @@ export async function injectContinuation(args: {
       })
       total = filteredTasks.length
       if (total === 0) {
-        const hadNonExplorerBgTasks = backgroundManager
-          ? hasNonExplorerBgTasks(backgroundManager.getTasksByParentSession(sessionID))
-          : false
-        if (hadNonExplorerBgTasks) {
-          log(`[${HOOK_NAME}] Bootstrap injection: no tasks (hadNonExplorerBgTasks)`, { sessionID })
-          isBootstrap = true
-        } else {
-          log(`[${HOOK_NAME}] Skipped injection: no tasks`, { sessionID })
-          return
-        }
+        log(`[${HOOK_NAME}] Skipped injection: no tasks`, { sessionID })
+        return
       }
     }
   } catch (error) {
@@ -146,17 +126,9 @@ export async function injectContinuation(args: {
     return
   }
 
-  const stateForBootstrap = sessionStateStore.getExistingState(sessionID) as unknown as Record<string, unknown> | undefined
-  if (stateForBootstrap?._bootstrap) {
-    isBootstrap = true
-    stateForBootstrap._bootstrap = undefined
-  }
-
   const staleAfterMs = getStaleAfterMs(config)
-  const freshIncompleteCount = isBootstrap
-    ? 1
-    : filterFreshIncompleteTasks(getIncompleteTasks(filteredTasks), taskDir, staleAfterMs).length
-  if (!isBootstrap && freshIncompleteCount === 0) {
+  const freshIncompleteCount = filterFreshIncompleteTasks(getIncompleteTasks(filteredTasks), taskDir, staleAfterMs).length
+  if (freshIncompleteCount === 0) {
     log(`[${HOOK_NAME}] Skipped injection: only stale tasks remain`, { sessionID, total })
     return
   }
@@ -199,29 +171,25 @@ export async function injectContinuation(args: {
   }
 
   let prompt: string
-  if (isBootstrap) {
-    prompt = BOOTSTRAP_PROMPT
-  } else {
-    const incompleteTasks = getIncompleteTasks(filteredTasks)
-    const freshIncompleteTasks = filterFreshIncompleteTasks(incompleteTasks, taskDir, staleAfterMs)
-    const taskList = incompleteTasks
-      .map((task) => {
-        const ageMs = getTaskAgeMs(join(taskDir, `${task.id}.json`))
-        const staleSuffix = ageMs !== null && ageMs > staleAfterMs ? ` (stale: ${formatTaskAge(ageMs)})` : ""
-        return `- [${task.status}] ${task.subject} (${task.id})${staleSuffix}`
-      })
-      .join("\n")
-    const staleCount = incompleteTasks.length - freshIncompleteTasks.length
-    const staleNote = staleCount > 0
-      ? `\n\nNote: ${staleCount} remaining task(s) have had no activity for >${Math.round(staleAfterMs / 3_600_000)}h and may be orphaned. Mark them completed/deleted if superseded.`
-      : ""
-    prompt = `${CONTINUATION_PROMPT}
+  const incompleteTasks = getIncompleteTasks(filteredTasks)
+  const freshIncompleteTasks = filterFreshIncompleteTasks(incompleteTasks, taskDir, staleAfterMs)
+  const taskList = incompleteTasks
+    .map((task) => {
+      const ageMs = getTaskAgeMs(join(taskDir, `${task.id}.json`))
+      const staleSuffix = ageMs !== null && ageMs > staleAfterMs ? ` (stale: ${formatTaskAge(ageMs)})` : ""
+      return `- [${task.status}] ${task.subject} (${task.id})${staleSuffix}`
+    })
+    .join("\n")
+  const staleCount = incompleteTasks.length - freshIncompleteTasks.length
+  const staleNote = staleCount > 0
+    ? `\n\nNote: ${staleCount} remaining task(s) have had no activity for >${Math.round(staleAfterMs / 3_600_000)}h and may be orphaned. Mark them completed/deleted if superseded.`
+    : ""
+  prompt = `${CONTINUATION_PROMPT}
 
 [Status: ${total - freshIncompleteCount}/${total} completed, ${freshIncompleteCount} remaining]
 
 Remaining Matrixx tasks:
 ${taskList}${staleNote}`
-  }
 
   const injectionState = sessionStateStore.getExistingState(sessionID)
   if (injectionState) {

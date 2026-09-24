@@ -20,7 +20,6 @@ import {
   DEFAULT_SKIP_AGENTS,
   FAILURE_RESET_WINDOW_MS,
   HOOK_NAME,
-  hasNonExplorerBgTasks,
   MAX_CONSECUTIVE_FAILURES,
 } from "./constants"
 import { startCountdown } from "./countdown"
@@ -108,23 +107,12 @@ export async function handleSessionIdle(args: {
 
   let incompleteCount = 0
   let total = 0
-  let isBootstrap = false
   let taskDir = ""
   try {
     taskDir = getTaskDir(config, ctx.directory)
     if (!existsSync(taskDir)) {
-      const hadNonExplorerBgTasks = backgroundManager
-        ? hasNonExplorerBgTasks(backgroundManager.getTasksByParentSession(sessionID))
-        : false
-      if (hadNonExplorerBgTasks) {
-        log(`[${HOOK_NAME}] No task dir — bootstrap (hadBgTasks)`, { sessionID, taskDir })
-        isBootstrap = true
-        total = 0
-        incompleteCount = 1
-      } else {
-        log(`[${HOOK_NAME}] No task dir`, { sessionID, taskDir })
-        return
-      }
+      log(`[${HOOK_NAME}] No task dir`, { sessionID, taskDir })
+      return
     } else {
       const files = readdirSync(taskDir).filter((f) => f.startsWith("T-") && f.endsWith(".json"))
       const tasks: Task[] = []
@@ -139,17 +127,8 @@ export async function handleSessionIdle(args: {
       })
       total = filteredTasks.length
       if (total === 0) {
-        const hadNonExplorerBgTasks = backgroundManager
-          ? hasNonExplorerBgTasks(backgroundManager.getTasksByParentSession(sessionID))
-          : false
-        if (hadNonExplorerBgTasks) {
-          log(`[${HOOK_NAME}] No tasks — bootstrap (hadNonExplorerBgTasks)`, { sessionID })
-          isBootstrap = true
-          incompleteCount = 1
-        } else {
-          log(`[${HOOK_NAME}] No tasks`, { sessionID })
-          return
-        }
+        log(`[${HOOK_NAME}] No tasks`, { sessionID })
+        return
       } else {
         const incompleteTasks = getIncompleteTasks(filteredTasks)
         incompleteCount = incompleteTasks.length
@@ -173,14 +152,9 @@ export async function handleSessionIdle(args: {
     return
   }
 
-  if (!isBootstrap && incompleteCount === 0) {
+  if (incompleteCount === 0) {
     log(`[${HOOK_NAME}] All tasks complete`, { sessionID, total })
     return
-  }
-
-  if (isBootstrap) {
-    const s = sessionStateStore.getState(sessionID) as unknown as Record<string, unknown>
-    s._bootstrap = true
   }
 
   if (state.inFlight) {
