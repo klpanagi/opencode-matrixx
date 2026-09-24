@@ -1,6 +1,7 @@
+// Per-file budget: ≤200 LOC (T4a structural split of the former store.ts).
 import * as fs from "node:fs"
 import * as path from "node:path"
-import type { EvolutionState, TraceRecord } from "./types"
+import type { EvolutionState, TraceRecord } from "../types"
 
 export const EVOLUTION_DIR = ".matrixx/evolution"
 export const TRACES_DIR = ".matrixx/evolution/traces"

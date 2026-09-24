@@ -1,6 +1,8 @@
 import type { EvolutionCompressorConfig } from "../../../config/schema/evolution";
-import type { CompressionInput, DistilledKnowledge, TraceRecord } from "../types";
-import type { Compressor } from "./interface";
+import { log } from "../../../shared/logger";
+import { KnowledgeKindSchema, normalizeKnowledgeKind } from "../schema";
+import { type CompressionInput, type DistilledKnowledge, type KnowledgeKind, type TraceRecord, UNSCOPED_LEGACY } from "../types";
+import type { CompressionResult, Compressor, LlmCall, LlmResponse, LlmUsage } from "./interface";
 
 function truncate(value: string, maxChars: number): string {
   if (value.length <= maxChars) return value;
@@ -27,6 +29,10 @@ function buildPrompt(input: CompressionInput, maxChars: number): string {
   if (input.notepads?.length) lines.push(`Notepads: ${input.notepads.join(" | ").slice(0, 1000)}`);
   lines.push("RULES:");
   lines.push("- Output JSON matching DistilledKnowledge schema.");
+  lines.push("- Emit exactly one kind per item plus confidence: kind MUST be one of workflow|correction|debugging_pattern|gotcha|convention.");
+  lines.push("- workflow: clean success path worth replaying; correction: partial run needing fixes before it worked;");
+  lines.push("  debugging_pattern: failures that recovered into a reusable fix; gotcha: unresolved or all-failed run worth warning about;");
+  lines.push("  convention: thin or inconclusive evidence, default when unsure.");
   lines.push("- Focus on what WORKED after failures — the final successful path.");
   lines.push("- Omit project-specific secrets/paths.");
   lines.push("- If confidence <0.6, set skillDraft to null.");
@@ -38,7 +44,7 @@ function buildPrompt(input: CompressionInput, maxChars: number): string {
   }
   return truncate(lines.join("\n"), maxChars);
 }
-function parseDistilled(raw: string, fallbackSessionID: string): DistilledKnowledge | null {
+function parseDistilled(raw: string, fallbackSessionID: string, traces: TraceRecord[]): DistilledKnowledge | null {
   let parsed: unknown;
   try {
     parsed = JSON.parse(raw);
@@ -54,6 +60,22 @@ function parseDistilled(raw: string, fallbackSessionID: string): DistilledKnowle
   if (!Array.isArray(obj.prerequisites)) return null;
   if (typeof obj.confidence !== "number") return null;
   const sourceSessionIDs = Array.isArray(obj.sourceSessionIDs) && obj.sourceSessionIDs.length > 0 ? (obj.sourceSessionIDs as string[]) : [fallbackSessionID];
+  // Unknown/missing kinds fail open to `convention` — never throw on LLM output.
+  // An explicitly invalid kind string falls back to the deterministic heuristic
+  // so trace evidence still decides; only absent kinds take the bare default.
+  const rawKind = (obj as { kind?: unknown }).kind;
+  const kind = rawKind === undefined ? normalizeKnowledgeKind(rawKind) : KnowledgeKindSchema.safeParse(rawKind).success ? (rawKind as KnowledgeKind) : heuristicKind(traces);
+  const rawSourceTraceIDs = (obj as { sourceTraceIDs?: unknown }).sourceTraceIDs;
+  if (!Array.isArray(rawSourceTraceIDs) || rawSourceTraceIDs.length === 0) {
+    log("[evolution] distilled knowledge missing sourceTraceIDs; defaulted from input traces");
+  }
+  const sourceTraceIDs = Array.isArray(rawSourceTraceIDs) && rawSourceTraceIDs.length > 0 ? (rawSourceTraceIDs as string[]) : traces.map((t) => t.id);
+  const rawDistilledAt = (obj as { distilledAt?: unknown }).distilledAt;
+  if (typeof rawDistilledAt !== "string") {
+    log("[evolution] distilled knowledge missing distilledAt; defaulted to now");
+  }
+  const distilledAt = typeof rawDistilledAt === "string" ? rawDistilledAt : new Date().toISOString();
+  const projectId = typeof obj.projectId === "string" && obj.projectId.length > 0 ? obj.projectId : UNSCOPED_LEGACY;
   return {
     title: obj.title,
     summary: obj.summary,
@@ -63,36 +85,78 @@ function parseDistilled(raw: string, fallbackSessionID: string): DistilledKnowle
     skillDraft: typeof obj.skillDraft === "string" ? obj.skillDraft : undefined,
     confidence: obj.confidence,
     sourceSessionIDs,
+    kind,
+    projectId,
+    sourceTraceIDs,
+    distilledAt,
+  };
+}
+
+/**
+ * Deterministic best-effort kind from trace signals (offline heuristic path).
+ * Rule (pure function of counts + final outcome, no randomness):
+ * - no traces at all → `convention` (nothing to learn from)
+ * - all failed → `gotcha` (warn about the dead end)
+ * - failures present and final trace succeeded → `debugging_pattern` (recovery worth replaying)
+ * - failures present and final trace still failed → `correction` (needs fixes first)
+ * - all succeeded → `workflow` (clean success path)
+ */
+export function heuristicKind(traces: TraceRecord[]): KnowledgeKind {
+  if (traces.length === 0) return "convention";
+  const failCount = traces.filter((t) => !t.success).length;
+  if (failCount === 0) return "workflow";
+  if (failCount === traces.length) return "gotcha";
+  const lastSucceeded = traces[traces.length - 1]?.success ?? false;
+  return lastSucceeded ? "debugging_pattern" : "correction";
+}
+function estimateUsage(promptChars: number, outputChars: number): LlmUsage {
+  return {
+    inputTokens: Math.max(1, Math.ceil(promptChars / 4)),
+    outputTokens: Math.max(1, Math.ceil(outputChars / 4)),
+    costCents: 0,
+  };
+}
+function normalizeResponse(raw: string | LlmResponse): { text: string; usage?: LlmUsage } {
+  if (typeof raw === "string") return { text: raw };
+  return { text: raw.text, usage: raw.usage };
+}
+function degenerateKnowledge(input: CompressionInput, distilledAt: string): DistilledKnowledge {
+  return {
+    title: "insufficient-traces",
+    summary: `Only ${input.traces.length} traces`,
+    patterns: [],
+    pitfalls: [],
+    prerequisites: [],
+    confidence: 0,
+    sourceSessionIDs: [input.sessionID],
+    kind: "convention",
+    projectId: UNSCOPED_LEGACY,
+    sourceTraceIDs: [],
+    distilledAt,
   };
 }
 export class LlmCompressor implements Compressor {
   private config: EvolutionCompressorConfig;
-  private llmCall?: (prompt: string) => Promise<string>;
-  constructor(options: { config: EvolutionCompressorConfig; llmCall?: (prompt: string) => Promise<string> }) {
+  private llmCall?: LlmCall;
+  constructor(options: { config: EvolutionCompressorConfig; llmCall?: LlmCall }) {
     this.config = options.config;
     this.llmCall = options.llmCall;
   }
-  async compress(input: CompressionInput): Promise<DistilledKnowledge> {
+  async compress(input: CompressionInput): Promise<CompressionResult> {
+    const nowIso = new Date().toISOString();
     try {
       const minTraces = this.config.minTraces ?? 5;
       if (input.traces.length < minTraces) {
-        return {
-          title: "insufficient-traces",
-          summary: `Only ${input.traces.length} traces`,
-          patterns: [],
-          pitfalls: [],
-          prerequisites: [],
-          confidence: 0,
-          sourceSessionIDs: [input.sessionID],
-        };
+        return { knowledge: degenerateKnowledge(input, nowIso) };
       }
       const maxInputTokens = this.config.maxInputTokens ?? 32000;
       const prompt = buildPrompt(input, maxInputTokens);
       if (this.llmCall) {
         try {
-          const raw = await this.llmCall(prompt);
-          const parsed = parseDistilled(raw, input.sessionID);
-          if (parsed) return parsed;
+          const model = this.config.model;
+          const response = normalizeResponse(await this.llmCall(prompt, model));
+          const parsed = parseDistilled(response.text, input.sessionID, input.traces);
+          if (parsed) return { knowledge: parsed, usage: response.usage ?? estimateUsage(prompt.length, response.text.length) };
         } catch {}
       }
       const successCount = input.traces.filter((t) => t.success).length;
@@ -117,25 +181,23 @@ export class LlmCompressor implements Compressor {
         skillDraft = `# ${title}\n\n## Workflow\n${workflowSection}\n\n## Pitfalls\n${pitfallsSection}`;
       }
       return {
-        title,
-        summary,
-        patterns,
-        pitfalls,
-        prerequisites,
-        skillDraft,
-        confidence,
-        sourceSessionIDs: [input.sessionID],
+        knowledge: {
+          title,
+          summary,
+          patterns,
+          pitfalls,
+          prerequisites,
+          skillDraft,
+          confidence,
+          sourceSessionIDs: [input.sessionID],
+          kind: heuristicKind(input.traces),
+          projectId: UNSCOPED_LEGACY,
+          sourceTraceIDs: input.traces.map((t) => t.id),
+          distilledAt: nowIso,
+        },
       };
     } catch {
-      return {
-        title: "insufficient-traces",
-        summary: `Only ${input.traces.length} traces`,
-        patterns: [],
-        pitfalls: [],
-        prerequisites: [],
-        confidence: 0,
-        sourceSessionIDs: [input.sessionID],
-      };
+      return { knowledge: degenerateKnowledge(input, nowIso) };
     }
   }
 }
