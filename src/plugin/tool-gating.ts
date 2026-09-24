@@ -119,3 +119,8 @@ export function shouldEnableKnowledgeHubConfirm(hubs: readonly unknown[] | undef
 export function shouldEnablePresetTools(override: boolean | undefined): boolean {
   return override ?? false
 }
+
+/** evolution tool: register iff evolution.enabled is true (default false). */
+export function shouldEnableEvolutionTool(enabled: boolean | undefined): boolean {
+  return enabled ?? false
+}

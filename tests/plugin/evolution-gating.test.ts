@@ -3,9 +3,12 @@ import type { HookName, MatrixxConfig } from "../../src/config"
 import { EvolutionConfigSchema } from "../../src/config/schema/evolution"
 import { HookNameSchema } from "../../src/config/schema/hooks"
 import type { BackgroundManager } from "../../src/features/background-agent"
+import { EVOLUTION_TEMPLATE } from "../../src/features/builtin-commands/templates/evolution"
 import { createContinuationHooks } from "../../src/plugin/hooks/create-continuation-hooks"
 import { createToolGuardHooks } from "../../src/plugin/hooks/create-tool-guard-hooks"
+import { shouldEnableEvolutionTool } from "../../src/plugin/tool-gating"
 import type { PluginContext } from "../../src/plugin/types"
+import { createEvolutionTool } from "../../src/tools/evolution"
 
 function makeBaseArgs(pluginConfig: MatrixxConfig) {
   return {
@@ -74,5 +77,47 @@ describe("P2.3 evolution gating", () => {
     expect(disabledHooks.evolutionHitl).toBeNull()
     expect(enabledHooks.evolutionCompressor).not.toBeNull()
     expect(enabledHooks.evolutionHitl).not.toBeNull()
+  })
+})
+
+describe("T2 evolution tool gating", () => {
+  test("shouldEnableEvolutionTool is false unless enabled is true", () => {
+    //#given unset, false, and true enabled flags
+    //#when evaluating the evolution tool gate
+    //#then only explicit true enables the tool
+    expect(shouldEnableEvolutionTool(undefined)).toBe(false)
+    expect(shouldEnableEvolutionTool(false)).toBe(false)
+    expect(shouldEnableEvolutionTool(true)).toBe(true)
+  })
+
+  test("createEvolutionTool registers the evolution tool", () => {
+    //#given a plugin context
+    const ctx = { directory: "/tmp/evolution-gating-test" } as unknown as PluginContext
+    //#when creating the evolution tool
+    const record = createEvolutionTool(ctx)
+    //#then the evolution tool is registered
+    expect(Object.keys(record)).toEqual(["evolution"])
+    expect(record.evolution.description).toContain("evolution")
+  })
+
+  test("/evolution template routes through the tool with zero evolution-state bash ops", () => {
+    //#given the migrated evolution command template
+    //#when scanning for evolution-state shell operations
+    const pendingPathOp = /\.matrixx\/evolution\/pending\/.*\.(md|meta\.json).*(`|\*|$)/.test(EVOLUTION_TEMPLATE)
+    const auditAppend = />>\s*\.matrixx\/evolution\/audit\.log/.test(EVOLUTION_TEMPLATE)
+    const stateRm = /`rm\s[^\n]*\.matrixx\/evolution/.test(EVOLUTION_TEMPLATE)
+    const stateCp = /`cp\s[^\n]*\.matrixx\/evolution/.test(EVOLUTION_TEMPLATE)
+    const stateMkdir = /`mkdir[^\n]*\.matrixx\/evolution/.test(EVOLUTION_TEMPLATE)
+    const pendingLs = /`ls\s[^\n]*\.matrixx\/evolution\/pending/.test(EVOLUTION_TEMPLATE)
+    const auditTail = /`tail[^\n]*\.matrixx\/evolution\/audit\.log/.test(EVOLUTION_TEMPLATE)
+    //#then no shell op touches evolution state and the tool is referenced
+    expect(pendingPathOp).toBe(false)
+    expect(auditAppend).toBe(false)
+    expect(stateRm).toBe(false)
+    expect(stateCp).toBe(false)
+    expect(stateMkdir).toBe(false)
+    expect(pendingLs).toBe(false)
+    expect(auditTail).toBe(false)
+    expect(EVOLUTION_TEMPLATE).toContain("evolution` tool")
   })
 })

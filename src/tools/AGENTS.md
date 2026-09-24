@@ -2,7 +2,7 @@
 
 ## OVERVIEW
 
-24 tool dirs (LSP ×6, AST-grep ×2, grep/glob/github-search, session-manager ×4, task ×5 `create/list/get/update/cleanup`, plan ×5 `create/read/update/list/delete` for `.matrixx/plans/*.md`, delegate-task (`task`), background-task ×3 `output/cancel/revive`, handoff, hashline-edit, interactive-bash, look-at, skill, slashcommand, assembly, knowledge-hub-confirm, preset, bdd-* ×4, pdf-extract-figures). Two patterns: Direct ToolDefinition (static) and Factory Function (context-dependent). Conditional registration via `src/plugin/tool-gating.ts` — bdd/pdf-figures/look_at/knowledge-hub-confirm/preset only load when relevant (see TOOL GATING).
+25 tool dirs (LSP ×6, AST-grep ×2, grep/glob/github-search, session-manager ×4, task ×5 `create/list/get/update/cleanup`, plan ×5 `create/read/update/list/delete` for `.matrixx/plans/*.md`, delegate-task (`task`), background-task ×3 `output/cancel/revive`, handoff, hashline-edit, interactive-bash, look-at, skill, slashcommand, assembly, knowledge-hub-confirm, preset, bdd-* ×4, pdf-extract-figures, evolution). Two patterns: Direct ToolDefinition (static) and Factory Function (context-dependent). Conditional registration via `src/plugin/tool-gating.ts` — bdd/pdf-figures/look_at/knowledge-hub-confirm/preset/evolution only load when relevant (see TOOL GATING).
 
 ## STRUCTURE
 ```
@@ -30,6 +30,7 @@ tools/
 ├── knowledge-hub-confirm/ # Knowledge-hub write confirm gate (gated: hubs configured)
 ├── pdf-extract-figures/ # PDF figure extraction (gated: *.pdf file or override)
 ├── preset/            # Model preset switch (opt-in only)
+├── evolution/         # Evolution governance: list/get/approve/reject/status (gated: evolution.enabled) + reserved search/query-context stubs (T9)
 └── slashcommand/     # Slash command dispatch
 ```
 
@@ -64,6 +65,7 @@ tools/
 | `look_at` | System | Factory | Multimodal PDF/image analysis |
 | `skill` | Skill | Factory | Execute skill with MCP capabilities |
 | `slashcommand` | Command | Factory | Slash command dispatch |
+| `evolution` | Evolution | Factory | Govern pending proposals: list/get/approve/reject/status (reserved search/query-context for T9 retrieval) |
 
 ## TASK TOOLS
 
