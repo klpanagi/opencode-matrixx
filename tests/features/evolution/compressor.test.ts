@@ -86,10 +86,12 @@ describe("compressor llmCall threading (D1)", () => {
     //#when compressing twice with no network available
     const first = await compressor.compress(input)
     const second = await compressor.compress(input)
-    //#then heuristic output is deterministic
-    expect(first).toEqual(second)
+    //#then heuristic output is deterministic apart from distilledAt, which is wall-clock by design
+    const normalize = (r: typeof first) => ({ ...r.knowledge, distilledAt: "<fixed>" })
+    expect(normalize(first)).toEqual(normalize(second))
     expect(first.knowledge.title).toContain("workflow-")
     expect(first.usage).toBeUndefined()
+    expect(second.usage).toBeUndefined()
   })
 
   test("llmCall failure falls back to heuristic", async () => {
