@@ -23,10 +23,10 @@ function writePlan(dir: string, name: string, content: string): void {
   writeFileSync(join(dir, ".matrixx/plans", name), content, "utf-8")
 }
 
-/** ~33KB body: renders both content and hashline payloads under the soft cap. */
+/** Synthesized CI fixture (repo fixture is gitignored): 480 lines ≈ 33.4KB rendered, under the 40,000 soft cap. */
 function buildNearCapContent(): string {
   const lines: string[] = ["# Near Cap Plan", "", "## Section One", ""]
-  for (let i = 1; i <= 600; i++) {
+  for (let i = 1; i <= 480; i++) {
     lines.push(`- [ ] ${i}. task-${i}: ${"z".repeat(40)}`)
   }
   return `${lines.join("\n")}\n`
