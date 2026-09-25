@@ -1,7 +1,7 @@
 /// <reference types="bun-types" />
 import { describe, expect, test } from "bun:test"
-import { DcpConfigSchema } from "../config/schema/dcp"
-import { buildInlineConfig } from "./dcp-switch-profile"
+import { DcpConfigSchema } from "../../src/config/schema/dcp"
+import { buildInlineConfig } from "../../src/shared/dcp-switch-profile"
 
 describe("buildInlineConfig", () => {
   test("is exported as a function", () => {

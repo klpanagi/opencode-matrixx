@@ -1,6 +1,6 @@
 /// <reference types="bun-types" />
 import { describe, expect, test } from "bun:test"
-import { BUILTIN_DCP_PROFILES, DcpCompressOverrideSchema } from "./dcp"
+import { BUILTIN_DCP_PROFILES, DcpCompressOverrideSchema } from "../../../src/config/schema/dcp"
 
 describe("BUILTIN_DCP_PROFILES.brutal", () => {
   test("does not nudge every turn", () => {

@@ -1,5 +1,5 @@
 import { describe, expect, test } from "bun:test"
-import { clearSessionModel, getSessionModel, isMainSessionCandidate, setSessionModel } from "./state"
+import { clearSessionModel, getSessionModel, isMainSessionCandidate, setSessionModel } from "../../../src/features/session-state/state"
 
 describe("isMainSessionCandidate", () => {
   test("//#given a top-level session without metadata\n//#when checked\n//#then it is a main session candidate", () => {

@@ -1,6 +1,6 @@
 import { describe, expect, test } from "bun:test"
-import { getModelDirectives } from "../agents/model-directives"
-import { injectContextDiscipline } from "./agent-config-handler"
+import { getModelDirectives } from "../../src/agents/model-directives"
+import { injectContextDiscipline } from "../../src/plugin-handlers/agent-config-handler"
 
 const DEEPSEEK = "deepseek/deepseek-v4.1-flash"
 const ANTHROPIC = "anthropic/claude-sonnet-4"

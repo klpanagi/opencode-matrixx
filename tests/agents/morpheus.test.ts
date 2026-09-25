@@ -1,7 +1,7 @@
 import { describe, expect, test } from "bun:test"
-import { createKeymakerAgent } from "./keymaker"
-import { getModelDirectives } from "./model-directives"
-import { createMorpheusAgent } from "./morpheus"
+import { createKeymakerAgent } from "../../src/agents/keymaker"
+import { getModelDirectives } from "../../src/agents/model-directives"
+import { createMorpheusAgent } from "../../src/agents/morpheus"
 
 const DEEPSEEK = "deepseek/deepseek-v4.1-flash"
 const ANTHROPIC = "anthropic/claude-sonnet-4"

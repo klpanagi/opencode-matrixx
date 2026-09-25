@@ -2,8 +2,8 @@
 import { describe, expect, test } from "bun:test"
 import type { Message, Part } from "@opencode-ai/sdk"
 
-import type { PluginContext } from "../../plugin/types"
-import { createDcpNudgeSanitizerHook } from "./hook"
+import type { PluginContext } from "../../../src/plugin/types"
+import { createDcpNudgeSanitizerHook } from "../../../src/hooks/dcp-nudge-sanitizer/hook"
 
 type MessageWithParts = { info: Message; parts: Part[] }
 

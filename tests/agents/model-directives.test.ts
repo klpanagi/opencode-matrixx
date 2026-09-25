@@ -1,5 +1,5 @@
 import { describe, expect, test } from "bun:test"
-import { appendModelDirective, getModelDirectives, resolveModelFamily } from "./model-directives"
+import { appendModelDirective, getModelDirectives, resolveModelFamily } from "../../src/agents/model-directives"
 
 describe("model-directives", () => {
   test("returns anti-echo and nudge directives for a deepseek model", () => {

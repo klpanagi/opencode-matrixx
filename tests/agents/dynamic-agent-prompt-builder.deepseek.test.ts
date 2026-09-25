@@ -4,8 +4,8 @@ import {
   buildContextDisciplineSection,
   buildExploreDisciplineSection,
   buildHeadroomSection,
-} from "./dynamic-agent-prompt-builder"
-import { getModelDirectives } from "./model-directives"
+} from "../../src/agents/dynamic-agent-prompt-builder"
+import { getModelDirectives } from "../../src/agents/model-directives"
 
 const DEEPSEEK = "deepseek/deepseek-v4.1-flash"
 const ANTHROPIC = "anthropic/claude-sonnet-4"

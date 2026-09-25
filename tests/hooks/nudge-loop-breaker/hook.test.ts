@@ -1,8 +1,8 @@
 /// <reference types="bun-types" />
 import { describe, expect, test } from "bun:test"
-import type { PluginContext } from "../../plugin/types"
-import { createNudgeLoopBreakerHook } from "./hook"
-import { computeBackoffDelay } from "./session-state"
+import type { PluginContext } from "../../../src/plugin/types"
+import { createNudgeLoopBreakerHook } from "../../../src/hooks/nudge-loop-breaker/hook"
+import { computeBackoffDelay } from "../../../src/hooks/nudge-loop-breaker/session-state"
 
 const SESSION = "ses_loop"
 
