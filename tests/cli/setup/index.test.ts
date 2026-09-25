@@ -1,8 +1,19 @@
-import { describe, expect, test } from "bun:test";
+import { describe, expect, mock, test } from "bun:test";
 import { existsSync, mkdtempSync, rmSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
-import { executeSetup } from "../../../src/cli/setup/index";
+import * as realDeps from "../../../src/cli/setup/deps";
+import type { DepStatus } from "../../../src/cli/setup/types";
+
+const presentDeps: DepStatus[] = [
+  { name: "bun", required: true, found: true, version: "1.4.0", installHint: "" },
+  { name: "opencode", required: true, found: true, version: "1.0.150", installHint: "" },
+  { name: "git", required: true, found: true, version: "2.55.0", installHint: "" },
+];
+
+mock.module("../../../src/cli/setup/deps", () => ({ ...realDeps, checkRequiredDeps: () => presentDeps }));
+
+const { executeSetup } = await import("../../../src/cli/setup/index");
 
 describe("executeSetup --yes --dry-run", () => {
   test("does not write files in dryRun", async () => {
