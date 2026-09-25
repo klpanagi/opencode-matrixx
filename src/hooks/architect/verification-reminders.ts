@@ -44,12 +44,11 @@ Then \`Read\` each file found — especially:
 
 **STEP 6: CHECK MISSION STATE DIRECTLY (EVERY TIME — NO EXCEPTIONS)**
 
-Do NOT rely on cached progress. Read the plan file NOW:
+Do NOT rely on cached progress. Check mission state NOW:
 \`\`\`
-Read(".matrixx/plans/${planName}.md")
+plan_tasks(planPath=".matrixx/plans/${planName}.md")
 \`\`\`
-Count exactly: how many \`- [ ]\` remain? How many \`- [x]\` completed?
-This is YOUR ground truth. Use it to decide what comes next.
+This returns a compact manifest with progress counts. If full content is needed, use \`plan_read(filePath=".matrixx/plans/${planName}.md", offset=N, limit=M)\` to paginate.
 
 **STEP 7: MARK COMPLETION IN PLAN FILE (IMMEDIATELY — NON-NEGOTIABLE)**
 
@@ -59,10 +58,10 @@ This is YOUR ground truth. Use it to decide what comes next.
 
 RIGHT NOW — Do not delay. Verification passed → Mark IMMEDIATELY.
 
-1. Open plan file: \`.matrixx/plans/${planName}.md\`
-2. Find the \`- [ ]\` checkbox for the completed task
-3. Change \`- [ ]\` → \`- [x]\` using the \`Edit\` tool
-4. Verify the edit was applied
+1. Call \`plan_read(filePath=".matrixx/plans/${planName}.md")\` to get LINE#ID anchors
+2. Find the \`- [ ]\` checkbox line for the completed task and note its LINE#ID
+3. Call \`plan_update(filePath=".matrixx/plans/${planName}.md", edits=[{op:"replace", pos:"LINE#ID", lines:"...- [x]..."}])\` to mark complete
+4. Verify the update was applied by calling \`plan_tasks\` again
 
 **WARNING**: If you skip this step, the task appears UNDONE.
 The system counts \`- [x]\` checkboxes to track progress.
@@ -77,7 +76,7 @@ No checkbox = No progress = Work wasted.
 
 **STEP 9: PROCEED TO NEXT TASK**
 
-- Read the plan file AGAIN to identify the next \`- [ ]\` task
+- Call \`plan_tasks\` AGAIN to identify the next \`- [ ]\` task
 - Start immediately - DO NOT STOP
 
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━

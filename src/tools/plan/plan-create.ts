@@ -1,15 +1,12 @@
 import { existsSync } from "node:fs"
 import { basename } from "node:path"
 import { type ToolDefinition, tool } from "@opencode-ai/plugin/tool"
+import { countPlanProgressFromContent } from "../../features/mission-state"
 import { atomicWrite, ensurePlanDir, upsertMetadataComment } from "../../features/mission-state/plan-storage"
+import { validatePlanContract } from "../../features/plan-contract"
 import type { PluginContext } from "../../plugin/types"
+import { MAX_PLAN_FILE_BYTES } from "./constants"
 import { resolveDirectory, validatePlanFilePath } from "./types"
-
-function countTodos(content: string): { total: number; completed: number } {
-  const matches = content.match(/^\s*[-*]\s*\[[ xX]\]/gm) ?? []
-  const completed = (content.match(/^\s*[-*]\s*\[[xX]\]/gm) ?? []).length
-  return { total: matches.length, completed }
-}
 
 export function createPlanCreateTool(ctx?: PluginContext): ToolDefinition {
   return tool({
@@ -42,9 +39,10 @@ export function createPlanCreateTool(ctx?: PluginContext): ToolDefinition {
             filePath: resolved,
           })
         }
+        const contract = validatePlanContract(content)
         const id = basename(resolved, ".md")
         const sessionId = (context as Record<string, unknown>)?.sessionID as string | undefined ?? "unknown"
-        const { total, completed } = countTodos(content)
+        const { total, completed } = countPlanProgressFromContent(content)
         const meta = {
           id,
           updatedAt: new Date().toISOString(),
@@ -53,11 +51,24 @@ export function createPlanCreateTool(ctx?: PluginContext): ToolDefinition {
           todoCompleted: completed,
         }
         const contentWithMeta = upsertMetadataComment(content, meta)
+        const byteLength = Buffer.byteLength(contentWithMeta, "utf8")
+        if (byteLength > MAX_PLAN_FILE_BYTES) {
+          return JSON.stringify({
+            error: "size_exceeded",
+            message: `Plan exceeds 102400 bytes — split the plan into smaller plans (${byteLength}/${MAX_PLAN_FILE_BYTES} bytes)`,
+            hint: "Reduce the plan below 102,400 bytes or split it into multiple .matrixx/plans/*.md files.",
+          })
+        }
         const ok = atomicWrite(resolved, contentWithMeta)
         if (!ok) {
           return JSON.stringify({ error: "write_failed", message: `Failed to write ${resolved}` })
         }
-        return JSON.stringify({ success: true, filePath: resolved, message: `Created plan ${resolved}` })
+        return JSON.stringify({
+          success: true,
+          filePath: resolved,
+          message: `Created plan ${resolved}`,
+          warnings: contract.warnings,
+        })
       } catch (error) {
         const message = error instanceof Error ? error.message : String(error)
         return JSON.stringify({ error: "internal_error", message })

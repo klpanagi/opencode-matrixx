@@ -91,9 +91,9 @@ describe("plan_* tools", () => {
 
       //#when read
       const read = JSON.parse(await readTool.execute({ filePath: ".matrixx/plans/my-plan.md" }, ctx))
-      //#then hashline tagged
+      //#then hashline tagged, single format only
       expect(read.error).toBeUndefined()
-      expect(read.content).toContain("# Title")
+      expect("content" in read).toBe(false)
       expect(read.hashline).toContain("1#")
       expect(read.hashline).toContain("|# Title")
 
@@ -205,7 +205,9 @@ describe("plan_* tools", () => {
         ctx,
       )
       //#then no error string and content changed
-      const read2 = JSON.parse(await readTool.execute({ filePath: ".matrixx/plans/edit-plan.md" }, ctx))
+      const read2 = JSON.parse(
+        await readTool.execute({ filePath: ".matrixx/plans/edit-plan.md", format: "content" }, ctx),
+      )
       expect(read2.content).toContain("# New Title")
       expect(updated).toBeDefined()
     })

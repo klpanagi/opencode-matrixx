@@ -46,7 +46,7 @@ User describes work
   -> Smith reviews (high-accuracy mode)
   -> .matrixx/plans/{name}.md
        -> /start-work
-            -> Architect reads plan, builds waves
+            -> Architect reads plan via plan_tasks + plan_read, builds waves
                  -> task(category=...) -> Mouse and specialists
                  -> verify each result independently
                  -> final report
@@ -130,8 +130,10 @@ User: /start-work
        |    the last incomplete task (progress = checked vs unchecked boxes)
        |- MISSING or plan complete -> INIT MODE
             One plan: auto-select it. Many plans: list with timestamps,
-            ask the user. Write mission.json, read the full plan via
-            plan_read, start executing from task 1.
+            ask the user. Write mission.json, call plan_tasks for the
+            task manifest, then read the plan body via paginated
+            plan_read (offset/limit) — one call cannot return a plan
+            that renders above the soft cap. Start executing from task 1.
 ```
 
 `mission.json` tracks `active_plan`, `started_at`, `session_ids`, and
@@ -149,7 +151,10 @@ you are debugging orchestration, you want a fresh run (delete
 ### Wave planning with the task system
 
 Architect decomposes the plan into **task waves** using `task_create` with
-`blockedBy` dependencies. Independent tasks in Wave 1 run in parallel.
+`blockedBy` dependencies. It gets the task list from `plan_tasks` (compact
+manifest with progress and numbered tasks) and reads plan sections via
+paginated `plan_read` (offset/limit) when implementation details are needed.
+Independent tasks in Wave 1 run in parallel.
 Wave 2 tasks declare `blockedBy: [Wave 1 ids]` and become runnable when
 `task_list` shows empty blockers. Task files (`.matrixx/tasks/T-*.json`)
 are project-scoped by default and survive `/clear` and restarts, unlike
@@ -167,6 +172,47 @@ successes, failures, gotchas, commands) pass forward to all later workers
 through `.matrixx/notepads/{plan-name}/` (`learnings.md`, `decisions.md`,
 `issues.md`, `verification.md`, `problems.md`). Later tasks do not repeat
 earlier mistakes.
+
+### Plan tool contract
+
+Plans are managed through a dedicated set of tools. Raw `Write`/`Edit`/`Read`
+on `.matrixx/plans/*.md` is blocked by `task-edit-guard`.
+
+| Tool | Purpose |
+|------|---------|
+| `plan_create` | Create a new plan (kebab-case `.md`, WARN-first contract validation) |
+| `plan_read` | Read plan content: hashline (default) or content format, paginated via offset/limit |
+| `plan_tasks` | Compact manifest: progress, numbered tasks, definition-of-done (no plan body) |
+| `plan_list` | List plans with per-entry progress (total, completed, remaining, isComplete) |
+| `plan_update` | Edit via LINE#ID hashline anchors; post-edit contract warnings surfaced |
+| `plan_delete` | Remove a plan file |
+
+**Write-time size cap**: `plan_create` rejects content exceeding 102,400 bytes
+(`size_exceeded` error). `plan_update` guards the same cap post-edit.
+
+**Soft render cap**: `plan_read` returns at most 40,000 rendered bytes per call.
+When the selected format exceeds this, it returns `{ truncated, outline, hint }`
+with no payload. The correct recovery is: call `plan_tasks` for the manifest,
+then paginate `plan_read` with offset/limit for content sections.
+
+**WARN-first contract validation**: `plan_create` and `plan_update` run
+`validatePlanContract` and return advisory `warnings` on the success payload.
+Validator warnings never block persistence; only the hard size cap does.
+
+**Canonical core and appendix**: Plans should follow 8 canonical H2 sections
+(TL;DR, Context, Work Objectives, Verification Strategy, Execution Strategy,
+TODOs, Commit Strategy, Success Criteria). Content after the first `## Appendix`
+H2 is exempt from section-ordering and unknown-section checks.
+
+**Grandfather/migration path**: Existing plans without front-matter are
+grandfathered. Front-matter is injected on the next `plan_update` call
+(`apply-on-next-edit` only). No `plan_migrate` tool is shipped.
+
+**Runbook: oversized + kebab-invalid plans**: Two plans
+(`p2.2-generic-recovery-refactor.md`, `p2.3-evolution-gating.md`) exceed the
+size cap and also have dotted (non-kebab) filenames. They must be renamed to
+kebab-case and split into smaller files. This is a data operation, not a code
+change, and should be handled as a follow-up.
 
 ## Layer 3: Workers (Mouse + Specialists)
 

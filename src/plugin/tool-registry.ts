@@ -44,6 +44,7 @@ import {
   discoverCommandsSync,
   interactive_bash,
 } from "../tools"
+import { createPlanTasksTool } from "../tools/plan"
 import type { SkillContext } from "./skill-context"
 import {
   isConstructAgentEnabled,
@@ -165,6 +166,7 @@ export function createToolRegistry(args: {
     plan_list: createPlanListTool(ctx),
     plan_update: createPlanUpdateTool(ctx),
     plan_delete: createPlanDeleteTool(ctx),
+    plan_tasks: createPlanTasksTool(ctx),
   }
 
   const assemblyEnabled = pluginConfig.assembly?.enabled !== false
