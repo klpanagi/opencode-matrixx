@@ -36,6 +36,13 @@ export function createMessagesTransformHandler(args: {
       "experimental.chat.messages.transform"
     ]?.(input, output)
 
+    // Ordering: Matrixx runs before DCP (plugin index 0 vs 1), so this sanitizer
+    // cleans prior-cycle sticky nudges and caps accumulation at ~1/cycle. It cannot
+    // suppress the nudge DCP injects later in the same cycle.
+    await args.hooks.dcpNudgeSanitizer?.[
+      "experimental.chat.messages.transform"
+    ]?.(input, output)
+
     await args.hooks.toolPairValidator?.[
       "experimental.chat.messages.transform"
     ]?.(input, output)

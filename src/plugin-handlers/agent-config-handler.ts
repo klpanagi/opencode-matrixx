@@ -38,12 +38,13 @@ export function injectContextDiscipline(
     if (!cfg || typeof cfg.prompt !== "string") continue;
     if (cfg.prompt.includes("Context Discipline") || cfg.prompt.includes("context-mode — MANDATORY routing rules")) continue;
     const normalized = name.toLowerCase();
+    const modelID = typeof cfg.model === "string" ? cfg.model : undefined;
     let discipline = "";
     if (exploreAgents.has(normalized) || normalized === "oracle") {
-      discipline = buildExploreDisciplineSection(hasContextMode, hasHeadroom, hasGrepGlob);
+      discipline = buildExploreDisciplineSection(hasContextMode, hasHeadroom, hasGrepGlob, modelID);
     } else {
-      const compact = buildCompactContextDisciplineSection(hasContextMode, hasGrepGlob);
-      const headroom = buildHeadroomSection(hasHeadroom);
+      const compact = buildCompactContextDisciplineSection(hasContextMode, hasGrepGlob, undefined, modelID);
+      const headroom = buildHeadroomSection(hasHeadroom, undefined, modelID);
       discipline = [compact, headroom].filter(Boolean).join("\n\n");
     }
     if (discipline) {

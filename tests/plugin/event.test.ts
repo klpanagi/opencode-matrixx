@@ -381,3 +381,42 @@ type EventInput = { event: { type: string; properties?: Record<string, unknown> 
 		expect(dispatchCalls[1].event.type).toBe("session.idle")
 	})
 })
+
+describe("createEventHandler - DCP loop-breaker dispatch", () => {
+	it("dispatches session.next.step.ended to the nudge loop breaker hook", async () => {
+		//#given
+		const seen: string[] = []
+		const eventHandler = createEventHandler({
+			ctx: {} as unknown as PluginContext,
+			pluginConfig: {} as unknown as MatrixxConfig,
+			firstMessageVariantGate: {
+				markSessionCreated: () => {},
+				clear: () => {},
+			},
+			managers: {
+				tmuxSessionManager: {
+					onSessionCreated: async () => {},
+					onSessionDeleted: async () => {},
+				},
+			} as unknown as Managers,
+			hooks: {
+				nudgeLoopBreaker: {
+					event: async (input: { event: { type: string; properties?: unknown } }) => {
+						seen.push(input.event.type)
+					},
+				},
+			} as unknown as CreatedHooks,
+		})
+
+		//#when
+		await eventHandler({
+			event: {
+				type: "session.next.step.ended",
+				properties: { sessionID: "ses_loop" },
+			},
+		})
+
+		//#then
+		expect(seen).toEqual(["session.next.step.ended"])
+	})
+})

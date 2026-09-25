@@ -114,7 +114,8 @@ function buildKeymakerPrompt(
   availableTools: AvailableTool[] = [],
   availableSkills: AvailableSkill[] = [],
   availableCategories: AvailableCategory[] = [],
-  useTaskSystem = false
+  useTaskSystem = false,
+  modelID?: string
 ): string {
   const keyTriggers = buildKeyTriggersSection(availableAgents, availableSkills)
   const toolSelection = buildToolSelectionTable(availableAgents, availableTools, availableSkills)
@@ -127,9 +128,9 @@ function buildKeymakerPrompt(
   const antiPatterns = buildAntiPatternsSection()
   const hasContextMode = availableTools.some((t) => t.name.startsWith("ctx_"))
   const hasGrepGlob = resolveGrepGlobUsable(availableTools.map((t) => t.name))
-  const contextDiscipline = buildContextDisciplineSection(hasContextMode, hasGrepGlob)
+  const contextDiscipline = buildContextDisciplineSection(hasContextMode, hasGrepGlob, undefined, modelID)
   const hasHeadroom = availableTools.some((t) => t.name.startsWith("headroom_"))
-  const headroomDiscipline = buildHeadroomSection(hasHeadroom)
+  const headroomDiscipline = buildHeadroomSection(hasHeadroom, undefined, modelID)
   const todoDiscipline = buildTodoDisciplineSection(useTaskSystem)
 
   return `You are Keymaker, an autonomous deep worker for software engineering.
@@ -625,8 +626,8 @@ export function createKeymakerAgent(
   const skills = availableSkills ?? []
   const categories = availableCategories ?? []
   const prompt = availableAgents
-    ? buildKeymakerPrompt(availableAgents, tools, skills, categories, useTaskSystem)
-    : buildKeymakerPrompt([], tools, skills, categories, useTaskSystem)
+    ? buildKeymakerPrompt(availableAgents, tools, skills, categories, useTaskSystem, model)
+    : buildKeymakerPrompt([], tools, skills, categories, useTaskSystem, model)
 
   return {
     description:

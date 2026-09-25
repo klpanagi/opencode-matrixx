@@ -64,6 +64,7 @@ export function isMainSessionCandidate(
 }
 
 const sessionAgentMap = new Map<string, string>()
+const sessionModelMap = new Map<string, string>()
 
 /** @internal For testing only */
 export function _resetForTesting(): void {
@@ -71,6 +72,7 @@ export function _resetForTesting(): void {
   subagentSessions.clear()
   subagentParentMap.clear()
   sessionAgentMap.clear()
+  sessionModelMap.clear()
 }
 
 export function setSessionAgent(sessionID: string, agent: string): void {
@@ -89,4 +91,16 @@ export function getSessionAgent(sessionID: string): string | undefined {
 
 export function clearSessionAgent(sessionID: string): void {
   sessionAgentMap.delete(sessionID)
+}
+
+export function setSessionModel(sessionID: string, model: string): void {
+  sessionModelMap.set(sessionID, model)
+}
+
+export function getSessionModel(sessionID: string): string | undefined {
+  return sessionModelMap.get(sessionID)
+}
+
+export function clearSessionModel(sessionID: string): void {
+  sessionModelMap.delete(sessionID)
 }

@@ -12,6 +12,7 @@ import {
   createThinkingBlockValidatorHook,
   createToolPairValidatorHook,
 } from "../../hooks"
+import { createDcpNudgeSanitizerHook } from "../../hooks/dcp-nudge-sanitizer"
 import { createInputSecretGuardHook } from "../../hooks/input-secret-guard"
 import { safeCreateHook } from "../../shared/safe-create-hook"
 import type { PluginContext } from "../types"
@@ -23,6 +24,7 @@ export type TransformHooks = {
   knowledgeHubInjector: ReturnType<typeof createKnowledgeHubInjectorHook> | null
   envContextInjector: ReturnType<typeof createEnvContextInjectorHook> | null
   thinkingBlockValidator: ReturnType<typeof createThinkingBlockValidatorHook> | null
+  dcpNudgeSanitizer: ReturnType<typeof createDcpNudgeSanitizerHook> | null
   toolPairValidator: ReturnType<typeof createToolPairValidatorHook> | null
   designIntentPreserver: ReturnType<typeof createDesignIntentPreserverHook> | null
 }
@@ -91,6 +93,14 @@ export function createTransformHooks(args: {
       )
     : null
 
+  const dcpNudgeSanitizer = isHookEnabled("dcp-nudge-sanitizer")
+    ? safeCreateHook(
+        "dcp-nudge-sanitizer",
+        () => createDcpNudgeSanitizerHook(ctx),
+        { enabled: safeHookEnabled },
+      )
+    : null
+
   const designIntentPreserver = isHookEnabled("design-intent-preserver")
     ? safeCreateHook(
         "design-intent-preserver",
@@ -106,6 +116,7 @@ export function createTransformHooks(args: {
     knowledgeHubInjector,
     envContextInjector,
     thinkingBlockValidator,
+    dcpNudgeSanitizer,
     toolPairValidator,
     designIntentPreserver,
   }
