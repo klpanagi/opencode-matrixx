@@ -2,7 +2,7 @@ export const START_WORK_TEMPLATE = `You are starting a Morpheus work session.
 
 ## WHAT TO DO
 
-1. **Find available plans**: List Oracle-generated plan files via plan_list at \`.matrixx/plans/\`
+1. **Find available plans**: List Oracle-generated plan files via plan_list at \`.matrixx/plans/\`; each entry carries a progress field (total, completed, remaining, isComplete)
 
 2. **Check for active mission state**: Read \`.matrixx/mission.json\` if it exists
 
@@ -25,7 +25,7 @@ export const START_WORK_TEMPLATE = `You are starting a Morpheus work session.
    }
    \`\`\`
 
-5. **Read the plan file via plan_read** and start executing tasks according to architect workflow
+5. **Read the plan**: Call plan_tasks for the task manifest and progress; then read the plan body via paginated plan_read (offset/limit). One call cannot return a plan that renders above the soft cap.
 
 ## OUTPUT FORMAT
 
@@ -36,8 +36,8 @@ Available Work Plans
 Current Time: {ISO timestamp}
 Session ID: {current session id}
 
-1. [plan-name-1.md] - Modified: {date} - Progress: 3/10 tasks
-2. [plan-name-2.md] - Modified: {date} - Progress: 0/5 tasks
+1. [plan-name-1.md] - Modified: {date} - Progress: {completed}/{total} tasks
+2. [plan-name-2.md] - Modified: {date} - Progress: {completed}/{total} tasks
 
 Which plan would you like to work on? (Enter number or plan name)
 \`\`\`
@@ -68,5 +68,5 @@ Reading plan and beginning execution...
 
 - The session_id is injected by the hook - use it directly
 - Always update mission.json BEFORE starting work
-- Read the FULL plan file via plan_read before delegating any tasks
+- Call plan_tasks for the manifest; use paginated plan_read (offset/limit) for content — one call cannot return a plan that renders above the soft cap
 - Follow architect delegation protocols (7-section format)`

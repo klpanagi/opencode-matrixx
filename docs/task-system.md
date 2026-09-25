@@ -68,7 +68,7 @@ matrixx.jsonc
 | Storage | `src/features/task-storage/storage.ts` | session memory (OpenCode Todo API) | file system (`.matrixx/tasks/` or global) |
 | Continuation | `src/hooks/task-continuation-enforcer/`, `src/hooks/todo-continuation-enforcer/` | `todo-continuation-enforcer` only | `task-continuation-enforcer` plus `todo-continuation-enforcer` independently |
 | Persistence | none | lost on restart | survives restart, migratable |
-| Plan files | `src/tools/plan/` (plan_create/read/update/list/delete) | guarded the same either way | `.matrixx/plans/*.md` edited only via `plan_*` tools with `LINE#ID` anchors (see §9) |
+| Plan files | `src/tools/plan/` (plan_create/read/update/list/delete + plan_tasks for manifest) | guarded the same either way | `.matrixx/plans/*.md` edited only via `plan_*` tools with `LINE#ID` anchors (see §9) |
 
 ---
 

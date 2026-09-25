@@ -75,9 +75,9 @@ describe("prompt-text audit: plan_* mandate present in rewritten files", () => {
     const content = readSource("features/builtin-commands/templates/start-work.ts")
     //#then it uses plan_list and plan_read
     expect(START_WORK_TEMPLATE).toContain("via plan_list")
-    expect(START_WORK_TEMPLATE).toContain("via plan_read")
+    expect(START_WORK_TEMPLATE).toContain("via paginated plan_read")
     expect(content).toContain("via plan_list")
-    expect(content).toContain("via plan_read")
+    expect(content).toContain("via paginated plan_read")
     expect(content).not.toContain("**Read the plan file**")
   })
 })

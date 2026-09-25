@@ -1305,7 +1305,7 @@ Opt-in experimental features that may change or be removed in future versions. U
 | `hashline_edit`             | `true` (at call site) | Enable hashline-anchored `Edit` tool (line#hash IDs) for non-plan files — `.matrixx/plans/*.md` must use `plan_update`.                                     |
 ## Context Mode
 
-Enforce sandbox-based `ctx_*` tools (`ctx_batch_execute`, `ctx_search`, `ctx_execute`, `ctx_execute_file`, `ctx_fetch_and_index`, `ctx_index`) over raw `Read`/`Grep`/`Glob` for analysis. Discipline prompt is loaded at runtime from the installed `context-mode` package (`configs/opencode/AGENTS.md`, memoized `readFileSync` + fallback) when `ctx_*` tools are present. Dedicated `plan_*` tools (`plan_create/read/update/list/delete`) cover `.matrixx/plans/*.md` — generic `Write`/`Edit` to plans is blocked. See [Context Management](./context-management.md) for the full 5-layer stack.
+Enforce sandbox-based `ctx_*` tools (`ctx_batch_execute`, `ctx_search`, `ctx_execute`, `ctx_execute_file`, `ctx_fetch_and_index`, `ctx_index`) over raw `Read`/`Grep`/`Glob` for analysis. Discipline prompt is loaded at runtime from the installed `context-mode` package (`configs/opencode/AGENTS.md`, memoized `readFileSync` + fallback) when `ctx_*` tools are present. Dedicated `plan_*` tools (`plan_create/read/update/list/delete`) plus `plan_tasks` (compact manifest) cover `.matrixx/plans/*.md` — generic `Write`/`Edit` to plans is blocked. See [Context Management](./context-management.md) for the full 5-layer stack.
 
 ```jsonc
 {
