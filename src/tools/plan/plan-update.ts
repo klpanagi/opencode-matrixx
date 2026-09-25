@@ -104,9 +104,10 @@ export function createPlanUpdateTool(ctx?: PluginContext): ToolDefinition {
         const finalContent = frontMatterInjected
           ? `${serializePlanFrontMatter(DEFAULT_FRONT_MATTER)}${postEditContent}`
           : postEditContent
-        if (finalContent.length > MAX_PLAN_FILE_BYTES) {
+        const finalByteLength = Buffer.byteLength(finalContent, "utf8")
+        if (finalByteLength > MAX_PLAN_FILE_BYTES) {
           atomicWrite(resolved, originalContent)
-          return sizeExceededPayload(resolved, finalContent.length)
+          return sizeExceededPayload(resolved, finalByteLength)
         }
         if (finalContent !== postEditContent) {
           atomicWrite(resolved, finalContent)

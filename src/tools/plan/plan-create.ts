@@ -39,13 +39,6 @@ export function createPlanCreateTool(ctx?: PluginContext): ToolDefinition {
             filePath: resolved,
           })
         }
-        if (content.length > MAX_PLAN_FILE_BYTES) {
-          return JSON.stringify({
-            error: "size_exceeded",
-            message: `Plan exceeds 102400 bytes — split the plan into smaller plans (${content.length}/${MAX_PLAN_FILE_BYTES} bytes)`,
-            hint: "Reduce the plan below 102,400 bytes or split it into multiple .matrixx/plans/*.md files.",
-          })
-        }
         const contract = validatePlanContract(content)
         const id = basename(resolved, ".md")
         const sessionId = (context as Record<string, unknown>)?.sessionID as string | undefined ?? "unknown"
@@ -58,6 +51,14 @@ export function createPlanCreateTool(ctx?: PluginContext): ToolDefinition {
           todoCompleted: completed,
         }
         const contentWithMeta = upsertMetadataComment(content, meta)
+        const byteLength = Buffer.byteLength(contentWithMeta, "utf8")
+        if (byteLength > MAX_PLAN_FILE_BYTES) {
+          return JSON.stringify({
+            error: "size_exceeded",
+            message: `Plan exceeds 102400 bytes — split the plan into smaller plans (${byteLength}/${MAX_PLAN_FILE_BYTES} bytes)`,
+            hint: "Reduce the plan below 102,400 bytes or split it into multiple .matrixx/plans/*.md files.",
+          })
+        }
         const ok = atomicWrite(resolved, contentWithMeta)
         if (!ok) {
           return JSON.stringify({ error: "write_failed", message: `Failed to write ${resolved}` })

@@ -1,7 +1,7 @@
 /// <reference types="bun-types" />
 
 import { afterEach, beforeEach, describe, expect, test } from "bun:test"
-import { existsSync, mkdirSync, readFileSync, rmSync } from "node:fs"
+import { existsSync, mkdirSync, readFileSync, rmSync, statSync } from "node:fs"
 import { tmpdir } from "node:os"
 import { join } from "node:path"
 import type { ToolContext } from "@opencode-ai/plugin/tool"
@@ -58,6 +58,38 @@ describe("plan_create validation + size cap", () => {
     expect(typeof res.hint).toBe("string")
     expect(res.hint.length).toBeGreaterThan(0)
     expect(existsSync(planPath)).toBe(false)
+  })
+
+  test("counts the appended metadata comment so it never persists a plan plan_read would reject", async () => {
+    //#given content just under the cap in chars whose stored form plus metadata exceeds it in bytes
+    const content = "x".repeat(MAX_PLAN_FILE_BYTES - 50)
+    const createTool = createPlanCreateTool()
+    const planPath = join(testDir, ".matrixx/plans/boundary-plan.md")
+
+    //#when create
+    const res = JSON.parse(
+      await createTool.execute({ filePath: ".matrixx/plans/boundary-plan.md", content }, testContext(testDir)),
+    )
+
+    //#then the byte cap accounts for the metadata comment and nothing is persisted
+    expect(res.error).toBe("size_exceeded")
+    expect(existsSync(planPath)).toBe(false)
+  })
+
+  test("keeps a successfully created plan within the byte cap (readable by plan_read)", async () => {
+    //#given content comfortably under the cap
+    const content = `# Small\n\n${"y".repeat(MAX_PLAN_FILE_BYTES - 2000)}`
+    const createTool = createPlanCreateTool()
+    const planPath = join(testDir, ".matrixx/plans/roundtrip-plan.md")
+
+    //#when create
+    const res = JSON.parse(
+      await createTool.execute({ filePath: ".matrixx/plans/roundtrip-plan.md", content }, testContext(testDir)),
+    )
+
+    //#then it succeeds and the stored bytes stay within the cap plan_read enforces
+    expect(res.success).toBe(true)
+    expect(statSync(planPath).size).toBeLessThanOrEqual(MAX_PLAN_FILE_BYTES)
   })
 
   test("stores SSOT progress metadata (numbered-only, indented boxes ignored)", async () => {

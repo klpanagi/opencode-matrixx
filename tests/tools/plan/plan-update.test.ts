@@ -115,6 +115,29 @@ describe("plan_update contract validation + write guards", () => {
     expect(statSync(target).size).toBe(beforeSize)
   })
 
+  test("enforces the byte cap for multibyte content (char count under cap, byte count over)", async () => {
+    //#given a small plan and its exact pre-edit bytes
+    await createTool.execute({ filePath: ".matrixx/plans/byte-cap-plan.md", content: "# Title\nline2\n" }, ctx)
+    const target = planPath(testDir, "byte-cap-plan.md")
+    const before = readFileSync(target, "utf-8")
+    const beforeSize = statSync(target).size
+    const anchor = await anchorFor("byte-cap-plan.md", "# Title")
+
+    //#when an edit appends a 3-byte-per-char run under the cap in chars but over it in bytes
+    const multibyte = "€".repeat(Math.ceil((MAX_PLAN_FILE_BYTES + 500) / 3))
+    const res = JSON.parse(
+      await updateTool.execute(
+        { filePath: ".matrixx/plans/byte-cap-plan.md", edits: [{ op: "append", pos: anchor, lines: [multibyte] }] },
+        ctx,
+      ),
+    )
+
+    //#then the byte cap still rejects it and the file is left unchanged
+    expect(res.error).toBe("size_exceeded")
+    expect(readFileSync(target, "utf-8")).toBe(before)
+    expect(statSync(target).size).toBe(beforeSize)
+  })
+
   test("injects front-matter once on the first edit and not again (idempotent)", async () => {
     //#given a plan without front-matter
     await createTool.execute({ filePath: ".matrixx/plans/fm-plan.md", content: "# Title\nline2\nline3\n" }, ctx)
