@@ -33,9 +33,9 @@ export const MISSION_CONTINUATION_PROMPT = `${createSystemDirective(SystemDirect
 You have an active work plan with incomplete tasks. Continue working.
 
 RULES:
-- **FIRST**: Read the plan file NOW to check exact current progress — count remaining \`- [ ]\` tasks
+- **FIRST**: Call \`plan_tasks(planPath=".matrixx/plans/{PLAN_NAME}.md")\` to check exact current progress — count remaining \`- [ ]\` tasks
 - Proceed without asking for permission
-- **IMMEDIATELY AFTER COMPLETION**: Mark \`- [ ]\` → \`- [x]\` in the plan file. This is MANDATORY — unmarked checkboxes = lost progress.
+- **IMMEDIATELY AFTER COMPLETION**: Call \`plan_read\` to get LINE#ID anchors, then \`plan_update\` to mark \`- [ ]\` → \`- [x]\`. This is MANDATORY — unmarked checkboxes = lost progress.
 - Use the notepad at .matrixx/notepads/{PLAN_NAME}/ to record learnings
 - Do not stop until all tasks are complete
 - If blocked, document the blocker and move to the next task`
