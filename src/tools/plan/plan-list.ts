@@ -1,9 +1,16 @@
 import { existsSync, readdirSync, statSync } from "node:fs"
 import { join } from "node:path"
 import { type ToolDefinition, tool } from "@opencode-ai/plugin/tool"
+import {
+  countPlanProgressFromContent,
+  type PlanProgress,
+  readPlanFile,
+} from "../../features/mission-state"
 import type { PluginContext } from "../../plugin/types"
 import { PLAN_FILENAME_KEBAB_REGEX, PLANS_DIR } from "./constants"
 import { resolveDirectory } from "./types"
+
+type PlanListProgress = PlanProgress | { unreadable: true }
 
 export function createPlanListTool(ctx?: PluginContext): ToolDefinition {
   return tool({
@@ -25,12 +32,16 @@ export function createPlanListTool(ctx?: PluginContext): ToolDefinition {
             const filePath = join(plansDir, fileName)
             try {
               const stat = statSync(filePath)
+              const content = readPlanFile(filePath)
+              const progress: PlanListProgress =
+                content === null ? { unreadable: true } : countPlanProgressFromContent(content)
               return {
                 fileName,
                 filePath,
                 mtime: stat.mtime.toISOString(),
                 mtimeMs: stat.mtimeMs,
                 size: stat.size,
+                progress,
               }
             } catch {
               return null

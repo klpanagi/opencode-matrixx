@@ -63,10 +63,11 @@ describe("plan_* tools unaffected by enforcement", () => {
 
     //#when read
     const read = JSON.parse(await readTool.execute({ filePath: ".matrixx/plans/regression-plan.md" }, ctx))
-    //#then hashline-tagged content returned
+    //#then hashline-tagged content returned (single format)
     expect(read.error).toBeUndefined()
-    expect(read.content).toContain("# Title")
+    expect("content" in read).toBe(false)
     expect(read.hashline).toContain("1#")
+    expect(read.hashline).toContain("# Title")
 
     //#when update via hashline anchor
     const firstLine: string = read.hashline.split("\n")[0]
@@ -77,7 +78,9 @@ describe("plan_* tools unaffected by enforcement", () => {
     )
     //#then update applied (plain string result, not JSON)
     expect(updated).toContain("Updated")
-    const read2 = JSON.parse(await readTool.execute({ filePath: ".matrixx/plans/regression-plan.md" }, ctx))
+    const read2 = JSON.parse(
+      await readTool.execute({ filePath: ".matrixx/plans/regression-plan.md", format: "content" }, ctx),
+    )
     expect(read2.content).toContain("# New Title")
 
     //#when list
@@ -114,7 +117,9 @@ describe("plan_* tools unaffected by enforcement", () => {
     )
     //#then append applied (plain string result, not JSON)
     expect(updated).toContain("Updated")
-    const read2 = JSON.parse(await readTool.execute({ filePath: ".matrixx/plans/append-plan.md" }, ctx))
+    const read2 = JSON.parse(
+      await readTool.execute({ filePath: ".matrixx/plans/append-plan.md", format: "content" }, ctx),
+    )
     expect(read2.content).toContain("# B")
   })
 

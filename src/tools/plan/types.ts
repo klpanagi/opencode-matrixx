@@ -41,8 +41,20 @@ export interface PlanCreateArgs {
   content: string
 }
 
+export type PlanReadFormat = "hashline" | "content"
+
+export interface PlanOutlineEntry {
+  level: 2 | 3
+  text: string
+  line: number
+  anchor: string
+}
+
 export interface PlanReadArgs {
   filePath: string
+  format?: PlanReadFormat
+  offset?: number
+  limit?: number
 }
 
 export interface PlanUpdateArgs {

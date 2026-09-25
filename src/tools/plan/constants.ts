@@ -7,6 +7,8 @@ export const PLANS_DIR = ".matrixx/plans"
 
 export const MAX_PLAN_FILE_BYTES = 102_400
 
+export const MAX_PLAN_READ_RENDERED_BYTES = 40_000
+
 export const PLAN_FILENAME_KEBAB_REGEX = /^[a-z0-9-]+\.md$/
 
 export const PLAN_BASENAME_KEBAB_REGEX = /^[a-z0-9-]+$/
