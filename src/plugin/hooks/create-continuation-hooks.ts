@@ -7,6 +7,7 @@ import {
   createCompactionTodoPreserverHook,
   createEvolutionCompressorHook,
   createEvolutionHitlHook,
+  createNudgeLoopBreakerHook,
   createPlanPersister,
   createStopContinuationGuardHook,
   createTaskContinuationEnforcer,
@@ -24,6 +25,7 @@ export type ContinuationHooks = {
   todoContinuationEnforcer: ReturnType<typeof createTodoContinuationEnforcer> | null
   taskContinuationEnforcer: ReturnType<typeof createTaskContinuationEnforcer> | null
   unstableAgentBabysitter: ReturnType<typeof createUnstableAgentBabysitter> | null
+  nudgeLoopBreaker: ReturnType<typeof createNudgeLoopBreakerHook> | null
   backgroundNotificationHook: ReturnType<typeof createBackgroundNotificationHook> | null
   architectHook: ReturnType<typeof createArchitectHook> | null
   planPersister: ReturnType<typeof createPlanPersister> | null
@@ -110,6 +112,10 @@ export function createContinuationHooks(args: {
         createUnstableAgentBabysitter({ ctx, backgroundManager, pluginConfig }))
     : null
 
+  const nudgeLoopBreaker = isHookEnabled("nudge-loop-breaker")
+    ? safeHook("nudge-loop-breaker", () => createNudgeLoopBreakerHook(ctx))
+    : null
+
   if (sessionRecovery) {
     const onAbortCallbacks: Array<(sessionID: string) => void> = []
     const onRecoveryCompleteCallbacks: Array<(sessionID: string) => void> = []
@@ -172,6 +178,7 @@ export function createContinuationHooks(args: {
     todoContinuationEnforcer,
     taskContinuationEnforcer,
     unstableAgentBabysitter,
+    nudgeLoopBreaker,
     backgroundNotificationHook,
     architectHook,
     planPersister,

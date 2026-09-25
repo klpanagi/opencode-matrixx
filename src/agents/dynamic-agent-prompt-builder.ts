@@ -6,6 +6,7 @@ import {
 import { type DcpCompressionMode, resolveDcpCompressionMode } from "../shared/dcp-guidance"
 import { log } from "../shared/logger"
 import { truncateDescription } from "../shared/truncate-description"
+import { appendModelDirective } from "./model-directives"
 import type { AgentPromptMetadata } from "./types"
 
 export interface AvailableAgent {
@@ -518,39 +519,39 @@ function readDisciplineFile(): { text: string; version: string; path: string } {
   return { text, version, path: p }
 }
 
-function loadDiscipline(kind: "full" | "compact", hasGrepGlob = true, dcpMode: DcpCompressionMode = resolveDcpCompressionMode()): string {
+function loadDiscipline(kind: "full" | "compact", hasGrepGlob = true, dcpMode: DcpCompressionMode = resolveDcpCompressionMode(), modelID?: string): string {
   const fallbackKey = `${hasGrepGlob ? "1" : "0"}:${dcpMode}`
   const runtimeCache = kind === "full" ? cachedRuntimeFull : cachedRuntimeCompact
   const fallbackCache = kind === "full" ? cachedFallbackFull : cachedFallbackCompact
   const label = kind === "full" ? "context-discipline" : "compact-discipline"
-  if (runtimeCache[fallbackKey]) return runtimeCache[fallbackKey]
-  if (fallbackCache[fallbackKey]) return fallbackCache[fallbackKey]
+  if (runtimeCache[fallbackKey]) return appendModelDirective(runtimeCache[fallbackKey], modelID)
+  if (fallbackCache[fallbackKey]) return appendModelDirective(fallbackCache[fallbackKey], modelID)
   try {
     const { text, version, path } = readDisciplineFile()
     runtimeCache[fallbackKey] = text
     log(`${label} loaded`, { path, version })
-    return text
+    return appendModelDirective(text, modelID)
   } catch (e) {
     log(`${label} fallback`, { error: String(e) })
     const fallback = kind === "full" ? fallbackFullDiscipline(hasGrepGlob, dcpMode) : fallbackCompactDiscipline(hasGrepGlob, dcpMode)
     fallbackCache[fallbackKey] = fallback
-    return fallback
+    return appendModelDirective(fallback, modelID)
   }
 }
-function loadContextModeDiscipline(hasGrepGlob = true, dcpMode: DcpCompressionMode = resolveDcpCompressionMode()): string {
-  return loadDiscipline("full", hasGrepGlob, dcpMode)
+function loadContextModeDiscipline(hasGrepGlob = true, dcpMode: DcpCompressionMode = resolveDcpCompressionMode(), modelID?: string): string {
+  return loadDiscipline("full", hasGrepGlob, dcpMode, modelID)
 }
 
 
-export function buildContextDisciplineSection(hasContextMode = false, hasGrepGlob = true, dcpMode: DcpCompressionMode = resolveDcpCompressionMode()): string {
+export function buildContextDisciplineSection(hasContextMode = false, hasGrepGlob = true, dcpMode: DcpCompressionMode = resolveDcpCompressionMode(), modelID?: string): string {
   if (!hasContextMode) return ""
-  return loadContextModeDiscipline(hasGrepGlob, dcpMode)
+  return loadContextModeDiscipline(hasGrepGlob, dcpMode, modelID)
 }
 
-export function buildHeadroomSection(hasHeadroom = false, dcpMode: DcpCompressionMode = resolveDcpCompressionMode()): string {
+export function buildHeadroomSection(hasHeadroom = false, dcpMode: DcpCompressionMode = resolveDcpCompressionMode(), modelID?: string): string {
   if (!hasHeadroom) return "";
   const dcpClause = headroomDcpClause(dcpMode);
-  return `### Headroom Proxy Discipline (ALWAYS when headroom_* tools present)
+  return appendModelDirective(`### Headroom Proxy Discipline (ALWAYS when headroom_* tools present)
 
 | Scenario | Tool / Action |
 |----------|----------------|
@@ -558,21 +559,21 @@ export function buildHeadroomSection(hasHeadroom = false, dcpMode: DcpCompressio
 | Stats / diagnostics | headroom_stats or headroom dashboard |
 | Proxy not running | headroom doctor / check http://127.0.0.1:8787 (HEADROOM_PROXY_URL) |
 
-**Headroom L4 is transport-level (CacheAligner->ContentRouter->CCR). It complements L1 RTK, L2 context-mode, L3 DCP — do not duplicate their discipline. Compression ownership: the \`compress\` tool is DCP's — never call it bare without message IDs or invoke /dcp-compress; proactive on closed sections with IDs + headroom/ctx_stats signals.${dcpClause}**`;
+**Headroom L4 is transport-level (CacheAligner->ContentRouter->CCR). It complements L1 RTK, L2 context-mode, L3 DCP — do not duplicate their discipline. Compression ownership: the \`compress\` tool is DCP's — never call it bare without message IDs or invoke /dcp-compress; proactive on closed sections with IDs + headroom/ctx_stats signals.${dcpClause}**`, modelID);
 }
 
 
-function loadCompactContextDiscipline(hasGrepGlob = true, dcpMode: DcpCompressionMode = resolveDcpCompressionMode()): string {
-  return loadDiscipline("compact", hasGrepGlob, dcpMode)
+function loadCompactContextDiscipline(hasGrepGlob = true, dcpMode: DcpCompressionMode = resolveDcpCompressionMode(), modelID?: string): string {
+  return loadDiscipline("compact", hasGrepGlob, dcpMode, modelID)
 }
 
 
-export function buildCompactContextDisciplineSection(hasContextMode = false, hasGrepGlob = true, dcpMode: DcpCompressionMode = resolveDcpCompressionMode()): string {
+export function buildCompactContextDisciplineSection(hasContextMode = false, hasGrepGlob = true, dcpMode: DcpCompressionMode = resolveDcpCompressionMode(), modelID?: string): string {
   if (!hasContextMode) return "";
-  return loadCompactContextDiscipline(hasGrepGlob, dcpMode);
+  return loadCompactContextDiscipline(hasGrepGlob, dcpMode, modelID);
 }
 
-export function buildExploreDisciplineSection(hasContextMode = false, hasHeadroom = false, hasGrepGlob = true): string {
+export function buildExploreDisciplineSection(hasContextMode = false, hasHeadroom = false, hasGrepGlob = true, modelID?: string): string {
   if (!hasContextMode && !hasHeadroom) return "";
   const parts: string[] = [];
   if (hasContextMode) {
@@ -581,7 +582,7 @@ export function buildExploreDisciplineSection(hasContextMode = false, hasHeadroo
   if (hasHeadroom) {
     parts.push("Use headroom_retrieve / headroom_search for compressed history — NEVER re-read full history.");
   }
-  return `### Context Discipline (when available)\n\n${parts.join(" ")}`;
+  return appendModelDirective(`### Context Discipline (when available)\n\n${parts.join(" ")}`, modelID);
 }
 
 export function buildUltraworkSection(

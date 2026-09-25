@@ -2,6 +2,7 @@ import type { MatrixxConfig } from "../config"
 import type { CreatedHooks } from "../create-hooks"
 import {
   setSessionAgent,
+  setSessionModel,
 } from "../features/session-state"
 import { hasConnectedProvidersCache } from "../shared"
 import {
@@ -50,6 +51,10 @@ export function createChatMessageHandler(args: {
   ): Promise<void> => {
     if (input.agent) {
       setSessionAgent(input.sessionID, input.agent)
+    }
+
+    if (input.model) {
+      setSessionModel(input.sessionID, `${input.model.providerID}/${input.model.modelID}`)
     }
 
     const message = output.message

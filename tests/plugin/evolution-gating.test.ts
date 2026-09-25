@@ -1,5 +1,5 @@
 import { describe, expect, test } from "bun:test"
-import { mkdtempSync } from "node:fs"
+import { mkdtempSync, readFileSync } from "node:fs"
 import { tmpdir } from "node:os"
 import * as path from "node:path"
 import type { HookName, MatrixxConfig } from "../../src/config"
@@ -123,6 +123,33 @@ describe("T2 evolution tool gating", () => {
     expect(pendingLs).toBe(false)
     expect(auditTail).toBe(false)
     expect(EVOLUTION_TEMPLATE).toContain("evolution` tool")
+  })
+})
+
+describe("DCP loop-hardening hook names", () => {
+  test("dcp-nudge-sanitizer and nudge-loop-breaker are registered literals", () => {
+    //#given the hook name schema
+    //#when parsing the new hook names
+    const sanitizer = HookNameSchema.safeParse("dcp-nudge-sanitizer")
+    const loopBreaker = HookNameSchema.safeParse("nudge-loop-breaker")
+
+    //#then both are accepted
+    expect(sanitizer.success).toBe(true)
+    expect(loopBreaker.success).toBe(true)
+  })
+
+  test("context-mode-enforcer literal is declared exactly once", () => {
+    //#given the schema source
+    const source = readFileSync(
+      new URL("../../src/config/schema/hooks.ts", import.meta.url),
+      "utf8",
+    )
+
+    //#when counting the literal occurrences
+    const occurrences = source.split('"context-mode-enforcer"').length - 1
+
+    //#then the duplicate is gone
+    expect(occurrences).toBe(1)
   })
 })
 

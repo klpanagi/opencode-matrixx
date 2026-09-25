@@ -222,7 +222,9 @@
               "document-reader-guard",
               "knowledge-hub-guard",
               "knowledge-hub-injector",
-              "knowledge-hub-search-nudge"
+              "knowledge-hub-search-nudge",
+              "dcp-nudge-sanitizer",
+              "nudge-loop-breaker"
             ]
           },
           {}
@@ -4012,6 +4014,42 @@
                         "pattern": "^\\d+%$"
                       }
                     ]
+                  },
+                  "modelMaxLimits": {
+                    "type": "object",
+                    "propertyNames": {
+                      "type": "string",
+                      "pattern": "^[^/]+\\/[^/]+$"
+                    },
+                    "additionalProperties": {
+                      "anyOf": [
+                        {
+                          "type": "number"
+                        },
+                        {
+                          "type": "string",
+                          "pattern": "^\\d+%$"
+                        }
+                      ]
+                    }
+                  },
+                  "modelMinLimits": {
+                    "type": "object",
+                    "propertyNames": {
+                      "type": "string",
+                      "pattern": "^[^/]+\\/[^/]+$"
+                    },
+                    "additionalProperties": {
+                      "anyOf": [
+                        {
+                          "type": "number"
+                        },
+                        {
+                          "type": "string",
+                          "pattern": "^\\d+%$"
+                        }
+                      ]
+                    }
                   },
                   "nudgeFrequency": {
                     "type": "integer",

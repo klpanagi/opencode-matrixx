@@ -57,6 +57,7 @@ function isChatParamsOutput(raw: unknown): raw is ChatParamsOutput {
   return isRecord(raw.options)
 }
 
+import { setSessionModel } from "../features/session-state"
 import { clearSessionTemperature, getSessionTemperature } from "../shared/session-state"
 
 export function createChatParamsHandler(args: {
@@ -66,6 +67,8 @@ export function createChatParamsHandler(args: {
     const normalizedInput = buildChatParamsInput(input)
     if (!normalizedInput) return
     if (!isChatParamsOutput(output)) return
+
+    setSessionModel(normalizedInput.sessionID, `${normalizedInput.model.providerID}/${normalizedInput.model.modelID}`)
 
     await args.anthropicEffort?.["chat.params"]?.(normalizedInput, output)
 

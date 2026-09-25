@@ -12,6 +12,7 @@ export { createCompactionTodoPreserverHook } from "./compaction-todo-preserver";
 export { createContextModeEnforcerHook } from "./context-mode-enforcer";
 export { type ContextWindowLimitRecoveryOptions, type ContextWindowLimitRecoveryOptions as AnthropicContextWindowLimitRecoveryOptions, createContextWindowLimitRecoveryHook, createContextWindowLimitRecoveryHook as createAnthropicContextWindowLimitRecoveryHook } from "./context-window-limit-recovery";
 export { createContextWindowMonitorHook } from "./context-window-monitor";
+export { createDcpNudgeSanitizerHook } from "./dcp-nudge-sanitizer";
 export { createDelegateTaskRetryHook } from "./delegate-task-retry";
 export { createDesignIntentPreserverHook } from "./design-intent-preserver"
 export { createDirectoryAgentsInjectorHook } from "./directory-agents-injector";
@@ -35,6 +36,7 @@ export { createKnowledgeHubSearchNudgeHook } from "./knowledge-hub-search-nudge"
 export { createMatrixLoopHook, type MatrixLoopHook } from "./matrix-loop";
 export { createMouseNotepadHook } from "./mouse-notepad";
 export { createNonInteractiveEnvHook } from "./non-interactive-env";
+export { createNudgeLoopBreakerHook } from "./nudge-loop-breaker";
 export { createOracleMdOnlyHook } from "./oracle-md-only";
 export { createPlanPersister } from "./plan-persister"
 export { createPostReadInjectorHook } from "./post-read-injector";

@@ -103,3 +103,45 @@ describe("P2: hook ordering in messages-transform pipeline", () => {
     ])
   })
 })
+
+describe("DCP loop-hardening: sanitizer ordering", () => {
+  afterEach(() => {
+    _resetMessagesTransformCacheForTesting()
+  })
+
+  test("runs evolutionHitl -> dcpNudgeSanitizer -> toolPairValidator", async () => {
+    //#given
+    const callOrder: string[] = []
+    const evolutionHitlHook = mock(async () => {
+      callOrder.push("evolutionHitl")
+    })
+    const dcpNudgeSanitizerHook = mock(async () => {
+      callOrder.push("dcpNudgeSanitizer")
+    })
+    const toolPairValidatorHook = mock(async () => {
+      callOrder.push("toolPairValidator")
+    })
+
+    const handler = createMessagesTransformHandler({
+      hooks: {
+        evolutionHitl: {
+          "experimental.chat.messages.transform": evolutionHitlHook,
+        },
+        dcpNudgeSanitizer: {
+          "experimental.chat.messages.transform": dcpNudgeSanitizerHook,
+        },
+        toolPairValidator: {
+          "experimental.chat.messages.transform": toolPairValidatorHook,
+        },
+      } as Parameters<typeof createMessagesTransformHandler>[0]["hooks"],
+    })
+
+    const msgs: MessageWithParts[] = [makeMessage("user", "ses_dcp", "msg_1")]
+
+    //#when
+    await handler({} as Record<string, never>, { messages: msgs })
+
+    //#then
+    expect(callOrder).toEqual(["evolutionHitl", "dcpNudgeSanitizer", "toolPairValidator"])
+  })
+})

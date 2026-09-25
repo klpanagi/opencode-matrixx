@@ -62,12 +62,13 @@ const HookNameEnum = z.enum([
   "evolution-compressor",
   "evolution-hitl",
   "context-mode-enforcer",
-  "context-mode-enforcer",
   "task-edit-guard",
   "document-reader-guard",
   "knowledge-hub-guard",
   "knowledge-hub-injector",
   "knowledge-hub-search-nudge",
+  "dcp-nudge-sanitizer",
+  "nudge-loop-breaker",
 ])
 
 // Deprecated alias — remove in v2.7 (BREAKING: rename anthropic- → generic)

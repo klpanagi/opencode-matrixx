@@ -66,10 +66,9 @@ export function deepMergeProfile(
  * NOTE: DCP also supports per-model context limits via modelMaxLimits
  * and modelMinLimits in the compress section. These allow fine-grained
  * control per LLM provider/model (e.g., {"anthropic/claude-sonnet-4-20250514": "80%"}).
- * Matrixx does not currently expose these in its schema — if needed, add
- * them to DcpCompressOverrideSchema and propagate here.
+ * Exposed via DcpCompressOverrideSchema and propagated below.
  */
-function buildInlineConfig(profile: string, options?: DcpSwitchProfileOptions): Record<string, unknown> {
+export function buildInlineConfig(profile: string, options?: DcpSwitchProfileOptions): Record<string, unknown> {
   const dcpConfig = options?.pluginConfig?.dcp
   const base = dcpConfig?.base ? (dcpConfig.base as Record<string, unknown>) : {}
   const validProfiles = BUILTIN_DCP_PROFILES as unknown as Record<string, Record<string, unknown>>
@@ -117,6 +116,12 @@ function buildInlineConfig(profile: string, options?: DcpSwitchProfileOptions): 
       protectTags: (profileCompress.protectTags as boolean) ?? false,
       protectUserMessages:
         (profileCompress.protectUserMessages as boolean) ?? (compressBase.protectUserMessages as boolean) ?? false,
+      modelMaxLimits:
+        (profileCompress.modelMaxLimits as Record<string, string | number> | undefined) ??
+        (compressBase.modelMaxLimits as Record<string, string | number> | undefined),
+      modelMinLimits:
+        (profileCompress.modelMinLimits as Record<string, string | number> | undefined) ??
+        (compressBase.modelMinLimits as Record<string, string | number> | undefined),
     },
     turnProtection: {
       enabled: (profileTurn.enabled as boolean) ?? true,

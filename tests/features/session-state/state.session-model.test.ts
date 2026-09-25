@@ -1,5 +1,5 @@
 import { describe, expect, test } from "bun:test"
-import { isMainSessionCandidate } from "./state"
+import { clearSessionModel, getSessionModel, isMainSessionCandidate, setSessionModel } from "../../../src/features/session-state/state"
 
 describe("isMainSessionCandidate", () => {
   test("//#given a top-level session without metadata\n//#when checked\n//#then it is a main session candidate", () => {
@@ -36,5 +36,41 @@ describe("isMainSessionCandidate", () => {
 
   test("//#given undefined session info\n//#when checked\n//#then it is NOT a main session candidate", () => {
     expect(isMainSessionCandidate(undefined)).toBe(false)
+  })
+})
+
+describe("session model state", () => {
+  test("stores and retrieves a session model id", () => {
+    //#given
+    const sid = "ses_test_model"
+
+    //#when
+    setSessionModel(sid, "deepseek/deepseek-v4.1-flash")
+
+    //#then
+    expect(getSessionModel(sid)).toBe("deepseek/deepseek-v4.1-flash")
+  })
+
+  test("clears a stored session model id", () => {
+    //#given
+    const sid = "ses_test_model_clear"
+    setSessionModel(sid, "anthropic/claude-sonnet-4")
+
+    //#when
+    clearSessionModel(sid)
+
+    //#then
+    expect(getSessionModel(sid)).toBeUndefined()
+  })
+
+  test("returns undefined for an unknown session", () => {
+    //#given
+    const sid = "ses_test_model_unknown"
+
+    //#when
+    const model = getSessionModel(sid)
+
+    //#then
+    expect(model).toBeUndefined()
   })
 })

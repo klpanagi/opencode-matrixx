@@ -11,9 +11,14 @@ import { z } from "zod"
 
 // ─── Sub-schemas ──────────────────────────────────────────────────────────
 
+const dcpLimitValue = z.union([z.number(), z.string().regex(/^\d+%$/)])
+const dcpModelLimitKey = z.string().regex(/^[^/]+\/[^/]+$/)
+
 export const DcpCompressOverrideSchema = z.object({
   maxContextLimit: z.union([z.number(), z.string().regex(/^\d+%$/)]).optional(),
   minContextLimit: z.union([z.number(), z.string().regex(/^\d+%$/)]).optional(),
+  modelMaxLimits: z.record(dcpModelLimitKey, dcpLimitValue).optional(),
+  modelMinLimits: z.record(dcpModelLimitKey, dcpLimitValue).optional(),
   nudgeFrequency: z.number().int().min(1).optional(),
   iterationNudgeThreshold: z.number().int().min(1).optional(),
   nudgeForce: z.enum(["strong", "soft"]).optional(),
@@ -113,9 +118,11 @@ export const BUILTIN_DCP_PROFILES = {
     compress: {
       maxContextLimit: "20%",
       minContextLimit: "10%",
-      nudgeFrequency: 1,
-      nudgeForce: "strong" as const,
-      iterationNudgeThreshold: 1,
+      nudgeFrequency: 3,
+      nudgeForce: "soft" as const,
+      iterationNudgeThreshold: 6,
+      modelMaxLimits: { "deepseek/deepseek-v4.1-flash": "95%" },
+      modelMinLimits: { "deepseek/deepseek-v4.1-flash": "90%" },
     },
     turnProtection: { enabled: false },
     experimental: { allowSubAgents: false },

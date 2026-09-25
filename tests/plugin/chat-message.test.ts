@@ -1,6 +1,7 @@
 import { describe, expect, test } from "bun:test"
 import type { MatrixxConfig } from "../../src/config"
 import type { CreatedHooks } from "../../src/create-hooks"
+import { getSessionModel } from "../../src/features/session-state"
 import { createChatMessageHandler } from "../../src/plugin/chat-message"
 import type { PluginContext } from "../../src/plugin/types"
 
@@ -115,5 +116,21 @@ describe("createChatMessageHandler - first message variant", () => {
 
     //#then - gate should still be marked as applied
     expect(args._appliedSessions).toContain("test-session")
+  })
+})
+
+describe("createChatMessageHandler - session model capture", () => {
+  test("stores the session model id from the message input", async () => {
+    //#given
+    const args = createMockHandlerArgs({ shouldOverride: false })
+    const handler = createChatMessageHandler(args)
+    const input = createMockInput("morpheus", { providerID: "deepseek", modelID: "deepseek-v4.1-flash" })
+    const output = createMockOutput()
+
+    //#when
+    await handler(input, output)
+
+    //#then
+    expect(getSessionModel("test-session")).toBe("deepseek/deepseek-v4.1-flash")
   })
 })
