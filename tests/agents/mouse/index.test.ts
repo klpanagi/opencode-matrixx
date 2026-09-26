@@ -10,12 +10,11 @@ import {
   buildTodoDisciplineSection,
   buildVerificationTable,
 } from "../../../src/agents/mouse/shared"
-import {
-  buildMousePrompt,
-  createMouseAgentWithOverrides,
-  getMousePromptSource,
-  MOUSE_DEFAULTS,
-} from "../../../src/agents/mouse/index"
+
+type AgentConfigWithModelConfig = {
+  thinking?: { type: "enabled" | "disabled"; budgetTokens?: number }
+  reasoningEffort?: "low" | "medium" | "high" | "xhigh"
+}
 
 describe("createMouseAgentWithOverrides", () => {
   describe("honored fields", () => {
@@ -263,6 +262,45 @@ describe("createMouseAgentWithOverrides", () => {
 
       })
 
+  // C7 fence: the file-backed task system is unconditional and the legacy todo
+  // tools are denied for mouse, so NO mouse prompt variant may name them.
+  const LEGACY_TODO_TOOL = /todowrite|todoread|TodoWrite/i
+  const VARIANT_MODELS = [
+    "anthropic/claude-sonnet-4-5",
+    "openai/gpt-5.2",
+    "opencode-go/deepseek-v4-flash",
+    "opencode-go/mimo-v2.5",
+    "opencode-go/qwen3.7-plus",
+  ]
+
+  test.each(VARIANT_MODELS)("%s prompt names no legacy todo tool", (model) => {
+    //#given a mouse model variant
+
+    //#when
+    const prompt = buildMousePrompt(model)
+
+    //#then
+    expect(prompt).not.toContain("todowrite")
+    expect(prompt).not.toContain("todoread")
+    expect(prompt).not.toMatch(LEGACY_TODO_TOOL)
+  })
+
+  test("every shared prompt utility section names no legacy todo tool", () => {
+    //#given the shared section builders
+
+    //#when
+    const sections = [
+      buildConstraintsSection(),
+      buildTodoDisciplineSection(),
+      buildVerificationTable(),
+    ]
+
+    //#then
+    for (const section of sections) {
+      expect(section).not.toMatch(LEGACY_TODO_TOOL)
+    }
+  })
+
   describe("prompt composition", () => {
     test("base prompt contains discipline constraints", () => {
       // given
@@ -315,11 +353,6 @@ describe("createMouseAgentWithOverrides", () => {
       expect(appendIndex).toBeGreaterThan(baseEndIndex)
     })
   })
-
-  type AgentConfigWithModelConfig = {
-    thinking?: { type: "enabled" | "disabled"; budgetTokens?: number }
-    reasoningEffort?: "low" | "medium" | "high" | "xhigh"
-  }
 
   describe("model-specific thinking/reasoning config", () => {
     test("Claude model gets thinking config", () => {
