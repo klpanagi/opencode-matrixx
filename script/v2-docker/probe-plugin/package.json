@@ -1,0 +1,9 @@
+{
+  "name": "matrixx-v2-probe",
+  "version": "1.0.0",
+  "private": true,
+  "type": "module",
+  "opencode": {
+    "server": "./index.mjs"
+  }
+}

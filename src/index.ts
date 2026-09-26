@@ -8,6 +8,8 @@ import { createHooks } from "./create-hooks"
 import { createManagers } from "./create-managers"
 import { createTools } from "./create-tools"
 import { createCompactionHandler } from "./plugin/compaction"
+import { createV1ContextFromV2 } from "./plugin/v2/context-adapter"
+import { toV2HookDeps } from "./plugin/v2/hook-deps"
 import {
   collectAgentPermissions,
   createPermissionEvaluateHandler,
@@ -107,23 +109,73 @@ const pluginConfig = await loadPluginConfig(ctx.directory, ctx)
 const v2Plugin = Plugin.define({
   id: "matrixx",
   setup: async (ctx) => {
-    const directory = ctx.location.directory
-    const pluginConfig = await loadPluginConfig(directory, ctx)
+    // The hook tiers are written against the V1 context, which carries the SDK
+    // client. V2 supplies no client, so one is derived from `ctx.location` and
+    // pointed at the same server; otherwise `client.session.messages`,
+    // `client.tui.showToast` and the rest would be unreachable on V2.
+    const { ctx: v1Ctx, serverUrlSource } = await createV1ContextFromV2(ctx)
+    log("[MatrixxPlugin] V2 setup resolved the V1 context", {
+      directory: v1Ctx.directory,
+      serverUrl: v1Ctx.serverUrl.toString(),
+      serverUrlSource,
+    })
+
+    startTmuxCheck()
+
+    const pluginConfig = await loadPluginConfig(v1Ctx.directory, v1Ctx)
     setContextModeForPrompts(pluginConfig.context_mode)
 
     if (pluginConfig.dcp?.default_profile) {
       switchProfile(pluginConfig.dcp.default_profile, { pluginConfig })
     }
 
-    // Every handler built from the hook tiers needs the V1 PluginContext
-    // (client, project, worktree). That adapter arrives with the Wave 4 loader
-    // removal, so until then the V2 hooks are registered and disposed but have
-    // no handler to delegate to. See .matrixx/notepads — issues.md, task 3.1.
-    //
-    // The permission tier is the exception: it needs only the resolved config,
-    // so the ordered deny-over-allow evaluation and the read-only agent denies
-    // are enforced on V2 today rather than waiting for the adapter.
+    const disabledHooks = new Set(pluginConfig.disabled_hooks ?? [])
+    const isHookEnabled = (hookName: HookName): boolean => !disabledHooks.has(hookName)
+    const safeHookEnabled = pluginConfig.experimental?.safe_hook_creation ?? true
+
+    const firstMessageVariantGate = createFirstMessageVariantGate()
+
+    const tmuxConfig = {
+      enabled: pluginConfig.tmux?.enabled ?? false,
+      layout: pluginConfig.tmux?.layout ?? "main-vertical",
+      main_pane_size: pluginConfig.tmux?.main_pane_size ?? 60,
+      main_pane_min_width: pluginConfig.tmux?.main_pane_min_width ?? 120,
+      agent_pane_min_width: pluginConfig.tmux?.agent_pane_min_width ?? 40,
+    }
+
+    const managers = createManagers({
+      ctx: v1Ctx,
+      pluginConfig,
+      tmuxConfig,
+      modelCacheState: createModelCacheState(),
+      backgroundNotificationHookEnabled: isHookEnabled("background-notification"),
+    })
+
+    const toolsResult = await createTools({ ctx: v1Ctx, pluginConfig, managers })
+    setAvailableToolNames(Object.keys(toolsResult.filteredTools))
+
+    const hooks = createHooks({
+      ctx: v1Ctx,
+      pluginConfig,
+      backgroundManager: managers.backgroundManager,
+      isHookEnabled,
+      safeHookEnabled,
+      builtinSkills: toolsResult.builtinSkills,
+      availableSkills: toolsResult.availableSkills,
+    })
+
+    const pluginInterface = createPluginInterface({
+      ctx: v1Ctx,
+      pluginConfig,
+      firstMessageVariantGate,
+      managers,
+      hooks,
+      tools: toolsResult.filteredTools,
+    })
+
+    const disposeTools = await toolsResult.registerV2Tools(ctx, toolsResult.v2Tools)
     const disposeHooks = await registerV2Hooks(ctx, {
+      ...toV2HookDeps({ pluginInterface, hooks }),
       permissionEvaluate: createPermissionEvaluateHandler({
         policies: pluginConfig.experimental?.policies,
         agentPermissions: collectAgentPermissions(pluginConfig.agents),
@@ -131,13 +183,15 @@ const v2Plugin = Plugin.define({
       }),
     })
     const disposeComponents = await registerV2Components(ctx, {
-      directory,
+      directory: v1Ctx.directory,
       pluginConfig,
+      availableToolNames: Object.keys(toolsResult.filteredTools),
     })
 
     return async () => {
       await disposeComponents()
       await disposeHooks()
+      await disposeTools.dispose()
     }
   },
 })
