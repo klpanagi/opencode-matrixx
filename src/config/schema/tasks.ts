@@ -6,15 +6,17 @@ import { z } from "zod"
  *
  * Legacy locations still parse (backward compat) and act as fallback
  * with LOWER precedence — explicit `tasks.*` always wins:
- * - `experimental.task_system` / `new_task_system_enabled` → `tasks.enabled`
  * - `morpheus.tasks.*` → `tasks.*` (same key names)
  * - `task.pollTimeoutMs` → `tasks.pollTimeoutMs`
+ *
+ * `experimental.task_system` and `new_task_system_enabled` are NOT listed as
+ * fallbacks any more: both are deprecated no-ops since v2.7 (the legacy todo
+ * system they toggled is removed) and are ignored.
  * See `resolveTasksConfig()` in `src/shared/task-system-gating.ts`.
  */
 export const TasksConfigSchema = z.object({
   /** Master switch for the file-backed task system (default: true).
-   * When false, task_* tools are unregistered and the legacy
-   * todo-continuation-enforcer is used instead. */
+   * When false, task_* tools are unregistered. */
   enabled: z.boolean().optional().default(true),
   /** Task storage scope: project → .matrixx/tasks per project (default),
    * global → <opencode-config>/tasks/{listId} */

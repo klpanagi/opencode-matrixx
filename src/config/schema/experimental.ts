@@ -6,8 +6,11 @@ export const ExperimentalConfigSchema = z.object({
   preemptive_compaction: z.boolean().optional(),
   /** Truncate all tool outputs, not just whitelisted tools (default: false). Tool output truncator is enabled by default - disable via disabled_hooks. */
   truncate_all_tool_outputs: z.boolean().optional(),
-  /** Legacy (deprecated: use tasks.enabled) — fallback when tasks.enabled is unset */
-  task_system: z.boolean().optional().default(true),
+  /** Legacy (deprecated: use tasks.enabled) — fallback when tasks.enabled is unset.
+   * No-op as of v2.7: the legacy todo system is gone, so this key no longer
+   * selects between two hook families. Still parses; read as `boolean | undefined`
+   * and resolved by `resolveTasksConfig()`. */
+  task_system: z.boolean().optional(),
   /** Timeout in ms for loadAllPluginComponents during config handler init (default: 10000, min: 1000) */
   plugin_load_timeout_ms: z.number().min(1000).optional(),
   /** Warn threshold 0-1 (default 0.70). Monitor is read-only. */

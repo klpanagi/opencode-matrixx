@@ -2,7 +2,6 @@ import { z } from "zod"
 
 const HookNameEnum = z.enum([
   "task-continuation-enforcer",
-  "todo-continuation-enforcer",
   "context-window-monitor",
   "session-recovery",
   "session-notification",
@@ -28,7 +27,6 @@ const HookNameEnum = z.enum([
   "category-skill-reminder",
 
   "compaction-context-injector",
-  "compaction-todo-preserver",
   "auto-slash-command",
   "edit-error-recovery",
   "delegate-task-retry",
@@ -40,7 +38,6 @@ const HookNameEnum = z.enum([
   "unstable-agent-babysitter",
   "task-resume-info",
   "stop-continuation-guard",
-  "tasks-todowrite-disabler",
   "write-existing-file-guard",
   "anthropic-effort",
   "hashline-read-enhancer",
@@ -55,7 +52,6 @@ const HookNameEnum = z.enum([
   "webfetch-redirect-guard",
   "tool-pair-validator",
   "quality-gate",
-  "task-notepad",
   "design-intent-preserver",
   "rtk-bash-rewriter",
   "evolution-watcher",
@@ -72,9 +68,24 @@ const HookNameEnum = z.enum([
 ])
 
 // Deprecated alias — remove in v2.7 (BREAKING: rename anthropic- → generic)
+//
+// The 4 literals below belong to the removed legacy todo system. Their hooks no
+// longer exist, but the NAMES stay parseable so a config written before the
+// removal keeps loading without an `invalid_enum` error. They are deliberately
+// NOT mapped onto a live hook (no rename target) and NOT `.transform()`ed — see
+// `HOOK_NAME_MAP` in `src/shared/migration/hook-names.ts`, which strips them
+// from the effective `disabled_hooks` with one warn.
 export const HookNameSchema = z.union([
   HookNameEnum,
   z.literal("anthropic-context-window-limit-recovery").transform(() => 'context-window-limit-recovery' as const),
+  /** @deprecated no-op since v2.7 — hook removed, name retained so existing configs keep loading. Remove in v3.0. */
+  z.literal("todo-continuation-enforcer"),
+  /** @deprecated no-op since v2.7 — hook removed, name retained so existing configs keep loading. Remove in v3.0. */
+  z.literal("compaction-todo-preserver"),
+  /** @deprecated no-op since v2.7 — hook removed, name retained so existing configs keep loading. Remove in v3.0. */
+  z.literal("tasks-todowrite-disabler"),
+  /** @deprecated no-op since v2.7 — hook removed, name retained so existing configs keep loading. Remove in v3.0. */
+  z.literal("task-notepad"),
 ])
 
 export type HookName = z.infer<typeof HookNameSchema>
