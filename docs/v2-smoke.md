@@ -182,5 +182,82 @@ script/v2-docker/in-container.sh   start server, drive the API, collect artefact
 script/v2-docker/probe.mjs         raw REST probe with content-type classification
 script/v2-docker/v1-client-probe.mjs   @opencode-ai/sdk client against the V2 server
 script/v2-docker/v2-client-probe.mjs   @opencode/client, the V2-native path
+script/v2-docker/v2-route-probe.mjs    per-route capability probe (the mapping table)
 script/v2-docker/probe-plugin/     neutral V2 plugin that records ctx and events
 ```
+
+## Verified V1 → V2 route mapping (2026-09-26)
+
+Produced by `script/v2-docker/v2-route-probe.mjs` against a live V2 server
+(`@opencode/cli@2.0.18`). This table is the **only** source the V2 client shim
+(`src/plugin/v2/shim/`) is built from. The probe asserts, unlike the rest of this
+harness: it exits non-zero if any candidate route answers with SPA HTML, and it
+probes a control URL to confirm the catch-all actually reproduces, so a `SPA_HTML`
+verdict is provably a false route rather than a broken probe.
+
+Every V2 API route lives under `/api/`. The V1 client requests unprefixed paths
+(`/config`, `/session`, `/agent`), which is why **all** of them resolved to the SPA.
+
+### Mapped — verified by reading real data
+
+| V1 member | V2 route | V2 client method | Observed |
+|---|---|---|---|
+| `session.messages` (74 sites) | `GET /api/session/{id}/message` | `message.list` | `data: [1 msg]` |
+| `session.message` | `GET /api/session/{id}/message` | `message.list` | `data: [1 msg]` |
+| `session.context` | `GET /api/session/{id}/context` | `session.context` | `data: [1 msg]` |
+| `session.list` / `session.create` | `GET/POST /api/session` | `session.list` / `session.create` | `data: [3]` |
+| `session.children` | `GET /api/session` (`parentID` filter) | `session.list` | `data: [3]` |
+| `session.get` | `GET /api/session/{id}` | `session.get` | object |
+| `session.status` | `GET /api/session/active` | `session.active` | `{ses_x: {type:"running"}}` |
+| `model.list` | `GET /api/model` | `model.list` | `data: [7]` |
+| `provider.list` | `GET /api/provider` | `provider.list` | `data: [1]` |
+| `config.get` | `GET /api/config` | `config.get` | `2` config *sources* |
+| `command.list` | `GET /api/command` | `command.list` | `data: [21]` |
+| `app.agents` | `GET /api/agent` | `agent.list` | `data: [7]` |
+
+### Mapped — route existence proven, data read not observed
+
+These are mutating. Existence was proven by an empty-body request answered with a
+JSON error (or `204`), which is distinct from 404/SPA. They are recorded as
+`route-exists-only`; the data they return has **not** been observed.
+
+| V1 member | V2 route | Response |
+|---|---|---|
+| `session.promptAsync` / `session.prompt` | `POST /api/session/{id}/prompt` | `400` JSON (validation) |
+| `session.abort` | `POST /api/session/{id}/interrupt` | `200` JSON |
+| `session.summarize` | `POST /api/session/{id}/compact` | `200` JSON |
+| `session.delete` | `DELETE /api/session/{id}` | `204` (verified on a sacrificial session) |
+
+### Unavailable — no V2 route, reported as gaps
+
+| V1 member | Call sites | Evidence |
+|---|---|---|
+| `session.todo` | 16 | `GET /api/session/{id}/todo` → `404`; zero `todo` occurrences in the whole `@opencode/client` type surface |
+| `tui.showToast` | 11 | `POST /api/tui/show-toast` → `404`; no `tui` domain; V1 path `/tui/show-toast` → `200 text/html` (SPA) |
+| `session.revert` | 0 | `POST /api/session/{id}/revert` → `404`, even though the published V2 client advertises that path |
+
+These are enumerated in `V2_CAPABILITY_GAPS` (`src/plugin/v2/shim/capability-gaps.ts`),
+reported once at setup, and reachable at runtime via `listV2CapabilityGaps()`.
+`session.todo` and `session.revert` **reject**; returning `[]` would be
+indistinguishable from a genuine empty result. `tui.showToast` is a logged no-op
+because a toast carries no data.
+
+## GAP-10: the `{ info, parts }` envelope
+
+V2 models a message as a flat discriminated union of **eleven** variants
+(`agent-switched`, `model-switched`, `location-switched`, `user`, `synthetic`,
+`system`, `skill`, `shell`, `assistant`, `compaction`, `idle`) whose `content`
+lives *inside* the variant. V1 splits it into `{ info, parts }` with `content` as
+a sibling array. The envelope is therefore reconstructible, and
+`toV1MessageEnvelope` implements it for all eleven variants.
+
+**Provenance caveat:** only the `idle` variant was actually observed against a
+live server, because the container has no model credentials and so cannot produce
+a content-bearing message. The other ten follow the published
+`@opencode/client` type declarations, not observation. Because the union is
+closed, an unrecognised `type` throws rather than being silently dropped —
+so a schema divergence surfaces rather than quietly shortening history.
+
+`toMessagesTransformCall` (the separate GAP-10 symptom in §3) still returns
+`{ messages: [] }` and remains open: wiring it needs the same envelope, but
+`experimental.chat.messages.transform` is not yet re-registered on V2.

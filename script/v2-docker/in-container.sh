@@ -185,6 +185,15 @@ node /opt/v2-cli/v2-client-probe.mjs "$URL" "$PASSWORD" "$PROJ" "$OUT/v2-client-
   > "$OUT/v2-client-probe-2.log" 2>&1
 echo "v2 client probe (second pass) exit: $?"
 
+# Per-route capability probe: for every V1 member Matrixx calls, record the raw
+# V2 route (status + content-type + SPA-vs-JSON) and the V2 client method.
+cp /opt/v2-smoke/v2-route-probe.mjs /opt/v2-cli/v2-route-probe.mjs
+node /opt/v2-cli/v2-route-probe.mjs "$URL" "$PASSWORD" "$PROJ" "$OUT/v2-route-probe.json" \
+  > "$OUT/v2-route-probe.log" 2>&1
+ROUTE_PROBE_STATUS=$?
+echo "$ROUTE_PROBE_STATUS" > "$OUT/v2-route-probe.exit"
+echo "v2 route probe exit: $ROUTE_PROBE_STATUS"
+
 mkdir -p /work/v1probe
 cp /opt/v2-smoke/v1-client-probe.mjs /work/v1probe/probe.mjs
 ln -sfn /repo/node_modules /work/v1probe/node_modules

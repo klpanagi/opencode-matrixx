@@ -156,6 +156,49 @@ if [ -f "$OUT_DIR/http-probe.json" ]; then
   ' "$OUT_DIR/http-probe.json"
 fi
 
+# ---- Route capability probe: the mapping table the V2 shim is built from -----
+# This section ASSERTS. The rest of this script reports. A candidate V2 route that
+# answers with SPA HTML instead of the API means the mapping table is wrong, and a
+# shim built on it would reproduce the original silent-empty-data failure.
+log ""
+log "-- Q6: per-route V2 capability probe (mapping table source) --"
+ROUTE_STATUS="missing"
+[ -f "$OUT_DIR/v2-route-probe.json" ] && ROUTE_STATUS=$(cat "$OUT_DIR/v2-route-probe.exit" 2>/dev/null || echo "no-exit-file")
+
+if [ -f "$OUT_DIR/v2-route-probe.json" ]; then
+  node -e '
+    const r = require(process.argv[1]);
+    const ctrl = Object.values(r.routes).find((x) => x.v1 === "__spa_control__");
+    console.log("   SPA control (" + ctrl.candidatePath + "): " + ctrl.verdict +
+                " status=" + ctrl.status + " ct=" + (ctrl.contentType || "-") +
+                (ctrl.verdict === "SPA_HTML" ? "  <- catch-all reproduced, verdicts are trustworthy" : "  <- CONTROL FAILED"));
+    console.log("");
+    const rows = Object.values(r.routes).filter((x) => x.v1 !== "__spa_control__");
+    const w = Math.max(...rows.map((x) => x.v1.length));
+    for (const x of rows) {
+      const c = x.client && x.client.attempted ? (x.client.ok ? "client:ok" : "client:err") : "client:n/a";
+      const n = x.payload && x.payload.count !== undefined ? "n=" + x.payload.count : "";
+      console.log("   " + x.v1.padEnd(w) + "  " + String(x.status ?? "-").padEnd(5) +
+                  (x.contentType || "-").padEnd(18) + String(x.verdict ?? "-").padEnd(15) +
+                  (x.existenceProbe ? "exists-only" : "").padEnd(12) + c.padEnd(11) + n);
+    }
+    console.log("");
+    for (const [m, e] of Object.entries(r.members)) {
+      console.log("   " + m.padEnd(w) + "  " + e.status.padEnd(13) + (e.evidence ?? "?").padEnd(18) +
+                  (e.best ? e.best.candidatePath + (e.best.clientMethod ? "  [" + e.best.clientMethod + "]" : "") : ""));
+    }
+  ' "$OUT_DIR/v2-route-probe.json" || true
+else
+  fail "Q6: v2-route-probe.json missing — the mapping table cannot be established"
+fi
+
+case "$ROUTE_STATUS" in
+  0) log "   route probe: OK (every probed candidate returned real JSON)" ;;
+  1) fail "Q6: route probe reported SPA_HTML on at least one candidate route — mapping table is unsafe" ;;
+  2) fail "Q6: route probe control failed (SPA catch-all did not reproduce) — verdicts unreliable" ;;
+  *) fail "Q6: route probe did not complete (status=${ROUTE_STATUS})" ;;
+esac
+
 # ---- Q4 / Q5: agents and hook firing --------------------------------------
 log ""
 log "-- Q4/Q5: V2-native view (agents, tools, plugins, events) --"
