@@ -20,7 +20,6 @@ import {
   createSecretLeakGuardHook,
   createTaskEditGuardHook,
   createTaskNotepadHook,
-  createTasksTodowriteDisablerHook,
   createToolOutputTruncatorHook,
   createWebFetchRedirectGuardHook,
   createWriteExistingFileGuardHook,
@@ -41,7 +40,6 @@ export type ToolGuardHooks = {
   directoryAgentsInjector: ReturnType<typeof createDirectoryAgentsInjectorHook> | null
   emptyTaskResponseDetector: ReturnType<typeof createEmptyTaskResponseDetectorHook> | null
   rulesInjector: ReturnType<typeof createRulesInjectorHook> | null
-  tasksTodowriteDisabler: ReturnType<typeof createTasksTodowriteDisablerHook> | null
   writeExistingFileGuard: ReturnType<typeof createWriteExistingFileGuardHook> | null
   hashlineReadEnhancer: ReturnType<typeof createHashlineReadEnhancerHook> | null
   secretLeakGuard: ReturnType<typeof createSecretLeakGuardHook> | null
@@ -106,11 +104,6 @@ export function createToolGuardHooks(args: {
 
   const rulesInjector = isHookEnabled("rules-injector")
     ? safeHook("rules-injector", () => createRulesInjectorHook(ctx))
-    : null
-
-  const tasksTodowriteDisabler = isHookEnabled("tasks-todowrite-disabler")
-    ? safeHook("tasks-todowrite-disabler", () =>
-        createTasksTodowriteDisablerHook({ experimental: pluginConfig.experimental }))
     : null
 
   const writeExistingFileGuard = isHookEnabled("write-existing-file-guard")
@@ -190,7 +183,6 @@ export function createToolGuardHooks(args: {
     directoryAgentsInjector,
     emptyTaskResponseDetector,
     rulesInjector,
-    tasksTodowriteDisabler,
     writeExistingFileGuard,
     hashlineReadEnhancer,
     secretLeakGuard,

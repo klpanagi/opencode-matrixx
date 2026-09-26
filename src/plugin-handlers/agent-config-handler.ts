@@ -8,7 +8,6 @@ import { createMouseAgentWithOverrides } from "../agents/mouse";
 import type { MatrixxConfig } from "../config";
 import { log, migrateAgentConfig } from "../shared";
 import { type ContextModeConfigInput, getContextModeForPrompts, resolveGrepGlobUsable, setContextModeForPrompts } from "../shared/context-mode-enforcement";
-import { isTaskSystemEnabled } from "../shared/task-system-gating";
 import { reorderAgentsByPriority } from "./agent-priority-order";
 import { buildOracleAgentConfig } from "./oracle-agent-config-builder";
 import { buildPlanDemoteConfig } from "./plan-model-inheritance";
@@ -53,6 +52,12 @@ export function injectContextDiscipline(
   }
 }
 
+/**
+ * The file-backed task system is unconditional: `isTaskSystemEnabled()` is now a
+ * constant-`true` function, so every agent factory receives `true`.
+ */
+const useTaskSystem = true;
+
 type AgentConfigRecord = Record<string, Record<string, unknown> | undefined> & {
   build?: Record<string, unknown>;
   plan?: Record<string, unknown>;
@@ -80,7 +85,6 @@ export async function applyAgentConfig(params: {
   if (!params.pluginConfig.tdd_enforcer?.enabled) {
     disabledSkills.add("tdd-enforcer");
   }
-  const useTaskSystem = isTaskSystemEnabled(params.pluginConfig);
   setContextModeForPrompts(params.pluginConfig.context_mode);
   const availableToolNames = getAvailableToolNames()
 

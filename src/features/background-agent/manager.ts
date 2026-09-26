@@ -6,6 +6,7 @@ import { getAgentToolRestrictions, log, normalizeSDKResponse, promptWithModelSug
 import { hasPendingQuestionMessage } from "../../shared/awaiting-user"
 import { delay } from "../../shared/delay"
 import { formatDuration } from "../../shared/format-duration"
+import { warn } from "../../shared/logger"
 import { setSessionTemperature, setSessionTools } from "../../shared/session-state"
 import { isInsideTmux } from "../../shared/tmux"
 import { formatWallclockTimeout } from "../../shared/wallclock-outcome"
@@ -65,6 +66,24 @@ type OpencodeClient = PluginInput["client"]
  * slot is not free within this window it falls back to bypass overflow.
  */
 const NESTED_RESERVE_ATTEMPT_TIMEOUT_MS = 100
+
+const LEGACY_TODO_READ_DEPRECATION =
+  "[background-agent] The OpenCode todo read is deprecated but still active. " +
+  "OpenCode's todo state is per-session and persists across the upgrade, so the read " +
+  "is retained for in-flight sessions; it will be removed in v3.0."
+
+let hasLoggedLegacyTodoReadDeprecation = false
+
+/** Test-only: allow the one-time deprecation notice to fire again. */
+export function resetBackgroundTodoReadDeprecationWarning(): void {
+  hasLoggedLegacyTodoReadDeprecation = false
+}
+
+function warnAboutLegacyTodoReadOnce(): void {
+  if (hasLoggedLegacyTodoReadDeprecation) return
+  hasLoggedLegacyTodoReadDeprecation = true
+  warn(LEGACY_TODO_READ_DEPRECATION)
+}
 
 
 interface MessagePartInfo {
@@ -1175,8 +1194,17 @@ export class BackgroundManager {
     return rows.map((row) => ({ taskId: row.taskId, description: row.description, agent: row.agent, status: row.status, sessionID: row.sessionID, terminalReason: row.terminalReason }))
   }
 
+  /**
+   * Why the real `client.session.todo()` read is retained after the legacy todo
+   * system was removed: OpenCode's todo state is per-session and PERSISTS across
+   * the upgrade, so a session opened before the removal can still hold a non-empty
+   * list. Returning a hard-coded `false` here would mark such a background task
+   * complete while the user still has pending items, in the wrong direction on day
+   * one. Kept for one release, tracked as a removal issue scheduled for v3.0.
+   */
   private async checkSessionTodos(sessionID: string): Promise<boolean> {
     try {
+      warnAboutLegacyTodoReadOnce()
       const response = await this.client.session.todo({
         path: { id: sessionID },
       })

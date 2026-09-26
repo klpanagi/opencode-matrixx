@@ -43,7 +43,6 @@ const FAST_FAIL_HOOK_NAMES = [
   "secretLeakGuard",
   "envFileWriteGuard",
   "writeExistingFileGuard",
-  "tasksTodowriteDisabler",
   "oracleMdOnly",
   // Wave 3: MUTATOR
   "nonInteractiveEnv",
@@ -288,7 +287,6 @@ describe("tool.execute.before — T1.1 parallel safety", () => {
         "secretLeakGuard",
         "envFileWriteGuard",
         "writeExistingFileGuard",
-        "tasksTodowriteDisabler",
         "nonInteractiveEnv",
         "bashFileReadGuard",
         "mouseNotepad",
