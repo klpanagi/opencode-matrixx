@@ -61,29 +61,27 @@ export function getMousePromptSource(model?: string): MousePromptSource {
  */
 export function buildMousePrompt(
   model: string | undefined,
-  useTaskSystem: boolean,
   promptAppend?: string,
 ): string {
   const source = getMousePromptSource(model)
 
   switch (source) {
     case "gpt":
-      return buildGptMousePrompt(useTaskSystem, promptAppend)
+      return buildGptMousePrompt(promptAppend)
     case "deepseek":
-      return buildDeepSeekMousePrompt(useTaskSystem, promptAppend)
+      return buildDeepSeekMousePrompt(promptAppend)
     case "mimo":
-      return buildMimoMousePrompt(useTaskSystem, promptAppend)
+      return buildMimoMousePrompt(promptAppend)
     case "qwen":
-      return buildQwenMousePrompt(useTaskSystem, promptAppend)
+      return buildQwenMousePrompt(promptAppend)
     default:
-      return buildDefaultMousePrompt(useTaskSystem, promptAppend)
+      return buildDefaultMousePrompt(promptAppend)
   }
 }
 
 export function createMouseAgentWithOverrides(
   override: AgentOverrideConfig | undefined,
   systemDefaultModel?: string,
-  useTaskSystem = false,
 ): AgentConfig {
   if (override?.disable) {
     override = undefined
@@ -94,7 +92,7 @@ export function createMouseAgentWithOverrides(
   const temperature = override?.temperature ?? MOUSE_DEFAULTS.temperature
 
   const promptAppend = override?.prompt_append
-  const prompt = buildMousePrompt(model, useTaskSystem, promptAppend)
+  const prompt = buildMousePrompt(model, promptAppend)
 
   const baseRestrictions = createAgentToolRestrictions(BLOCKED_TOOLS)
 

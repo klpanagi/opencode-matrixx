@@ -94,3 +94,91 @@ describe("task-tool instruction rows name TaskUpdate literally (DoD-5 canary)", 
     expect(files.length).toBeGreaterThanOrEqual(3)
   })
 })
+
+/**
+ * BEHAVIORAL half (R8). The static scans above read tool config, not the rendered
+ * prompt — only a string assertion can catch a prompt that still names a banned
+ * tool. The plan named four "DIRECT EXPORT" anchors, but two of them
+ * (`morpheus.ts:148` buildDynamicMorpheusPrompt, `keymaker.ts:117`
+ * buildKeymakerPrompt) are module-private. The behavioral equivalent is to render
+ * through the PUBLIC factory that embeds each section, which is strictly stronger:
+ * it also covers every section the private builder interpolates. The Mouse row is
+ * additionally swept across all five model-specific prompt variants, since
+ * `buildMousePrompt` is itself exported and the three ternary slop sites lived
+ * in three of those variants.
+ */
+describe("rendered prompts name only the task tools (R8)", () => {
+  const TASK_TOOLS = ["TaskCreate", "TaskUpdate"]
+  const BANNED = /todowrite|todoread|TodoWrite/i
+  const TRACKING_ROW = /^\|\s*Tracking\s*\|\s*([^|]+?)\s*\|/gm
+
+  function assertTaskSystemOnly(label: string, prompt: string): void {
+    //#given a prompt rendered with non-legacy arguments only
+    expect(prompt.length).toBeGreaterThan(0)
+
+    //#then both task tools are advertised
+    for (const tool of TASK_TOOLS) {
+      expect(`${label}: missing ${tool}\n${prompt}`).toContain(tool)
+    }
+
+    //#then no legacy todo tool is named in any casing
+    expect(`${label}: banned tool\n${prompt}`).not.toMatch(BANNED)
+
+    //#then no `| Tracking |` row names a non-task tool
+    for (const match of prompt.matchAll(TRACKING_ROW)) {
+      expect(`${label}: tracking cell "${match[1]}"`).toMatch(/TaskCreate|TaskUpdate/)
+    }
+  }
+
+  function promptOf(config: { prompt?: unknown }): string {
+    expect(typeof config.prompt).toBe("string")
+    return config.prompt as string
+  }
+
+  test("morpheus prompt advertises only task tools", async () => {
+    //#given the morpheus factory invoked with non-legacy arguments only
+    const { createMorpheusAgent } = await import("../../src/agents/morpheus")
+
+    //#when the prompt is rendered
+    const prompt = promptOf(
+      createMorpheusAgent("anthropic/claude-sonnet-4-5", undefined, ["task_create", "task_update"], [], []),
+    )
+
+    //#then it is task-system-only
+    assertTaskSystemOnly("morpheus", prompt)
+  })
+
+  test("keymaker prompt advertises only task tools", async () => {
+    //#given the keymaker factory invoked with non-legacy arguments only
+    const { createKeymakerAgent } = await import("../../src/agents/keymaker")
+
+    //#when the prompt is rendered
+    const prompt = promptOf(createKeymakerAgent("gpt-5.3-codex"))
+
+    //#then it is task-system-only
+    assertTaskSystemOnly("keymaker", prompt)
+  })
+
+  test("mouse prompt advertises only task tools for every model variant", async () => {
+    //#given the mouse factory invoked with non-legacy arguments only, once per variant
+    const { createMouseAgentWithOverrides } = await import("../../src/agents/mouse/agent")
+    const models = [
+      "anthropic/claude-sonnet-4-5",
+      "openai/gpt-5.3",
+      "opencode-go/deepseek-v4",
+      "opencode-go/mimo-2",
+      "opencode-go/qwen3-coder",
+    ]
+
+    //#when each prompt is rendered
+    const rendered = models.map((model) => ({
+      model,
+      prompt: promptOf(createMouseAgentWithOverrides({ model })),
+    }))
+
+    //#then every variant is task-system-only
+    for (const { model, prompt } of rendered) {
+      assertTaskSystemOnly(`mouse[${model}]`, prompt)
+    }
+  })
+})

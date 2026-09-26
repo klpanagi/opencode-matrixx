@@ -19,9 +19,8 @@ import type { AgentMode } from "./types"
 
 const MODE: AgentMode = "primary"
 
-function buildTodoDisciplineSection(useTaskSystem: boolean): string {
-  if (useTaskSystem) {
-    return `## Task Discipline (NON-NEGOTIABLE)
+function buildTodoDisciplineSection(): string {
+  return `## Task Discipline (NON-NEGOTIABLE)
 
 **Track ALL multi-step work with tasks. This is your execution backbone.**
 
@@ -56,43 +55,6 @@ function buildTodoDisciplineSection(useTaskSystem: boolean): string {
 | Finishing without completing tasks | Task appears incomplete |
 
 **NO TASKS ON MULTI-STEP WORK = INCOMPLETE WORK.**`
-  }
-
-  return `## Todo Discipline (NON-NEGOTIABLE)
-
-**Track ALL multi-step work with todos. This is your execution backbone.**
-
-### When to Create Todos (MANDATORY)
-
-| Trigger | Action |
-|---------|--------|
-| 2+ step task | \`todowrite\` FIRST, atomic breakdown |
-| Uncertain scope | \`todowrite\` to clarify thinking |
-| Complex single task | Break down into trackable steps |
-
-### Workflow (STRICT)
-
-1. **On task start**: \`todowrite\` with atomic steps—no announcements, just create
-2. **Before each step**: Mark \`in_progress\` (ONE at a time)
-3. **After each step**: Mark \`completed\` IMMEDIATELY (NEVER batch)
-4. **Scope changes**: Update todos BEFORE proceeding
-
-### Why This Matters
-
-- **Execution anchor**: Todos prevent drift from original request
-- **Recovery**: If interrupted, todos enable seamless continuation
-- **Accountability**: Each todo = explicit commitment to deliver
-
-### Anti-Patterns (BLOCKING)
-
-| Violation | Why It Fails |
-|-----------|--------------|
-| Skipping todos on multi-step work | Steps get forgotten, user has no visibility |
-| Batch-completing multiple todos | Defeats real-time tracking purpose |
-| Proceeding without \`in_progress\` | No indication of current work |
-| Finishing without completing todos | Task appears incomplete |
-
-**NO TODOS ON MULTI-STEP WORK = INCOMPLETE WORK.**`
 }
 
 /**
@@ -114,7 +76,6 @@ function buildKeymakerPrompt(
   availableTools: AvailableTool[] = [],
   availableSkills: AvailableSkill[] = [],
   availableCategories: AvailableCategory[] = [],
-  useTaskSystem = false,
   modelID?: string
 ): string {
   const keyTriggers = buildKeyTriggersSection(availableAgents, availableSkills)
@@ -131,7 +92,7 @@ function buildKeymakerPrompt(
   const contextDiscipline = buildContextDisciplineSection(hasContextMode, hasGrepGlob, undefined, modelID)
   const hasHeadroom = availableTools.some((t) => t.name.startsWith("headroom_"))
   const headroomDiscipline = buildHeadroomSection(hasHeadroom, undefined, modelID)
-  const todoDiscipline = buildTodoDisciplineSection(useTaskSystem)
+  const todoDiscipline = buildTodoDisciplineSection()
 
   return `You are Keymaker, an autonomous deep worker for software engineering.
 
@@ -619,15 +580,14 @@ export function createKeymakerAgent(
   availableAgents?: AvailableAgent[],
   availableToolNames?: string[],
   availableSkills?: AvailableSkill[],
-  availableCategories?: AvailableCategory[],
-  useTaskSystem = false
+  availableCategories?: AvailableCategory[]
 ): AgentConfig {
   const tools = availableToolNames ? categorizeTools(availableToolNames) : []
   const skills = availableSkills ?? []
   const categories = availableCategories ?? []
   const prompt = availableAgents
-    ? buildKeymakerPrompt(availableAgents, tools, skills, categories, useTaskSystem, model)
-    : buildKeymakerPrompt([], tools, skills, categories, useTaskSystem, model)
+    ? buildKeymakerPrompt(availableAgents, tools, skills, categories, model)
+    : buildKeymakerPrompt([], tools, skills, categories, model)
 
   return {
     description:

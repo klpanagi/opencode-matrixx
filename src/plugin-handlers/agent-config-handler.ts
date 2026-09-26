@@ -52,12 +52,6 @@ export function injectContextDiscipline(
   }
 }
 
-/**
- * The file-backed task system is unconditional: `isTaskSystemEnabled()` is now a
- * constant-`true` function, so every agent factory receives `true`.
- */
-const useTaskSystem = true;
-
 type AgentConfigRecord = Record<string, Record<string, unknown> | undefined> & {
   build?: Record<string, unknown>;
   plan?: Record<string, unknown>;
@@ -99,7 +93,6 @@ export async function applyAgentConfig(params: {
     browserProvider,
     currentModel,
     disabledSkills,
-    useTaskSystem,
     params.pluginConfig.global_model,
     availableToolNames,
   );
@@ -133,7 +126,6 @@ export async function applyAgentConfig(params: {
     agentConfig.mouse = createMouseAgentWithOverrides(
       params.pluginConfig.agents?.mouse,
       undefined,
-      useTaskSystem,
     );
 
     if (builderEnabled) {

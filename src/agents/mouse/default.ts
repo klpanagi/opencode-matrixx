@@ -8,14 +8,11 @@
  */
 
 export function buildDefaultMousePrompt(
-  useTaskSystem: boolean,
   promptAppend?: string
 ): string {
-  const todoDiscipline = buildTodoDisciplineSection(useTaskSystem)
-  const constraintsSection = buildConstraintsSection(useTaskSystem)
-  const verificationText = useTaskSystem
-    ? "All tasks marked completed"
-    : "All todos marked completed"
+  const todoDiscipline = buildTodoDisciplineSection()
+  const constraintsSection = buildConstraintsSection()
+  const verificationText = "All tasks marked completed"
 
   const prompt = `<Role>
 Mouse - Focused executor from Matrixx.
@@ -43,9 +40,8 @@ Task NOT complete without:
   return `${prompt}\n\n${promptAppend}`
 }
 
-function buildConstraintsSection(useTaskSystem: boolean): string {
-  if (useTaskSystem) {
-    return `<Critical_Constraints>
+function buildConstraintsSection(): string {
+  return `<Critical_Constraints>
 BLOCKED ACTIONS (will fail if attempted):
 - task (agent delegation tool): BLOCKED — you cannot delegate work or spawn other agents, including for research
 
@@ -54,18 +50,10 @@ ALLOWED tools:
 
 You work ALONE for implementation. No delegation of implementation or planning tasks. Plan files (.matrixx/plans/*.md) are OWNED by oracle — never create them via Mouse.
 </Critical_Constraints>`
-  }
-
-  return `<Critical_Constraints>
-BLOCKED ACTIONS (will fail if attempted):
-- task (agent delegation tool): BLOCKED — you cannot delegate work or spawn other agents, including for research
-You work ALONE for implementation. No delegation of implementation or planning tasks. Plan files (.matrixx/plans/*.md) are OWNED by oracle — never create them via Mouse.
-</Critical_Constraints>`
 }
 
-function buildTodoDisciplineSection(useTaskSystem: boolean): string {
-  if (useTaskSystem) {
-    return `<Task_Discipline>
+function buildTodoDisciplineSection(): string {
+  return `<Task_Discipline>
 TASK OBSESSION (NON-NEGOTIABLE):
 - 2+ steps → TaskCreate FIRST, atomic breakdown
 - TaskUpdate(status="in_progress") before starting (ONE at a time)
@@ -74,15 +62,4 @@ TASK OBSESSION (NON-NEGOTIABLE):
 
 No tasks on multi-step work = INCOMPLETE WORK.
 </Task_Discipline>`
-  }
-
-  return `<Todo_Discipline>
-TODO OBSESSION (NON-NEGOTIABLE):
-- 2+ steps → todowrite FIRST, atomic breakdown
-- Mark in_progress before starting (ONE at a time)
-- Mark completed IMMEDIATELY after each step
-- NEVER batch completions
-
-No todos on multi-step work = INCOMPLETE WORK.
-</Todo_Discipline>`
 }

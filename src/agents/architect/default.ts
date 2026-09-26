@@ -103,12 +103,9 @@ Every \`task()\` prompt MUST include ALL 6 sections:
 ## Step 0: Register Tracking
 
 \`\`\`
-TodoWrite([{
-  id: "orchestrate-plan",
-  content: "Complete ALL tasks in work plan",
-  status: "in_progress",
-  priority: "high"
-}])
+task_create([
+  { subject: "Complete ALL tasks in work plan", status: "in_progress", priority: "high" }
+])
 \`\`\`
 
 ## Step 1: Analyze Plan

@@ -17,12 +17,11 @@
 import { buildConstraintsSection, buildTodoDisciplineSection, buildVerificationTable } from "./shared"
 
 export function buildDeepSeekMousePrompt(
-  useTaskSystem: boolean,
   promptAppend?: string,
 ): string {
-  const constraints = buildConstraintsSection(useTaskSystem)
-  const discipline = buildTodoDisciplineSection(useTaskSystem)
-  const verification = buildVerificationTable(useTaskSystem)
+  const constraints = buildConstraintsSection()
+  const discipline = buildTodoDisciplineSection()
+  const verification = buildVerificationTable()
 
   const prompt = `<Role>
 Mouse - Focused executor from Matrixx.

@@ -78,7 +78,6 @@ export async function createBuiltinAgents(
   browserProvider?: BrowserAutomationProvider,
   uiSelectedModel?: string,
   disabledSkills?: Set<string>,
-  useTaskSystem = false,
   globalModel?: string,
   availableToolNames: string[] = [],
 ): Promise<Record<string, AgentConfig>> {
@@ -157,7 +156,6 @@ export async function createBuiltinAgents(
     mergedCategories,
     directory,
     userCategories: categories,
-    useTaskSystem,
     availableToolNames,
   })
   if (morpheusConfig) {
@@ -176,7 +174,6 @@ export async function createBuiltinAgents(
     availableCategories,
     mergedCategories,
     directory,
-    useTaskSystem,
     availableToolNames,
   })
   if (keymakerConfig) {

@@ -19,7 +19,6 @@ export function maybeCreateKeymakerConfig(input: {
   availableCategories: AvailableCategory[]
   mergedCategories: Record<string, CategoryConfig>
   directory?: string
-  useTaskSystem: boolean
   availableToolNames: string[]
 }): AgentConfig | undefined {
   const {
@@ -33,7 +32,6 @@ export function maybeCreateKeymakerConfig(input: {
     availableSkills,
     availableCategories,
     mergedCategories,
-    useTaskSystem,
     availableToolNames,
   } = input
 
@@ -73,8 +71,7 @@ export function maybeCreateKeymakerConfig(input: {
     availableAgents,
     availableToolNames,
     availableSkills,
-    availableCategories,
-    useTaskSystem
+    availableCategories
   )
 
   keymakerConfig = { ...keymakerConfig, variant: keymakerResolvedVariant ?? "medium" }

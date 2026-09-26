@@ -17,14 +17,11 @@
  */
 
 export function buildGptMousePrompt(
-  useTaskSystem: boolean,
   promptAppend?: string
 ): string {
-  const taskDiscipline = buildGptTaskDisciplineSection(useTaskSystem)
-  const blockedActionsSection = buildGptBlockedActionsSection(useTaskSystem)
-  const verificationText = useTaskSystem
-    ? "All tasks marked completed"
-    : "All todos marked completed"
+  const taskDiscipline = buildGptTaskDisciplineSection()
+  const blockedActionsSection = buildGptBlockedActionsSection()
+  const verificationText = "All tasks marked completed"
 
   const prompt = `<identity>
 You are Mouse - Focused task executor from Matrixx.
@@ -72,7 +69,7 @@ Task NOT complete without evidence:
 |-------|------|----------|
 | Diagnostics | lsp_diagnostics | ZERO errors on changed files |
 | Build | Bash | Exit code 0 (if applicable) |
-| Tracking | ${useTaskSystem ? "TaskUpdate" : "todowrite"} | ${verificationText} |
+| Tracking | TaskUpdate | ${verificationText} |
 
 **No evidence = not complete.**
 </verification_spec>
@@ -88,9 +85,8 @@ Task NOT complete without evidence:
   return `${prompt}\n\n${promptAppend}`
 }
 
-function buildGptBlockedActionsSection(useTaskSystem: boolean): string {
-  if (useTaskSystem) {
-    return `<blocked_actions>
+function buildGptBlockedActionsSection(): string {
+  return `<blocked_actions>
 BLOCKED (will fail if attempted):
 | Tool | Status | Description |
 |------|--------|-------------|
@@ -106,26 +102,10 @@ ALLOWED:
 
 You work ALONE for implementation. No delegation. Plan files (.matrixx/plans/*.md) are OWNED by oracle — never create them via Mouse.
 </blocked_actions>`
-  }
-
-  return `<blocked_actions>
-BLOCKED (will fail if attempted):
-| Tool | Status | Description |
-|------|--------|-------------|
-| task | BLOCKED | Agent delegation tool — you cannot delegate work or spawn other agents, including for research |
-
-ALLOWED:
-| Tool | Usage |
-|------|-------|
-| task_create | Create tasks to track your work |
-
-You work ALONE for implementation. No delegation. Plan files (.matrixx/plans/*.md) are OWNED by oracle — never create them via Mouse.
-</blocked_actions>`
 }
 
-function buildGptTaskDisciplineSection(useTaskSystem: boolean): string {
-  if (useTaskSystem) {
-    return `<task_discipline_spec>
+function buildGptTaskDisciplineSection(): string {
+  return `<task_discipline_spec>
 TASK TRACKING (NON-NEGOTIABLE):
 | Trigger | Action |
 |---------|--------|
@@ -136,17 +116,4 @@ TASK TRACKING (NON-NEGOTIABLE):
 
 No tasks on multi-step work = INCOMPLETE WORK.
 </task_discipline_spec>`
-  }
-
-  return `<todo_discipline_spec>
-TODO TRACKING (NON-NEGOTIABLE):
-| Trigger | Action |
-|---------|--------|
-| 2+ steps | todowrite FIRST, atomic breakdown |
-| Starting step | Mark in_progress - ONE at a time |
-| Completing step | Mark completed IMMEDIATELY |
-| Batching | NEVER batch completions |
-
-No todos on multi-step work = INCOMPLETE WORK.
-</todo_discipline_spec>`
 }

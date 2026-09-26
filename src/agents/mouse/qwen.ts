@@ -15,14 +15,11 @@
  */
 
 export function buildQwenMousePrompt(
-  useTaskSystem: boolean,
   promptAppend?: string,
 ): string {
-  const taskDiscipline = buildQwenDisciplineSection(useTaskSystem)
-  const blockedActions = buildQwenBlockedActions(useTaskSystem)
-  const verificationText = useTaskSystem
-    ? "All tasks marked completed"
-    : "All todos marked completed"
+  const taskDiscipline = buildQwenDisciplineSection()
+  const blockedActions = buildQwenBlockedActions()
+  const verificationText = "All tasks marked completed"
 
   const prompt = `<identity>
 You are Mouse — Focused task executor from Matrixx.
@@ -49,7 +46,7 @@ Task NOT complete without:
 |-------|------|----------|
 | Diagnostics | lsp_diagnostics | Zero errors on changed files |
 | Build | Bash | Exit code 0 (if applicable) |
-| Tracking | ${useTaskSystem ? "TaskUpdate" : "todowrite"} | ${verificationText} |
+| Tracking | TaskUpdate | ${verificationText} |
 
 No evidence = not complete.
 </verification>
@@ -65,9 +62,8 @@ No evidence = not complete.
   return `${prompt}\n\n${promptAppend}`
 }
 
-function buildQwenBlockedActions(useTaskSystem: boolean): string {
-  if (useTaskSystem) {
-    return `| Tool | Status | Notes |
+function buildQwenBlockedActions(): string {
+  return `| Tool | Status | Notes |
 |------|--------|-------|
 | task | BLOCKED | Cannot delegate work or spawn other agents, including for research |
 | task_create | ALLOWED | Track your work |
@@ -75,18 +71,10 @@ function buildQwenBlockedActions(useTaskSystem: boolean): string {
 | task_list / task_get | ALLOWED | View tasks |
 
 Plan files (.matrixx/plans/*.md) are OWNED by oracle — never create them via Mouse.`
-  }
-
-  return `| Tool | Status | Notes |
-|------|--------|-------|
-| task | BLOCKED | Cannot delegate work or spawn other agents, including for research |
-
-Plan files (.matrixx/plans/*.md) are OWNED by oracle — never create them via Mouse.`
 }
 
-function buildQwenDisciplineSection(useTaskSystem: boolean): string {
-  if (useTaskSystem) {
-    return `<task_discipline>
+function buildQwenDisciplineSection(): string {
+  return `<task_discipline>
 TASK TRACKING — NON-NEGOTIABLE:
 
 | Trigger | Required Action |
@@ -98,18 +86,4 @@ TASK TRACKING — NON-NEGOTIABLE:
 
 No tasks on multi-step work = INCOMPLETE WORK.
 </task_discipline>`
-  }
-
-  return `<todo_discipline>
-TODO TRACKING — NON-NEGOTIABLE:
-
-| Trigger | Required Action |
-|---------|----------------|
-| 2+ steps | Call todowrite FIRST — atomic breakdown |
-| Starting a step | Mark in_progress — ONE at a time |
-| Completing a step | Mark completed — IMMEDIATELY |
-| Batching completions | NEVER allowed |
-
-No todos on multi-step work = INCOMPLETE WORK.
-</todo_discipline>`
 }
