@@ -124,7 +124,7 @@ Total: 15 proposals across 3 tiers, plus a recommended implementation sequence a
 - **Cost impact:** Avoids re-planning waste (re-generating a complex plan can cost 5–20K tokens).
 - **Performance impact:** Faster recovery; no "where was I?" turn.
 - **Complexity:** **Low-Medium.** Already have `handoff` tool + `.matrixx/` directory.
-- **Where:** `src/hooks/compaction-context-injector/`, `src/hooks/todo-continuation-enforcer/`, `src/features/handoff/`
+- **Where:** `src/hooks/compaction-context-injector/`, `src/hooks/task-continuation-enforcer/`, `src/features/handoff/`
 - **Source:** OthmanAdi/planning-with-files
 
 ---

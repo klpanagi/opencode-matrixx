@@ -161,9 +161,10 @@ are project-scoped by default and survive `/clear` and restarts, unlike
 ephemeral session todos.
 
 While incomplete tasks remain, `task-continuation-enforcer` re-injects them
-(Stop-handler with countdown and circuit-breaker checks). The legacy
-`todo-continuation-enforcer` only applies when `experimental.task_system`
-is `false`. Full spec: [`docs/task-system.md`](./task-system.md).
+(Stop-handler with countdown and circuit-breaker checks). It is the only
+enforcer; the legacy todo one it replaced was removed. Full spec:
+[`docs/task-system.md`](./task-system.md), removal notes in
+[`docs/legacy-todo-migration.md`](./legacy-todo-migration.md).
 
 ### Wisdom accumulation
 

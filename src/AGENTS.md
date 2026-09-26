@@ -19,7 +19,7 @@ src/
 ├── cli/                              # CLI installer, doctor (107+ files) — see cli/AGENTS.md
 ├── config/                           # Zod schema — see config/AGENTS.md
 ├── features/                         # Background agents, skills, commands (19 dirs) — see features/AGENTS.md
-│   ├── hooks/                            # 80 entries (63 dirs + loose .ts; HookNameSchema 66 literals) in 3 tiers — see hooks/AGENTS.md
+│   ├── hooks/                            # 75 entries (59 dirs + 16 loose .ts; HookNameSchema 62 enum + 5 literals = 67 accepted) in 3 tiers — see hooks/AGENTS.md
 ├── mcp/                              # Built-in MCPs (3: websearch, context7, document-reader) — see mcp/AGENTS.md
 ├── plugin/                           # Plugin interface composition (21 files)
 ├── plugin-handlers/                  # Config loading, plan inheritance (15 files) — see plugin-handlers/AGENTS.md
