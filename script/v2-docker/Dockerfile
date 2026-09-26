@@ -24,6 +24,7 @@ COPY probe-plugin /opt/v2-cli/probe-plugin
 COPY probe.mjs /opt/v2-smoke/probe.mjs
 COPY v1-client-probe.mjs /opt/v2-smoke/v1-client-probe.mjs
 COPY v2-client-probe.mjs /opt/v2-smoke/v2-client-probe.mjs
+COPY agent-listing-probe.mjs /opt/v2-smoke/agent-listing-probe.mjs
 COPY v2-route-probe.mjs /opt/v2-smoke/v2-route-probe.mjs
 COPY probe-plugin /opt/v2-smoke/probe-plugin
 COPY in-container.sh /opt/v2-smoke/in-container.sh

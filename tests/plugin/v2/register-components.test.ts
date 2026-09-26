@@ -3,6 +3,7 @@
 import { describe, expect, test } from "bun:test"
 import type { MatrixxConfig } from "../../../src/config"
 import { applyCommandConfig } from "../../../src/plugin-handlers/command-config-handler"
+import { applyAgentConfig } from "../../../src/plugin-handlers/agent-config-handler"
 import { applyMcpConfig } from "../../../src/plugin-handlers/mcp-config-handler"
 import type {
   V2CommandDefinition,
@@ -11,6 +12,7 @@ import type {
 import { registerV2Components } from "../../../src/plugin/v2/register-components"
 
 type DomainName = "agent" | "skill" | "command" | "mcp";
+
 
 type FakeCtx = V2ComponentRegistrar & {
   transformCalls: DomainName[];
@@ -104,8 +106,63 @@ function createFakeCtx(existingAgentIds: string[] = []): FakeCtx {
   } as FakeCtx;
 }
 
-function createDeps(overrides: Partial<MatrixxConfig> = {}) {
+type IntroducingCtx = FakeCtx & { registry: Map<string, Record<string, unknown>> };
+
+/**
+ * A fake whose `agent.update` mirrors V2 core: an absent id is seeded from
+ * `Agent.Info.default(id)` and inserted, so the registry is observable exactly
+ * the way `agent.list()` observes it on a live host.
+ */
+function createIntroducingCtx(existingAgentIds: string[] = []): IntroducingCtx {
+  const base = createFakeCtx(existingAgentIds);
+  const registry = new Map<string, Record<string, unknown>>();
+  let chosen: string | undefined;
+  for (const id of existingAgentIds) registry.set(id, { id, name: id });
+
   return {
+    ...base,
+    registry,
+    get defaultAgent() {
+      return chosen;
+    },
+    agent: {
+      transform: async (callback: (editor: never) => void) => {
+        base.transformCalls.push("agent");
+        const registration = {
+          dispose: async () => {
+            base.disposeOrder.push("agent");
+          },
+        };
+        callback({
+          get: (id: string) => registry.get(id),
+          update: (id: string, mutate: (agent: Record<string, unknown>) => void) => {
+            const current = registry.get(id) ?? {
+              id,
+              name: id,
+              request: { settings: {}, headers: {}, body: {} },
+              mode: "primary",
+              hidden: false,
+              permissions: [],
+            };
+            registry.set(id, current);
+            mutate(current);
+            current.id = id;
+            base.updatedAgents.push(id);
+          },
+          default: (id: string | undefined) => {
+            chosen = id;
+          },
+        } as never);
+        return registration;
+      },
+      reload: async () => {
+        base.reloadCalls.push("agent");
+      },
+    },
+  } as IntroducingCtx;
+}
+
+function createDeps(overrides: Partial<MatrixxConfig> = {}) {  return {
     directory: "/tmp/matrixx-v2-registrar",
     availableToolNames: [] as string[],
     pluginConfig: {
@@ -242,6 +299,49 @@ describe("registerV2Components", () => {
     expect(ctx.updatedAgents).toContain("morpheus")
     expect(ctx.updatedAgents).toContain("mouse")
     expect(ctx.defaultAgent).toBe("morpheus")
+  })
+
+  test("introduces every agent the V1 resolution produced, on an empty V2 editor", async () => {
+    //#given
+    const deps = createDeps()
+    const v1Config: Record<string, unknown> = {}
+    const v1Agents = await applyAgentConfig({
+      config: v1Config,
+      pluginConfig: deps.pluginConfig,
+      ctx: { directory: deps.directory },
+      pluginComponents: {
+        commands: {},
+        skills: {},
+        agents: {},
+        mcpServers: {},
+        hooksConfigs: [],
+        plugins: [],
+        errors: [],
+      },
+    })
+    const ctx = createIntroducingCtx()
+
+    //#when
+    await registerV2Components(ctx, deps)
+
+    //#then
+    expect([...ctx.registry.keys()].sort()).toEqual(Object.keys(v1Agents).sort())
+    expect(Object.keys(v1Agents).length).toBeGreaterThan(0)
+  })
+
+  test("the introduced agents carry the resolved system prompt and mode", async () => {
+    //#given
+    const ctx = createIntroducingCtx()
+    const deps = createDeps()
+
+    //#when
+    await registerV2Components(ctx, deps)
+
+    //#then
+    const morpheus = ctx.registry.get("morpheus")
+    expect(typeof morpheus?.system).toBe("string")
+    expect(morpheus?.system).toContain("Morpheus")
+    expect(morpheus?.mode).toBeDefined()
   })
 
   test("delivers the rendered command template through session.prompt", async () => {

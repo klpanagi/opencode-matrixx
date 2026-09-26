@@ -228,6 +228,42 @@ if [ -f "$OUT_DIR/matrixx-load-object.json" ]; then
   sed 's/^/     /' "$OUT_DIR/matrixx-load-object.json"
 fi
 
+# ---- ASSERTION: the Matrixx agents exist on a real V2 host ------------------
+# This section ASSERTS, unlike the rest of this script. A fake-ctx unit test is
+# not evidence here — the previous adapter passed 54 unit tests and was refuted
+# by a live host. The verdict comes from a live `agent.list` whose parsed JSON is
+# checked for shape, for a negative control, and for coverage of every id the
+# plugin reported resolving in the same container.
+log ""
+log "-- ASSERT: Matrixx agents on a live V2 host (agent.list) --"
+if [ -f "$OUT_DIR/agent-listing-probe.json" ]; then
+  node -e '
+    const r = require(process.argv[1]);
+    const w = Math.max(...r.checks.map((c) => c.name.length));
+    for (const c of r.checks) {
+      console.log("   " + (c.ok ? "PASS" : "FAIL") + "  " + c.name.padEnd(w) +
+                  (c.detail ? "   (" + c.detail + ")" : ""));
+    }
+    console.log("");
+    console.log("   agents listed on host (" + r.totalAgents + "): " + JSON.stringify(r.agentIds));
+    console.log("   agents the plugin resolved  (" + (r.resolvedIds||[]).length + "): " + JSON.stringify(r.resolvedIds));
+    console.log("   negative control: " + r.negativeControl + " -> " + (r.negativeControlPresent ? "PRESENT (BAD)" : "absent"));
+  ' "$OUT_DIR/agent-listing-probe.json"
+  case "$(cat "$OUT_DIR/agent-listing-probe.exit" 2>/dev/null || echo missing)" in
+    0) log "   VERDICT: PASS — the live host lists every agent the plugin resolved" ;;
+    1) fail "ASSERT: the live V2 host does NOT list every resolved Matrixx agent" ;;
+    *) fail "ASSERT: agent-listing-probe did not complete" ;;
+  esac
+else
+  fail "ASSERT: agent-listing-probe.json missing — no evidence the agents exist"
+fi
+
+if [ -f "$OUT_DIR/matrixx.log" ]; then
+  log ""
+  log "-- ASSERT: what registerV2Components reported introducing --"
+  grep -o 'V2 agents registered via editor.update.*' "$OUT_DIR/matrixx.log" | head -1 | sed 's/^/     /'
+fi
+
 HOOK_EVIDENCE=$(grep -c " event " "$OUT_DIR/probe-plugin-trace.log" 2>/dev/null || echo 0)
 log ""
 log "   V2 events observed by the probe plugin: $HOOK_EVIDENCE"

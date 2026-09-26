@@ -185,6 +185,13 @@ node /opt/v2-cli/v2-client-probe.mjs "$URL" "$PASSWORD" "$PROJ" "$OUT/v2-client-
   > "$OUT/v2-client-probe-2.log" 2>&1
 echo "v2 client probe (second pass) exit: $?"
 
+# Asserting probe: the Matrixx agents must be visible on THIS live host.
+cp /opt/v2-smoke/agent-listing-probe.mjs /opt/v2-cli/agent-listing-probe.mjs
+node /opt/v2-cli/agent-listing-probe.mjs "$URL" "$PASSWORD" "$PROJ" \
+  "$OUT/agent-listing-probe.json" "$OUT/agent-listing-probe.exit" /tmp/matrixx.log \
+  > "$OUT/agent-listing-probe.log" 2>&1
+echo "agent listing probe exit: $?"
+
 # Per-route capability probe: for every V1 member Matrixx calls, record the raw
 # V2 route (status + content-type + SPA-vs-JSON) and the V2 client method.
 cp /opt/v2-smoke/v2-route-probe.mjs /opt/v2-cli/v2-route-probe.mjs

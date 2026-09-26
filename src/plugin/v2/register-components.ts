@@ -52,17 +52,17 @@ export async function registerV2Components(
 
   registrations.push(
     await ctx.agent.transform((editor) => {
-      const { refined, unresolvable } = partitionAgentsForV2(agents, editor)
-      for (const [id, fields] of refined) {
+      const { refined, unresolvable, all } = partitionAgentsForV2(agents, editor)
+      for (const [id, fields] of all) {
         editor.update(id, (agent) => Object.assign(agent, fields))
       }
       if (defaultAgent) editor.default(defaultAgent)
-      if (unresolvable.length > 0) {
-        log(
-          "[registerV2Components] V2 AgentEditor exposes no add(); unresolvable agents were not introduced",
-          { unresolvable: unresolvable.map(([id]) => id) },
-        )
-      }
+      log("[registerV2Components] V2 agents registered via editor.update", {
+        introduced: unresolvable.length,
+        refined: refined.length,
+        total: all.length,
+        ids: all.map(([id]) => id),
+      })
     }),
   )
   await ctx.agent.reload()
