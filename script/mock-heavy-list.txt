@@ -43,3 +43,4 @@ tests/config/model-migration.test.ts
 tests/tools/preset/tools.test.ts
 tests/tools/delegate-task/sync-task.timeout.test.ts
 tests/tools/delegate-task/timing.test.ts
+tests/shared/opencode-http-api.test.ts

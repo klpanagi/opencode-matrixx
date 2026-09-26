@@ -30,8 +30,8 @@ async function main() {
   // 1. isTaskSystemEnabled defaults true
   console.log("\n[1] isTaskSystemEnabled defaults")
   assert(isTaskSystemEnabled(undefined) === true, "undefined => true")
-  assert(isTaskSystemEnabled({ experimental: { task_system: true } } as any) === true, "true => true")
-  assert(isTaskSystemEnabled({ experimental: { task_system: false } } as any) === false, "false => false")
+  assert(isTaskSystemEnabled({ experimental: { task_system: true } }) === true, "true => true")
+  assert(isTaskSystemEnabled({ experimental: { task_system: false } }) === true, "false => true (legacy key ignored)")
 
   // 2. Symmetric deny: task_system:true denies todowrite, allows task_*
   console.log("\n[2] applyToolConfig symmetric deny (task_system:true)")
@@ -125,8 +125,8 @@ async function main() {
   console.log("\n[6] Conditional continuation hooks")
   // We verify via isTaskSystemEnabled that correct hook would be chosen
   // (full createContinuationHooks test requires plugin context, so we test gating only)
-  assert(isTaskSystemEnabled({ experimental: { task_system: true } } as any) === true, "task_system true => task-continuation active")
-  assert(isTaskSystemEnabled({ experimental: { task_system: false } } as any) === false, "task_system false => todo-continuation active")
+  assert(isTaskSystemEnabled({ experimental: { task_system: true } }) === true, "task_system true => task-continuation active")
+  assert(isTaskSystemEnabled({ experimental: { task_system: false } }) === true, "task_system false => task-continuation still active (legacy key ignored)")
 
   // 7. I3 fence: create → update → list → get → cleanup round-trip on .matrixx/tasks/T-{uuid}.json
   console.log("\n[7] Task storage round-trip (I3 behavior-preservation fence)")

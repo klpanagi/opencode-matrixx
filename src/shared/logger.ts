@@ -6,6 +6,10 @@ import * as path from "node:path"
 
 const logFile = path.join(os.tmpdir(), "matrixx.log")
 
+export function warn(message: string, data?: unknown): void {
+  log(`[WARN] ${message}`, data);
+}
+
 export function log(message: string, data?: unknown): void {
   try {
     const timestamp = new Date().toISOString()

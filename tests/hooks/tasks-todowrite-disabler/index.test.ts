@@ -59,9 +59,9 @@ describe("tasks-todowrite-disabler", () => {
     })
   })
 
-  describe("when experimental.task_system is disabled or undefined", () => {
-    test("should not block TodoWrite when flag is false", async () => {
-      // given
+  describe("when the legacy task_system flag is false", () => {
+    test("should still block TodoWrite because the task system is unconditional", async () => {
+      // given: the legacy flag no longer gates anything
       const hook = createTasksTodowriteDisablerHook({ experimental: { task_system: false } })
       const input = {
         tool: "TodoWrite",
@@ -75,7 +75,7 @@ describe("tasks-todowrite-disabler", () => {
       // when / then
       await expect(
         hook["tool.execute.before"](input, output)
-      ).resolves.toBeUndefined()
+      ).rejects.toThrow("TodoRead/TodoWrite are DISABLED")
     })
 
     test("should not block TodoWrite when experimental is undefined", async () => {
@@ -96,8 +96,8 @@ describe("tasks-todowrite-disabler", () => {
       ).rejects.toThrow("TodoRead/TodoWrite are DISABLED")
     })
 
-    test("should not block TodoRead when flag is false", async () => {
-      // given
+    test("should still block TodoRead because the task system is unconditional", async () => {
+      // given: the legacy flag no longer gates anything
       const hook = createTasksTodowriteDisablerHook({ experimental: { task_system: false } })
       const input = {
         tool: "TodoRead",
@@ -111,7 +111,7 @@ describe("tasks-todowrite-disabler", () => {
       // when / then
       await expect(
         hook["tool.execute.before"](input, output)
-      ).resolves.toBeUndefined()
+      ).rejects.toThrow("TodoRead/TodoWrite are DISABLED")
     })
   })
 
