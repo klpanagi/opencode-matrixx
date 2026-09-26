@@ -19,7 +19,6 @@ import {
   createRulesInjectorHook,
   createSecretLeakGuardHook,
   createTaskEditGuardHook,
-  createTaskNotepadHook,
   createToolOutputTruncatorHook,
   createWebFetchRedirectGuardHook,
   createWriteExistingFileGuardHook,
@@ -50,7 +49,6 @@ export type ToolGuardHooks = {
   readImageResizer: ReturnType<typeof createReadImageResizerHook> | null
   webfetchRedirectGuard: ReturnType<typeof createWebFetchRedirectGuardHook> | null
   qualityGate: ReturnType<typeof createQualityGateHook> | null
-  taskNotepad: ReturnType<typeof createTaskNotepadHook> | null
   taskEditGuard: ReturnType<typeof createTaskEditGuardHook> | null
   documentReaderGuard: ReturnType<typeof createDocumentReaderGuardHook> | null
   knowledgeHubGuard: ReturnType<typeof createKnowledgeHubGuardHook> | null
@@ -146,10 +144,6 @@ export function createToolGuardHooks(args: {
     ? safeHook("quality-gate", () => createQualityGateHook())
     : null
 
-  const taskNotepad = isHookEnabled("task-notepad")
-    ? safeHook("task-notepad", () => createTaskNotepadHook(ctx))
-    : null
-
   const taskEditGuard = isHookEnabled("task-edit-guard")
     ? safeHook("task-edit-guard", () => createTaskEditGuardHook(ctx))
     : null
@@ -193,7 +187,6 @@ export function createToolGuardHooks(args: {
     readImageResizer,
     webfetchRedirectGuard,
     qualityGate,
-    taskNotepad,
     taskEditGuard,
     documentReaderGuard,
     knowledgeHubGuard,

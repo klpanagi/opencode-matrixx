@@ -1,6 +1,6 @@
 
-// Awaiting-user guard shared by task-continuation-enforcer and
-// todo-continuation-enforcer. No schema change: operates on in-memory
+// Awaiting-user guard used by the task-continuation-enforcer. No schema
+// change: operates on in-memory
 // SessionState only. Suppression is bounded by SESSION_STATE_TTL_MS
 // (10min prune in session-state.ts); an explicit timestamp expires stale
 // markers even sooner so abandoned questions still resume enforcement.

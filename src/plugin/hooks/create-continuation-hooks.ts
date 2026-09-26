@@ -4,7 +4,6 @@ import {
   createArchitectHook,
   createBackgroundNotificationHook,
   createCompactionContextInjector,
-  createCompactionTodoPreserverHook,
   createEvolutionCompressorHook,
   createEvolutionHitlHook,
   createNudgeLoopBreakerHook,
@@ -19,7 +18,6 @@ import { createUnstableAgentBabysitter } from "../unstable-agent-babysitter"
 export type ContinuationHooks = {
   stopContinuationGuard: ReturnType<typeof createStopContinuationGuardHook> | null
   compactionContextInjector: ReturnType<typeof createCompactionContextInjector> | null
-  compactionTodoPreserver: ReturnType<typeof createCompactionTodoPreserverHook> | null
   taskContinuationEnforcer: ReturnType<typeof createTaskContinuationEnforcer> | null
   unstableAgentBabysitter: ReturnType<typeof createUnstableAgentBabysitter> | null
   nudgeLoopBreaker: ReturnType<typeof createNudgeLoopBreakerHook> | null
@@ -73,10 +71,6 @@ export function createContinuationHooks(args: {
 
   const compactionContextInjector = isHookEnabled("compaction-context-injector")
     ? safeHook("compaction-context-injector", () => createCompactionContextInjector(backgroundManager))
-    : null
-
-  const compactionTodoPreserver = isHookEnabled("compaction-todo-preserver")
-    ? safeHook("compaction-todo-preserver", () => createCompactionTodoPreserverHook(ctx))
     : null
 
   const taskContinuationEnforcer = isHookEnabled("task-continuation-enforcer")
@@ -153,7 +147,6 @@ export function createContinuationHooks(args: {
   return {
     stopContinuationGuard,
     compactionContextInjector,
-    compactionTodoPreserver,
     taskContinuationEnforcer,
     unstableAgentBabysitter,
     nudgeLoopBreaker,

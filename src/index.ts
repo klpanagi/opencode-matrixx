@@ -92,7 +92,6 @@ const pluginConfig = await loadPluginConfig(ctx.directory, ctx)
       _input: { sessionID: string },
       output: { context: string[] },
     ): Promise<void> => {
-      await hooks.compactionTodoPreserver?.capture(_input.sessionID)
       if (hooks.compactionContextInjector) {
         output.context.push(hooks.compactionContextInjector(_input.sessionID))
       }

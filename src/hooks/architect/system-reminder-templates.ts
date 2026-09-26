@@ -88,11 +88,11 @@ For EACH changed file, verify:
 
 Static analysis CANNOT catch: visual bugs, animation issues, user flow breakages.
 
-**STEP 4: IF QA IS NEEDED - ADD TO TODO IMMEDIATELY**
+**STEP 4: IF QA IS NEEDED - ADD A TASK IMMEDIATELY**
 
 \`\`\`
-todowrite([
-  { id: "qa-X", content: "HANDS-ON QA: [specific verification action]", status: "pending", priority: "high" }
+task_create([
+  { subject: "HANDS-ON QA: [specific verification action]", status: "pending", priority: "high" }
 ])
 \`\`\`
 

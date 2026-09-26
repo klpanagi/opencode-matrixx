@@ -68,4 +68,3 @@ export function createTaskContinuationHandler(args: {
   }
 }
 
-export const createTodoContinuationHandler = createTaskContinuationHandler

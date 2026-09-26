@@ -51,7 +51,7 @@ src/
 - Transform (3): keyword-detector, context-injector, thinking-block-validator
 
 **Continuation Hooks** (`create-continuation-hooks.ts`):
-- 9 hooks: `stop-continuation-guard`, `compaction-context-injector`, `compaction-todo-preserver`, `task-continuation-enforcer` (file-backed `.matrixx/tasks`, project-scoped), `todo-continuation-enforcer` (legacy `experimental.task_system=false`), `architect`, `task-notepad`, `task-resume-info`, `plan-persister` ...
+- 8 hooks: `stop-continuation-guard`, `compaction-context-injector`, `task-continuation-enforcer` (file-backed `.matrixx/tasks`, project-scoped), `unstable-agent-babysitter`, `nudge-loop-breaker`, `background-notification`, `architect`, `plan-persister` ...
 
 **Skill Hooks** (`create-skill-hooks.ts`):
 - 2 hooks: category-skill-reminder, auto-slash-command

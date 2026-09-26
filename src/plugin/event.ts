@@ -47,7 +47,6 @@ export function createEventHandler(args: {
     await Promise.resolve(hooks.interactiveBashSession?.event?.(input))
     await Promise.resolve(hooks.matrixLoop?.event?.(input))
     await Promise.resolve(hooks.stopContinuationGuard?.event?.(input))
-    await Promise.resolve(hooks.compactionTodoPreserver?.event?.(input))
     await Promise.resolve(hooks.architectHook?.handler?.(input))
     await Promise.resolve(hooks.planPersister?.event?.(input))
     await Promise.resolve(hooks.runtimeFallback?.event?.(input))

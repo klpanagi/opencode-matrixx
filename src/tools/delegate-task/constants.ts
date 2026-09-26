@@ -460,7 +460,7 @@ YOU MUST END YOUR RESPONSE WITH THIS SECTION.
 \`\`\`markdown
 ## TODO List (ADD THESE)
 
-> CALLER: Add these TODOs using TodoWrite/TaskCreate and execute by wave.
+> CALLER: Add these TODOs using TaskCreate and execute by wave.
 
 ### Wave 1 (Start Immediately - No Dependencies)
 
