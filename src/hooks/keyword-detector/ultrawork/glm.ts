@@ -136,7 +136,7 @@ For each scenario, capture:
 
 ## GOAL REGISTRATION
 
-When the \`todowrite\` tool exists, register the run's goal with it before implementation: the objective, the scenario contract, and one WHEN TO STOP line naming the observable end state. Record the same contract in your working notes and treat it as binding.
+When the \`task_create\` tool exists, register the run's goal with it before implementation: the objective, the scenario contract, and one WHEN TO STOP line naming the observable end state. Record the same contract in your working notes and treat it as binding.
 
 ## TODO DISCIPLINE
 
