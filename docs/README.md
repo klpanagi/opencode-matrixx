@@ -40,6 +40,13 @@
 |---|---|---|
 | `research/cost-performance.md` | Researchers | Point-in-time cost/performance proposals (not a usage reference) |
 
+## Engineering
+
+| Page | Audience | What you get |
+|---|---|---|
+| `v2-migration.md` | Engineers continuing the migration | OpenCode V1→V2 status, verified V2 capability matrix, upstream V1-deprecation assessment, dependency-ordered V1 removal plan |
+| `v2-smoke.md` | Engineers | The Docker harness that proves V2 against a real OpenCode V2 host |
+
 ## Suggested paths
 
 - **First install:** `guide/overview.md` → `guide/installation.md` → `features.md`.
