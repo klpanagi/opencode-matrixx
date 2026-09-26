@@ -28,16 +28,18 @@ const HANDLER = path.join(SRC, "plugin-handlers/tool-config-handler.ts")
 
 type TodoPermission = "allow" | "deny" | true | false | undefined
 
+/** Agent keys the handler looks up, in source order. */
+const AGENT_KEYS = ["operator", "trinity", "construct", "architect", "morpheus", "keymaker", "oracle", "mouse"] as const
+
+/** Agents that receive a task-system arm and therefore must deny both todo tools. */
+const TODO_DENY_AGENTS = ["architect", "morpheus", "keymaker", "oracle", "mouse"] as const
+
+/** Agents whose permission block is scoped to other tools only (never a todo allow). */
+const SCOPED_AGENTS = ["operator", "trinity", "construct"] as const
+
 function run(pluginConfig: unknown, seedTools?: Record<string, unknown>) {
   const config: Record<string, unknown> = seedTools ? { tools: { ...seedTools } } : { tools: {} }
-  const agentResult: Record<string, unknown> = {
-    architect: {},
-    morpheus: {},
-    oracle: {},
-    mouse: {},
-    keymaker: {},
-    construct: {},
-  }
+  const agentResult: Record<string, unknown> = Object.fromEntries(AGENT_KEYS.map((key) => [key, {}]))
   applyToolConfig({
     config,
     pluginConfig: pluginConfig as MatrixxConfig,
@@ -117,5 +119,67 @@ describe("plugin config wins over a hand-set user override", () => {
     //#then the plugin value wins and the override is gone
     expect(tools.todowrite).toBe(false)
     expect(tools.todoread).toBe(false)
+  })
+
+  test("the user override loses for tasks.enabled true, false and absent", () => {
+    //#given a hand-set user override under every task-system configuration
+    const userTools = { todowrite: true, todoread: true }
+    const enabled = run({ tasks: { enabled: true } }, userTools)
+    const disabled = run({ tasks: { enabled: false } }, userTools)
+    const absent = run({}, userTools)
+
+    //#when applyToolConfig spreads the plugin tools after the user's
+
+    //#then the user's enable flag is overwritten in all three cases
+    for (const result of [enabled, disabled, absent]) {
+      expect(result.tools.todowrite).toBe(false)
+      expect(result.tools.todoread).toBe(false)
+    }
+  })
+})
+
+describe("every agent arm denies the todo tools", () => {
+  test("the source file looks up exactly the agents the test enumerates", () => {
+    //#given the handler source
+    const source = fs.readFileSync(HANDLER, "utf-8")
+
+    //#then the agent keys found in the source match the literal list
+    const found = [...source.matchAll(/agentByKey\(params\.agentResult,\s*"([^"]+)"\)/g)].map((m) => m[1])
+    expect(found.sort()).toEqual([...AGENT_KEYS].sort())
+  })
+
+  test("each todo-arm agent denies todowrite and todoread", () => {
+    //#given the full agent set
+    const { agentResult } = run({ tasks: { enabled: true, scope: "project" } })
+
+    //#then every todo-arm agent carries an explicit deny for both keys
+    for (const name of TODO_DENY_AGENTS) {
+      const permission = (agentResult[name] as { permission?: Record<string, TodoPermission> }).permission ?? {}
+      expect(permission.todowrite).toBe("deny")
+      expect(permission.todoread).toBe("deny")
+    }
+  })
+
+  test("no other agent arm introduces a todo permission", () => {
+    //#given the remaining agent arms, whose permissions are scoped to other tools
+    const { agentResult } = run({ tasks: { enabled: true, scope: "project" } })
+
+    //#then none of them mentions a todo key at all
+    for (const name of SCOPED_AGENTS) {
+      const permission = (agentResult[name] as { permission?: Record<string, TodoPermission> }).permission ?? {}
+      expect(permission.todowrite).toBeUndefined()
+      expect(permission.todoread).toBeUndefined()
+    }
+  })
+
+  test("the todo-arm and scoped sets together cover every agent key", () => {
+    //#given the two disjoint agent groups
+
+    //#then their union is the complete agent set, with no gap and no overlap
+    const union = new Set([...TODO_DENY_AGENTS, ...SCOPED_AGENTS])
+    expect(union.size).toBe(AGENT_KEYS.length)
+    for (const name of AGENT_KEYS) {
+      expect(union.has(name)).toBe(true)
+    }
   })
 })
