@@ -1,9 +1,11 @@
-import type { PluginInput } from "@opencode-ai/plugin"
+import type { PluginContext } from "../../plugin/types"
 import { buildEnvPrefix, log } from "../../shared"
 import { HOOK_NAME, NON_INTERACTIVE_ENV, SHELL_COMMAND_PATTERNS } from "./constants"
 
 export * from "./constants"
 export * from "./detector"
+
+import { V1_HOOK_KEYS } from "../../config/schema/hooks-v1-keys"
 
 const BANNED_COMMAND_PATTERNS = SHELL_COMMAND_PATTERNS.banned
   .filter((command) => !command.includes("("))
@@ -18,9 +20,9 @@ function detectBannedCommand(command: string): string | undefined {
   return undefined
 }
 
-export function createNonInteractiveEnvHook(_ctx: PluginInput) {
+export function createNonInteractiveEnvHook(_ctx: PluginContext) {
   return {
-    "tool.execute.before": async (
+    [V1_HOOK_KEYS.toolExecuteBefore]: async (
       input: { tool: string; sessionID: string; callID: string },
       output: { args: Record<string, unknown>; message?: string }
     ): Promise<void> => {

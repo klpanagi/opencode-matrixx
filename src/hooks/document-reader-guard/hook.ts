@@ -1,5 +1,6 @@
-import type { Hooks, PluginInput } from "@opencode-ai/plugin"
-
+import type { Hooks } from "@opencode-ai/plugin"
+import { V1_HOOK_KEYS } from "../../config/schema/hooks-v1-keys"
+import type { PluginContextSlice } from "../../plugin/types"
 import { log } from "../../shared"
 import { BASH_BLOCK_MESSAGE, BINARY_EXTENSIONS, BLOCKED_PATTERNS, HOOK_NAME, READ_BLOCK_MESSAGE } from "./constants"
 
@@ -13,9 +14,9 @@ function isBinaryDocument(filePath: string): boolean {
   return (BINARY_EXTENSIONS as readonly string[]).some((ext) => normalized.endsWith(ext))
 }
 
-export function createDocumentReaderGuardHook(ctx: PluginInput): Hooks {
+export function createDocumentReaderGuardHook(ctx: PluginContextSlice<"directory">): Hooks {
   return {
-    "tool.execute.before": async (
+    [V1_HOOK_KEYS.toolExecuteBefore]: async (
       input: { tool: string; sessionID: string; callID: string },
       output: { args: Record<string, unknown>; message?: string },
     ): Promise<void> => {

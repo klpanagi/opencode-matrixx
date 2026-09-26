@@ -59,3 +59,23 @@ export const BuiltinSkillNameSchema = z.enum([
 
 export type AgentName = z.infer<typeof BuiltinAgentNameSchema>
 
+export const V1_TO_V2_AGENT_NAMES: Record<AgentName, AgentName> = {
+  morpheus: "morpheus",
+  keymaker: "keymaker",
+  oracle: "oracle",
+  merovingian: "merovingian",
+  operator: "operator",
+  trinity: "trinity",
+  construct: "construct",
+  seraph: "seraph",
+  smith: "smith",
+  architect: "architect",
+  cipher: "cipher",
+  sentinel: "sentinel",
+  sati: "sati",
+  "bdd-contract": "bdd-contract",
+}
+
+export const V2AgentNameSchema = BuiltinAgentNameSchema
+export type V2AgentName = z.infer<typeof V2AgentNameSchema>
+

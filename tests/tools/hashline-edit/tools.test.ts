@@ -44,7 +44,7 @@ describe("createHashlineEditTool", () => {
         edits: [{ op: "replace", pos: `2#${hash}`, lines: "modified line2" }],
       },
       createMockContext(),
-    )
+    ).then((__r) => __r.content)
 
     //#then
     expect(fs.readFileSync(filePath, "utf-8")).toBe("line1\nmodified line2\nline3")
@@ -78,7 +78,7 @@ describe("createHashlineEditTool", () => {
         ],
       },
       createMockContext(),
-    )
+    ).then((__r) => __r.content)
 
     //#then
     expect(fs.readFileSync(filePath, "utf-8")).toBe("line1\nreplaced\nline4\ninserted")
@@ -96,7 +96,7 @@ describe("createHashlineEditTool", () => {
         edits: [{ op: "replace", pos: "1#ZZ", lines: "new" }],
       },
       createMockContext(),
-    )
+    ).then((__r) => __r.content)
 
     //#then
     expect(result).toContain("Error")
@@ -115,7 +115,7 @@ describe("createHashlineEditTool", () => {
         edits: [{ op: "replace", pos: "42", lines: "updated" }],
       },
       createMockContext(),
-    )
+    ).then((__r) => __r.content)
 
     //#then
     expect(result).toContain("Error")
@@ -135,7 +135,7 @@ describe("createHashlineEditTool", () => {
         edits: [{ op: "replace", pos: `1#${line1Hash}`, lines: "join(\\n)" }],
       },
       createMockContext(),
-    )
+    ).then((__r) => __r.content)
 
     await tool.execute(
       {
@@ -143,7 +143,7 @@ describe("createHashlineEditTool", () => {
         edits: [{ op: "append", pos: `1#${computeLineHash(1, "join(\\n)")}`, lines: ["a", "b"] }],
       },
       createMockContext(),
-    )
+    ).then((__r) => __r.content)
 
     //#then
     expect(fs.readFileSync(filePath, "utf-8")).toBe("join(\\n)\na\nb\nline2")
@@ -166,7 +166,7 @@ describe("createHashlineEditTool", () => {
         ],
       },
       createMockContext(),
-    )
+    ).then((__r) => __r.content)
 
     //#then
     expect(fs.readFileSync(filePath, "utf-8")).toBe("line1\nbetween\nline2\nbefore3\nline3")
@@ -185,7 +185,7 @@ describe("createHashlineEditTool", () => {
         edits: [{ op: "append", pos: `1#${line1}`, lines: [] }],
       },
       createMockContext(),
-    )
+    ).then((__r) => __r.content)
 
     //#then
     expect(result).toContain("Error")
@@ -207,7 +207,7 @@ describe("createHashlineEditTool", () => {
         edits: [{ op: "replace", pos: `2#${line2}`, lines: "line2-updated" }],
       },
       createMockContext(),
-    )
+    ).then((__r) => __r.content)
 
     //#then
     expect(fs.existsSync(filePath)).toBe(false)
@@ -228,7 +228,7 @@ describe("createHashlineEditTool", () => {
         edits: [],
       },
       createMockContext(),
-    )
+    ).then((__r) => __r.content)
 
     //#then
     expect(fs.existsSync(filePath)).toBe(false)
@@ -249,7 +249,7 @@ describe("createHashlineEditTool", () => {
         ],
       },
       createMockContext(),
-    )
+    ).then((__r) => __r.content)
 
     //#then
     expect(fs.existsSync(filePath)).toBe(true)
@@ -270,7 +270,7 @@ describe("createHashlineEditTool", () => {
         edits: [{ op: "replace", pos: `2#${line2Hash}`, lines: ["line2-updated"] }],
       },
       createMockContext(),
-    )
+    ).then((__r) => __r.content)
 
     //#then
     expect(fs.readFileSync(filePath, "utf-8")).toBe("line1\nline2-updated\nline3")
@@ -290,7 +290,7 @@ describe("createHashlineEditTool", () => {
         edits: [{ op: "append", end: `1#${line1Hash}`, lines: ["inserted"] }],
       },
       createMockContext(),
-    )
+    ).then((__r) => __r.content)
 
     //#then
     expect(fs.readFileSync(filePath, "utf-8")).toBe("line1\ninserted\nline2")
@@ -310,7 +310,7 @@ describe("createHashlineEditTool", () => {
         edits: [{ op: "replace", pos: `2#${line2Hash}`, lines: "line2-updated" }],
       },
       createMockContext(),
-    )
+    ).then((__r) => __r.content)
 
     //#then
     const bytes = fs.readFileSync(filePath)
@@ -355,7 +355,7 @@ describe("createHashlineEditTool", () => {
         edits: [{ op: "replace", pos: "1#ZZ", lines: "bad" }],
       },
       createMockContext(),
-    )
+    ).then((__r) => __r.content)
 
     //#then
     expect(result).toContain("delete mode requires edits to be an empty array")
@@ -376,7 +376,7 @@ describe("createHashlineEditTool", () => {
         edits: [],
       },
       createMockContext(),
-    )
+    ).then((__r) => __r.content)
 
     //#then
     expect(result).toContain("delete and rename cannot be used together")
@@ -394,7 +394,7 @@ describe("createHashlineEditTool", () => {
         edits: [{ op: "append", pos: "1#ZZ", lines: ["bad"] }],
       },
       createMockContext(),
-    )
+    ).then((__r) => __r.content)
 
     //#then
     expect(result).toContain("File not found")
@@ -411,7 +411,7 @@ describe("createHashlineEditTool", () => {
         edits: [{ op: "append", lines: ["created"] }],
       },
       createMockContext(),
-    )
+    ).then((__r) => __r.content)
 
     //#then
     expect(fs.existsSync(filePath)).toBe(true)

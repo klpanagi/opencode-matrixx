@@ -105,7 +105,7 @@ describe("createHashlineEditTool: PLANS_DIR rejection", () => {
     const result = await tool.execute(
       { filePath, edits: [{ op: "replace", pos: `1#${computeLineHash(1, "line1")}`, lines: ["modified"] }] },
       createMockContext(),
-    )
+    ).then((__r) => __r.content)
     //#then it succeeds (non-plan files unaffected)
     expect(fs.readFileSync(filePath, "utf-8")).toBe("modified\nline2")
     expect(result).toBe(`Updated ${filePath}`)
@@ -121,7 +121,7 @@ describe("createHashlineEditTool: PLANS_DIR rejection", () => {
     const result = await tool.execute(
       { filePath: sourcePath, rename: renamedPath, edits: [{ op: "replace", pos: `1#${computeLineHash(1, "line1")}`, lines: ["x"] }] },
       createMockContext(),
-    )
+    ).then((__r) => __r.content)
     //#then it succeeds
     expect(fs.existsSync(sourcePath)).toBe(false)
     expect(fs.readFileSync(renamedPath, "utf-8")).toBe("x\nline2")

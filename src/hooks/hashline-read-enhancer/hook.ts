@@ -1,4 +1,5 @@
-import type { PluginInput } from "@opencode-ai/plugin"
+import { V1_HOOK_KEYS } from "../../config/schema/hooks-v1-keys"
+import type { PluginContext } from "../../plugin/types"
 import { isReadTool, isWriteTool } from "../../shared/tool-guards"
 import { computeLineHash } from "../../tools/hashline-edit/hash-computation"
 
@@ -160,11 +161,11 @@ async function appendWriteHashlineOutput(output: { output: string; metadata: unk
 }
 
 export function createHashlineReadEnhancerHook(
-  _ctx: PluginInput,
+  _ctx: PluginContext,
   config: HashlineReadEnhancerConfig
 ) {
   return {
-    "tool.execute.after": async (
+    [V1_HOOK_KEYS.toolExecuteAfter]: async (
       input: { tool: string; sessionID: string; callID: string },
       output: { title: string; output: string; metadata: unknown }
     ) => {

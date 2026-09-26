@@ -1,4 +1,4 @@
-import type { PluginInput } from "@opencode-ai/plugin"
+import type { PluginContext } from "../../plugin/types"
 import { log } from "../../shared/logger"
 
 interface TodoSnapshot {
@@ -24,7 +24,7 @@ function extractTodos(response: unknown): TodoSnapshot[] {
 }
 let testWriter: TodoWriter | null | undefined 
 
-  async function resolveTodoWriter(_ctx: PluginInput): Promise<TodoWriter | null> {
+  async function resolveTodoWriter(_ctx: PluginContext): Promise<TodoWriter | null> {
   if (testWriter !== undefined) return testWriter
   return null
 }
@@ -48,7 +48,7 @@ export interface CompactionTodoPreserver {
 }
 
 export function createCompactionTodoPreserverHook(
-  ctx: PluginInput,
+  ctx: PluginContext,
 ): CompactionTodoPreserver {
   const snapshots = new Map<string, TodoSnapshot[]>()
 

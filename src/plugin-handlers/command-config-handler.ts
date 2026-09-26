@@ -1,6 +1,6 @@
 import type { MatrixxConfig } from "../config";
 import { loadBuiltinCommands } from "../features/builtin-commands";
-import type { PluginComponents } from "./plugin-components-loader";
+import type { PluginComponents } from "./component-bundle";
 
 export async function applyCommandConfig(params: {
   config: Record<string, unknown>;

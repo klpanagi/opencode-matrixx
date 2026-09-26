@@ -66,10 +66,12 @@ function stubbedLlm(traces: TraceRecord[], sessionID: string): LlmCall {
 
 function approve(slug: string): Promise<string> {
   const record = createEvolutionTool({ directory: tmpDir, client: {} } as unknown as PluginInput)
-  return record.evolution.execute(
-    { action: "approve", slug },
-    { sessionID: "ses-e2e", directory: tmpDir } as unknown as ToolContext,
-  )
+  return record.evolution
+    .execute(
+      { action: "approve", slug },
+      { sessionID: "ses-e2e", directory: tmpDir } as unknown as ToolContext,
+    )
+    .then((__r) => __r.content)
 }
 
 describe("evolution E2E loop (T10b)", () => {

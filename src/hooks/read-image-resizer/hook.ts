@@ -1,4 +1,5 @@
-import type { PluginInput } from "@opencode-ai/plugin"
+import { V1_HOOK_KEYS } from "../../config/schema/hooks-v1-keys"
+import type { PluginContext } from "../../plugin/types"
 import { log } from "../../shared"
 import { getSessionModel } from "../../shared/session-state"
 import { isReadTool } from "../../shared/tool-guards"
@@ -119,9 +120,9 @@ function resolveFilename(attachment: ImageAttachment, index: number): string {
   return `image-${index + 1}`
 }
 
-export function createReadImageResizerHook(_ctx: PluginInput) {
+export function createReadImageResizerHook(_ctx: PluginContext) {
   return {
-    "tool.execute.after": async (
+    [V1_HOOK_KEYS.toolExecuteAfter]: async (
       input: { tool: string; sessionID: string; callID: string },
       output: { title: string; output: string; metadata: unknown },
     ) => {

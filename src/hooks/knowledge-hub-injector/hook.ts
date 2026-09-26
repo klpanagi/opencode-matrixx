@@ -1,11 +1,12 @@
 import { readFileSync } from "node:fs";
 import * as path from "node:path";
-import type { PluginInput } from "@opencode-ai/plugin";
 import type { Message, Part } from "@opencode-ai/sdk";
+import { V1_HOOK_KEYS } from "../../config/schema/hooks-v1-keys"
 import type { KnowledgeHub } from "../../config/schema/knowledge";
 import { type ContextCollector, contextCollector } from "../../features/context-injector";
 import { expandHubPath } from "../../features/knowledge-hub/loader";
 import { getMainSessionID } from "../../features/session-state";
+import type { PluginContext } from "../../plugin/types";
 import { createDynamicTruncator } from "../../shared/dynamic-truncator";
 import { log } from "../../shared/logger";
 
@@ -41,7 +42,7 @@ function readQuiet(filePath: string): string | null {
   }
 }
 
-export function createKnowledgeHubInjectorHook(ctx: PluginInput, options: KnowledgeHubInjectorOptions = {}) {
+export function createKnowledgeHubInjectorHook(ctx: PluginContext, options: KnowledgeHubInjectorOptions = {}) {
   const workspaceDir = ctx.directory;
   const pinnedFiles = options.pinnedFiles ?? [];
   const collector = options.collector ?? contextCollector;
@@ -148,7 +149,7 @@ export function createKnowledgeHubInjectorHook(ctx: PluginInput, options: Knowle
   };
 
   return {
-    "experimental.chat.messages.transform": transform,
+    [V1_HOOK_KEYS.messagesTransform]: transform,
     event: eventHandler,
   };
 }

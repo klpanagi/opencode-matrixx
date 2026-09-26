@@ -1,4 +1,4 @@
-import type { PluginInput } from "@opencode-ai/plugin"
+import type { PluginContext } from "../../plugin/types"
 import { normalizeSDKResponse } from "../../shared"
 import { log } from "../../shared/logger"
 import { isSqliteBackend } from "../../shared/opencode-storage-detection"
@@ -8,7 +8,7 @@ import { injectTextPartAsync } from "../session-recovery/storage/text-part-injec
 
 export const PLACEHOLDER_TEXT = "[user interrupted]"
 
-type OpencodeClient = PluginInput["client"]
+type OpencodeClient = PluginContext["client"]
 
 interface SdkPart {
   type?: string

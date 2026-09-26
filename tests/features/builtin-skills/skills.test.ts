@@ -1,9 +1,9 @@
 import { afterAll, describe, expect, test } from "bun:test"
 import { clearLazyTemplateCache } from "../../../src/features/builtin-skills/lazy-skill-helper"
-import { createBuiltinSkills } from "../../../src/features/builtin-skills/skills"
-import { dslCoreSkill } from "../../../src/features/builtin-skills/skills/dsl-core"
-import { frontendUiUxSkill } from "../../../src/features/builtin-skills/skills/frontend-ui-ux"
-import { gitMasterSkill } from "../../../src/features/builtin-skills/skills/git-master"
+import { createBuiltinSkills } from "../../../src/features/builtin-skills"
+import { dslCoreSkill } from "../../../src/features/builtin-skills/templates/dsl-core"
+import { frontendUiUxSkill } from "../../../src/features/builtin-skills/templates/frontend-ui-ux"
+import { gitMasterSkill } from "../../../src/features/builtin-skills/templates/git-master"
 
 describe("createBuiltinSkills", () => {
 	test("returns playwright skill by default", () => {

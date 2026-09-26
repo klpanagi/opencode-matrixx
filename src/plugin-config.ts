@@ -1,6 +1,11 @@
 import * as fs from "node:fs";
 import * as path from "node:path";
-import { type MatrixxConfig, MatrixxConfigSchema } from "./config";
+import {
+  type MatrixxConfig,
+  MatrixxConfigSchema,
+  migrateOpencodeCliConfig,
+  resolveOpencodeCliConfigPath,
+} from "./config";
 import { migrateMatrixxConfig } from "./config/migrations/model-migration";
 import { applyActivePreset } from "./config/preset-applier";
 import {
@@ -184,6 +189,7 @@ export function mergeConfigs(
     ...override,
     agents: deepMerge(base.agents, override.agents),
     categories: deepMerge(base.categories, override.categories),
+    mcp: deepMerge(base.mcp, override.mcp),
     disabled_agents: [...disabledAgentsSet],
     disabled_mcps: [...disabledMcpsSet],
     disabled_hooks: [...disabledHooksSet],
@@ -251,6 +257,8 @@ export async function loadPluginConfig(
   ctx: unknown
 ): Promise<MatrixxConfig> {
   const configDir = getOpenCodeConfigDir({ binary: "opencode" });
+  migrateOpencodeCliConfig(configDir);
+  const opencodeCliConfigPath = resolveOpencodeCliConfigPath(configDir);
   const userConfigPath = resolveConfigPath(configDir, "matrixx");
 
   const projectDir = path.join(directory, ".opencode");
@@ -282,5 +290,14 @@ export async function loadPluginConfig(
     disabled_mcps: config.disabled_mcps,
     disabled_hooks: config.disabled_hooks,
   });
+
+  log("V2 config keys", {
+    plugins: config.plugins,
+    mcpServers: config.mcp?.servers ? Object.keys(config.mcp.servers) : [],
+    permissions: config.permissions,
+    policies: config.experimental?.policies,
+    opencodeCliConfig: opencodeCliConfigPath,
+  });
+
   return config;
 }

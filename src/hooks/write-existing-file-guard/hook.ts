@@ -1,12 +1,13 @@
 import { existsSync } from "node:fs"
 import { isAbsolute, join, normalize, resolve, sep } from "node:path"
-import type { Hooks, PluginInput } from "@opencode-ai/plugin"
-
+import type { Hooks } from "@opencode-ai/plugin"
+import { V1_HOOK_KEYS } from "../../config/schema/hooks-v1-keys"
+import type { PluginContextSlice } from "../../plugin/types"
 import { log } from "../../shared"
 
-export function createWriteExistingFileGuardHook(ctx: PluginInput): Hooks {
+export function createWriteExistingFileGuardHook(ctx: PluginContextSlice<"directory">): Hooks {
   return {
-    "tool.execute.before": async (input, output) => {
+    [V1_HOOK_KEYS.toolExecuteBefore]: async (input, output) => {
       const toolName = input.tool?.toLowerCase()
       if (toolName !== "write") {
         return

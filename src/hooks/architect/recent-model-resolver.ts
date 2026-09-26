@@ -1,13 +1,13 @@
-import type { PluginInput } from "@opencode-ai/plugin"
 import {
   findNearestMessageWithFields,
   findNearestMessageWithFieldsFromSDK,
 } from "../../features/hook-message-injector"
+import type { PluginContextSlice } from "../../plugin/types"
 import { getMessageDir, isSqliteBackend, normalizeSDKResponse } from "../../shared"
 import type { ModelInfo } from "./types"
 
 export async function resolveRecentModelForSession(
-  ctx: PluginInput,
+  ctx: PluginContextSlice<"client">,
   sessionID: string
 ): Promise<ModelInfo | undefined> {
   try {

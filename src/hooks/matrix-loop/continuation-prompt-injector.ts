@@ -1,5 +1,6 @@
-import type { PluginInput } from "@opencode-ai/plugin"
 import { findNearestMessageWithFields } from "../../features/hook-message-injector"
+import { resolveSessionSteering } from "../../features/session-steering"
+import type { PluginContextSlice } from "../../plugin/types"
 import { normalizeSDKResponse } from "../../shared"
 import { log } from "../../shared/logger"
 import { getMessageDir } from "./message-storage-directory"
@@ -13,7 +14,7 @@ type MessageInfo = {
 }
 
 export async function injectContinuationPrompt(
-	ctx: PluginInput,
+	ctx: PluginContextSlice<"client">,
 	options: { sessionID: string; prompt: string; directory: string; apiTimeoutMs: number },
 ): Promise<void> {
 	let agent: string | undefined
@@ -52,14 +53,12 @@ export async function injectContinuationPrompt(
 				: undefined
 	}
 
-	await ctx.client.session.promptAsync({
-		path: { id: options.sessionID },
-		body: {
-			...(agent !== undefined ? { agent } : {}),
-			...(model !== undefined ? { model } : {}),
-			parts: [{ type: "text", text: options.prompt }],
-		},
-		query: { directory: options.directory },
+	await resolveSessionSteering(ctx).deliver({
+		sessionID: options.sessionID,
+		text: options.prompt,
+		directory: options.directory,
+		...(agent !== undefined ? { agent } : {}),
+		...(model !== undefined ? { model } : {}),
 	})
 
 	log("[matrix-loop] continuation injected", { sessionID: options.sessionID })

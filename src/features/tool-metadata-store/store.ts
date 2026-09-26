@@ -6,13 +6,13 @@
  * title, or custom metadata set during `execute()`.
  *
  * This store captures metadata written via `ctx.metadata()` inside execute(),
- * then the `tool.execute.after` hook consumes it and merges it back into the
+ * then the tool-execute-after hook consumes it and merges it back into the
  * result *before* the processor writes the final part to the session store.
  *
  * Flow:
  *   execute() → storeToolMetadata(sessionID, callID, data)
  *   fromPlugin() → overwrites metadata with { truncated }
- *   tool.execute.after → consumeToolMetadata(sessionID, callID) → merges back
+ *   tool-execute-after → consumeToolMetadata(sessionID, callID) → merges back
  *   processor → Session.updatePart(status:"completed", metadata: result.metadata)
  */
 
@@ -53,7 +53,7 @@ export function storeToolMetadata(
 
 /**
  * Consume stored metadata (one-time read, removes from store).
- * Called from tool.execute.after hook.
+ * Called from the tool-execute-after hook.
  */
 export function consumeToolMetadata(
   sessionID: string,

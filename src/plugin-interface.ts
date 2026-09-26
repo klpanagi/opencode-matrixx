@@ -1,4 +1,5 @@
 import type { MatrixxConfig } from "./config"
+import { V1_HOOK_KEYS } from "./config/schema/hooks-v1-keys"
 import type { CreatedHooks } from "./create-hooks"
 import type { Managers } from "./create-managers"
 import { createChatMessageHandler } from "./plugin/chat-message"
@@ -38,7 +39,7 @@ export function createPluginInterface(args: {
       hooks,
     }),
 
-    "experimental.chat.messages.transform": createMessagesTransformHandler({
+    [V1_HOOK_KEYS.messagesTransform]: createMessagesTransformHandler({
       hooks,
     }),
 
@@ -52,12 +53,12 @@ export function createPluginInterface(args: {
       hooks,
     }),
 
-    "tool.execute.before": createToolExecuteBeforeHandler({
+    [V1_HOOK_KEYS.toolExecuteBefore]: createToolExecuteBeforeHandler({
       ctx,
       hooks,
     }),
 
-    "tool.execute.after": createToolExecuteAfterHandler({
+    [V1_HOOK_KEYS.toolExecuteAfter]: createToolExecuteAfterHandler({
       hooks,
     }),
 

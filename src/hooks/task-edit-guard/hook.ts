@@ -1,11 +1,12 @@
-import type { Hooks, PluginInput } from "@opencode-ai/plugin"
-
+import type { Hooks } from "@opencode-ai/plugin"
+import { V1_HOOK_KEYS } from "../../config/schema/hooks-v1-keys"
+import type { PluginContextSlice } from "../../plugin/types"
 import { log } from "../../shared"
 import { BLOCKED_PATTERNS, HOOK_NAME, PLAN_READ_WARN, PLAN_WRITE_WARN } from "./constants"
 
-export function createTaskEditGuardHook(ctx: PluginInput): Hooks {
+export function createTaskEditGuardHook(ctx: PluginContextSlice<"directory">): Hooks {
   return {
-    "tool.execute.before": async (input, output: { args: Record<string, unknown>; message?: string }): Promise<void> => {
+    [V1_HOOK_KEYS.toolExecuteBefore]: async (input, output: { args: Record<string, unknown>; message?: string }): Promise<void> => {
       const tool = input.tool?.toLowerCase()
 
       // BLOCK generic Write/Edit to .matrixx/plans/*.md — force plan_* tools

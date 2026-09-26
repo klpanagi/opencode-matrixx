@@ -84,13 +84,13 @@ describe("plan_* tools", () => {
       const ctx = testContext(testDir)
 
       //#when create
-      const created = JSON.parse(await createTool.execute({ filePath: ".matrixx/plans/my-plan.md", content: "# Title\nline2\nline3\n" }, ctx))
+      const created = JSON.parse(await createTool.execute({ filePath: ".matrixx/plans/my-plan.md", content: "# Title\nline2\nline3\n" }, ctx).then((__r) => __r.content))
       //#then created
       expect(created.error).toBeUndefined()
       expect(created.filePath).toContain("my-plan.md")
 
       //#when read
-      const read = JSON.parse(await readTool.execute({ filePath: ".matrixx/plans/my-plan.md" }, ctx))
+      const read = JSON.parse(await readTool.execute({ filePath: ".matrixx/plans/my-plan.md" }, ctx).then((__r) => __r.content))
       //#then hashline tagged, single format only
       expect(read.error).toBeUndefined()
       expect("content" in read).toBe(false)
@@ -98,46 +98,46 @@ describe("plan_* tools", () => {
       expect(read.hashline).toContain("|# Title")
 
       //#when list
-      const listed = JSON.parse(await listTool.execute({}, ctx))
+      const listed = JSON.parse(await listTool.execute({}, ctx).then((__r) => __r.content))
       //#then contains file
       expect(listed.plans.length).toBe(1)
       expect(listed.plans[0].fileName).toBe("my-plan.md")
 
       //#when delete
-      const deleted = JSON.parse(await deleteTool.execute({ filePath: ".matrixx/plans/my-plan.md" }, ctx))
+      const deleted = JSON.parse(await deleteTool.execute({ filePath: ".matrixx/plans/my-plan.md" }, ctx).then((__r) => __r.content))
       //#then success
       expect(deleted.success).toBe(true)
 
       //#when list again
-      const listed2 = JSON.parse(await listTool.execute({}, ctx))
+      const listed2 = JSON.parse(await listTool.execute({}, ctx).then((__r) => __r.content))
       expect(listed2.plans.length).toBe(0)
     })
 
     test("create warns on existing file", async () => {
       const createTool = createPlanCreateTool()
       const ctx = testContext(testDir)
-      await createTool.execute({ filePath: ".matrixx/plans/dup-plan.md", content: "# A\n" }, ctx)
-      const second = JSON.parse(await createTool.execute({ filePath: ".matrixx/plans/dup-plan.md", content: "# B\n" }, ctx))
+      await createTool.execute({ filePath: ".matrixx/plans/dup-plan.md", content: "# A\n" }, ctx).then((__r) => __r.content)
+      const second = JSON.parse(await createTool.execute({ filePath: ".matrixx/plans/dup-plan.md", content: "# B\n" }, ctx).then((__r) => __r.content))
       expect(second.warning ?? second.filePath ?? "").toBeDefined()
     })
 
     test("read returns file_not_found for missing", async () => {
       const readTool = createPlanReadTool()
-      const res = JSON.parse(await readTool.execute({ filePath: ".matrixx/plans/nope-plan.md" }, testContext(testDir)))
+      const res = JSON.parse(await readTool.execute({ filePath: ".matrixx/plans/nope-plan.md" }, testContext(testDir)).then((__r) => __r.content))
       expect(res.error).toBe("file_not_found")
     })
 
     test("create rejects invalid path", async () => {
       const createTool = createPlanCreateTool()
       const res = JSON.parse(
-        await createTool.execute({ filePath: "src/evil.ts", content: "# x\n" }, testContext(testDir)),
+        await createTool.execute({ filePath: "src/evil.ts", content: "# x\n" }, testContext(testDir)).then((__r) => __r.content),
       )
       expect(res.error).toBeDefined()
     })
 
     test("delete returns file_not_found for missing", async () => {
       const deleteTool = createPlanDeleteTool()
-      const res = JSON.parse(await deleteTool.execute({ filePath: ".matrixx/plans/gone-plan.md" }, testContext(testDir)))
+      const res = JSON.parse(await deleteTool.execute({ filePath: ".matrixx/plans/gone-plan.md" }, testContext(testDir)).then((__r) => __r.content))
       expect(res.error).toBe("file_not_found")
     })
 
@@ -145,11 +145,11 @@ describe("plan_* tools", () => {
       const createTool = createPlanCreateTool()
       const listTool = createPlanListTool()
       const ctx = testContext(testDir)
-      await createTool.execute({ filePath: ".matrixx/plans/good-plan.md", content: "# ok\n" }, ctx)
+      await createTool.execute({ filePath: ".matrixx/plans/good-plan.md", content: "# ok\n" }, ctx).then((__r) => __r.content)
       // plant invalid files directly via Bun
       await Bun.write(join(testDir, ".matrixx/plans/notes.txt"), "hi")
       await Bun.write(join(testDir, ".matrixx/plans/BadName.md"), "hi")
-      const listed = JSON.parse(await listTool.execute({}, ctx))
+      const listed = JSON.parse(await listTool.execute({}, ctx).then((__r) => __r.content))
       expect(listed.plans.length).toBe(1)
       expect(listed.plans[0].fileName).toBe("good-plan.md")
     })
@@ -159,7 +159,7 @@ describe("plan_* tools", () => {
     test("rejects empty edits", async () => {
       const updateTool = createPlanUpdateTool()
       const res = JSON.parse(
-        await updateTool.execute({ filePath: ".matrixx/plans/x-plan.md", edits: [] }, testContext(testDir)),
+        await updateTool.execute({ filePath: ".matrixx/plans/x-plan.md", edits: [] }, testContext(testDir)).then((__r) => __r.content),
       )
       expect(res.error).toBe("validation_error")
     })
@@ -170,7 +170,7 @@ describe("plan_* tools", () => {
         await updateTool.execute(
           { filePath: ".matrixx/plans/x-plan.md", edits: [{ op: "replace", lines: ["hi"] }] },
           testContext(testDir),
-        ),
+        ).then((__r) => __r.content),
       )
       expect(res.error).toBe("validation_error")
     })
@@ -181,7 +181,7 @@ describe("plan_* tools", () => {
         await updateTool.execute(
           { filePath: ".matrixx/plans/missing-plan.md", edits: [{ op: "replace", pos: "1#AB", lines: ["hi"] }] },
           testContext(testDir),
-        ),
+        ).then((__r) => __r.content),
       )
       expect(res.error).toBe("file_not_found")
     })
@@ -192,10 +192,10 @@ describe("plan_* tools", () => {
       const readTool = createPlanReadTool()
       const updateTool = createPlanUpdateTool()
       const ctx = testContext(testDir)
-      await createTool.execute({ filePath: ".matrixx/plans/edit-plan.md", content: "# Title\nline2\nline3\n" }, ctx)
+      await createTool.execute({ filePath: ".matrixx/plans/edit-plan.md", content: "# Title\nline2\nline3\n" }, ctx).then((__r) => __r.content)
 
       //#when read to get anchor
-      const read = JSON.parse(await readTool.execute({ filePath: ".matrixx/plans/edit-plan.md" }, ctx))
+      const read = JSON.parse(await readTool.execute({ filePath: ".matrixx/plans/edit-plan.md" }, ctx).then((__r) => __r.content))
       const firstLine: string = read.hashline.split("\n")[0]
       const anchor = firstLine.split("|")[0]
 
@@ -203,10 +203,10 @@ describe("plan_* tools", () => {
       const updated = await updateTool.execute(
         { filePath: ".matrixx/plans/edit-plan.md", edits: [{ op: "replace", pos: anchor, lines: ["# New Title"] }] },
         ctx,
-      )
+      ).then((__r) => __r.content)
       //#then no error string and content changed
       const read2 = JSON.parse(
-        await readTool.execute({ filePath: ".matrixx/plans/edit-plan.md", format: "content" }, ctx),
+        await readTool.execute({ filePath: ".matrixx/plans/edit-plan.md", format: "content" }, ctx).then((__r) => __r.content),
       )
       expect(read2.content).toContain("# New Title")
       expect(updated).toBeDefined()

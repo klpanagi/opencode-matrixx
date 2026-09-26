@@ -1,3 +1,5 @@
+import { V1_HOOK_KEYS } from "../../config/schema/hooks-v1-keys"
+
 const TARGET_TOOLS = ["task", "Task", "task_tool"]
 
 const SESSION_ID_PATTERNS = [
@@ -34,6 +36,6 @@ export function createTaskResumeInfoHook() {
   }
 
   return {
-    "tool.execute.after": toolExecuteAfter,
+    [V1_HOOK_KEYS.toolExecuteAfter]: toolExecuteAfter,
   }
 }

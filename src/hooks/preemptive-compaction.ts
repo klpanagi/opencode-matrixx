@@ -1,5 +1,6 @@
 // Boundary: 70% warn (monitor, read-only) → 78% preemptive (proactive, here) → recovery (reactive, error-parse only).
 import type { MatrixxConfig } from "../config"
+import { V1_HOOK_KEYS } from "../config/schema/hooks-v1-keys"
 import type { ContextLimitModelCacheState } from "../shared/context-limit-resolver"
 import { clearTokenCache, updateTokenCache } from "../shared/token-cache"
 import {
@@ -13,10 +14,10 @@ import type {
   TokenInfo,
 } from "./preemptive-compaction-types"
 
-type PluginInput = PreemptiveCompactionContext
+type PluginContext = PreemptiveCompactionContext
 
 export function createPreemptiveCompactionHook(
-  ctx: PluginInput,
+  ctx: PluginContext,
   pluginConfig: MatrixxConfig = {},
   modelCacheState?: ContextLimitModelCacheState,
 ) {
@@ -108,7 +109,7 @@ export function createPreemptiveCompactionHook(
   }
 
   return {
-    "tool.execute.after": toolExecuteAfter,
+    [V1_HOOK_KEYS.toolExecuteAfter]: toolExecuteAfter,
     event: eventHandler,
   }
 }

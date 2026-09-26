@@ -1,3 +1,4 @@
+import { V1_HOOK_KEYS } from "../../../config/schema/hooks-v1-keys"
 import type { BuiltinSkill } from "../types"
 
 const QUALITY_GATE_SKILL_NAME = "quality-gate"
@@ -71,7 +72,7 @@ If ANY step fails:
 
 ## HOOK BEHAVIOR
 
-The quality-gate hook in tool.execute.after:
+The quality-gate hook in ${V1_HOOK_KEYS.toolExecuteAfter}:
 - Runs Biome on .ts/.tsx/.js/.jsx files after write/edit/multiedit
 - Appends lint warnings to tool output
 - Non-blocking (never halts execution)

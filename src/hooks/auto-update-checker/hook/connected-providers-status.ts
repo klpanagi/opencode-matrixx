@@ -1,11 +1,11 @@
-import type { PluginInput } from "@opencode-ai/plugin"
+import type { PluginContextSlice } from "../../../plugin/types"
 import {
   hasConnectedProvidersCache,
   updateConnectedProvidersCache,
 } from "../../../shared/connected-providers-cache"
 import { log } from "../../../shared/logger"
 
-export async function updateAndShowConnectedProvidersCacheStatus(ctx: PluginInput): Promise<void> {
+export async function updateAndShowConnectedProvidersCacheStatus(ctx: PluginContextSlice<"client">): Promise<void> {
   const hadCache = hasConnectedProvidersCache()
 
   updateConnectedProvidersCache(ctx.client).catch((err) => { log("[auto-update] Provider cache update failed:", err) })

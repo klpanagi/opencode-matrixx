@@ -1,5 +1,5 @@
 import type { AgentConfig } from "@opencode-ai/sdk"
-import { BDD_CONTRACT_SKILL_NAME } from "../features/builtin-skills/skills/bdd-contract"
+import { BDD_CONTRACT_SKILL_NAME } from "../features/builtin-skills/templates/bdd-contract"
 import { createAgentToolRestrictions } from "../shared/permission-compat"
 import type { AgentMode, AgentPromptMetadata } from "./types"
 import { isGptModel } from "./types"

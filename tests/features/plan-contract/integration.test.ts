@@ -142,7 +142,7 @@ describe("plan-tool chain — end-to-end integration", () => {
     //#when each plan is read through plan_tasks
     for (const c of cases) {
       const manifest = JSON.parse(
-        await tool.execute({ filePath: c.filePath }, testContext(c.root)),
+        await tool.execute({ filePath: c.filePath }, testContext(c.root)).then((__r) => __r.content),
       ) as {
         progress: { total: number; completed: number; remaining: number }
         tasks: unknown[]
@@ -174,7 +174,7 @@ describe("plan-tool chain — end-to-end integration", () => {
       await tool.execute(
         { filePath: join(PLANS_DIR, "evolution-advancement-proposal.md") },
         testContext(tmp),
-      ),
+      ).then((__r) => __r.content),
     ) as Record<string, unknown>
 
     //#then exactly one payload is returned and it fits the soft cap
@@ -197,7 +197,7 @@ describe("plan-tool chain — end-to-end integration", () => {
       await tool.execute(
         { filePath: join(PLANS_DIR, "plan-contract-and-dedicated-tools.md") },
         testContext(tmp),
-      ),
+      ).then((__r) => __r.content),
     ) as Record<string, unknown>
 
     //#then the truncation envelope carries outline + hint and NO body
@@ -217,7 +217,7 @@ describe("plan-tool chain — end-to-end integration", () => {
 
     //#when created
     const res = JSON.parse(
-      await tool.execute({ filePath, content: "x".repeat(MAX_PLAN_FILE_BYTES + 1) }, testContext(tmp)),
+      await tool.execute({ filePath, content: "x".repeat(MAX_PLAN_FILE_BYTES + 1) }, testContext(tmp)).then((__r) => __r.content),
     ) as { error?: string }
 
     //#then the size guard rejects it and nothing is persisted

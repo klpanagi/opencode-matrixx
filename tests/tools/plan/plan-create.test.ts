@@ -49,7 +49,7 @@ describe("plan_create validation + size cap", () => {
 
     //#when create
     const res = JSON.parse(
-      await createTool.execute({ filePath: ".matrixx/plans/probe.md", content }, testContext(testDir)),
+      await createTool.execute({ filePath: ".matrixx/plans/probe.md", content }, testContext(testDir)).then((__r) => __r.content),
     )
 
     //#then hard rejection with a split hint, and nothing persisted
@@ -68,7 +68,7 @@ describe("plan_create validation + size cap", () => {
 
     //#when create
     const res = JSON.parse(
-      await createTool.execute({ filePath: ".matrixx/plans/boundary-plan.md", content }, testContext(testDir)),
+      await createTool.execute({ filePath: ".matrixx/plans/boundary-plan.md", content }, testContext(testDir)).then((__r) => __r.content),
     )
 
     //#then the byte cap accounts for the metadata comment and nothing is persisted
@@ -84,7 +84,7 @@ describe("plan_create validation + size cap", () => {
 
     //#when create
     const res = JSON.parse(
-      await createTool.execute({ filePath: ".matrixx/plans/roundtrip-plan.md", content }, testContext(testDir)),
+      await createTool.execute({ filePath: ".matrixx/plans/roundtrip-plan.md", content }, testContext(testDir)).then((__r) => __r.content),
     )
 
     //#then it succeeds and the stored bytes stay within the cap plan_read enforces
@@ -109,7 +109,7 @@ describe("plan_create validation + size cap", () => {
 
     //#when create
     const res = JSON.parse(
-      await createTool.execute({ filePath: ".matrixx/plans/contract-plan.md", content }, testContext(testDir)),
+      await createTool.execute({ filePath: ".matrixx/plans/contract-plan.md", content }, testContext(testDir)).then((__r) => __r.content),
     )
 
     //#then success and the stored metadata equals the SSOT
@@ -132,7 +132,7 @@ describe("plan_create validation + size cap", () => {
 
     //#when create
     const res = JSON.parse(
-      await createTool.execute({ filePath: ".matrixx/plans/drifted-plan.md", content }, testContext(testDir)),
+      await createTool.execute({ filePath: ".matrixx/plans/drifted-plan.md", content }, testContext(testDir)).then((__r) => __r.content),
     )
 
     //#then success, warnings surfaced, and the file is still persisted
@@ -150,7 +150,7 @@ describe("plan_create validation + size cap", () => {
 
     //#when create
     const res = JSON.parse(
-      await createTool.execute({ filePath: ".matrixx/plans/legacy-plan.md", content }, testContext(testDir)),
+      await createTool.execute({ filePath: ".matrixx/plans/legacy-plan.md", content }, testContext(testDir)).then((__r) => __r.content),
     )
 
     //#then accepted without hard failure

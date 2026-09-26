@@ -1,5 +1,6 @@
-import type { PluginInput } from "@opencode-ai/plugin"
+import { V1_HOOK_KEYS } from "../config/schema/hooks-v1-keys"
 import { getMainSessionID, subagentSessions } from "../features/session-state"
+import type { PluginContext } from "../plugin/types"
 import { createIdleNotificationScheduler } from "./session-notification-scheduler"
 import {
   detectPlatform,
@@ -25,7 +26,7 @@ interface SessionNotificationConfig {
   maxTrackedSessions?: number
 }
 export function createSessionNotification(
-  ctx: PluginInput,
+  ctx: PluginContext,
   config: SessionNotificationConfig = {}
 ) {
   const currentPlatform = detectPlatform()
@@ -90,7 +91,7 @@ export function createSessionNotification(
       return
     }
 
-    if (event.type === "tool.execute.before" || event.type === "tool.execute.after") {
+    if (event.type === V1_HOOK_KEYS.toolExecuteBefore || event.type === V1_HOOK_KEYS.toolExecuteAfter) {
       const sessionID = props?.sessionID as string | undefined
       if (sessionID) {
         scheduler.markSessionActivity(sessionID)

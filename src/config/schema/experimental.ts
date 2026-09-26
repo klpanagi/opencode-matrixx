@@ -1,5 +1,14 @@
 import { z } from "zod"
 
+/** V2 ordered permission policy. Evaluation order / deny-precedence is enforced in Wave 6. */
+export const ExperimentalPolicySchema = z.object({
+  effect: z.enum(["allow", "deny", "ask"]),
+  tools: z.array(z.string()).optional(),
+  agents: z.array(z.string()).optional(),
+  pattern: z.string().optional(),
+  reason: z.string().optional(),
+})
+
 export const ExperimentalConfigSchema = z.object({
   aggressive_truncation: z.boolean().optional(),
   auto_resume: z.boolean().optional(),
@@ -18,6 +27,9 @@ export const ExperimentalConfigSchema = z.object({
   safe_hook_creation: z.boolean().optional(),
   /** Enable hashline_edit tool for improved file editing with hash-based line anchors */
   hashline_edit: z.boolean().optional(),
+  /** V2 ordered policy list (additive; enforced in Wave 6). */
+  policies: z.array(ExperimentalPolicySchema).optional(),
 })
 
 export type ExperimentalConfig = z.infer<typeof ExperimentalConfigSchema>
+export type ExperimentalPolicy = z.infer<typeof ExperimentalPolicySchema>

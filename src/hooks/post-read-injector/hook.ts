@@ -1,4 +1,5 @@
-import type { PluginInput } from "@opencode-ai/plugin";
+import { V1_HOOK_KEYS } from "../../config/schema/hooks-v1-keys"
+import type { PluginContext } from "../../plugin/types";
 import { createDynamicTruncator } from "../../shared/dynamic-truncator";
 import { clearInjectedPaths } from "../directory-agents-injector/storage";
 import { getRuleInjectionFilePath } from "../rules-injector/output-path";
@@ -7,7 +8,7 @@ import { createUnifiedPostReadProcessor } from "./injector";
 
 const DEFAULT_TRACKED_TOOLS = ["read", "write", "edit", "multiedit"];
 
-export function createPostReadInjectorHook(ctx: PluginInput, options?: { trackedTools?: string[] }) {
+export function createPostReadInjectorHook(ctx: PluginContext, options?: { trackedTools?: string[] }) {
   const truncator = createDynamicTruncator(ctx);
   const { processFilePathForInjection, clearSessionCache } = createUnifiedPostReadProcessor({
     workspaceDirectory: ctx.directory,
@@ -54,8 +55,8 @@ export function createPostReadInjectorHook(ctx: PluginInput, options?: { tracked
   };
 
   return {
-    "tool.execute.before": toolExecuteBefore,
-    "tool.execute.after": toolExecuteAfter,
+    [V1_HOOK_KEYS.toolExecuteBefore]: toolExecuteBefore,
+    [V1_HOOK_KEYS.toolExecuteAfter]: toolExecuteAfter,
     event: eventHandler,
   };
 }

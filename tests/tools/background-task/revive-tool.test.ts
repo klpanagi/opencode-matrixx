@@ -37,7 +37,7 @@ describe("createBackgroundRevive", () => {
       const tool = createBackgroundRevive(fakeManager({}), process.cwd())
 
       //#when a bare call is made
-      const result = await tool.execute({}, testContext)
+      const result = await tool.execute({}, testContext).then((__r) => __r.content)
 
       //#then the user gets an explanation, not an error
       expect(result).toContain("No revivable background tasks")
@@ -63,7 +63,7 @@ describe("createBackgroundRevive", () => {
       )
 
       //#when list mode is requested
-      const result = await tool.execute({ list: true }, testContext)
+      const result = await tool.execute({ list: true }, testContext).then((__r) => __r.content)
 
       //#then both tasks and the terminal reason are visible
       expect(result).toContain("bg_aaa")
@@ -86,7 +86,7 @@ describe("createBackgroundRevive", () => {
       )
 
       //#when discovery is scoped explicitly
-      await tool.execute({ list: true, parentSessionID: "some-other-parent" }, testContext)
+      await tool.execute({ list: true, parentSessionID: "some-other-parent" }, testContext).then((__r) => __r.content)
 
       //#then the explicit value wins over the calling session
       expect(received).toBe("some-other-parent")
@@ -102,7 +102,7 @@ describe("createBackgroundRevive", () => {
       )
 
       //#when a revive is requested
-      const result = await tool.execute({ taskId: "bg_aaa", prompt: "please continue" }, testContext)
+      const result = await tool.execute({ taskId: "bg_aaa", prompt: "please continue" }, testContext).then((__r) => __r.content)
 
       //#then the outcome parses machine-readably
       expect(result).toContain("revived")
@@ -127,7 +127,7 @@ describe("createBackgroundRevive", () => {
       )
 
       //#when no prompt is supplied
-      const result = await tool.execute({ taskId: "bg_aaa" }, testContext)
+      const result = await tool.execute({ taskId: "bg_aaa" }, testContext).then((__r) => __r.content)
 
       //#then the call is refused up-front
       expect(reviveCalled).toBe(false)
@@ -150,7 +150,7 @@ describe("createBackgroundRevive", () => {
       )
 
       //#when the revive is attempted
-      const result = await tool.execute({ taskId: "bg_missing", prompt: "retry" }, testContext)
+      const result = await tool.execute({ taskId: "bg_missing", prompt: "retry" }, testContext).then((__r) => __r.content)
 
       //#then it is reported as expired and the call resolves
       expect(result).toContain("expired")
@@ -174,7 +174,7 @@ describe("createBackgroundRevive", () => {
       )
 
       //#when the revive is attempted
-      const result = await tool.execute({ taskId: "bg_present", prompt: "retry" }, testContext)
+      const result = await tool.execute({ taskId: "bg_present", prompt: "retry" }, testContext).then((__r) => __r.content)
 
       //#then the on-disk handle distinguishes it from an expired id
       expect(extractMetadata(result).reason).toBe("unknown-task")
@@ -192,7 +192,7 @@ describe("createBackgroundRevive", () => {
       )
 
       //#when a revive is attempted
-      const result = await tool.execute({ taskId: "bg_live", prompt: "x" }, testContext)
+      const result = await tool.execute({ taskId: "bg_live", prompt: "x" }, testContext).then((__r) => __r.content)
 
       //#then the reason is active
       expect(extractMetadata(result).reason).toBe("active")
@@ -210,7 +210,7 @@ describe("createBackgroundRevive", () => {
       )
 
       //#when a revive is attempted without force
-      const result = await tool.execute({ taskId: "bg_uncertain", prompt: "x" }, testContext)
+      const result = await tool.execute({ taskId: "bg_uncertain", prompt: "x" }, testContext).then((__r) => __r.content)
 
       //#then the reason is uncertain
       expect(extractMetadata(result).reason).toBe("uncertain")
@@ -230,7 +230,7 @@ describe("createBackgroundRevive", () => {
       )
 
       //#when a revive is attempted
-      const result = await tool.execute({ taskId: "bg_sat", prompt: "x" }, testContext)
+      const result = await tool.execute({ taskId: "bg_sat", prompt: "x" }, testContext).then((__r) => __r.content)
 
       //#then the reason is no-session
       expect(extractMetadata(result).reason).toBe("no-session")
@@ -248,7 +248,7 @@ describe("createBackgroundRevive", () => {
       )
 
       //#when a revive is attempted
-      const result = await tool.execute({ taskId: "bg_x", prompt: "x" }, testContext)
+      const result = await tool.execute({ taskId: "bg_x", prompt: "x" }, testContext).then((__r) => __r.content)
 
       //#then the tool still resolves with a structured outcome
       expect(extractMetadata(result).reason).toBe("unknown-task")
@@ -267,7 +267,7 @@ describe("createBackgroundRevive", () => {
       )
 
       //#when a revive is attempted
-      const result = await tool.execute({ taskId: "bg_y", prompt: "x" }, testContext)
+      const result = await tool.execute({ taskId: "bg_y", prompt: "x" }, testContext).then((__r) => __r.content)
 
       //#then it is still converted into an outcome
       expect(result).toContain("NOT revived")

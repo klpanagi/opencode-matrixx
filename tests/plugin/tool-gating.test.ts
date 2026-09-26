@@ -7,6 +7,7 @@ import {
   directoryHasMatch,
   isConstructAgentEnabled,
   shouldEnableBddTools,
+  shouldEnableEvolutionTool,
   shouldEnableKnowledgeHubConfirm,
   shouldEnableLookAt,
   shouldEnablePdfFigures,
@@ -358,6 +359,41 @@ describe("tool-gating", () => {
 
       //#when
       const result = shouldEnablePresetTools(override)
+
+      //#then
+      expect(result).toBe(false)
+    })
+  })
+
+  describe("shouldEnableEvolutionTool", () => {
+    test("defaults to false when enabled is undefined", () => {
+      //#given
+      const enabled = undefined
+
+      //#when
+      const result = shouldEnableEvolutionTool(enabled)
+
+      //#then
+      expect(result).toBe(false)
+    })
+
+    test("registers when explicitly enabled", () => {
+      //#given
+      const enabled = true
+
+      //#when
+      const result = shouldEnableEvolutionTool(enabled)
+
+      //#then
+      expect(result).toBe(true)
+    })
+
+    test("skips when explicitly disabled", () => {
+      //#given
+      const enabled = false
+
+      //#when
+      const result = shouldEnableEvolutionTool(enabled)
 
       //#then
       expect(result).toBe(false)

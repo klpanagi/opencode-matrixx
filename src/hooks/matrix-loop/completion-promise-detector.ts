@@ -1,5 +1,5 @@
 import { existsSync, readFileSync } from "node:fs"
-import type { PluginInput } from "@opencode-ai/plugin"
+import type { PluginContextSlice } from "../../plugin/types"
 import { log } from "../../shared/logger"
 import { HOOK_NAME } from "./constants"
 import { withTimeout } from "./with-timeout"
@@ -45,7 +45,7 @@ export function detectCompletionInTranscript(
 }
 
 export async function detectCompletionInSessionMessages(
-	ctx: PluginInput,
+	ctx: PluginContextSlice<"client">,
 	options: {
 		sessionID: string
 		promise: string
@@ -91,7 +91,7 @@ export async function detectCompletionInSessionMessages(
 }
 
 async function fetchSessionMessages(
-	ctx: PluginInput,
+	ctx: PluginContextSlice<"client">,
 	sessionID: string,
 	directory: string,
 	apiTimeoutMs: number,

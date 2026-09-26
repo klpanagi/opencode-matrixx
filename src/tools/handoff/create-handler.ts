@@ -1,4 +1,3 @@
-import type { ToolContext } from "@opencode-ai/plugin/tool"
 import yaml from "js-yaml"
 import {
   getHandoffFilePath,
@@ -6,6 +5,7 @@ import {
   writeHandoffFile,
 } from "../../features/handoff"
 import type { HandoffData } from "../../features/handoff/schema"
+import type { V2ToolContext } from "../../plugin/types"
 import { buildHandoffBody } from "./body-formatter"
 import { UNKNOWN_GIT_SHA } from "./constants"
 import { getGitHead } from "./git"
@@ -38,7 +38,7 @@ export type HandoffCreateArgs = {
 export async function handleCreate(
   args: HandoffCreateArgs,
   ctx: { directory: string },
-  context: ToolContext
+  context: V2ToolContext
 ): Promise<string> {
   //#given - session id from the OpenCode runtime, or the documented fallback
   const sessionID = context.sessionID || "unknown"

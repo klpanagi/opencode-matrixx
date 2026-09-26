@@ -1,9 +1,9 @@
-import type { PluginInput } from "@opencode-ai/plugin"
+import type { PluginContextSlice } from "../../../plugin/types"
 import { log } from "../../../shared/logger"
 
 const MORPHEUS_SPINNER = ["·", "•", "●", "○", "◌", "◦", " "]
 
-export async function showSpinnerToast(ctx: PluginInput, version: string, message: string): Promise<void> {
+export async function showSpinnerToast(ctx: PluginContextSlice<"client">, version: string, message: string): Promise<void> {
   const totalDuration = 5000
   const frameInterval = 100
   const totalFrames = Math.floor(totalDuration / frameInterval)

@@ -1,3 +1,4 @@
+import { V1_HOOK_KEYS } from "../../config/schema/hooks-v1-keys"
 import { log } from "../../shared"
 import { createSensitiveFileMatcher } from "./sensitive-file-matcher"
 
@@ -15,7 +16,7 @@ export function createEnvFileWriteGuardHook(config?: EnvFileWriteGuardOptions) {
   )
 
   return {
-    "tool.execute.before": async (
+    [V1_HOOK_KEYS.toolExecuteBefore]: async (
       input: { tool: string; sessionID: string; callID: string },
       output: { args: Record<string, unknown> }
     ): Promise<void> => {

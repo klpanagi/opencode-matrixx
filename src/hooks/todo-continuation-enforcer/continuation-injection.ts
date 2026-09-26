@@ -1,5 +1,3 @@
-import type { PluginInput } from "@opencode-ai/plugin"
-
 import type { BackgroundManager } from "../../features/background-agent"
 import {
   findNearestMessageWithFields,
@@ -7,6 +5,8 @@ import {
   type ToolPermission,
 } from "../../features/hook-message-injector"
 import { subagentSessions } from "../../features/session-state"
+import { resolveSessionSteering } from "../../features/session-steering"
+import type { PluginContext } from "../../plugin/types"
 import { normalizeSDKResponse } from "../../shared"
 import { getAgentConfigKey } from "../../shared/agent-display-names"
 import { isAwaitingUser } from "../../shared/awaiting-user"
@@ -33,7 +33,7 @@ function hasWritePermission(tools: Record<string, ToolPermission> | undefined): 
 }
 
 export async function injectContinuation(args: {
-  ctx: PluginInput
+  ctx: PluginContext
   sessionID: string
   backgroundManager?: BackgroundManager
   skipAgents?: string[]
@@ -150,14 +150,12 @@ ${todoList}`
       incompleteCount: freshIncompleteCount,
     })
 
-    await ctx.client.session.promptAsync({
-      path: { id: sessionID },
-      body: {
-        agent: agentName,
-        ...(model !== undefined ? { model } : {}),
-        parts: [{ type: "text", text: prompt }],
-      },
-      query: { directory: ctx.directory },
+    await resolveSessionSteering(ctx).deliver({
+      sessionID,
+      text: prompt,
+      directory: ctx.directory,
+      agent: agentName,
+      ...(model !== undefined ? { model } : {}),
     })
 
     log(`[${HOOK_NAME}] Injection successful`, { sessionID })

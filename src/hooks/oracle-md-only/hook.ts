@@ -1,4 +1,5 @@
-import type { PluginInput } from "@opencode-ai/plugin"
+import { V1_HOOK_KEYS } from "../../config/schema/hooks-v1-keys"
+import type { PluginContext } from "../../plugin/types"
 import { getAgentDisplayName } from "../../shared/agent-display-names"
 import { log } from "../../shared/logger"
 import { SYSTEM_DIRECTIVE_PREFIX } from "../../shared/system-directive"
@@ -9,9 +10,9 @@ import { isAllowedFile } from "./path-policy"
 
 const TASK_TOOLS = ["task"]
 
-export function createOracleMdOnlyHook(ctx: PluginInput) {
+export function createOracleMdOnlyHook(ctx: PluginContext) {
   return {
-    "tool.execute.before": async (
+    [V1_HOOK_KEYS.toolExecuteBefore]: async (
       input: { tool: string; sessionID: string; callID: string },
       output: { args: Record<string, unknown>; message?: string }
     ): Promise<void> => {

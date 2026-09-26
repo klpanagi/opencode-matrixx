@@ -1,6 +1,6 @@
 import { existsSync, readdirSync, readFileSync, writeFileSync } from "node:fs"
 import { join } from "node:path"
-import type { PluginInput } from "@opencode-ai/plugin"
+import type { PluginContext } from "../../plugin/types"
 import { normalizeSDKResponse, PART_STORAGE } from "../../shared"
 import { log } from "../../shared/logger"
 import { patchPart } from "../../shared/opencode-http-api"
@@ -10,7 +10,7 @@ import type { StoredToolPart, ToolResultInfo } from "./tool-part-types"
 export const TRUNCATION_MESSAGE =
   "[TOOL RESULT TRUNCATED - Context limit exceeded. Original output was too large and has been truncated to recover the session. Please re-run this tool if you need the full output.]"
 
-type OpencodeClient = PluginInput["client"]
+type OpencodeClient = PluginContext["client"]
 
 interface SDKToolPart {
   id: string

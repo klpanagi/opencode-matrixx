@@ -1,5 +1,5 @@
-import type { PluginInput } from "@opencode-ai/plugin"
 import type { InputSecretGuardConfig } from "../../config/schema/security"
+import type { PluginContextSlice } from "../../plugin/types"
 import { log } from "../../shared"
 import { createSystemDirective, isSystemDirective } from "../../shared/system-directive"
 import { extractPromptText } from "../keyword-detector/detector"
@@ -22,7 +22,7 @@ function buildRedactedPreview(findings: { ruleId: string; redacted: string }[]):
   return parts.join(", ")
 }
 
-export function createInputSecretGuardHook(ctx: PluginInput, cfg?: InputSecretGuardConfig) {
+export function createInputSecretGuardHook(ctx: PluginContextSlice<"client">, cfg?: InputSecretGuardConfig) {
   const enabled = cfg?.enabled ?? true
   const mode = cfg?.mode ?? "prompt"
   const blocklistMode = cfg?.blocklist_mode ?? "prompt"

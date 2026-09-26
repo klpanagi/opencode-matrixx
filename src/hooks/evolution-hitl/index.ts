@@ -1,5 +1,6 @@
 import type { Message, Part } from "@opencode-ai/sdk"
 import type { EvolutionConfig } from "../../config/schema/evolution"
+import { V1_HOOK_KEYS } from "../../config/schema/hooks-v1-keys"
 import { traceStore } from "../../features/evolution/store"
 import { EvolutionWriter } from "../../features/evolution/writer"
 import { log } from "../../shared/logger"
@@ -22,7 +23,7 @@ export function createEvolutionHitlHook(a?: unknown, b?: unknown) {
   const config = resolveConfig(a, b)
 
   return {
-    "experimental.chat.messages.transform": async (_input: Record<string, never>, output: TransformOutput): Promise<void> => {
+    [V1_HOOK_KEYS.messagesTransform]: async (_input: Record<string, never>, output: TransformOutput): Promise<void> => {
       try {
         if (!config?.enabled) return
         if (!config.governance?.requireApproval) return

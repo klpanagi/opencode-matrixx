@@ -1,6 +1,6 @@
 import { basename } from "node:path"
 import { pathToFileURL } from "node:url"
-import { type PluginInput, type ToolDefinition, tool } from "@opencode-ai/plugin"
+import { type ToolDefinition, tool } from "@opencode-ai/plugin"
 import { log, promptSyncWithModelSuggestionRetry } from "../../shared"
 import { extractLatestAssistantText } from "./assistant-message-extractor"
 import { CONSTRUCT_AGENT, LOOK_AT_DESCRIPTION } from "./constants"
@@ -16,7 +16,12 @@ import type { LookAtArgs } from "./types"
 
 export { normalizeArgs, validateArgs } from "./look-at-arguments"
 
-export function createLookAt(ctx: PluginInput): ToolDefinition {
+type LookAtContext = {
+  directory: string
+  client: ReturnType<typeof import("@opencode-ai/sdk").createOpencodeClient>
+}
+
+export function createLookAt(ctx: LookAtContext): ToolDefinition {
   return tool({
     description: LOOK_AT_DESCRIPTION,
     args: {

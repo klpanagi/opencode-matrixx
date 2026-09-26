@@ -1,10 +1,10 @@
-import type { PluginInput } from "@opencode-ai/plugin"
+import type { PluginContext } from "../../plugin/types"
 import { normalizeSDKResponse } from "../../shared"
 import { isSqliteBackend } from "../../shared/opencode-storage-detection"
 import type { AggressiveTruncateResult } from "./tool-part-types"
 import { findToolResultsBySize, truncateToolResult, truncateToolResultAsync } from "./tool-result-store"
 
-type OpencodeClient = PluginInput["client"]
+type OpencodeClient = PluginContext["client"]
 interface SDKToolPart { id: string; type: string; tool?: string; state?: { output?: string; time?: { start?: number; end?: number; compacted?: number } } }
 interface SDKMessage { info?: { id?: string }; parts?: SDKToolPart[] }
 function calculateTargetBytesToRemove(currentTokens: number, maxTokens: number, targetRatio: number, charsPerToken: number) {

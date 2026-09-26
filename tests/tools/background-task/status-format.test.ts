@@ -127,7 +127,7 @@ describe("background_output terminal routing", () => {
       const tool = createBackgroundOutput(createMockManager(task), createMockClient())
 
       //#when retrieving output without full_session
-      const output = await tool.execute({ task_id: task.id }, mockContext)
+      const output = await tool.execute({ task_id: task.id }, mockContext).then((__r) => __r.content)
 
       //#then the status block is returned, never a full session dump
       expect(output).toContain("# Task Status")
@@ -141,7 +141,7 @@ describe("background_output terminal routing", () => {
     const tool = createBackgroundOutput(createMockManager(task), createMockClient())
 
     //#when retrieving output without full_session
-    const output = await tool.execute({ task_id: task.id }, mockContext)
+    const output = await tool.execute({ task_id: task.id }, mockContext).then((__r) => __r.content)
 
     //#then active tasks still default to the full session view
     expect(output).toContain("# Full Session Output")
@@ -166,7 +166,7 @@ describe("background_cancel rejects new terminal statuses", () => {
       const tool = createBackgroundCancel(manager, client)
 
       //#when requesting cancellation
-      const output = await tool.execute({ taskId: task.id }, mockContext)
+      const output = await tool.execute({ taskId: task.id }, mockContext).then((__r) => __r.content)
 
       //#then the task is refused and cancelTask is never invoked
       expect(output).toContain("Cannot cancel task")
@@ -191,7 +191,7 @@ describe("background_cancel rejects new terminal statuses", () => {
     const tool = createBackgroundCancel(manager, client)
 
     //#when cancelling all
-    const output = await tool.execute({ all: true }, mockContext)
+    const output = await tool.execute({ all: true }, mockContext).then((__r) => __r.content)
 
     //#then nothing is cancellable and cancelTask is never invoked
     expect(output).toContain("No running or pending background tasks to cancel")

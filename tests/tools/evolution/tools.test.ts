@@ -52,7 +52,7 @@ describe("createEvolutionTool", () => {
     const dir = makeProject();
     const record = createEvolutionTool(makeCtx(dir));
     //#when listing pending proposals
-    const result = await record.evolution.execute({ action: "list" }, makeToolContext(dir));
+    const result = await record.evolution.execute({ action: "list" }, makeToolContext(dir)).then((__r) => __r.content);
     //#then the receipt reports none pending
     expect(result).toContain("No pending evolution proposals");
   });
@@ -63,7 +63,7 @@ describe("createEvolutionTool", () => {
     stagePending(dir, "my-skill");
     const record = createEvolutionTool(makeCtx(dir));
     //#when listing pending proposals
-    const result = await record.evolution.execute({ action: "list" }, makeToolContext(dir));
+    const result = await record.evolution.execute({ action: "list" }, makeToolContext(dir)).then((__r) => __r.content);
     //#then the slug, version, and confidence are shown
     expect(result).toContain("my-skill");
     expect(result).toContain("1.0.0");
@@ -76,7 +76,7 @@ describe("createEvolutionTool", () => {
     stagePending(dir, "my-skill");
     const record = createEvolutionTool(makeCtx(dir));
     //#when getting the proposal
-    const result = await record.evolution.execute({ action: "get", slug: "my-skill" }, makeToolContext(dir));
+    const result = await record.evolution.execute({ action: "get", slug: "my-skill" }, makeToolContext(dir)).then((__r) => __r.content);
     //#then the content and meta are returned
     expect(result).toContain("# my-skill");
     expect(result).toContain("1.0.0");
@@ -87,7 +87,7 @@ describe("createEvolutionTool", () => {
     const dir = makeProject();
     const record = createEvolutionTool(makeCtx(dir));
     //#when getting an unknown slug
-    const result = await record.evolution.execute({ action: "get", slug: "ghost" }, makeToolContext(dir));
+    const result = await record.evolution.execute({ action: "get", slug: "ghost" }, makeToolContext(dir)).then((__r) => __r.content);
     //#then a not-found error names the slug
     expect(result).toContain("Error");
     expect(result).toContain("ghost");
@@ -100,7 +100,7 @@ describe("createEvolutionTool", () => {
     const record = createEvolutionTool(makeCtx(dir));
     //#when approving the slug (cwd scoped so the audit lands in the project)
     const result = await withCwd(dir, () =>
-      record.evolution.execute({ action: "approve", slug: "my-skill" }, makeToolContext(dir)),
+      record.evolution.execute({ action: "approve", slug: "my-skill" }, makeToolContext(dir)).then((__r) => __r.content),
     );
     //#then the skill is promoted, pending is removed, and the audit records it
     expect(result).toContain("Promoted my-skill");
@@ -118,7 +118,7 @@ describe("createEvolutionTool", () => {
     const dir = makeProject();
     const record = createEvolutionTool(makeCtx(dir));
     //#when approving an unknown slug
-    const result = await record.evolution.execute({ action: "approve", slug: "ghost" }, makeToolContext(dir));
+    const result = await record.evolution.execute({ action: "approve", slug: "ghost" }, makeToolContext(dir)).then((__r) => __r.content);
     //#then a not-found error points at list
     expect(result).toContain("Error");
     expect(result).toContain("ghost");
@@ -131,7 +131,7 @@ describe("createEvolutionTool", () => {
     const record = createEvolutionTool(makeCtx(dir));
     //#when rejecting the slug (cwd scoped so the audit lands in the project)
     const result = await withCwd(dir, () =>
-      record.evolution.execute({ action: "reject", slug: "my-skill" }, makeToolContext(dir)),
+      record.evolution.execute({ action: "reject", slug: "my-skill" }, makeToolContext(dir)).then((__r) => __r.content),
     );
     //#then pending is removed and the receipt confirms
     expect(result).toContain("Rejected my-skill");
@@ -148,7 +148,7 @@ describe("createEvolutionTool", () => {
     );
     const record = createEvolutionTool(makeCtx(dir));
     //#when requesting status
-    const result = await record.evolution.execute({ action: "status" }, makeToolContext(dir));
+    const result = await record.evolution.execute({ action: "status" }, makeToolContext(dir)).then((__r) => __r.content);
     //#then state, pending count, and the audit tail are shown
     expect(result).toContain("Pending proposals (1)");
     expect(result).toContain("my-skill");
@@ -160,8 +160,8 @@ describe("createEvolutionTool", () => {
     const dir = makeProject();
     const record = createEvolutionTool(makeCtx(dir));
     //#when invoking the retrieval actions with nothing approved
-    const search = await record.evolution.execute({ action: "search" }, makeToolContext(dir));
-    const context = await record.evolution.execute({ action: "get_context" }, makeToolContext(dir));
+    const search = await record.evolution.execute({ action: "search" }, makeToolContext(dir)).then((__r) => __r.content);
+    const context = await record.evolution.execute({ action: "get_context" }, makeToolContext(dir)).then((__r) => __r.content);
     //#then both report no retrievable knowledge without throwing
     expect(search).toContain("No retrievable");
     expect(context).toContain("No retrievable");
@@ -172,7 +172,7 @@ describe("createEvolutionTool", () => {
     const dir = makeProject();
     const record = createEvolutionTool(makeCtx(dir));
     //#when a slug escapes the pending dir
-    const result = await record.evolution.execute({ action: "get", slug: "../evil" }, makeToolContext(dir));
+    const result = await record.evolution.execute({ action: "get", slug: "../evil" }, makeToolContext(dir)).then((__r) => __r.content);
     //#then the slug is rejected without filesystem access
     expect(result).toContain("Error");
     expect(result).toContain("../evil");

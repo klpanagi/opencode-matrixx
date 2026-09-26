@@ -1,0 +1,8 @@
+{
+  "chat.message": "prompt",
+  "chat.params": "generate",
+  "tool.execute.before": "execute.before",
+  "tool.execute.after": "execute.after",
+  "experimental.chat.messages.transform": "context",
+  "experimental.session.compacting": "compaction"
+}

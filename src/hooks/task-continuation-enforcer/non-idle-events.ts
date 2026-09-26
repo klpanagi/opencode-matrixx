@@ -1,6 +1,6 @@
+import { V1_HOOK_KEYS } from "../../config/schema/hooks-v1-keys"
 import { clearAwaitingUser, isQuestionTool, markAwaitingUser } from "../../shared/awaiting-user"
 import { log } from "../../shared/logger"
-
 import { COUNTDOWN_GRACE_PERIOD_MS, HOOK_NAME } from "./constants"
 import type { SessionStateStore } from "./session-state"
 
@@ -55,7 +55,7 @@ export function handleNonIdleEvent(args: {
     return
   }
 
-  if (eventType === "tool.execute.before" || eventType === "tool.execute.after") {
+  if (eventType === V1_HOOK_KEYS.toolExecuteBefore || eventType === V1_HOOK_KEYS.toolExecuteAfter) {
     const sessionID = properties?.sessionID as string | undefined
     if (sessionID) {
       const state = sessionStateStore.getExistingState(sessionID)

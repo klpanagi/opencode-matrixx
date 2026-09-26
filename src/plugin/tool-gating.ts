@@ -1,6 +1,8 @@
 import { existsSync, readdirSync, statSync } from "node:fs"
 import { extname, join } from "node:path"
 
+import type { V2PluginContext } from "./types"
+
 /** Directories never descended into during the bounded startup scan. */
 export const TOOL_GATING_SKIP_DIRS: readonly string[] = [
   "node_modules",
@@ -123,4 +125,25 @@ export function shouldEnablePresetTools(override: boolean | undefined): boolean 
 /** evolution tool: register iff evolution.enabled is true (default false). */
 export function shouldEnableEvolutionTool(enabled: boolean | undefined): boolean {
   return enabled ?? false
+}
+
+/**
+ * Structural runtime check distinguishing an OpenCode V2 plugin context
+ * (location/tool/session domains) from a V1 context (client/serverUrl).
+ */
+export function isV2PluginContext(ctx: unknown): ctx is V2PluginContext {
+  if (typeof ctx !== "object" || ctx === null) return false
+  const candidate = ctx as Record<string, unknown>
+  const location = candidate.location
+  const hasV2Location =
+    typeof location === "object" &&
+    location !== null &&
+    typeof (location as { directory?: unknown }).directory === "string"
+  const hasV2Domains =
+    typeof candidate.tool === "object" &&
+    candidate.tool !== null &&
+    typeof candidate.session === "object" &&
+    candidate.session !== null
+  const hasV1Markers = "client" in candidate || "serverUrl" in candidate
+  return hasV2Location && hasV2Domains && !hasV1Markers
 }

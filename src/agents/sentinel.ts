@@ -1,13 +1,13 @@
 import type { AgentConfig } from "@opencode-ai/sdk"
-import { SECURITY_API_SKILL_NAME } from "../features/builtin-skills/skills/security-api"
-import { SECURITY_CORE_SKILL_NAME } from "../features/builtin-skills/skills/security-core"
-import { SECURITY_CRYPTO_SKILL_NAME } from "../features/builtin-skills/skills/security-crypto"
-import { SECURITY_DAST_SKILL_NAME } from "../features/builtin-skills/skills/security-dast"
-import { SECURITY_DEPENDENCIES_SKILL_NAME } from "../features/builtin-skills/skills/security-dependencies"
-import { SECURITY_INFRA_SKILL_NAME } from "../features/builtin-skills/skills/security-infra"
-import { SECURITY_REVIEW_SKILL_NAME } from "../features/builtin-skills/skills/security-review"
-import { SECURITY_SAST_SKILL_NAME } from "../features/builtin-skills/skills/security-sast"
-import { SECURITY_SECRETS_SKILL_NAME } from "../features/builtin-skills/skills/security-secrets"
+import { SECURITY_API_SKILL_NAME } from "../features/builtin-skills/templates/security-api"
+import { SECURITY_CORE_SKILL_NAME } from "../features/builtin-skills/templates/security-core"
+import { SECURITY_CRYPTO_SKILL_NAME } from "../features/builtin-skills/templates/security-crypto"
+import { SECURITY_DAST_SKILL_NAME } from "../features/builtin-skills/templates/security-dast"
+import { SECURITY_DEPENDENCIES_SKILL_NAME } from "../features/builtin-skills/templates/security-dependencies"
+import { SECURITY_INFRA_SKILL_NAME } from "../features/builtin-skills/templates/security-infra"
+import { SECURITY_REVIEW_SKILL_NAME } from "../features/builtin-skills/templates/security-review"
+import { SECURITY_SAST_SKILL_NAME } from "../features/builtin-skills/templates/security-sast"
+import { SECURITY_SECRETS_SKILL_NAME } from "../features/builtin-skills/templates/security-secrets"
 import { createAgentToolRestrictions } from "../shared/permission-compat"
 import type { AgentMode, AgentPromptMetadata } from "./types"
 import { isGptModel } from "./types"
@@ -190,13 +190,25 @@ Your response goes directly to the user or calling agent. Deliver a complete, st
 Dense and actionable beats comprehensive and vague.
 </delivery>`
 
+/**
+ * Tools Sentinel must never invoke: it is a read-only auditor.
+ *
+ * Single source of truth for BOTH enforcement paths — the V1 agent-config
+ * restriction below and the native V2 deny policy compiled in
+ * `src/plugin/v2/permission-policy.ts` (`createSentinelPolicyRules`).
+ */
+export const SENTINEL_DENIED_TOOLS: readonly string[] = [
+  "write",
+  "edit",
+  "multiedit",
+  "task",
+]
+
+export const SENTINEL_DENY_MESSAGE =
+  "sentinel is a read-only security auditor and may not use write, edit, multiedit or task"
+
 export function createSentinelAgent(model: string): AgentConfig {
-  const restrictions = createAgentToolRestrictions([
-    "write",
-    "edit",
-    "multiedit",
-    "task",
-  ])
+  const restrictions = createAgentToolRestrictions([...SENTINEL_DENIED_TOOLS])
 
   const base = {
     description:

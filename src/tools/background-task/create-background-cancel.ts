@@ -1,22 +1,24 @@
-import { type ToolDefinition, tool } from "@opencode-ai/plugin"
+import { z } from "zod"
 import type { BackgroundManager } from "../../features/background-agent"
+import type { V2ToolDefinition } from "../../plugin/types"
 import type { BackgroundCancelClient } from "./clients"
 import { BACKGROUND_CANCEL_DESCRIPTION } from "./constants"
 import type { BackgroundCancelArgs } from "./types"
 
-export function createBackgroundCancel(manager: BackgroundManager, _client: BackgroundCancelClient): ToolDefinition {
-  return tool({
+export function createBackgroundCancel(manager: BackgroundManager, _client: BackgroundCancelClient): V2ToolDefinition {
+  return {
+    name: "background_cancel",
     description: BACKGROUND_CANCEL_DESCRIPTION,
-    args: {
-      taskId: tool.schema.string().optional().describe("Task ID to cancel (required if all=false)"),
-      all: tool.schema.boolean().optional().describe("Cancel all running background tasks (default: false)"),
-    },
+    input: z.object({
+      taskId: z.string().optional().describe("Task ID to cancel (required if all=false)"),
+      all: z.boolean().optional().describe("Cancel all running background tasks (default: false)"),
+    }),
     async execute(args: BackgroundCancelArgs, toolContext) {
       try {
         const cancelAll = args.all === true
 
         if (!cancelAll && !args.taskId) {
-          return `[ERROR] Invalid arguments: Either provide a taskId or set all=true to cancel all running tasks.`
+          return { content: await (`[ERROR] Invalid arguments: Either provide a taskId or set all=true to cancel all running tasks.`) }
         }
 
         if (cancelAll) {
@@ -24,7 +26,7 @@ export function createBackgroundCancel(manager: BackgroundManager, _client: Back
           const cancellableTasks = tasks.filter((t: { status: string }) => t.status === "running" || t.status === "pending")
 
           if (cancellableTasks.length === 0) {
-            return `No running or pending background tasks to cancel.`
+            return { content: await (`No running or pending background tasks to cancel.`) }
           }
 
           const cancelledInfo: Array<{ id: string; description: string; status: string; sessionID?: string }> = []
@@ -72,22 +74,22 @@ ${resumableTasks.map((t) => `- \`${t.sessionID}\` (${t.description})`).join("\n"
               ? `\n\n> ⚠️ ${runningCount} running task(s) were cancelled. Consider using \`background_wait_all(timeout=30000)\` before \`background_cancel(all=true)\` to let tasks finish naturally.`
               : ""
 
-          return `Cancelled ${cancelledInfo.length} background task(s):
+          return { content: await (`Cancelled ${cancelledInfo.length} background task(s):
 
 | Task ID | Description | Status | Session ID |
 |---------|-------------|-------|------------|
 ${tableRows}
-${resumeSection}${warning}`
+${resumeSection}${warning}`) }
         }
 
         const task = manager.getTask(args.taskId as string)
         if (!task) {
-          return `[ERROR] Task not found: ${args.taskId}`
+          return { content: await (`[ERROR] Task not found: ${args.taskId}`) }
         }
 
         if (task.status !== "running" && task.status !== "pending") {
-          return `[ERROR] Cannot cancel task: current status is "${task.status}".
-Only running or pending tasks can be cancelled.`
+          return { content: await (`[ERROR] Cannot cancel task: current status is "${task.status}".
+Only running or pending tasks can be cancelled.`) }
         }
 
         const cancelled = await manager.cancelTask(task.id, {
@@ -96,26 +98,26 @@ Only running or pending tasks can be cancelled.`
           skipNotification: true,
         })
         if (!cancelled) {
-          return `[ERROR] Failed to cancel task: ${task.id}`
+          return { content: await (`[ERROR] Failed to cancel task: ${task.id}`) }
         }
 
         if (task.status === "pending") {
-          return `Pending task cancelled successfully
+          return { content: await (`Pending task cancelled successfully
 
 Task ID: ${task.id}
 Description: ${task.description}
-Status: ${task.status}`
+Status: ${task.status}`) }
         }
 
-        return `Task cancelled successfully
+        return { content: await (`Task cancelled successfully
 
 Task ID: ${task.id}
 Description: ${task.description}
 Session ID: ${task.sessionID}
-Status: ${task.status}`
+Status: ${task.status}`) }
       } catch (error) {
-        return `[ERROR] Error cancelling task: ${error instanceof Error ? error.message : String(error)}`
+        return { content: await (`[ERROR] Error cancelling task: ${error instanceof Error ? error.message : String(error)}`) }
       }
     },
-  })
+  }
 }

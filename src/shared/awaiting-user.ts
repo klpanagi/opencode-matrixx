@@ -75,7 +75,8 @@ export function isAwaitingUser(state: unknown, messages?: Array<unknown>): boole
   return false
 }
 
-// Best-effort extraction of a tool name from tool.execute.before/after
+// Best-effort extraction of a tool name from the execute.before/after hook
+// properties (ctx.tool.hook execute.before / execute.after)
 // properties. Returns undefined when the shape is unknown: callers must
 // not change behavior in that case.
 export function getToolName(properties: Record<string, unknown> | undefined): string | undefined {

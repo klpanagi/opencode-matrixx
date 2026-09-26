@@ -1,6 +1,7 @@
+import { V1_HOOK_KEYS } from "../../config/schema/hooks-v1-keys"
 export function createBackgroundTaskBlockerHook() {
   return {
-    "tool.execute.before": async (
+    [V1_HOOK_KEYS.toolExecuteBefore]: async (
       input: { tool: string; sessionID: string; callID: string },
       _output: { args: Record<string, unknown>; message?: string }
     ): Promise<void> => {

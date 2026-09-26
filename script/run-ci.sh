@@ -45,7 +45,7 @@ bun run lint && pass "Lint" || fail "Lint"
 # Mock-heavy tests (isolated) — single source: script/mock-heavy-list.txt
 # Each entry runs in its own process to avoid mock.module() pollution.
 # Single source — do not duplicate; add new mock-heavy entries to script/mock-heavy-list.txt only.
-# Verify via: bash script/run-ci.sh or act pull_request -j test
+# Verify via: bash script/run-ci.sh or act pull_request -j test-v2
 # ------------------------------------------------------------------
 step "Mock-heavy tests (isolated)"
 while IFS= read -r test || [ -n "$test" ]; do
@@ -65,6 +65,18 @@ step "Remaining tests"
 find tests script -name '*.test.ts' -type f \
   | grep -v -F -f script/mock-heavy-list.txt \
   | xargs bun test && pass "Remaining tests" || fail "Remaining tests"
+
+# ---------------------------------------------------------------------------
+# V1 compat (advisory)  (mirrors ci.yml test-v1-compat job)
+# Mirrors the non-blocking `test-v1-compat` job: continue-on-error in CI, so it
+# is advisory here too and must NEVER increment CI_FAILED. Sunset: one cycle
+# after cutover merges to `dev`. Mirrors the job list exactly — edit both.
+# ---------------------------------------------------------------------------
+step "V1 compat (advisory, non-blocking)"
+bun test tests/plugin/dual-entry.test.ts tests/config/hooks-v1-keys.test.ts \
+  tests/cli/runtime/compat.test.ts tests/hooks/document-reader-guard-v1-wiring.test.ts \
+  tests/shared/permission-compat.test.ts && pass "V1 compat (advisory)" \
+  || echo "⚠️  V1 compat (advisory) — FAILED but non-blocking by design (one-cycle sunset)"
 
 # ------------------------------------------------------------------
 # Build + verify output  (mirrors ci.yml build job)

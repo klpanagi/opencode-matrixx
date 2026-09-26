@@ -1,6 +1,6 @@
 # Hook Mutation Classification (Task 0.5)
 
-> Classification of the 13 `tool.execute.before` hooks invoked sequentially in
+> Classification of the 13 pre-tool hooks invoked sequentially in
 > `src/plugin/tool-execute-before.ts:20-34`. Each row references the file:line
 > where the behavior was verified.
 >
@@ -27,15 +27,15 @@ relevant for parallelization decisions; **Secondary** lists everything else.
 | 2 | envFileWriteGuard | `BLOCKING` | — | — | YES (line 38, `throw new Error("🔒 SENSITIVE FILE GUARD…")`) | None (pure regex match) | `src/hooks/env-file-write-guard/hook.ts:18-48` |
 | 3 | bashFileReadGuard | `MUTATOR` | — | `output.message` (REPLACE, line 38) | NO | None (pure regex) | `src/hooks/bash-file-read-guard.ts:21-44` |
 | 4 | writeExistingFileGuard | `BLOCKING` | `READ_ONLY` (when file absent) | — | YES (line 46, `throw new Error("File already exists. Use edit tool instead.")`) | `existsSync(resolvedPath)` (line 28) | `src/hooks/write-existing-file-guard/hook.ts:10-48` |
-| 5 | qualityGate | `READ_ONLY` | — | — | NO | None in `before`; only writes to module-level `pendingCalls` Map (line 89-93); heavy Biome work happens in `tool.execute.after` (line 113) | `src/hooks/quality-gate/hook.ts:74-94` (before-handler) |
+| 5 | qualityGate | `READ_ONLY` | — | — | NO | None in `before`; only writes to module-level `pendingCalls` Map (line 89-93); heavy Biome work happens in the after-hook (line 113) | `src/hooks/quality-gate/hook.ts:74-94` (before-handler) |
 | 7 | nonInteractiveEnv | `MUTATOR` | — | `output.message` (REPLACE, line 39); `output.args.command` (REPLACE, line 58) | NO | None (pure regex + `buildEnvPrefix`) | `src/hooks/non-interactive-env/non-interactive-env-hook.ts:24-64` |
-| 8 | commentChecker | `READ_ONLY` | — | — | NO | None in `before`; only calls `registerPendingCall` (in-memory Map, line 74-83); heavy CLI work happens in `tool.execute.after` (line 177) | `src/hooks/comment-checker/hook.ts:38-84` (before-handler) |
-| 9 | directoryAgentsInjector | `READ_ONLY` | — | — | NO | None — `tool.execute.before` is a NO-OP (`void input; void output;`, factory.ts:66-67); real work is in `tool.execute.after` | `src/hooks/directory-injector/factory.ts:62-68` |
-| 11 | rulesInjector | `READ_ONLY` | — | — | NO | None — `tool.execute.before` is a NO-OP (`void input; void output;`, hook.ts:59-60); real work is in `tool.execute.after` | `src/hooks/rules-injector/hook.ts:55-61` |
+| 8 | commentChecker | `READ_ONLY` | — | — | NO | None in `before`; only calls `registerPendingCall` (in-memory Map, line 74-83); heavy CLI work happens in the after-hook (line 177) | `src/hooks/comment-checker/hook.ts:38-84` (before-handler) |
+| 9 | directoryAgentsInjector | `READ_ONLY` | — | — | NO | None — the before-hook is a NO-OP (`void input; void output;`, factory.ts:66-67); real work is in the after-hook | `src/hooks/directory-injector/factory.ts:62-68` |
+| 11 | rulesInjector | `READ_ONLY` | — | — | NO | None — the before-hook is a NO-OP (`void input; void output;`, hook.ts:59-60); real work is in the after-hook | `src/hooks/rules-injector/hook.ts:55-61` |
 | 12 | tasksTodowriteDisabler | `BLOCKING` | — | — | YES (line 29, `throw new Error(REPLACEMENT_MESSAGE)`) | None (pure array `.some()`) | `src/hooks/tasks-todowrite-disabler/hook.ts:15-31` |
 | 13 | oracleMdOnly | `BLOCKING` | `MUTATOR` + `NETWORK` | `output.args.prompt` (line 30); `output.message` (CONCAT, line 72) | YES (line 56, `throw new Error("[…] Oracle can only write/edit .md files…")`) | `getAgentFromSession()` → SDK HTTP call (`findNearestMessageWithFieldsFromSDK`) or filesystem fallback (`readFileSync`/`readdirSync` in `features/hook-message-injector/injector.ts:147,154,166,198,204`) | `src/hooks/oracle-md-only/hook.ts:14-81` |
 | 14 | mouseNotepad | `MUTATOR` | `NETWORK` | `output.args.prompt` (CONCAT prefix, line 36) | NO | `isCallerOrchestrator()` → SDK HTTP call (`findNearestMessageWithFieldsFromSDK`) or filesystem fallback (`session-utils.ts:13-24`) | `src/hooks/mouse-notepad/hook.ts:10-43` |
-| 15 | architectHook | `MUTATOR` | `NETWORK` | `output.message` (CONCAT, line 34); `output.args.prompt` (CONCAT prefix, line 48) | NO | Same `isCallerOrchestrator()` as #14; also writes to `pendingFilePaths` Map (line 31) for `tool.execute.after` | `src/hooks/architect/tool-execute-before.ts:19-54` |
+| 15 | architectHook | `MUTATOR` | `NETWORK` | `output.message` (CONCAT, line 34); `output.args.prompt` (CONCAT prefix, line 48) | NO | Same `isCallerOrchestrator()` as #14; also writes to `pendingFilePaths` Map (line 31) for the after-hook | `src/hooks/architect/tool-execute-before.ts:19-54` |
 
 ## Summary by Class
 
@@ -63,15 +63,15 @@ Total expected speedup: **~3×** (from 15 serial awaits → 3 waves).
 
 ### Wave 1 — `READ_ONLY` (4 hooks, parallel-safe, no I/O, no mutation)
 
-These hooks either no-op in `tool.execute.before` or only write to their own
+These hooks either no-op in the before-hook or only write to their own
 private in-memory `Map`. They never throw and never mutate `output`.
 
 ```ts
 await Promise.all([
-  hooks.qualityGate?.["tool.execute.before"]?.(input, output),        // in-memory Map only
-  hooks.commentChecker?.["tool.execute.before"]?.(input, output),     // in-memory Map only
-  hooks.directoryAgentsInjector?.["tool.execute.before"]?.(input, output),  // no-op
-  hooks.rulesInjector?.["tool.execute.before"]?.(input, output),      // no-op
+  hooks.qualityGate?.[V1_HOOK_KEYS.toolExecuteBefore]?.(input, output),        // in-memory Map only
+  hooks.commentChecker?.[V1_HOOK_KEYS.toolExecuteBefore]?.(input, output),     // in-memory Map only
+  hooks.directoryAgentsInjector?.[V1_HOOK_KEYS.toolExecuteBefore]?.(input, output),  // no-op
+  hooks.rulesInjector?.[V1_HOOK_KEYS.toolExecuteBefore]?.(input, output),      // no-op
 ])
 ```
 
@@ -93,11 +93,11 @@ whichever throws first wins.
 
 ```ts
 await Promise.allSettled([
-  hooks.secretLeakGuard?.["tool.execute.before"]?.(input, output),        // bash + git commit/push
-  hooks.envFileWriteGuard?.["tool.execute.before"]?.(input, output),     // write/edit + sensitive file
-  hooks.writeExistingFileGuard?.["tool.execute.before"]?.(input, output), // write + file exists
-  hooks.tasksTodowriteDisabler?.["tool.execute.before"]?.(input, output),// todowrite + task system
-  hooks.oracleMdOnly?.["tool.execute.before"]?.(input, output),      // write/edit + Oracle agent + non-.md
+  hooks.secretLeakGuard?.[V1_HOOK_KEYS.toolExecuteBefore]?.(input, output),        // bash + git commit/push
+  hooks.envFileWriteGuard?.[V1_HOOK_KEYS.toolExecuteBefore]?.(input, output),     // write/edit + sensitive file
+  hooks.writeExistingFileGuard?.[V1_HOOK_KEYS.toolExecuteBefore]?.(input, output), // write + file exists
+  hooks.tasksTodowriteDisabler?.[V1_HOOK_KEYS.toolExecuteBefore]?.(input, output),// todowrite + task system
+  hooks.oracleMdOnly?.[V1_HOOK_KEYS.toolExecuteBefore]?.(input, output),      // write/edit + Oracle agent + non-.md
 ])
 ```
 
@@ -137,20 +137,20 @@ Recommended sequential order (preserves each hook's semantic intent):
 ```ts
 // 3a. nonInteractiveEnv — runs first so that env-prefix is applied to command
 //     before any other hook inspects output.args.command
-await hooks.nonInteractiveEnv?.["tool.execute.before"]?.(input, output)
+await hooks.nonInteractiveEnv?.[V1_HOOK_KEYS.toolExecuteBefore]?.(input, output)
 
 // 3b. bashFileReadGuard — replaces output.message with file-read warning
-await hooks.bashFileReadGuard?.["tool.execute.before"]?.(input, output)
+await hooks.bashFileReadGuard?.[V1_HOOK_KEYS.toolExecuteBefore]?.(input, output)
 
 // 3d. oracleMdOnly — prepends Oracle warning to output.args.prompt
-await hooks.oracleMdOnly?.["tool.execute.before"]?.(input, output)
+await hooks.oracleMdOnly?.[V1_HOOK_KEYS.toolExecuteBefore]?.(input, output)
 
 // 3e. mouseNotepad — prepends notepad directive to output.args.prompt
-await hooks.mouseNotepad?.["tool.execute.before"]?.(input, output)
+await hooks.mouseNotepad?.[V1_HOOK_KEYS.toolExecuteBefore]?.(input, output)
 
 // 3f. architectHook — prepends single-task directive to output.args.prompt
 //     and appends delegation warning to output.message
-await hooks.architectHook?.["tool.execute.before"]?.(input, output)
+await hooks.architectHook?.[V1_HOOK_KEYS.toolExecuteBefore]?.(input, output)
 ```
 
 > **3d → 3e → 3f** is the critical ordering: they all prepend to
@@ -188,16 +188,16 @@ await hooks.architectHook?.["tool.execute.before"]?.(input, output)
    is a non-obvious side effect that breaks commutativity with any future
    hook that wants to inspect the raw command.
 3. **`qualityGate` and `commentChecker` are READ_ONLY in the before-handler**
-   but their `tool.execute.after` handlers do the heavy work (Biome lint,
+   but their after-hook handlers do the heavy work (Biome lint,
    `@code-yeongyu/comment-checker` CLI). The before-handler only writes a
    pending-call record to an in-memory Map. T1.1 should treat these as
    safe-to-parallel for the before-handler cost only.
 4. **`directoryAgentsInjector` / `rulesInjector`
-   are PURE NO-OPS in `tool.execute.before`**. Their actual logic lives in
-   `tool.execute.after` (and `event`). All three currently pay the
+   are PURE NO-OPS in the before-hook**. Their actual logic lives in
+   the after-hook (and `event`). All three currently pay the
    `await` round-trip cost for nothing. Removing them from the
    before-handler chain entirely is a zero-risk optimization (just don't
-   register a `tool.execute.before` handler, or guard with
+   register a before-hook handler, or guard with
    `if (!handler) return undefined` in `tool-execute-before.ts`).
 5. **3 of the 15 hooks (oracleMdOnly, mouseNotepad, architectHook)
    all hit the OpenCode SDK** via `isCallerOrchestrator()` /
@@ -233,28 +233,28 @@ Three bundles, executed sequentially:
 ```ts
 // Bundle A — pure READ_ONLY, fast
 await Promise.all([
-  hooks.qualityGate?.["tool.execute.before"]?.(input, output),
-  hooks.commentChecker?.["tool.execute.before"]?.(input, output),
-  hooks.directoryAgentsInjector?.["tool.execute.before"]?.(input, output),
-  hooks.rulesInjector?.["tool.execute.before"]?.(input, output),
+  hooks.qualityGate?.[V1_HOOK_KEYS.toolExecuteBefore]?.(input, output),
+  hooks.commentChecker?.[V1_HOOK_KEYS.toolExecuteBefore]?.(input, output),
+  hooks.directoryAgentsInjector?.[V1_HOOK_KEYS.toolExecuteBefore]?.(input, output),
+  hooks.rulesInjector?.[V1_HOOK_KEYS.toolExecuteBefore]?.(input, output),
 ])
 
 // Bundle B — BLOCKING guards (Promise.allSettled; re-throw on first reject)
 const settled = await Promise.allSettled([
-  hooks.secretLeakGuard?.["tool.execute.before"]?.(input, output),
-  hooks.envFileWriteGuard?.["tool.execute.before"]?.(input, output),
-  hooks.writeExistingFileGuard?.["tool.execute.before"]?.(input, output),
-  hooks.tasksTodowriteDisabler?.["tool.execute.before"]?.(input, output),
-  hooks.oracleMdOnly?.["tool.execute.before"]?.(input, output),
+  hooks.secretLeakGuard?.[V1_HOOK_KEYS.toolExecuteBefore]?.(input, output),
+  hooks.envFileWriteGuard?.[V1_HOOK_KEYS.toolExecuteBefore]?.(input, output),
+  hooks.writeExistingFileGuard?.[V1_HOOK_KEYS.toolExecuteBefore]?.(input, output),
+  hooks.tasksTodowriteDisabler?.[V1_HOOK_KEYS.toolExecuteBefore]?.(input, output),
+  hooks.oracleMdOnly?.[V1_HOOK_KEYS.toolExecuteBefore]?.(input, output),
 ])
 for (const r of settled) if (r.status === "rejected") throw r.reason
 
 // Bundle C — MUTATOR chain (preserve current order)
-await hooks.nonInteractiveEnv?.["tool.execute.before"]?.(input, output)
-await hooks.bashFileReadGuard?.["tool.execute.before"]?.(input, output)
-await hooks.oracleMdOnly?.["tool.execute.before"]?.(input, output)
-await hooks.mouseNotepad?.["tool.execute.before"]?.(input, output)
-await hooks.architectHook?.["tool.execute.before"]?.(input, output)
+await hooks.nonInteractiveEnv?.[V1_HOOK_KEYS.toolExecuteBefore]?.(input, output)
+await hooks.bashFileReadGuard?.[V1_HOOK_KEYS.toolExecuteBefore]?.(input, output)
+await hooks.oracleMdOnly?.[V1_HOOK_KEYS.toolExecuteBefore]?.(input, output)
+await hooks.mouseNotepad?.[V1_HOOK_KEYS.toolExecuteBefore]?.(input, output)
+await hooks.architectHook?.[V1_HOOK_KEYS.toolExecuteBefore]?.(input, output)
 ```
 
 > **Note**: `oracleMdOnly` and `architectHook` already ran in Bundle B

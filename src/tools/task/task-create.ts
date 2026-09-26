@@ -1,7 +1,5 @@
 import { readdirSync, statSync } from "node:fs";
 import { join } from "node:path";
-import type { PluginInput } from "@opencode-ai/plugin";
-import { type ToolDefinition, tool } from "@opencode-ai/plugin/tool";
 import { z } from "zod";
 import type { MatrixxConfig } from "../../config/schema";
 import {
@@ -13,6 +11,7 @@ import {
   writeJsonAtomic,
 } from "../../features/task-storage/storage";
 import { maybeSyncTaskToPlans } from "../../hooks/plan-persister/task-sync";
+import type { V2ToolDefinition } from "../../plugin/types"
 import { log } from "../../shared/logger";
 import { DEDUP_WINDOW_MS } from "./constants";
 import type { TaskObject } from "./types";
@@ -20,9 +19,10 @@ import { TaskCreateInputSchema, TaskObjectSchema } from "./types";
 
 export function createTaskCreateTool(
   config: Partial<MatrixxConfig>,
-  ctx?: PluginInput,
-): ToolDefinition {
-   return tool({
+  ctx?: { directory?: string },
+): V2ToolDefinition {
+   return {
+     name: "task_create",
      description: `[TRACKING — local progress record only. Spawns nothing, executes nothing.]
 Create a new task with auto-generated ID and threadID recording.
 
@@ -37,45 +37,45 @@ Calculate dependencies carefully to maximize parallel execution:
 - Minimize dependency chains to reduce sequential bottlenecks
 
 Do NOT confuse with the task tool ([DELEGATION]): task_create only records a checklist item — it does NOT spawn an agent and no work gets done. To have another agent do work, use task (with category/subagent_type).`,
-     args: {
-      subject: tool.schema.string().describe("Task subject (required)"),
-      description: tool.schema.string().optional().describe("Task description"),
-      activeForm: tool.schema
+     input: z.object({
+      subject: z.string().describe("Task subject (required)"),
+      description: z.string().optional().describe("Task description"),
+      activeForm: z
         .string()
         .optional()
         .describe("Active form (present continuous)"),
-      metadata: tool.schema
-        .record(tool.schema.string(), tool.schema.unknown())
+      metadata: z
+        .record(z.string(), z.unknown())
         .optional()
         .describe("Task metadata"),
-      blockedBy: tool.schema
-        .array(tool.schema.string())
+      blockedBy: z
+        .array(z.string())
         .optional()
         .describe("Task IDs blocking this task"),
-      blocks: tool.schema
-        .array(tool.schema.string())
+      blocks: z
+        .array(z.string())
         .optional()
         .describe("Task IDs this task blocks"),
-      repoURL: tool.schema.string().optional().describe("Repository URL"),
-      parentID: tool.schema.string().optional().describe("Parent task ID"),
-    },
+      repoURL: z.string().optional().describe("Repository URL"),
+      parentID: z.string().optional().describe("Parent task ID"),
+    }),
     execute: async (args, context) => {
-      return handleCreate(args, config, ctx, context);
+      return { content: await (handleCreate(args, config, ctx, context)) };
     },
-  });
+  };
 }
 
 async function handleCreate(
   args: Record<string, unknown>,
   config: Partial<MatrixxConfig>,
-  ctx: PluginInput | undefined,
+  ctx: { directory?: string } | undefined,
   context: { sessionID: string },
 ): Promise<string> {
   try {
     const validatedArgs = TaskCreateInputSchema.parse(args)
     const directory =
-      ((context as Record<string, unknown>)?.directory as string | undefined) ??
-      ((ctx as Record<string, unknown>)?.directory as string | undefined) ??
+      ((context as { directory?: string })?.directory as string | undefined) ??
+      ((ctx as { directory?: string })?.directory as string | undefined) ??
       process.cwd()
     try {
       migrateLegacyTasksIfNeeded(config, directory)

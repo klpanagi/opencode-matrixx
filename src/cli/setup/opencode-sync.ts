@@ -2,6 +2,8 @@ import { existsSync, mkdirSync, readFileSync, writeFileSync } from "node:fs";
 import { dirname, join } from "node:path";
 import { detectConfigFile, parseJsoncSafe } from "../../shared/jsonc-parser";
 import { getOpenCodeConfigDir } from "../../shared/opencode-config-dir";
+import type { CliRuntime, DaemonVerification } from "../runtime";
+import { createCliRuntime, defaultCliService, isDaemonEnabled, verifyPluginsWithDaemon } from "../runtime";
 import type { SetupState } from "./types";
 
 const CONTEXT_VARIANTS = ["context-mode", "@tarquinen/context-mode", "opencode-context-mode"];
@@ -69,8 +71,47 @@ export async function syncOpencodePlugins(state: SetupState, opts: { dryRun: boo
   const outPath = cfgPath.includes(".jsonc") || !existsSync(cfgPath) ? join(dir, "opencode.jsonc") : cfgPath;
   if (JSON.stringify(plugins) === JSON.stringify(nextPlugins) && existsSync(outPath)) return;
   writeFileSync(outPath, `${JSON.stringify(nextRaw, null, 2)}\n`);
+  await verifySyncWithDaemon({ plugins: nextPlugins });
 }
 
 export function hasContextModePlugin(plugins: string[]): boolean {
   return CONTEXT_VARIANTS.some((v) => plugins.includes(v));
+}
+
+export type SyncDaemonVerification = {
+  plugins: string[];
+  env?: Record<string, string | undefined>;
+  createRuntime?: () => Promise<CliRuntime>;
+  log?: (message: string) => void;
+};
+
+/**
+ * Confirms a synced plugin list against a running OpenCode daemon.
+ *
+ * Disabled unless `MATRIXX_CLI_DAEMON=1`, and it only ever inspects a daemon
+ * that is already running — it never starts one. Any unreachable state is
+ * reported as "not verified" rather than success, so a stale daemon can never
+ * make a failed sync look clean.
+ */
+export async function verifySyncWithDaemon(opts: SyncDaemonVerification): Promise<DaemonVerification | undefined> {
+  if (!isDaemonEnabled(opts.env ?? process.env)) return undefined;
+  const log = opts.log ?? ((message: string) => console.log(message));
+  const runtime = opts.createRuntime
+    ? await opts.createRuntime()
+    : await createCliRuntime({ allowDaemonSpawn: false, probe: daemonIsRegistered });
+  const result = await verifyPluginsWithDaemon(runtime, opts.plugins);
+  if (result.status === "mismatch") {
+    log(`  [daemon] plugin list not visible to the running OpenCode service: ${result.detail ?? "unknown"}`);
+  } else if (result.status === "unavailable") {
+    log(`  [daemon] sync written, but daemon state not verified (${result.detail ?? "unknown"})`);
+  }
+  return result;
+}
+
+async function daemonIsRegistered(): Promise<boolean> {
+  try {
+    return (await defaultCliService.discover()) !== undefined;
+  } catch {
+    return false;
+  }
 }

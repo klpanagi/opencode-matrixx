@@ -1,4 +1,5 @@
-import type { PluginInput } from "@opencode-ai/plugin"
+import { V1_HOOK_KEYS } from "../../config/schema/hooks-v1-keys"
+import type { PluginContext } from "../../plugin/types"
 
 export const JSON_ERROR_TOOL_EXCLUDE_LIST = [
   "bash",
@@ -38,9 +39,9 @@ You sent invalid JSON arguments to a tool. STOP and do this NOW:
 This usually means you garbled a string parameter or forgot to escape a character.
 `
 
-export function createJsonErrorRecoveryHook(_ctx: PluginInput) {
+export function createJsonErrorRecoveryHook(_ctx: PluginContext) {
   return {
-    "tool.execute.after": async (
+    [V1_HOOK_KEYS.toolExecuteAfter]: async (
       input: { tool: string; sessionID: string; callID: string },
       output: { title: string; output: string; metadata: unknown },
     ) => {

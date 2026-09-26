@@ -4,9 +4,9 @@ import { readFileSync } from "node:fs"
 describe("experimental.session.compacting", () => {
   test("does not hardcode a model and uses output.context", () => {
     //#given
-    const indexUrl = new URL("../src/index.ts", import.meta.url)
-    const content = readFileSync(indexUrl, "utf-8")
-    const hookIndex = content.indexOf('"experimental.session.compacting"')
+    const hookUrl = new URL("../src/plugin/compaction.ts", import.meta.url)
+    const content = readFileSync(hookUrl, "utf-8")
+    const hookIndex = content.indexOf("createCompactionHandler")
 
     //#when
     const hookSlice = hookIndex >= 0 ? content.slice(hookIndex, hookIndex + 1200) : ""

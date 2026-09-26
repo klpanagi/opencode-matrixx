@@ -1,11 +1,11 @@
 import { existsSync, readdirSync, readFileSync, unlinkSync } from "node:fs"
 import { join } from "node:path"
-import type { PluginInput } from "@opencode-ai/plugin"
+import type { PluginContext } from "../../../plugin/types"
 import { deletePart, isSqliteBackend, log, normalizeSDKResponse } from "../../../shared"
 import { PART_STORAGE, THINKING_TYPES } from "../constants"
 import type { StoredPart } from "../types"
 
-type OpencodeClient = PluginInput["client"]
+type OpencodeClient = PluginContext["client"]
 
 export function stripThinkingParts(messageID: string): boolean {
   if (isSqliteBackend()) {

@@ -1,15 +1,17 @@
-import { type ToolDefinition, tool } from "@opencode-ai/plugin/tool"
+import { z } from "zod"
+import type { V2ToolDefinition } from "../../plugin/types"
 import { withLspClient } from "./lsp-client-wrapper"
 import { formatLocation } from "./lsp-formatters"
 import type { Location, LocationLink } from "./types"
 
-export const lsp_goto_definition: ToolDefinition = tool({
+export const lsp_goto_definition: V2ToolDefinition = {
+  name: "lsp_goto_definition",
   description: "Jump to symbol definition. Find WHERE something is defined.",
-  args: {
-    filePath: tool.schema.string(),
-    line: tool.schema.number().min(1).describe("1-based"),
-    character: tool.schema.number().min(0).describe("0-based"),
-  },
+  input: z.object({
+    filePath: z.string(),
+    line: z.number().min(1).describe("1-based"),
+    character: z.number().min(0).describe("0-based"),
+  }),
   execute: async (args, _context) => {
     try {
       const result = await withLspClient(args.filePath, async (client) => {
@@ -22,20 +24,20 @@ export const lsp_goto_definition: ToolDefinition = tool({
 
       if (!result) {
         const output = "No definition found"
-        return output
+        return { content: await (output) }
       }
 
       const locations = Array.isArray(result) ? result : [result]
       if (locations.length === 0) {
         const output = "No definition found"
-        return output
+        return { content: await (output) }
       }
 
       const output = locations.map(formatLocation).join("\n")
-      return output
+      return { content: await (output) }
     } catch (e) {
       const output = `Error: ${e instanceof Error ? e.message : String(e)}`
-      return output
+      return { content: await (output) }
     }
   },
-})
+}

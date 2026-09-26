@@ -1,5 +1,6 @@
-import type { PluginInput } from "@opencode-ai/plugin";
+import { V1_HOOK_KEYS } from "../../config/schema/hooks-v1-keys"
 import { subagentSessions } from "../../features/session-state";
+import type { PluginContextSlice } from "../../plugin/types";
 import { log } from "../../shared/logger";
 import { buildSessionReminderMessage } from "./constants";
 import { extractSessionNameFromTokens, findSubcommand, tokenizeCommand } from "./parser";
@@ -27,7 +28,7 @@ interface EventInput {
   };
 }
 
-export function createInteractiveBashSessionHook(ctx: PluginInput) {
+export function createInteractiveBashSessionHook(ctx: PluginContextSlice<"client">) {
   const sessionStates = new Map<string, InteractiveBashSessionState>();
 
   function getOrCreateStateLocal(sessionID: string): InteractiveBashSessionState {
@@ -126,7 +127,7 @@ export function createInteractiveBashSessionHook(ctx: PluginInput) {
   };
 
   return {
-    "tool.execute.after": toolExecuteAfter,
+    [V1_HOOK_KEYS.toolExecuteAfter]: toolExecuteAfter,
     event: eventHandler,
   };
 }

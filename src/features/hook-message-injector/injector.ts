@@ -1,6 +1,7 @@
 import { existsSync, mkdirSync, readdirSync, readFileSync, writeFileSync } from "node:fs"
 import { join } from "node:path"
-import type { PluginInput } from "@opencode-ai/plugin"
+import { V1_HOOK_KEYS } from "../../config/schema/hooks-v1-keys"
+import type { PluginContext } from "../../plugin/types"
 import { normalizeSDKResponse } from "../../shared"
 import { log } from "../../shared/logger"
 import { isSqliteBackend } from "../../shared/opencode-storage-detection"
@@ -13,7 +14,7 @@ export interface StoredMessage {
   tools?: Record<string, ToolPermission>
 }
 
-export type OpencodeClient = PluginInput["client"]
+export type OpencodeClient = PluginContext["client"]
 
 interface SDKMessage {
   info?: {
@@ -280,7 +281,7 @@ export function injectHookMessage(
 
   if (isSqliteBackend()) {
     log("[hook-message-injector] Skipping JSON message injection on SQLite backend. " +
-        "In-flight injection is handled via experimental.chat.messages.transform hook. " +
+        `In-flight injection is handled via ${V1_HOOK_KEYS.messagesTransform} hook. ` +
         "JSON write path is not needed when SQLite is the storage backend.", {
       sessionID,
       agent: originalMessage.agent,

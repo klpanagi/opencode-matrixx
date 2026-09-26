@@ -1,5 +1,6 @@
-import type { PluginInput } from "@opencode-ai/plugin"
 import type { BackgroundManager } from "../../features/background-agent"
+import { resolveSessionSteering } from "../../features/session-steering"
+import type { PluginContext } from "../../plugin/types"
 import { log } from "../../shared/logger"
 import { HOOK_NAME } from "./hook-name"
 import { resolveRecentModelForSession } from "./recent-model-resolver"
@@ -7,7 +8,7 @@ import { MISSION_CONTINUATION_PROMPT } from "./system-reminder-templates"
 import type { SessionState } from "./types"
 
 export async function injectMissionContinuation(input: {
-  ctx: PluginInput
+  ctx: PluginContext
   sessionID: string
   planName: string
   remaining: number
@@ -45,14 +46,12 @@ export async function injectMissionContinuation(input: {
 
     const model = await resolveRecentModelForSession(ctx, sessionID)
 
-    await ctx.client.session.promptAsync({
-      path: { id: sessionID },
-      body: {
-        agent: agent ?? "architect",
-        ...(model !== undefined ? { model } : {}),
-        parts: [{ type: "text", text: prompt }],
-      },
-      query: { directory: ctx.directory },
+    await resolveSessionSteering(ctx).deliver({
+      sessionID,
+      text: prompt,
+      directory: ctx.directory,
+      agent: agent ?? "architect",
+      ...(model !== undefined ? { model } : {}),
     })
 
     sessionState.promptFailureCount = 0

@@ -6,7 +6,7 @@
 
 | Scope | Count | Source |
 |------|-------|--------|
-| **Built-in (this dir)** | 46 | `src/features/builtin-skills/skills/*.ts` |
+| **Built-in (this dir)** | 46 | `src/features/builtin-skills/templates/*.ts` |
 | Opencode-project (`.opencode/skills/`) | varies | per-project |
 | Opencode-user (`~/.config/opencode/skills/`) | varies | per-user |
 | Claude Code compat (`.claude/skills/`) | varies | per-project |
@@ -102,9 +102,9 @@ All skills are loaded from `src/features/builtin-skills/` via `createBuiltinSkil
 
 ## HOW TO ADD A NEW BUILT-IN SKILL
 
-1. Create `src/features/builtin-skills/skills/<name>.ts`
+1. Create `src/features/builtin-skills/templates/<name>.ts`
 2. Export a `Skill` object: `export const mySkill: Skill = { name, description, template, ... }`
-3. Add to the `skillLoaders` map in `src/features/builtin-skills/skills.ts` (line 7-56):
+3. Add to the `skillLoaders` map in `src/features/builtin-skills/registry.ts` (line 7-56):
    ```typescript
    "my-name": () => require("./skills/my-name").mySkill,
    ```
@@ -116,9 +116,9 @@ Remove from `skillLoaders` in `skills.ts`. Note: users with `disabled_skills: ["
 
 ## KNOWN HOTSPOTS
 
-- `src/features/builtin-skills/skills/git-master.ts` — large skill with many workflow procedures
-- `src/features/builtin-skills/skills/ulw-research.ts` — references the research skill
-- `src/features/builtin-skills/skills.ts` `skillLoaders` map — must stay in sync with `skills/*.ts` exports
+- `src/features/builtin-skills/templates/git-master.ts` — large skill with many workflow procedures
+- `src/features/builtin-skills/templates/ulw-research.ts` — references the research skill
+- `src/features/builtin-skills/registry.ts` `skillLoaders` map — must stay in sync with `templates/*.ts` exports
 
 ## Skill Description SDO (Skill Discovery Optimization)
 

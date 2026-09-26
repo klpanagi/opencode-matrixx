@@ -1,10 +1,11 @@
-import type { PluginInput } from "@opencode-ai/plugin"
+import { V1_HOOK_KEYS } from "../../config/schema/hooks-v1-keys"
+import type { PluginContext } from "../../plugin/types"
 import { createArchitectEventHandler } from "./event-handler"
 import { createToolExecuteAfterHandler } from "./tool-execute-after"
 import { createToolExecuteBeforeHandler } from "./tool-execute-before"
 import type { ArchitectHookOptions, SessionState } from "./types"
 
-export function createArchitectHook(ctx: PluginInput, options?: ArchitectHookOptions) {
+export function createArchitectHook(ctx: PluginContext, options?: ArchitectHookOptions) {
   const sessions = new Map<string, SessionState>()
   const pendingFilePaths = new Map<string, string>()
 
@@ -19,7 +20,7 @@ export function createArchitectHook(ctx: PluginInput, options?: ArchitectHookOpt
 
   return {
     handler: createArchitectEventHandler({ ctx, options, sessions, getState }),
-    "tool.execute.before": createToolExecuteBeforeHandler({ ctx, pendingFilePaths }),
-    "tool.execute.after": createToolExecuteAfterHandler({ ctx, pendingFilePaths }),
+    [V1_HOOK_KEYS.toolExecuteBefore]: createToolExecuteBeforeHandler({ ctx, pendingFilePaths }),
+    [V1_HOOK_KEYS.toolExecuteAfter]: createToolExecuteAfterHandler({ ctx, pendingFilePaths }),
   }
 }

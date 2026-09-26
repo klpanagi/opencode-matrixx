@@ -3,9 +3,9 @@ import type { ModelCacheState } from "../plugin-state";
 import { log } from "../shared";
 import { applyAgentConfig } from "./agent-config-handler";
 import { applyCommandConfig } from "./command-config-handler";
+import { EMPTY_PLUGIN_COMPONENTS } from "./component-bundle";
 import { applyMcpConfig } from "./mcp-config-handler";
-import { loadPluginComponents } from "./plugin-components-loader";
-import { applyProviderConfig } from "./provider-config-handler";
+import { applyProviderModelLimits } from "./provider-model-limits";
 import { applyToolConfig } from "./tool-config-handler";
 
 export { resolveCategoryConfig } from "./category-config-resolver";
@@ -20,9 +20,9 @@ export function createConfigHandler(deps: ConfigHandlerDeps) {
   const { ctx, pluginConfig, modelCacheState } = deps;
 
   return async (config: Record<string, unknown>) => {
-    applyProviderConfig({ config, modelCacheState });
+    applyProviderModelLimits({ config, modelCacheState });
 
-    const pluginComponents = await loadPluginComponents({ pluginConfig });
+    const pluginComponents = EMPTY_PLUGIN_COMPONENTS;
 
     const agentResult = await applyAgentConfig({
       config,

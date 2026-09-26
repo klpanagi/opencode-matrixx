@@ -1,5 +1,5 @@
-import type { PluginInput } from "@opencode-ai/plugin"
 import { appendSessionId, getPlanProgress, readMissionState } from "../../features/mission-state"
+import type { PluginContext } from "../../plugin/types"
 import { collectGitDiffStats, formatFileChanges } from "../../shared/git-worktree"
 import { log } from "../../shared/logger"
 import { isCallerOrchestrator } from "../../shared/session-utils"
@@ -12,7 +12,7 @@ import { buildOrchestratorReminder, buildStandaloneVerificationReminder } from "
 import { isWriteOrEditToolName } from "./write-edit-tool-policy"
 
 export function createToolExecuteAfterHandler(input: {
-  ctx: PluginInput
+  ctx: PluginContext
   pendingFilePaths: Map<string, string>
 }): (toolInput: ToolExecuteAfterInput, toolOutput: ToolExecuteAfterOutput) => Promise<void> {
   const { ctx, pendingFilePaths } = input

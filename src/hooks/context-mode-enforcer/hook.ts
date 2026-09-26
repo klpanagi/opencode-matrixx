@@ -1,6 +1,7 @@
 import type { Hooks } from "@opencode-ai/plugin"
 
 import type { MatrixxConfig } from "../../config"
+import { V1_HOOK_KEYS } from "../../config/schema/hooks-v1-keys"
 import { log } from "../../shared"
 import { hasWorkingSubstitute, resolveContextModeEnforcement } from "../../shared/context-mode-enforcement"
 import {
@@ -26,7 +27,7 @@ export function createContextModeEnforcerHook(pluginConfig: MatrixxConfig): Hook
   const { enabled, enforce, blockedTools } = resolveContextModeConfig(pluginConfig)
 
   return {
-    "tool.execute.before": async (input, output: { args: Record<string, unknown>; message?: string }): Promise<void> => {
+    [V1_HOOK_KEYS.toolExecuteBefore]: async (input, output: { args: Record<string, unknown>; message?: string }): Promise<void> => {
       if (!enabled) return
 
       const tool = input.tool.toLowerCase()

@@ -1,4 +1,4 @@
-import type { PluginInput } from "@opencode-ai/plugin"
+import type { PluginContext } from "../plugin/types"
 import type { Platform } from "./session-notification-sender"
 
 type SessionNotificationConfig = {
@@ -12,12 +12,12 @@ type SessionNotificationConfig = {
 }
 
 export function createIdleNotificationScheduler(options: {
-  ctx: PluginInput
+  ctx: PluginContext
   platform: Platform
   config: SessionNotificationConfig
-  hasIncompleteTodos: (ctx: PluginInput, sessionID: string) => Promise<boolean>
-  send: (ctx: PluginInput, platform: Platform, title: string, message: string) => Promise<void>
-  playSound: (ctx: PluginInput, platform: Platform, soundPath: string) => Promise<void>
+  hasIncompleteTodos: (ctx: PluginContext, sessionID: string) => Promise<boolean>
+  send: (ctx: PluginContext, platform: Platform, title: string, message: string) => Promise<void>
+  playSound: (ctx: PluginContext, platform: Platform, soundPath: string) => Promise<void>
 }) {
   const notifiedSessions = new Set<string>()
   const pendingTimers = new Map<string, ReturnType<typeof setTimeout>>()

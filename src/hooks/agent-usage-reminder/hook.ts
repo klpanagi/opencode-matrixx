@@ -1,4 +1,5 @@
-import type { PluginInput } from "@opencode-ai/plugin";
+import { V1_HOOK_KEYS } from "../../config/schema/hooks-v1-keys"
+import type { PluginContext } from "../../plugin/types";
 import { AGENT_TOOLS, MAX_AGENT_USAGE_REMINDERS, REMINDER_MESSAGE, TARGET_TOOLS } from "./constants";
 import {
   clearAgentUsageState,
@@ -26,7 +27,7 @@ interface EventInput {
   };
 }
 
-export function createAgentUsageReminderHook(_ctx: PluginInput) {
+export function createAgentUsageReminderHook(_ctx: PluginContext) {
   const sessionStates = new Map<string, AgentUsageState>();
 
   function getOrCreateState(sessionID: string): AgentUsageState {
@@ -108,7 +109,7 @@ export function createAgentUsageReminderHook(_ctx: PluginInput) {
   };
 
   return {
-    "tool.execute.after": toolExecuteAfter,
+    [V1_HOOK_KEYS.toolExecuteAfter]: toolExecuteAfter,
     event: eventHandler,
   };
 }

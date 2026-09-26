@@ -1,13 +1,13 @@
-import type { PluginInput } from "@opencode-ai/plugin"
 import { findFirstMessageWithAgent, 
   findFirstMessageWithAgentFromSDK,findNearestMessageWithFields, 
   findNearestMessageWithFieldsFromSDK,} from "../../features/hook-message-injector"
 import { readMissionState } from "../../features/mission-state"
 import { getSessionAgent } from "../../features/session-state"
+import type { PluginContext } from "../../plugin/types"
 import { getMessageDir } from "../../shared/opencode-message-dir"
 import { isSqliteBackend } from "../../shared/opencode-storage-detection"
 
-type OpencodeClient = PluginInput["client"]
+type OpencodeClient = PluginContext["client"]
 
 async function getAgentFromMessageFiles(
   sessionID: string,

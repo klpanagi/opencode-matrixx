@@ -64,7 +64,7 @@ describe("preset tool", () => {
     const tools = createPresetTool({ pluginConfig: PLUGIN_CONFIG })
 
     //#when listed
-    const out = (await tools.preset.execute({ action: "list" }, mockContext)) as string
+    const out = (await tools.preset.execute({ action: "list" }, mockContext).then((__r) => __r.content)) as string
 
     //#then both names appear and eco is marked active
     expect(out).toContain("eco")
@@ -77,7 +77,7 @@ describe("preset tool", () => {
     const tools = createPresetTool({ pluginConfig: {} })
 
     //#when listed
-    const out = (await tools.preset.execute({ action: "list" }, mockContext)) as string
+    const out = (await tools.preset.execute({ action: "list" }, mockContext).then((__r) => __r.content)) as string
 
     //#then helpful message, no throw
     expect(out).toContain("No model presets defined")
@@ -88,7 +88,7 @@ describe("preset tool", () => {
     const tools = createPresetTool({ pluginConfig: PLUGIN_CONFIG })
 
     //#when shown
-    const out = (await tools.preset.execute({ action: "show", name: "eco" }, mockContext)) as string
+    const out = (await tools.preset.execute({ action: "show", name: "eco" }, mockContext).then((__r) => __r.content)) as string
 
     //#then detail lines present
     expect(out).toContain('Preset "eco"')
@@ -101,7 +101,7 @@ describe("preset tool", () => {
     const tools = createPresetTool({ pluginConfig: PLUGIN_CONFIG })
 
     //#when an unknown preset is shown
-    const out = (await tools.preset.execute({ action: "show", name: "nope" }, mockContext)) as string
+    const out = (await tools.preset.execute({ action: "show", name: "nope" }, mockContext).then((__r) => __r.content)) as string
 
     //#then error names the available presets
     expect(out).toContain("Unknown preset")
@@ -116,7 +116,7 @@ describe("preset tool", () => {
     const out = (await tools.preset.execute(
       { action: "set", name: "flagship" },
       mockContext,
-    )) as string
+    ).then((__r) => __r.content)) as string
 
     //#then confirmation states immediate delegate switch + next-session builtin
     expect(out).toContain("flagship")
@@ -134,7 +134,7 @@ describe("preset tool", () => {
     const out = (await tools.preset.execute(
       { action: "set", name: "nope" },
       mockContext,
-    )) as string
+    ).then((__r) => __r.content)) as string
 
     //#then error lists available names, nothing written
     expect(out).toContain("Unknown preset")
@@ -146,7 +146,7 @@ describe("preset tool", () => {
     const tools = createPresetTool({ pluginConfig: PLUGIN_CONFIG })
 
     //#when set without a name
-    const out = (await tools.preset.execute({ action: "set" }, mockContext)) as string
+    const out = (await tools.preset.execute({ action: "set" }, mockContext).then((__r) => __r.content)) as string
 
     //#then usage error
     expect(out).toContain("requires a preset name")
@@ -160,7 +160,7 @@ describe("preset tool", () => {
     const out = (await tools.preset.execute(
       { action: "set", name: "flagship", save: true },
       mockContext,
-    )) as string
+    ).then((__r) => __r.content)) as string
 
     //#then file written with the new active preset
     expect(capturedWritePath).toBe("/tmp/proj/.opencode/matrixx.jsonc")
@@ -171,10 +171,10 @@ describe("preset tool", () => {
   test("session overlay is visible in list output", async () => {
     //#given presets and a session overlay
     const tools = createPresetTool({ pluginConfig: PLUGIN_CONFIG })
-    await tools.preset.execute({ action: "set", name: "flagship" }, mockContext)
+    await tools.preset.execute({ action: "set", name: "flagship" }, mockContext).then((__r) => __r.content)
 
     //#when listed
-    const out = (await tools.preset.execute({ action: "list" }, mockContext)) as string
+    const out = (await tools.preset.execute({ action: "list" }, mockContext).then((__r) => __r.content)) as string
 
     //#then overlay wins over config active_preset
     expect(out).toContain("flagship (active)")

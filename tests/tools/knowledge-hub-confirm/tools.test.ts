@@ -22,7 +22,7 @@ describe("createKnowledgeHubConfirmTool", () => {
     const confirm = createKnowledgeHubConfirmTool(makeCtx(dir));
     const target = path.join(dir, "notes.md");
     //#when the tool executes with the current session
-    const receipt = await confirm.execute({ path: target }, makeToolContext("ses-abs", dir));
+    const receipt = await confirm.execute({ path: target }, makeToolContext("ses-abs", dir)).then((__r) => __r.content);
     //#then the receipt names the path and the approval is recorded
     expect(receipt).toContain(target);
     expect(receipt).toContain("ses-abs");
@@ -34,7 +34,7 @@ describe("createKnowledgeHubConfirmTool", () => {
     const dir = mkdtempSync(path.join(tmpdir(), "kb-confirm-"));
     const confirm = createKnowledgeHubConfirmTool(makeCtx(dir));
     //#when the tool executes with a relative path
-    const receipt = await confirm.execute({ path: "notes.md" }, makeToolContext("ses-rel", dir));
+    const receipt = await confirm.execute({ path: "notes.md" }, makeToolContext("ses-rel", dir)).then((__r) => __r.content);
     //#then the approval covers the resolved absolute path
     const resolved = path.resolve(dir, "notes.md");
     expect(receipt).toContain(resolved);
@@ -47,7 +47,7 @@ describe("createKnowledgeHubConfirmTool", () => {
     const confirm = createKnowledgeHubConfirmTool(makeCtx(dir));
     const target = path.join(dir, "notes.md");
     //#when the tool executes with a sessionID arg
-    await confirm.execute({ path: target, sessionID: "ses-explicit" }, makeToolContext("ses-current", dir));
+    await confirm.execute({ path: target, sessionID: "ses-explicit" }, makeToolContext("ses-current", dir)).then((__r) => __r.content);
     //#then the approval lands on the explicit session only
     expect(isHubWriteApproved("ses-explicit", target)).toBe(true);
     expect(isHubWriteApproved("ses-current", target)).toBe(false);

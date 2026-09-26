@@ -1,5 +1,5 @@
 import { join } from "node:path"
-import type { PluginInput } from "@opencode-ai/plugin"
+import type { PluginContextSlice } from "../../plugin/types"
 import { log } from "../../shared"
 import {
   HOOK_NAME,
@@ -27,7 +27,7 @@ type ChatMessageOutput = {
   parts: MessagePart[]
 }
 
-export function createDesignIntentPreserverHook(_ctx: PluginInput) {
+export function createDesignIntentPreserverHook(_ctx: PluginContextSlice<"directory">) {
   return {
     "chat.message": async (
       input: ChatMessageInput,

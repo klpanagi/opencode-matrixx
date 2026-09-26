@@ -33,7 +33,7 @@ describe("createTaskList", () => {
     const tool = createTaskList(config)
 
     //#when
-    const result = await tool.execute({}, { sessionID: "test-session" })
+    const result = await tool.execute({}, { sessionID: "test-session" }).then((__r) => __r.content)
 
     //#then
     const parsed = JSON.parse(result)
@@ -74,7 +74,7 @@ describe("createTaskList", () => {
     const tool = createTaskList(config)
 
     //#when
-    const result = await tool.execute({}, { sessionID: "test-session" })
+    const result = await tool.execute({}, { sessionID: "test-session" }).then((__r) => __r.content)
 
     //#then
     const parsed = JSON.parse(result)
@@ -116,7 +116,7 @@ describe("createTaskList", () => {
      const tool = createTaskList(config)
 
     //#when
-     const result = await tool.execute({}, { sessionID: "test-session" })
+     const result = await tool.execute({}, { sessionID: "test-session" }).then((__r) => __r.content)
 
     //#then
      const parsed = JSON.parse(result)
@@ -149,7 +149,7 @@ describe("createTaskList", () => {
      const tool = createTaskList(config)
 
     //#when
-     const result = await tool.execute({}, { sessionID: "test-session" })
+     const result = await tool.execute({}, { sessionID: "test-session" }).then((__r) => __r.content)
 
     //#then
      const parsed = JSON.parse(result)
@@ -212,7 +212,7 @@ describe("createTaskList", () => {
      const tool = createTaskList(config)
 
     //#when
-     const result = await tool.execute({}, { sessionID: "test-session" })
+     const result = await tool.execute({}, { sessionID: "test-session" }).then((__r) => __r.content)
 
     //#then
      const parsed = JSON.parse(result)
@@ -254,7 +254,7 @@ describe("createTaskList", () => {
      const tool = createTaskList(config)
 
     //#when
-     const result = await tool.execute({}, { sessionID: "test-session" })
+     const result = await tool.execute({}, { sessionID: "test-session" }).then((__r) => __r.content)
 
     //#then
      const parsed = JSON.parse(result)
@@ -285,7 +285,7 @@ describe("createTaskList", () => {
      const tool = createTaskList(config)
 
     //#when
-     const result = await tool.execute({}, { sessionID: "test-session" })
+     const result = await tool.execute({}, { sessionID: "test-session" }).then((__r) => __r.content)
 
     //#then
      const parsed = JSON.parse(result)
@@ -316,7 +316,7 @@ it("handles missing blocker tasks gracefully", async () => {
     const tool = createTaskList(config)
 
     //#when
-    const result = await tool.execute({}, { sessionID: "test-session" })
+    const result = await tool.execute({}, { sessionID: "test-session" }).then((__r) => __r.content)
 
     //#then
     const parsed = JSON.parse(result)
@@ -379,7 +379,7 @@ it("handles missing blocker tasks gracefully", async () => {
     const tool = createTaskList(config)
 
     //#when
-    const result = await tool.execute({ parentID: "T-parent" }, { sessionID: "test-session" })
+    const result = await tool.execute({ parentID: "T-parent" }, { sessionID: "test-session" }).then((__r) => __r.content)
 
     //#then
     const parsed = JSON.parse(result)
@@ -425,7 +425,7 @@ it("handles missing blocker tasks gracefully", async () => {
     const tool = createTaskList(config)
 
     //#when
-    const result = await tool.execute({}, { sessionID: "test-session" })
+    const result = await tool.execute({}, { sessionID: "test-session" }).then((__r) => __r.content)
 
     //#then
     const parsed = JSON.parse(result)

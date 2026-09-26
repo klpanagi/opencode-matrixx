@@ -1,11 +1,11 @@
-import type { PluginInput } from "@opencode-ai/plugin"
-
+import { V1_HOOK_KEYS } from "../../config/schema/hooks-v1-keys"
+import type { PluginContext } from "../../plugin/types"
 import { buildRetryGuidance } from "./guidance"
 import { detectDelegateTaskError } from "./patterns"
 
-export function createDelegateTaskRetryHook(_ctx: PluginInput) {
+export function createDelegateTaskRetryHook(_ctx: PluginContext) {
   return {
-    "tool.execute.after": async (
+    [V1_HOOK_KEYS.toolExecuteAfter]: async (
       input: { tool: string; sessionID: string; callID: string },
       output: { title: string; output: string; metadata: unknown }
     ) => {

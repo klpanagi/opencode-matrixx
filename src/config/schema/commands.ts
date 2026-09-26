@@ -18,3 +18,9 @@ export const BuiltinCommandNameSchema = z.enum([
 ])
 
 export type BuiltinCommandName = z.infer<typeof BuiltinCommandNameSchema>
+
+export const CommandOverrideConfigSchema = z.object({
+  subagent: z.boolean().optional(),
+})
+
+export type CommandOverrideConfig = z.infer<typeof CommandOverrideConfigSchema>

@@ -5,7 +5,7 @@ type ProviderConfig = {
   models?: Record<string, { limit?: { context?: number } }>;
 };
 
-export function applyProviderConfig(params: {
+export function applyProviderModelLimits(params: {
   config: Record<string, unknown>;
   modelCacheState: ModelCacheState;
 }): void {

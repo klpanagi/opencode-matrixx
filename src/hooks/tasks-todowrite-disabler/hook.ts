@@ -1,3 +1,4 @@
+import { V1_HOOK_KEYS } from "../../config/schema/hooks-v1-keys"
 import { isTaskSystemEnabled } from "../../shared/task-system-gating";
 import { BLOCKED_TOOLS, REPLACEMENT_MESSAGE } from "./constants";
 
@@ -13,7 +14,7 @@ export function createTasksTodowriteDisablerHook(
   const enabled = isTaskSystemEnabled(config as never);
 
   return {
-    "tool.execute.before": async (
+    [V1_HOOK_KEYS.toolExecuteBefore]: async (
       input: { tool: string; sessionID: string; callID: string },
       _output: { args: Record<string, unknown> },
     ) => {

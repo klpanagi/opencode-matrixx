@@ -1,8 +1,8 @@
-import type { PluginInput } from "@opencode-ai/plugin"
+import type { PluginContextSlice } from "../../../plugin/types"
 import { clearConfigLoadErrors, getConfigLoadErrors } from "../../../shared/config-errors"
 import { log } from "../../../shared/logger"
 
-export async function showConfigErrorsIfAny(ctx: PluginInput): Promise<void> {
+export async function showConfigErrorsIfAny(ctx: PluginContextSlice<"client">): Promise<void> {
   const errors = getConfigLoadErrors()
   if (errors.length === 0) return
 

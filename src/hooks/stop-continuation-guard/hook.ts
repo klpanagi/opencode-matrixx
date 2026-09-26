@@ -1,4 +1,4 @@
-import type { PluginInput } from "@opencode-ai/plugin"
+import type { PluginContext } from "../../plugin/types"
 
 import { normalizeSDKResponse } from "../../shared"
 import { hasPendingQuestionMessage } from "../../shared/awaiting-user"
@@ -25,7 +25,7 @@ export interface StopContinuationGuard {
 }
 
 export function createStopContinuationGuardHook(
-  ctx: PluginInput,
+  ctx: PluginContext,
   options?: StopContinuationGuardOptions
 ): StopContinuationGuard {
   const stoppedSessions = new Set<string>()

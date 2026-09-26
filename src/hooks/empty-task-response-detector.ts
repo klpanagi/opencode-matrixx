@@ -1,4 +1,5 @@
-import type { PluginInput } from "@opencode-ai/plugin"
+import { V1_HOOK_KEYS } from "../config/schema/hooks-v1-keys"
+import type { PluginContext } from "../plugin/types"
 
 const EMPTY_RESPONSE_WARNING = `[Task Empty Response Warning]
 
@@ -9,9 +10,9 @@ Task invocation completed but returned no response. This indicates the agent eit
 
 Note: The call has already completed - you are NOT waiting for a response. Proceed accordingly.`
 
-export function createEmptyTaskResponseDetectorHook(_ctx: PluginInput) {
+export function createEmptyTaskResponseDetectorHook(_ctx: PluginContext) {
   return {
-    "tool.execute.after": async (
+    [V1_HOOK_KEYS.toolExecuteAfter]: async (
       input: { tool: string; sessionID: string; callID: string },
       output: { title: string; output: string; metadata: unknown }
     ) => {

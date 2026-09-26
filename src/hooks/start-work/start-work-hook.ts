@@ -1,4 +1,3 @@
-import type { PluginInput } from "@opencode-ai/plugin"
 import {
   appendSessionId,
   clearMissionState,
@@ -12,6 +11,7 @@ import {
   writeMissionState,
 } from "../../features/mission-state"
 import { updateSessionAgent } from "../../features/session-state"
+import type { PluginContextSlice } from "../../plugin/types"
 import { log } from "../../shared/logger"
 import { classifyPlans, formatPlanListLine } from "./plan-filter"
 
@@ -49,7 +49,7 @@ function findPlanByName(plans: string[], requestedName: string): string | null {
   return partialMatch || null
 }
 
-export function createStartWorkHook(ctx: PluginInput) {
+export function createStartWorkHook(ctx: PluginContextSlice<"directory">) {
   return {
     "chat.message": async (
       input: StartWorkHookInput,

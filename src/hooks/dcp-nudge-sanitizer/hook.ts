@@ -2,7 +2,7 @@
  * DCP Sticky-Nudge Sanitizer Hook
  *
  * Ordering constraint (do not "fix" by assuming otherwise):
- * Matrixx registers `experimental.chat.messages.transform` BEFORE DCP (plugin
+ * Matrixx registers the experimental messages-transform hook BEFORE DCP (plugin
  * index 0 vs 1), so this sanitizer runs before DCP injects this cycle's nudge.
  * It therefore cleans PRIOR-cycle sticky nudge parts and caps accumulation at
  * ~1 per cycle. It CANNOT suppress the nudge DCP injects later in the SAME
@@ -11,7 +11,7 @@
  */
 
 import type { Part } from "@opencode-ai/sdk"
-
+import { V1_HOOK_KEYS } from "../../config/schema/hooks-v1-keys"
 import type { PluginContext } from "../../plugin/types"
 import { NUDGE_MARKERS, normalizeNudgeText } from "./constants"
 
@@ -21,7 +21,7 @@ interface MessageWithParts {
 }
 
 type MessagesTransformHook = {
-  "experimental.chat.messages.transform"?: (
+  [V1_HOOK_KEYS.messagesTransform]?: (
     input: Record<string, never>,
     output: { messages: MessageWithParts[] },
   ) => Promise<void>
@@ -62,7 +62,7 @@ export function sanitizeNudgeParts(messages: MessageWithParts[]): void {
 
 export function createDcpNudgeSanitizerHook(_ctx: PluginContext): MessagesTransformHook {
   return {
-    "experimental.chat.messages.transform": async (_input, output) => {
+    [V1_HOOK_KEYS.messagesTransform]: async (_input, output) => {
       sanitizeNudgeParts(output.messages)
     },
   }

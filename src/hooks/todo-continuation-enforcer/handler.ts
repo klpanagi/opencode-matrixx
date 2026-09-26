@@ -1,6 +1,6 @@
-import type { PluginInput } from "@opencode-ai/plugin"
 import type { BackgroundManager } from "../../features/background-agent"
 import { subagentSessions } from "../../features/session-state"
+import type { PluginContext } from "../../plugin/types"
 import { log } from "../../shared/logger"
 
 import { DEFAULT_SKIP_AGENTS, HOOK_NAME } from "./constants"
@@ -9,7 +9,7 @@ import { handleNonIdleEvent } from "./non-idle-events"
 import type { SessionStateStore } from "./session-state"
 
 export function createTodoContinuationHandler(args: {
-  ctx: PluginInput
+  ctx: PluginContext
   sessionStateStore: SessionStateStore
   backgroundManager?: BackgroundManager
   skipAgents?: string[]

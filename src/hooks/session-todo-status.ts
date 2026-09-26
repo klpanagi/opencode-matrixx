@@ -1,4 +1,4 @@
-import type { PluginInput } from "@opencode-ai/plugin"
+import type { PluginContextSlice } from "../plugin/types"
 import { normalizeSDKResponse } from "../shared"
 
 interface Todo {
@@ -8,7 +8,7 @@ interface Todo {
   id: string
 }
 
-export async function hasIncompleteTodos(ctx: PluginInput, sessionID: string): Promise<boolean> {
+export async function hasIncompleteTodos(ctx: PluginContextSlice<"client">, sessionID: string): Promise<boolean> {
   try {
     const response = await ctx.client.session.todo({ path: { id: sessionID } })
     const todos = normalizeSDKResponse(response, [] as Todo[], { preferResponseOnMissingData: true })

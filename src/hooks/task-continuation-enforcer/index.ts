@@ -1,4 +1,4 @@
-import type { PluginInput } from "@opencode-ai/plugin"
+import type { PluginContext } from "../../plugin/types"
 import { isAwaitingUserState } from "../../shared/awaiting-user"
 import { log } from "../../shared/logger"
 import { DEFAULT_SKIP_AGENTS, HOOK_NAME } from "./constants"
@@ -10,7 +10,7 @@ export { createTaskContinuationHandler } from "./handler"
 export type { TaskContinuationEnforcer, TaskContinuationEnforcerOptions } from "./types"
 
 export function createTaskContinuationEnforcer(
-  ctx: PluginInput,
+  ctx: PluginContext,
   options: TaskContinuationEnforcerOptions = {}
 ): TaskContinuationEnforcer {
   const {

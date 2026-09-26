@@ -1,4 +1,3 @@
-import type { PluginInput } from "@opencode-ai/plugin"
 import type {
   AvailableCategory,
   AvailableSkill,
@@ -6,7 +5,7 @@ import type {
 import type { AgentOverrides, BrowserAutomationProvider, CategoriesConfig, ComplexityDowngrades, ModelPresets, ModelRequirements } from "../../config/schema"
 import type { BackgroundManager } from "../../features/background-agent"
 
-export type OpencodeClient = PluginInput["client"]
+export type OpencodeClient = ReturnType<typeof import("@opencode-ai/sdk").createOpencodeClient>
 
 export interface DelegateTaskArgs {
   description: string

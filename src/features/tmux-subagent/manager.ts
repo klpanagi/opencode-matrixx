@@ -1,5 +1,5 @@
-import type { PluginInput } from "@opencode-ai/plugin"
 import type { TmuxConfig } from "../../config/schema"
+import type { PluginContext } from "../../plugin/types"
 import { log, normalizeSDKResponse } from "../../shared"
 import {
   getCurrentPaneId as defaultGetCurrentPaneId,
@@ -13,7 +13,7 @@ import { queryWindowState } from "./pane-state-querier"
 import { TmuxPollingManager } from "./polling-manager"
 import type { CapacityConfig, TrackedSession } from "./types"
 
-type OpencodeClient = PluginInput["client"]
+type OpencodeClient = PluginContext["client"]
 
 interface SessionCreatedEvent {
   type: string
@@ -51,7 +51,7 @@ export class TmuxSessionManager {
   private pendingSessions = new Set<string>()
   private deps: TmuxUtilDeps
   private pollingManager: TmuxPollingManager
-  constructor(ctx: PluginInput, tmuxConfig: TmuxConfig, deps: TmuxUtilDeps = defaultTmuxDeps) {
+  constructor(ctx: PluginContext, tmuxConfig: TmuxConfig, deps: TmuxUtilDeps = defaultTmuxDeps) {
     this.client = ctx.client
     this.tmuxConfig = tmuxConfig
     this.deps = deps

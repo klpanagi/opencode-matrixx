@@ -1,4 +1,5 @@
-import type { PluginInput } from "@opencode-ai/plugin";
+import { V1_HOOK_KEYS } from "../../config/schema/hooks-v1-keys"
+import type { PluginContext } from "../../plugin/types";
 import { createDynamicTruncator } from "../../shared/dynamic-truncator";
 
 export interface ToolExecuteInput {
@@ -27,7 +28,7 @@ export interface EventInput {
 type DynamicTruncator = ReturnType<typeof createDynamicTruncator>;
 
 type ProcessFileFunction = (input: {
-  ctx: PluginInput;
+  ctx: PluginContext;
   truncator: DynamicTruncator;
   sessionCaches: Map<string, Set<string>>;
   filePath: string;
@@ -36,7 +37,7 @@ type ProcessFileFunction = (input: {
 }) => Promise<void>;
 
 export function createDirectoryInjectorHook(
-  ctx: PluginInput,
+  ctx: PluginContext,
   processFile: ProcessFileFunction,
   clearInjectedPaths: (sessionID: string) => void,
 ) {
@@ -89,8 +90,8 @@ export function createDirectoryInjectorHook(
   };
 
   return {
-    "tool.execute.before": toolExecuteBefore,
-    "tool.execute.after": toolExecuteAfter,
+    [V1_HOOK_KEYS.toolExecuteBefore]: toolExecuteBefore,
+    [V1_HOOK_KEYS.toolExecuteAfter]: toolExecuteAfter,
     event: eventHandler,
   };
 }

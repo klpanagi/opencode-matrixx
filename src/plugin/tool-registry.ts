@@ -1,5 +1,4 @@
 import type { ToolDefinition } from "@opencode-ai/plugin"
-
 import type {
   AvailableCategory,
 } from "../agents/dynamic-agent-prompt-builder"
@@ -46,6 +45,7 @@ import {
 } from "../tools"
 import { createPlanTasksTool } from "../tools/plan"
 import type { SkillContext } from "./skill-context"
+import { toV1ToolsRecord } from "./tool-definition"
 import {
   isConstructAgentEnabled,
   shouldEnableBddTools,
@@ -55,10 +55,18 @@ import {
   shouldEnablePdfFigures,
   shouldEnablePresetTools,
 } from "./tool-gating"
-import type { PluginContext, ToolsRecord } from "./types"
+import type {
+  PluginContext,
+  ToolsRecord,
+  V2PluginContext,
+  V2ToolDefinition,
+  V2ToolRegistration,
+  V2ToolsRecord,
+} from "./types"
 
 export type ToolRegistryResult = {
   filteredTools: ToolsRecord
+  v2Tools: V2ToolsRecord
   taskSystemEnabled: boolean
 }
 
@@ -91,10 +99,8 @@ export function createToolRegistry(args: {
         bdd_validate_contract: createBddValidateContractTool(),
       }
     : {}
-  const pdfFiguresRecord: Record<string, ToolDefinition> = pdfFiguresEnabled
-    ? { ...createPdfExtractFiguresTool() }
-    : {}
-  const presetRecord: Record<string, ToolDefinition> = presetToolsEnabled
+  const pdfFiguresRecord: V2ToolsRecord = pdfFiguresEnabled ? { ...createPdfExtractFiguresTool() } : {}
+  const presetRecord: V2ToolsRecord = presetToolsEnabled
     ? { ...createPresetTool({ pluginConfig, directory: ctx.directory }) }
     : {}
 
@@ -146,7 +152,7 @@ export function createToolRegistry(args: {
   })
 
   const taskSystemEnabled = isTaskSystemEnabled(pluginConfig)
-  const taskToolsRecord: Record<string, ToolDefinition> = taskSystemEnabled
+  const taskToolsRecord: Record<string, V2ToolDefinition> = taskSystemEnabled
     ? {
         task_create: createTaskCreateTool(pluginConfig, ctx),
         task_get: createTaskGetTool(pluginConfig, ctx),
@@ -156,11 +162,11 @@ export function createToolRegistry(args: {
       }
     : {}
   const hashlineEnabled = pluginConfig.experimental?.hashline_edit ?? false
-  const hashlineToolsRecord: Record<string, ToolDefinition> = hashlineEnabled
+  const hashlineToolsRecord: Record<string, V2ToolDefinition> = hashlineEnabled
     ? { edit: createHashlineEditTool(ctx) }
     : {}
 
-  const planToolsRecord: Record<string, ToolDefinition> = {
+  const planToolsRecord: Record<string, V2ToolDefinition> = {
     plan_create: createPlanCreateTool(ctx),
     plan_read: createPlanReadTool(ctx),
     plan_list: createPlanListTool(ctx),
@@ -177,7 +183,7 @@ export function createToolRegistry(args: {
       })
     : null
 
-  const allTools: Record<string, ToolDefinition> = {
+  const v2Tools: V2ToolsRecord = {
     ...builtinTools,
     ...createGrepTools(ctx),
     ...createGithubSearchTools(ctx),
@@ -189,23 +195,49 @@ export function createToolRegistry(args: {
     ...pdfFiguresRecord,
     ...presetRecord,
     ...backgroundTools,
-    ...(lookAt ? { look_at: lookAt } : {}),
-    task: delegateTask,
-    skill: skillTool,
-    slashcommand: slashcommandTool,
     interactive_bash,
     ...taskToolsRecord,
     ...hashlineToolsRecord,
     ...planToolsRecord,
-    ...(assemblyTool ? { assembly: assemblyTool } : {}),
-    ...bddToolsRecord,
     ...evolutionRecord,
   }
 
+  const legacyV1Tools: ToolsRecord = {
+    ...(lookAt ? { look_at: lookAt } : {}),
+    task: delegateTask,
+    skill: skillTool,
+    slashcommand: slashcommandTool,
+    ...(assemblyTool ? { assembly: assemblyTool } : {}),
+    ...bddToolsRecord,
+  }
+
+  const allTools: ToolsRecord = { ...legacyV1Tools, ...toV1ToolsRecord(v2Tools) }
+
   const filteredTools = filterDisabledTools(allTools, pluginConfig.disabled_tools)
+  const enabledNames = new Set(Object.keys(filteredTools))
+  const filteredV2Tools: V2ToolsRecord = {}
+  for (const [name, tool] of Object.entries(v2Tools)) {
+    if (enabledNames.has(name)) filteredV2Tools[name] = tool
+  }
 
   return {
     filteredTools,
+    v2Tools: filteredV2Tools,
     taskSystemEnabled,
   }
+}
+
+/**
+ * Register V2-native tools through `ctx.tool.transform`. The supplied record is
+ * already the gated/filtered set, so conditional registration is preserved.
+ */
+export async function registerV2Tools(
+  ctx: V2PluginContext,
+  tools: V2ToolsRecord,
+): Promise<V2ToolRegistration> {
+  return ctx.tool.transform((editor) => {
+    for (const tool of Object.values(tools)) {
+      editor.add(tool)
+    }
+  })
 }

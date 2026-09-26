@@ -1,7 +1,6 @@
 import { existsSync } from "node:fs"
 import { readdir, readFile } from "node:fs/promises"
 import { join } from "node:path"
-import type { PluginInput } from "@opencode-ai/plugin"
 import { normalizeSDKResponse } from "../../shared"
 import { getMessageDir } from "../../shared/opencode-message-dir"
 import { isSqliteBackend } from "../../shared/opencode-storage-detection"
@@ -13,9 +12,10 @@ interface GetMainSessionsOptions {
 }
 
 // SDK client reference for beta mode
-let sdkClient: PluginInput["client"] | null = null
+type SdkClient = ReturnType<typeof import("@opencode-ai/sdk").createOpencodeClient>
+let sdkClient: SdkClient | null = null
 
-export function setStorageClient(client: PluginInput["client"]): void {
+export function setStorageClient(client: SdkClient): void {
   sdkClient = client
 }
 

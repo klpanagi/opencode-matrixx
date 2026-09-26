@@ -1,4 +1,4 @@
-import type { PluginInput } from "@opencode-ai/plugin"
+import type { PluginContext } from "../../plugin/types"
 import { log } from "../../shared/logger"
 import type { OpenCodeSessionMessage } from "./completion-promise-detector"
 import { detectCompletionInSessionMessages, detectCompletionInTranscript } from "./completion-promise-detector"
@@ -14,7 +14,7 @@ type LoopStateController = { getState: () => MatrixLoopState | null; clear: () =
 type MatrixLoopEventHandlerOptions = { directory: string; apiTimeoutMs: number; getTranscriptPath: (sessionID: string) => string | undefined; checkSessionExists?: MatrixLoopOptions["checkSessionExists"]; sessionRecovery: SessionRecovery; loopState: LoopStateController; verification?: MatrixLoopOptions["verification"] }
 
 async function handleVerificationFailure(
-	ctx: PluginInput,
+	ctx: PluginContext,
 	options: MatrixLoopEventHandlerOptions,
 	state: MatrixLoopState,
 	sessionID: string,
@@ -41,7 +41,7 @@ async function handleVerificationFailure(
 	}
 }
 
-export function createMatrixLoopEventHandler(ctx: PluginInput, options: MatrixLoopEventHandlerOptions) {
+export function createMatrixLoopEventHandler(ctx: PluginContext, options: MatrixLoopEventHandlerOptions) {
 	const inFlightSessions = new Set<string>()
 
 	return async ({ event }: { event: { type: string; properties?: unknown } }): Promise<void> => {

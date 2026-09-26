@@ -2,7 +2,7 @@ import type { MatrixxConfig } from "../config";
 import { createBuiltinMcps } from "../mcp";
 import { setMcpStartupFailures } from "../mcp/mcp-startup-state";
 import { log } from "../shared";
-import type { PluginComponents } from "./plugin-components-loader";
+import type { PluginComponents } from "./component-bundle";
 
 type McpEntry = Record<string, unknown>;
 

@@ -3,6 +3,7 @@ import { tmpdir } from "node:os"
 import { join } from "node:path"
 import z from "zod"
 import type { CommentCheckerConfig } from "../../config/schema"
+import { V1_HOOK_KEYS } from "../../config/schema/hooks-v1-keys"
 import {
   getCommentCheckerCliPathPromise,
   initializeCommentCheckerCli,
@@ -32,11 +33,11 @@ export function createCommentCheckerHooks(config?: CommentCheckerConfig) {
   initializeCommentCheckerCli(debugLog)
 
   return {
-    "tool.execute.before": async (
+    [V1_HOOK_KEYS.toolExecuteBefore]: async (
       input: { tool: string; sessionID: string; callID: string },
       output: { args: Record<string, unknown> },
     ): Promise<void> => {
-      debugLog("tool.execute.before:", {
+      debugLog(`${V1_HOOK_KEYS.toolExecuteBefore}:`, {
         tool: input.tool,
         callID: input.callID,
         args: output.args,
@@ -80,11 +81,11 @@ export function createCommentCheckerHooks(config?: CommentCheckerConfig) {
       })
     },
 
-    "tool.execute.after": async (
+    [V1_HOOK_KEYS.toolExecuteAfter]: async (
       input: { tool: string; sessionID: string; callID: string },
       output: { title: string; output: string; metadata: unknown },
     ): Promise<void> => {
-      debugLog("tool.execute.after:", { tool: input.tool, callID: input.callID })
+      debugLog(`${V1_HOOK_KEYS.toolExecuteAfter}:`, { tool: input.tool, callID: input.callID })
 
       const toolLower = input.tool.toLowerCase()
 
@@ -173,7 +174,7 @@ export function createCommentCheckerHooks(config?: CommentCheckerConfig) {
         debugLog("using CLI:", cliPath)
         await processWithCli(input, pendingCall, output, cliPath, config?.custom_prompt, debugLog)
       } catch (err) {
-        debugLog("tool.execute.after failed:", err)
+        debugLog(`${V1_HOOK_KEYS.toolExecuteAfter} failed:`, err)
       }
     },
   }

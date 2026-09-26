@@ -35,6 +35,17 @@ async function runSanitizer(messages: MessageWithParts[]): Promise<MessageWithPa
 }
 
 describe("createDcpNudgeSanitizerHook — dedupe and cap sticky nudges", () => {
+  test("exposes the legacy messages-transform key", () => {
+    //#given
+    const hook = createDcpNudgeSanitizerHook({} as PluginContext)
+
+    //#when
+    const keys = Object.keys(hook)
+
+    //#then
+    expect(keys).toContain("experimental.chat.messages.transform")
+  })
+
   test("keeps at most one nudge part per message", async () => {
     //#given
     const message = makeMessage("assistant", "msg_1")

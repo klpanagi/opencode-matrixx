@@ -1,6 +1,5 @@
-import type { ToolContext } from "@opencode-ai/plugin/tool"
 import { storeToolMetadata } from "../../features/tool-metadata-store"
-import type { PluginContext } from "../../plugin/types"
+import type { PluginContext, V2ToolContext } from "../../plugin/types"
 import { countLineDiffs, generateUnifiedDiff } from "./diff-utils"
 import { applyHashlineEditsWithReport } from "./edit-operations"
 import { canonicalizeFileText, restoreFileText } from "./file-text-canonicalization"
@@ -16,7 +15,7 @@ interface HashlineEditArgs {
   rename?: string
 }
 
-type ToolContextWithCallID = ToolContext & {
+type ToolContextWithCallID = V2ToolContext & {
   callID?: string
   callId?: string
   call_id?: string
@@ -82,7 +81,7 @@ function buildSuccessMeta(
   }
 }
 
-export async function executeHashlineEditTool(args: HashlineEditArgs, context: ToolContext, pluginCtx?: PluginContext): Promise<string> {
+export async function executeHashlineEditTool(args: HashlineEditArgs, context: V2ToolContext, pluginCtx?: PluginContext): Promise<string> {
   try {
     const metadataContext = context as ToolContextWithMetadata
     const filePath = args.filePath
@@ -131,7 +130,7 @@ export async function executeHashlineEditTool(args: HashlineEditArgs, context: T
 
     await Bun.write(filePath, writeContent)
 
-    const contextWithDir = context as ToolContext & { directory?: string }
+    const contextWithDir = context as V2ToolContext & { directory?: string }
     if (pluginCtx?.client && contextWithDir.directory) {
       await runFormattersForFile(pluginCtx.client as FormatterClient, contextWithDir.directory, filePath)
       const formattedContent = Buffer.from(await Bun.file(filePath).arrayBuffer()).toString("utf8")

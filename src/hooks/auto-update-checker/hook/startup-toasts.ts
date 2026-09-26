@@ -1,15 +1,15 @@
-import type { PluginInput } from "@opencode-ai/plugin"
+import type { PluginContext } from "../../../plugin/types"
 import { log } from "../../../shared/logger"
 import { showSpinnerToast } from "./spinner-toast"
 
-export async function showVersionToast(ctx: PluginInput, version: string | null, message: string): Promise<void> {
+export async function showVersionToast(ctx: PluginContext, version: string | null, message: string): Promise<void> {
   const displayVersion = version ?? "unknown"
   await showSpinnerToast(ctx, displayVersion, message)
   log(`[auto-update-checker] Startup toast shown: v${displayVersion}`)
 }
 
 export async function showLocalDevToast(
-  ctx: PluginInput,
+  ctx: PluginContext,
   version: string | null,
   isMorpheusEnabled: boolean
 ): Promise<void> {

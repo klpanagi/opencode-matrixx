@@ -1,8 +1,9 @@
 import * as os from "node:os"
 import * as path from "node:path"
-import type { PluginInput } from "@opencode-ai/plugin"
 import picomatch from "picomatch"
+import { V1_HOOK_KEYS } from "../../config/schema/hooks-v1-keys"
 import type { LoadedHub } from "../../features/knowledge-hub/loader"
+import type { PluginContextSlice } from "../../plugin/types"
 import { log } from "../../shared/logger"
 import { isHubWriteApproved } from "./approvals"
 
@@ -66,7 +67,7 @@ function isExcluded(hub: LoadedHub, absPath: string): boolean {
   })
 }
 
-export function createKnowledgeHubGuardHook(ctx: PluginInput, options: KnowledgeHubGuardOptions = {}) {
+export function createKnowledgeHubGuardHook(ctx: PluginContextSlice<"directory">, options: KnowledgeHubGuardOptions = {}) {
   const projectDir = ctx.directory
   let cached: LoadedHub[] | null = null
   let warnedOnce = false
@@ -138,7 +139,7 @@ export function createKnowledgeHubGuardHook(ctx: PluginInput, options: Knowledge
   }
 
   return {
-    "tool.execute.before": async (
+    [V1_HOOK_KEYS.toolExecuteBefore]: async (
       input: { tool: string; sessionID: string; callID: string },
       output: { args: Record<string, unknown> },
     ): Promise<void> => {

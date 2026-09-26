@@ -1,5 +1,5 @@
 import type { Hooks } from "@opencode-ai/plugin"
-
+import { V1_HOOK_KEYS } from "../config/schema/hooks-v1-keys"
 import { log } from "../shared"
 
 const WARNING_MESSAGE =
@@ -18,7 +18,7 @@ function isSimpleFileReadCommand(command: string): boolean {
 
 export function createBashFileReadGuardHook(): Hooks {
   return {
-    "tool.execute.before": async (
+    [V1_HOOK_KEYS.toolExecuteBefore]: async (
       input: { tool: string; sessionID: string; callID: string },
       output: { args: Record<string, unknown>; message?: string },
     ): Promise<void> => {

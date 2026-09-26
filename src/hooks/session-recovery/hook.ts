@@ -1,5 +1,5 @@
-import type { PluginInput } from "@opencode-ai/plugin"
 import type { ExperimentalConfig } from "../../config"
+import type { PluginContext } from "../../plugin/types"
 import { log } from "../../shared/logger"
 import type { RecoveryErrorType } from "./detect-error-type"
 import { detectErrorType } from "./detect-error-type"
@@ -28,7 +28,7 @@ export interface SessionRecoveryHook {
   setOnRecoveryCompleteCallback: (callback: (sessionID: string) => void) => void
 }
 
-export function createSessionRecoveryHook(ctx: PluginInput, options?: SessionRecoveryOptions): SessionRecoveryHook {
+export function createSessionRecoveryHook(ctx: PluginContext, options?: SessionRecoveryOptions): SessionRecoveryHook {
   const processingErrors = new Set<string>()
   const experimental = options?.experimental
   let onAbortCallback: ((sessionID: string) => void) | null = null

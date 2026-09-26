@@ -1,4 +1,4 @@
-import type { PluginInput } from "@opencode-ai/plugin"
+import type { PluginContext } from "../../plugin/types"
 import { log } from "../../shared"
 import {
   SESSION_READY_POLL_INTERVAL_MS,
@@ -6,7 +6,7 @@ import {
 } from "../../shared/tmux"
 import { parseSessionStatusMap } from "./session-status-parser"
 
-type OpencodeClient = PluginInput["client"]
+type OpencodeClient = PluginContext["client"]
 
 export async function waitForSessionReady(params: {
   client: OpencodeClient

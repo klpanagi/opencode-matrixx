@@ -1,4 +1,4 @@
-import type { PluginInput } from "@opencode-ai/plugin"
+import type { PluginContext } from "../../plugin/types"
 
 import { isAwaitingUserState } from "../../shared/awaiting-user"
 import { log } from "../../shared/logger"
@@ -11,7 +11,7 @@ import type { TodoContinuationEnforcer, TodoContinuationEnforcerOptions } from "
 export type { TodoContinuationEnforcer, TodoContinuationEnforcerOptions } from "./types"
 
 export function createTodoContinuationEnforcer(
-  ctx: PluginInput,
+  ctx: PluginContext,
   options: TodoContinuationEnforcerOptions = {}
 ): TodoContinuationEnforcer {
   const {

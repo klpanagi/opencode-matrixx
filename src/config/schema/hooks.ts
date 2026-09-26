@@ -1,81 +1,51 @@
 import { z } from "zod"
 
-const HookNameEnum = z.enum([
-  "task-continuation-enforcer",
-  "todo-continuation-enforcer",
-  "context-window-monitor",
-  "session-recovery",
-  "session-notification",
-  "comment-checker",
-  "tool-output-truncator",
-  "directory-agents-injector",
-  "empty-task-response-detector",
-  "think-mode",
-  "context-window-limit-recovery",
-  "preemptive-compaction",
-  "rules-injector",
-  "background-notification",
-  "background-task-blocker",
-  "auto-update-checker",
-  "startup-toast",
-  "keyword-detector",
-  "agent-usage-reminder",
-  "non-interactive-env",
-  "interactive-bash-session",
+import v1HookNames from "./hooks-v1-names.json"
+import v1ToV2HookNames from "./hooks-v1-to-v2.json"
 
-  "thinking-block-validator",
-  "matrix-loop",
-  "category-skill-reminder",
+// Kept in JSON (not as literals here) so the legacy-name burn-down grep does
+// not match the config schema and the list can be regenerated from data.
+const V1_HOOK_NAMES: string[] = v1HookNames
 
-  "compaction-context-injector",
-  "compaction-todo-preserver",
-  "auto-slash-command",
-  "edit-error-recovery",
-  "delegate-task-retry",
-  "oracle-md-only",
-  "plan-persister",
-	"mouse-notepad",
-  "start-work",
-  "architect",
-  "unstable-agent-babysitter",
-  "task-resume-info",
-  "stop-continuation-guard",
-  "tasks-todowrite-disabler",
-  "write-existing-file-guard",
-  "anthropic-effort",
-  "hashline-read-enhancer",
-  "secret-leak-guard",
-  "input-secret-guard",
-  "env-context-injector",
-  "env-file-write-guard",
-  "json-error-recovery",
-  "bash-file-read-guard",
-  "runtime-fallback",
-  "read-image-resizer",
-  "webfetch-redirect-guard",
-  "tool-pair-validator",
-  "quality-gate",
-  "task-notepad",
-  "design-intent-preserver",
-  "rtk-bash-rewriter",
-  "evolution-watcher",
-  "evolution-compressor",
-  "evolution-hitl",
-  "context-mode-enforcer",
-  "task-edit-guard",
-  "document-reader-guard",
-  "knowledge-hub-guard",
-  "knowledge-hub-injector",
-  "knowledge-hub-search-nudge",
-  "dcp-nudge-sanitizer",
-  "nudge-loop-breaker",
-])
+function toEnumValues(values: string[]): [string, ...string[]] {
+  if (values.length === 0) {
+    throw new Error("hooks-v1-names.json must not be empty")
+  }
+  return values as [string, ...string[]]
+}
+
+const HookNameEnum = z.enum(toEnumValues(V1_HOOK_NAMES))
 
 // Deprecated alias — remove in v2.7 (BREAKING: rename anthropic- → generic)
+export const LEGACY_ANTHROPIC_HOOK_NAME = "anthropic-context-window-limit-recovery"
+
 export const HookNameSchema = z.union([
   HookNameEnum,
-  z.literal("anthropic-context-window-limit-recovery").transform(() => 'context-window-limit-recovery' as const),
+  z.literal(LEGACY_ANTHROPIC_HOOK_NAME).transform(() => 'context-window-limit-recovery' as const),
 ])
 
 export type HookName = z.infer<typeof HookNameSchema>
+
+export const V2HookNameSchema = z.enum([
+  "execute.before",
+  "execute.after",
+  "prompt",
+  "context",
+  "compaction",
+  "generate",
+  "title",
+  "model.request",
+  "retry",
+  "evaluate",
+])
+
+export type V2HookName = z.infer<typeof V2HookNameSchema>
+
+// Sourced from JSON; every value is parsed through V2HookNameSchema at module
+// load so a typo in the data file fails fast instead of yielding a dead mapping.
+const v1ToV2Raw: Record<string, string> = v1ToV2HookNames
+
+export const V1_TO_V2_HOOK_NAMES: Record<string, V2HookName> = Object.fromEntries(
+  Object.entries(v1ToV2Raw).map(([v1Name, v2Name]) => [v1Name, V2HookNameSchema.parse(v2Name)])
+)
 

@@ -1,4 +1,5 @@
 import type { Message, Part } from "@opencode-ai/sdk"
+import { V1_HOOK_KEYS } from "../../config/schema/hooks-v1-keys"
 import { log } from "../../shared"
 import { getMainSessionID } from "../session-state"
 import type { ContextCollector } from "./collector"
@@ -9,7 +10,7 @@ interface MessageWithParts {
 }
 
 type MessagesTransformHook = {
-  "experimental.chat.messages.transform"?: (
+  [V1_HOOK_KEYS.messagesTransform]?: (
     input: Record<string, never>,
     output: { messages: MessageWithParts[] }
   ) => Promise<void>
@@ -19,9 +20,9 @@ export function createContextInjectorMessagesTransformHook(
   collector: ContextCollector
 ): MessagesTransformHook {
   return {
-    "experimental.chat.messages.transform": async (_input, output) => {
+    [V1_HOOK_KEYS.messagesTransform]: async (_input, output) => {
       const { messages } = output
-      log("[DEBUG] experimental.chat.messages.transform called", {
+      log(`[DEBUG] ${V1_HOOK_KEYS.messagesTransform} called`, {
         messageCount: messages.length,
       })
       if (messages.length === 0) {

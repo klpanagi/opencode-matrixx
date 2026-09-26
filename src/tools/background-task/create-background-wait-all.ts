@@ -1,6 +1,7 @@
-import { type ToolDefinition, tool } from "@opencode-ai/plugin"
+import { z } from "zod"
 import type { BackgroundManager } from "../../features/background-agent"
 import { storeToolMetadata } from "../../features/tool-metadata-store"
+import type { V2ToolDefinition } from "../../plugin/types"
 import { BACKGROUND_WAIT_ALL_DESCRIPTION } from "./constants"
 import type { ToolContextWithMetadata } from "./types"
 
@@ -11,15 +12,16 @@ function resolveToolCallID(ctx: ToolContextWithMetadata & { callID?: string; cal
   return undefined
 }
 
-export function createBackgroundWaitAll(manager: BackgroundManager): ToolDefinition {
-  return tool({
+export function createBackgroundWaitAll(manager: BackgroundManager): V2ToolDefinition {
+  return {
+    name: "background_wait_all",
     description: BACKGROUND_WAIT_ALL_DESCRIPTION,
-    args: {
-      timeout: tool.schema
+    input: z.object({
+      timeout: z
         .number()
         .optional()
         .describe("Max wait time in ms (default: 30000, max: 120000)"),
-    },
+    }),
     async execute(args: { timeout?: number }, toolContext) {
       try {
         const ctx = toolContext as ToolContextWithMetadata
@@ -36,7 +38,7 @@ export function createBackgroundWaitAll(manager: BackgroundManager): ToolDefinit
         const result = await manager.waitForAllDescendants(ctx.sessionID, timeoutMs)
 
         if (result.completed.length === 0 && result.timedOut.length === 0) {
-          return "No background tasks were running or pending. Nothing to wait for."
+          return { content: await ("No background tasks were running or pending. Nothing to wait for.") }
         }
 
         const lines: string[] = []
@@ -62,10 +64,10 @@ export function createBackgroundWaitAll(manager: BackgroundManager): ToolDefinit
           )
         }
 
-        return lines.join("\n")
+        return { content: await (lines.join("\n")) }
       } catch (error) {
-        return `[ERROR] Error waiting for background tasks: ${error instanceof Error ? error.message : String(error)}`
+        return { content: await (`[ERROR] Error waiting for background tasks: ${error instanceof Error ? error.message : String(error)}`) }
       }
     },
-  })
+  }
 }

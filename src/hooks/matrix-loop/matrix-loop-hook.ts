@@ -1,4 +1,4 @@
-import type { PluginInput } from "@opencode-ai/plugin"
+import type { PluginContext } from "../../plugin/types"
 import { getTranscriptPath as getDefaultTranscriptPath } from "../../shared/transcript-path"
 import { createLoopSessionRecovery } from "./loop-session-recovery"
 import { createLoopStateController } from "./loop-state-controller"
@@ -19,7 +19,7 @@ export interface MatrixLoopHook {
 const DEFAULT_API_TIMEOUT = 5000 as const
 
 export function createMatrixLoopHook(
-  ctx: PluginInput,
+  ctx: PluginContext,
   options?: MatrixLoopOptions
 ): MatrixLoopHook {
   const config = options?.config

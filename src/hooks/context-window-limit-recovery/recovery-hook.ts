@@ -1,6 +1,7 @@
 // Boundary: reactive only (parses token_limit errors on session.error/message.updated/session.idle). Proactive 78% lives in preemptive-compaction. Do not add proactive threshold here. Cap API calls 2.
-import type { PluginInput } from "@opencode-ai/plugin"
+
 import type { ExperimentalConfig } from "../../config"
+import type { PluginContext } from "../../plugin/types"
 import { log } from "../../shared/logger"
 import { executeCompact, getLastAssistant } from "./executor"
 import { parseTokenLimitError } from "./parser"
@@ -23,7 +24,7 @@ function createRecoveryState(): AutoCompactState {
 
 
 export function createAnthropicContextWindowLimitRecoveryHook(
-  ctx: PluginInput,
+  ctx: PluginContext,
   options?: AnthropicContextWindowLimitRecoveryOptions,
 ) {
   const autoCompactState = createRecoveryState()

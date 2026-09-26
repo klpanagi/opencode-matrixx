@@ -1,6 +1,4 @@
 import { join } from "node:path";
-import type { PluginInput } from "@opencode-ai/plugin";
-import { type ToolDefinition, tool } from "@opencode-ai/plugin/tool";
 import { z } from "zod";
 import type { MatrixxConfig } from "../../config/schema";
 import {
@@ -10,6 +8,7 @@ import {
   writeJsonAtomic,
 } from "../../features/task-storage/storage";
 import { maybeSyncTaskToPlans } from "../../hooks/plan-persister/task-sync";
+import type { V2ToolDefinition } from "../../plugin/types"
 import { log } from "../../shared/logger";
 import { TASK_ID_PATTERN } from "./constants";
 import type { TaskObject } from "./types";
@@ -22,9 +21,10 @@ function parseTaskId(id: string): string | null {
 
 export function createTaskUpdateTool(
   config: Partial<MatrixxConfig>,
-  ctx?: PluginInput,
-): ToolDefinition {
-   return tool({
+  ctx?: { directory?: string },
+): V2ToolDefinition {
+   return {
+     name: "task_update",
      description: `[TRACKING — local progress record only. Spawns nothing, executes nothing.]
 Update an existing task with new values.
 
@@ -34,45 +34,45 @@ For blocks/blockedBy: use addBlocks/addBlockedBy to append (additive, not replac
 **IMPORTANT - Dependency Management:**
 Use \`addBlockedBy\` to declare dependencies on other tasks.
 Properly managed dependencies enable maximum parallel execution.`,
-     args: {
-      id: tool.schema.string().describe("Task ID (required)"),
-      subject: tool.schema.string().optional().describe("Task subject"),
-      description: tool.schema.string().optional().describe("Task description"),
-      status: tool.schema
+     input: z.object({
+      id: z.string().describe("Task ID (required)"),
+      subject: z.string().optional().describe("Task subject"),
+      description: z.string().optional().describe("Task description"),
+      status: z
         .enum(["pending", "in_progress", "completed", "deleted"])
         .optional()
         .describe("Task status"),
-      activeForm: tool.schema
+      activeForm: z
         .string()
         .optional()
         .describe("Active form (present continuous)"),
-      owner: tool.schema
+      owner: z
         .string()
         .optional()
         .describe("Task owner (agent name)"),
-      addBlocks: tool.schema
-        .array(tool.schema.string())
+      addBlocks: z
+        .array(z.string())
         .optional()
         .describe("Task IDs to add to blocks (additive, not replacement)"),
-      addBlockedBy: tool.schema
-        .array(tool.schema.string())
+      addBlockedBy: z
+        .array(z.string())
         .optional()
         .describe("Task IDs to add to blockedBy (additive, not replacement)"),
-      metadata: tool.schema
-        .record(tool.schema.string(), tool.schema.unknown())
+      metadata: z
+        .record(z.string(), z.unknown())
         .optional()
         .describe("Task metadata to merge (set key to null to delete)"),
-    },
+    }),
     execute: async (args, context) => {
-      return handleUpdate(args, config, ctx, context);
+      return { content: await (handleUpdate(args, config, ctx, context)) };
     },
-  });
+  };
 }
 
 async function handleUpdate(
   args: Record<string, unknown>,
   config: Partial<MatrixxConfig>,
-  ctx: PluginInput | undefined,
+  ctx: { directory?: string } | undefined,
   context: { sessionID: string },
 ): Promise<string> {
   try {
@@ -83,8 +83,8 @@ async function handleUpdate(
     }
 
     const directory =
-      ((context as unknown as Record<string, unknown>)?.directory as string | undefined) ??
-      ((ctx as unknown as Record<string, unknown>)?.directory as string | undefined) ??
+      ((context as unknown as { directory?: string })?.directory as string | undefined) ??
+      ((ctx as unknown as { directory?: string })?.directory as string | undefined) ??
       process.cwd()
     const taskDir = getTaskDir(config, directory)
     const lock = await acquireLockWithRetry(taskDir)

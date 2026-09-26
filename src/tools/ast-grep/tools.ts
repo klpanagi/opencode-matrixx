@@ -1,5 +1,5 @@
-import type { PluginInput } from "@opencode-ai/plugin"
-import { type ToolDefinition, tool } from "@opencode-ai/plugin/tool"
+import { z } from "zod"
+import type { V2ToolDefinition, V2ToolsRecord } from "../../plugin/types"
 import { runSg } from "./cli"
 import { CLI_LANGUAGES } from "./constants"
 import { getPatternHint } from "./pattern-hints"
@@ -18,16 +18,17 @@ async function showOutputToUser(context: unknown, output: string): Promise<void>
   await ctx.metadata?.({ metadata: { output } })
 }
 
-export function createAstGrepTools(ctx: PluginInput): Record<string, ToolDefinition> {
-  const ast_grep_search: ToolDefinition = tool({
+export function createAstGrepTools(ctx: { directory: string }): V2ToolsRecord {
+  const ast_grep_search: V2ToolDefinition = {
+    name: "ast_grep_search",
     description: AST_GREP_SEARCH_DESCRIPTION,
-    args: {
-      pattern: tool.schema.string().describe(AST_GREP_SEARCH_PATTERN_PARAM),
-      lang: tool.schema.enum(CLI_LANGUAGES).describe("Target language"),
-      paths: tool.schema.array(tool.schema.string()).optional().describe("Paths to search (default: ['.'])"),
-      globs: tool.schema.array(tool.schema.string()).optional().describe("Include/exclude globs (prefix ! to exclude)"),
-      context: tool.schema.number().optional().describe("Context lines around match"),
-    },
+    input: z.object({
+      pattern: z.string().describe(AST_GREP_SEARCH_PATTERN_PARAM),
+      lang: z.enum(CLI_LANGUAGES).describe("Target language"),
+      paths: z.array(z.string()).optional().describe("Paths to search (default: ['.'])"),
+      globs: z.array(z.string()).optional().describe("Include/exclude globs (prefix ! to exclude)"),
+      context: z.number().optional().describe("Context lines around match"),
+    }),
     execute: async (args, context) => {
       try {
         const result = await runSg({
@@ -48,25 +49,26 @@ export function createAstGrepTools(ctx: PluginInput): Record<string, ToolDefinit
         }
 
         await showOutputToUser(context, output)
-        return output
+        return { content: await (output) }
       } catch (e) {
         const output = `Error: ${e instanceof Error ? e.message : String(e)}`
         await showOutputToUser(context, output)
-        return output
+        return { content: await (output) }
       }
     },
-  })
+  }
 
-  const ast_grep_replace: ToolDefinition = tool({
+  const ast_grep_replace: V2ToolDefinition = {
+    name: "ast_grep_replace",
     description: AST_GREP_REPLACE_DESCRIPTION,
-    args: {
-      pattern: tool.schema.string().describe("AST pattern to match"),
-      rewrite: tool.schema.string().describe("Replacement pattern (can use $VAR from pattern)"),
-      lang: tool.schema.enum(CLI_LANGUAGES).describe("Target language"),
-      paths: tool.schema.array(tool.schema.string()).optional().describe("Paths to search"),
-      globs: tool.schema.array(tool.schema.string()).optional().describe("Include/exclude globs"),
-      dryRun: tool.schema.boolean().optional().describe("Preview changes without applying (default: true)"),
-    },
+    input: z.object({
+      pattern: z.string().describe("AST pattern to match"),
+      rewrite: z.string().describe("Replacement pattern (can use $VAR from pattern)"),
+      lang: z.enum(CLI_LANGUAGES).describe("Target language"),
+      paths: z.array(z.string()).optional().describe("Paths to search"),
+      globs: z.array(z.string()).optional().describe("Include/exclude globs"),
+      dryRun: z.boolean().optional().describe("Preview changes without applying (default: true)"),
+    }),
     execute: async (args, context) => {
       try {
         const result = await runSg({
@@ -79,14 +81,14 @@ export function createAstGrepTools(ctx: PluginInput): Record<string, ToolDefinit
         })
         const output = formatReplaceResult(result, args.dryRun !== false)
         await showOutputToUser(context, output)
-        return output
+        return { content: await (output) }
       } catch (e) {
         const output = `Error: ${e instanceof Error ? e.message : String(e)}`
         await showOutputToUser(context, output)
-        return output
+        return { content: await (output) }
       }
     },
-  })
+  }
 
   return { ast_grep_search, ast_grep_replace }
 }

@@ -1,4 +1,5 @@
-import { type ToolDefinition, tool } from "@opencode-ai/plugin/tool"
+import { z } from "zod"
+import type { V2ToolDefinition } from "../../plugin/types"
 import { log } from "../../shared/logger"
 import { BLOCKED_TMUX_SUBCOMMANDS, DEFAULT_TIMEOUT_MS, INTERACTIVE_BASH_DESCRIPTION } from "./constants"
 import { getCachedTmuxPath } from "./tmux-path-resolver"
@@ -48,11 +49,12 @@ export function tokenizeCommand(cmd: string): string[] {
   return tokens
 }
 
-export const interactive_bash: ToolDefinition = tool({
+export const interactive_bash: V2ToolDefinition = {
+  name: "interactive_bash",
   description: INTERACTIVE_BASH_DESCRIPTION,
-  args: {
-    tmux_command: tool.schema.string().describe("The tmux command to execute (without 'tmux' prefix)"),
-  },
+  input: z.object({
+    tmux_command: z.string().describe("The tmux command to execute (without 'tmux' prefix)"),
+  }),
   execute: async (args) => {
     try {
       const tmuxPath = getCachedTmuxPath() ?? "tmux"
@@ -60,7 +62,7 @@ export const interactive_bash: ToolDefinition = tool({
       const parts = tokenizeCommand(args.tmux_command)
 
       if (parts.length === 0) {
-        return "Error: Empty tmux command"
+        return { content: await ("Error: Empty tmux command") }
       }
 
       const subcommand = parts[0].toLowerCase()
@@ -75,7 +77,7 @@ export const interactive_bash: ToolDefinition = tool({
           }
         }
 
-        return `Error: '${parts[0]}' is blocked in interactive_bash.
+        return { content: await (`Error: '${parts[0]}' is blocked in interactive_bash.
 
 **USE BASH TOOL INSTEAD:**
 
@@ -87,7 +89,7 @@ tmux capture-pane -p -t ${sessionName}
 tmux capture-pane -p -t ${sessionName} -S -1000
 \`\`\`
 
-The Bash tool can execute these commands directly. Do NOT retry with interactive_bash.`
+The Bash tool can execute these commands directly. Do NOT retry with interactive_bash.`) }
       }
 
       const proc = Bun.spawn([tmuxPath, ...parts], {
@@ -125,12 +127,12 @@ The Bash tool can execute these commands directly. Do NOT retry with interactive
       // Check exitCode properly - return error even if stderr is empty
       if (exitCode !== 0) {
         const errorMsg = stderr.trim() || `Command failed with exit code ${exitCode}`
-        return `Error: ${errorMsg}`
+        return { content: await (`Error: ${errorMsg}`) }
       }
 
-      return stdout || "(no output)"
+      return { content: await (stdout || "(no output)") }
     } catch (e) {
-      return `Error: ${e instanceof Error ? e.message : String(e)}`
+      return { content: await (`Error: ${e instanceof Error ? e.message : String(e)}`) }
     }
   },
-})
+}

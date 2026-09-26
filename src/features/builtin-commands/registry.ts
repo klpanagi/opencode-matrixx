@@ -1,4 +1,4 @@
-import type { CommandDefinition } from "../command-loader"
+import type { CommandDefinition } from "../command-definitions"
 import { ASSEMBLY_TEMPLATE } from "./templates/assembly"
 import { BDD_PIPELINE_TEMPLATE } from "./templates/bdd-pipeline"
 import { CLEANUP_TASKS_TEMPLATE } from "./templates/cleanup-tasks"

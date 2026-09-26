@@ -56,7 +56,7 @@ describe("plan_update contract validation + write guards", () => {
 
   /** Resolve the LINE#ID anchor for the first hashline row containing `needle`. */
   async function anchorFor(fileName: string, needle: string): Promise<string> {
-    const read = JSON.parse(await readTool.execute({ filePath: `.matrixx/plans/${fileName}` }, ctx))
+    const read = JSON.parse(await readTool.execute({ filePath: `.matrixx/plans/${fileName}` }, ctx).then((__r) => __r.content))
     const row = (read.hashline as string).split("\n").find((line) => line.includes(needle))
     if (!row) throw new Error(`no hashline row contains: ${needle}`)
     return row.split("|")[0] as string
@@ -65,7 +65,7 @@ describe("plan_update contract validation + write guards", () => {
   test("surfaces contract warnings after a valid edit (WARN-first, non-blocking)", async () => {
     //#given a plan whose first line is a canonical section heading
     const content = ["## TL;DR", "summary", "", "## Context", "", "- [ ] 1. Do thing", ""].join("\n")
-    await createTool.execute({ filePath: ".matrixx/plans/warn-plan.md", content }, ctx)
+    await createTool.execute({ filePath: ".matrixx/plans/warn-plan.md", content }, ctx).then((__r) => __r.content)
     const anchor = await anchorFor("warn-plan.md", "## TL;DR")
 
     //#when the canonical heading is replaced with a plain line
@@ -73,7 +73,7 @@ describe("plan_update contract validation + write guards", () => {
       await updateTool.execute(
         { filePath: ".matrixx/plans/warn-plan.md", edits: [{ op: "replace", pos: anchor, lines: ["TLDR removed"] }] },
         ctx,
-      ),
+      ).then((__r) => __r.content),
     )
 
     //#then the edit still succeeds and the drift is reported as a warning
@@ -89,7 +89,7 @@ describe("plan_update contract validation + write guards", () => {
 
   test("rejects an oversize edit with size_exceeded and leaves the file unchanged", async () => {
     //#given a small plan and its exact pre-edit bytes
-    await createTool.execute({ filePath: ".matrixx/plans/cap-plan.md", content: "# Title\nline2\n" }, ctx)
+    await createTool.execute({ filePath: ".matrixx/plans/cap-plan.md", content: "# Title\nline2\n" }, ctx).then((__r) => __r.content)
     const target = planPath(testDir, "cap-plan.md")
     const before = readFileSync(target, "utf-8")
     const beforeSize = statSync(target).size
@@ -103,7 +103,7 @@ describe("plan_update contract validation + write guards", () => {
           edits: [{ op: "append", pos: anchor, lines: ["x".repeat(MAX_PLAN_FILE_BYTES + 100)] }],
         },
         ctx,
-      ),
+      ).then((__r) => __r.content),
     )
 
     //#then a hard rejection with a split hint, and nothing was persisted
@@ -117,7 +117,7 @@ describe("plan_update contract validation + write guards", () => {
 
   test("enforces the byte cap for multibyte content (char count under cap, byte count over)", async () => {
     //#given a small plan and its exact pre-edit bytes
-    await createTool.execute({ filePath: ".matrixx/plans/byte-cap-plan.md", content: "# Title\nline2\n" }, ctx)
+    await createTool.execute({ filePath: ".matrixx/plans/byte-cap-plan.md", content: "# Title\nline2\n" }, ctx).then((__r) => __r.content)
     const target = planPath(testDir, "byte-cap-plan.md")
     const before = readFileSync(target, "utf-8")
     const beforeSize = statSync(target).size
@@ -129,7 +129,7 @@ describe("plan_update contract validation + write guards", () => {
       await updateTool.execute(
         { filePath: ".matrixx/plans/byte-cap-plan.md", edits: [{ op: "append", pos: anchor, lines: [multibyte] }] },
         ctx,
-      ),
+      ).then((__r) => __r.content),
     )
 
     //#then the byte cap still rejects it and the file is left unchanged
@@ -140,7 +140,7 @@ describe("plan_update contract validation + write guards", () => {
 
   test("injects front-matter once on the first edit and not again (idempotent)", async () => {
     //#given a plan without front-matter
-    await createTool.execute({ filePath: ".matrixx/plans/fm-plan.md", content: "# Title\nline2\nline3\n" }, ctx)
+    await createTool.execute({ filePath: ".matrixx/plans/fm-plan.md", content: "# Title\nline2\nline3\n" }, ctx).then((__r) => __r.content)
     const target = planPath(testDir, "fm-plan.md")
     expect(parsePlanFrontMatter(readFileSync(target, "utf-8"))).toBeNull()
 
@@ -150,7 +150,7 @@ describe("plan_update contract validation + write guards", () => {
       await updateTool.execute(
         { filePath: ".matrixx/plans/fm-plan.md", edits: [{ op: "replace", pos: firstAnchor, lines: ["# First Edit"] }] },
         ctx,
-      ),
+      ).then((__r) => __r.content),
     )
 
     //#then front-matter is present exactly once
@@ -166,7 +166,7 @@ describe("plan_update contract validation + write guards", () => {
       await updateTool.execute(
         { filePath: ".matrixx/plans/fm-plan.md", edits: [{ op: "replace", pos: secondAnchor, lines: ["# Second Edit"] }] },
         ctx,
-      ),
+      ).then((__r) => __r.content),
     )
 
     //#then no duplicate front-matter block is added

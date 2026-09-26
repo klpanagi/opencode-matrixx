@@ -1,10 +1,11 @@
 import { existsSync, mkdirSync, readFileSync, writeFileSync } from "node:fs"
 import { homedir } from "node:os"
 import { dirname, join } from "node:path"
-import { type ToolDefinition, tool } from "@opencode-ai/plugin/tool"
+import { z } from "zod"
 import type { MatrixxConfig } from "../../config"
 import type { ModelPreset } from "../../config/schema/model-presets"
 import { getSessionPreset, setSessionPreset } from "../../features/preset-state"
+import type { V2ToolDefinition, V2ToolsRecord } from "../../plugin/types"
 import { parseJsoncSafe } from "../../shared/jsonc-parser"
 import { log } from "../../shared/logger"
 
@@ -145,40 +146,41 @@ function runPresetCommand(input: {
   return message
 }
 
-export function createPresetTool(options?: PresetToolOptions): Record<string, ToolDefinition> {
-  const preset: ToolDefinition = tool({
+export function createPresetTool(options?: PresetToolOptions): V2ToolsRecord {
+  const preset: V2ToolDefinition = {
+    name: "preset",
     description:
       "Manage model presets: list available presets, show a preset's model assignments, " +
       "or set the active preset for the current session. `set <name>` switches delegate-task " +
       "categories immediately and applies to builtin agents on the next session; " +
       "`set <name> --save [--global|--project]` additionally persists `active_preset` to config.",
-    args: {
-      action: tool.schema
+    input: z.object({
+      action: z
         .enum(ACTIONS)
         .describe("Operation: list available presets, show a preset's details, or set the active preset"),
-      name: tool.schema
+      name: z
         .string()
         .optional()
         .describe("Preset name (required for set; optional for show — defaults to the active preset)"),
-      save: tool.schema
+      save: z
         .boolean()
         .optional()
         .describe("Persist the active preset to config (default: false — session-only overlay)"),
-      scope: tool.schema
+      scope: z
         .enum(SCOPES)
         .optional()
         .describe(
           "Where to persist when --save: project (.opencode/matrixx.jsonc, default) or global (~/.config/opencode/matrixx.jsonc)",
         ),
-    },
+    }),
     async execute(args, context) {
       const action = args.action as string
       const name = args.name as string | undefined
       const save = args.save as boolean | undefined
       const scope = (args.scope as "global" | "project" | undefined) ?? "project"
-      return runPresetCommand({ action, name, save, scope, sessionID: context.sessionID, options })
+      return { content: await (runPresetCommand({ action, name, save, scope, sessionID: context.sessionID, options })) }
     },
-  })
+  }
 
   return { preset }
 }

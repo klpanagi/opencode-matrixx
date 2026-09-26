@@ -22,7 +22,7 @@ import {
 } from "node:fs"
 import { tmpdir } from "node:os"
 import { join } from "node:path"
-import type { PluginInput } from "@opencode-ai/plugin"
+import type { PluginContext } from "../../plugin/types"
 import { BackgroundManager } from "./manager"
 import type { BackgroundTask } from "./types"
 
@@ -44,7 +44,7 @@ function makeMockClient() {
 }
 
 function makeManager(): BackgroundManager {
-  return new BackgroundManager({ client: makeMockClient(), directory: tmpdir() } as unknown as PluginInput)
+  return new BackgroundManager({ client: makeMockClient(), directory: tmpdir() } as unknown as PluginContext)
 }
 
 describe("BackgroundManager B1 baseline (duplicate checkAndInterruptStaleTasks)", () => {
@@ -195,7 +195,7 @@ describe("BackgroundManager B2 baseline (2× readFileSync per file)", () => {
         todo: async () => ({ data: [] }),
       },
     }
-    const manager = new BenchManager({ client, directory: tmpdir() } as unknown as PluginInput)
+    const manager = new BenchManager({ client, directory: tmpdir() } as unknown as PluginContext)
 
     const task: BackgroundTask = {
       id: "task_bench",

@@ -1,19 +1,20 @@
-import type { PluginInput } from "@opencode-ai/plugin"
-import { type ToolDefinition, tool } from "@opencode-ai/plugin/tool"
+import { z } from "zod"
+import type { V2ToolDefinition, V2ToolsRecord } from "../../plugin/types"
 import { runRgFiles } from "./cli"
 import { resolveGrepCliWithAutoInstall } from "./constants"
 import { formatGlobResult } from "./result-formatter"
 
-export function createGlobTools(ctx: PluginInput): Record<string, ToolDefinition> {
-  const glob: ToolDefinition = tool({
+export function createGlobTools(ctx: { directory: string }): V2ToolsRecord {
+  const glob: V2ToolDefinition = {
+    name: "glob",
     description:
       "Fast file pattern matching tool with safety limits (60s timeout, 100 file limit). " +
       "Supports glob patterns like \"**/*.js\" or \"src/**/*.ts\". " +
       "Returns matching file paths sorted by modification time. " +
       "Use this tool when you need to find files by name patterns.",
-    args: {
-      pattern: tool.schema.string().describe("The glob pattern to match files against"),
-      path: tool.schema
+    input: z.object({
+      pattern: z.string().describe("The glob pattern to match files against"),
+      path: z
         .string()
         .optional()
         .describe(
@@ -21,7 +22,7 @@ export function createGlobTools(ctx: PluginInput): Record<string, ToolDefinition
             "IMPORTANT: Omit this field to use the default directory. DO NOT enter \"undefined\" or \"null\" - " +
             "simply omit it for the default behavior. Must be a valid directory path if provided."
         ),
-    },
+    }),
     execute: async (args) => {
       try {
         const cli = await resolveGrepCliWithAutoInstall()
@@ -36,12 +37,12 @@ export function createGlobTools(ctx: PluginInput): Record<string, ToolDefinition
           cli
         )
 
-        return formatGlobResult(result)
+        return { content: await (formatGlobResult(result)) }
       } catch (e) {
-        return `Error: ${e instanceof Error ? e.message : String(e)}`
+        return { content: await (`Error: ${e instanceof Error ? e.message : String(e)}`) }
       }
     },
-  })
+  }
 
   return { glob }
 }

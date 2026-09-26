@@ -1,6 +1,6 @@
-import type { PluginInput } from "@opencode-ai/plugin"
 import type { MatrixxConfig } from "../../config/schema"
 import type { BackgroundManager } from "../../features/background-agent"
+import type { PluginContext } from "../../plugin/types"
 import { log } from "../../shared/logger"
 
 import {
@@ -13,7 +13,7 @@ import type { SessionStateStore } from "./session-state"
 import type { ResolvedMessageInfo } from "./types"
 
 async function showCountdownToast(
-  ctx: PluginInput,
+  ctx: PluginContext,
   seconds: number,
   incompleteCount: number
 ): Promise<void> {
@@ -30,7 +30,7 @@ async function showCountdownToast(
 }
 
 export function startCountdown(args: {
-  ctx: PluginInput
+  ctx: PluginContext
   sessionID: string
   incompleteCount: number
   total: number

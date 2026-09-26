@@ -1,12 +1,13 @@
-import type { PluginInput } from "@opencode-ai/plugin"
+import { V1_HOOK_KEYS } from "../../config/schema/hooks-v1-keys"
+import type { PluginContextSlice } from "../../plugin/types"
 import { log } from "../../shared/logger"
 import { isCallerOrchestrator } from "../../shared/session-utils"
 import { SYSTEM_DIRECTIVE_PREFIX } from "../../shared/system-directive"
 import { HOOK_NAME, NOTEPAD_DIRECTIVE } from "./constants"
 
-export function createMouseNotepadHook(ctx: PluginInput) {
+export function createMouseNotepadHook(ctx: PluginContextSlice<"client">) {
   return {
-    "tool.execute.before": async (
+    [V1_HOOK_KEYS.toolExecuteBefore]: async (
       input: { tool: string; sessionID: string; callID: string },
       output: { args: Record<string, unknown>; message?: string }
     ): Promise<void> => {

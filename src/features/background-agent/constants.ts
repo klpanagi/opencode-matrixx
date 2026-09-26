@@ -1,4 +1,4 @@
-import type { PluginInput } from "@opencode-ai/plugin"
+import type { PluginContext } from "../../plugin/types"
 import type { BackgroundTask, LaunchInput } from "./types"
 
 export const TASK_TTL_MS = 30 * 60 * 1000
@@ -33,7 +33,7 @@ export const RECONCILE_CONFIRMATION_GRACE_MS = 5000
 
 export type ProcessCleanupEvent = NodeJS.Signals | "beforeExit" | "exit"
 
-export type OpencodeClient = PluginInput["client"]
+export type OpencodeClient = PluginContext["client"]
 
 export interface MessagePartInfo {
   sessionID?: string

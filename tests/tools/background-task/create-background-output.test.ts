@@ -47,7 +47,7 @@ describe("createBackgroundOutput", () => {
     }
 
     //#when
-    const result = await tool.execute(testArgs, ctxWithMetadata)
+    const result = await tool.execute(testArgs, ctxWithMetadata).then((__r) => __r.content)
 
     //#then - bug eliminated: formatDetailedError used, metadata untouched
     expect(metadataMock).not.toHaveBeenCalled()

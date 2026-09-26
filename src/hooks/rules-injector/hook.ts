@@ -1,6 +1,6 @@
-import type { PluginInput } from "@opencode-ai/plugin";
+import type { PluginContext } from "../../plugin/types";
 import { createPostReadInjectorHook } from "../post-read-injector/hook";
 
-export function createRulesInjectorHook(ctx: PluginInput) {
+export function createRulesInjectorHook(ctx: PluginContext) {
   return createPostReadInjectorHook(ctx, { trackedTools: ["read", "write", "edit", "multiedit"] });
 }

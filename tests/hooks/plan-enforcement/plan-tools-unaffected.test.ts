@@ -55,14 +55,14 @@ describe("plan_* tools unaffected by enforcement", () => {
 
     //#when create
     const created = JSON.parse(
-      await createTool.execute({ filePath: ".matrixx/plans/regression-plan.md", content: "# Title\nline2\nline3\n" }, ctx),
+      await createTool.execute({ filePath: ".matrixx/plans/regression-plan.md", content: "# Title\nline2\nline3\n" }, ctx).then((__r) => __r.content),
     )
     //#then created
     expect(created.error).toBeUndefined()
     expect(created.filePath).toContain("regression-plan.md")
 
     //#when read
-    const read = JSON.parse(await readTool.execute({ filePath: ".matrixx/plans/regression-plan.md" }, ctx))
+    const read = JSON.parse(await readTool.execute({ filePath: ".matrixx/plans/regression-plan.md" }, ctx).then((__r) => __r.content))
     //#then hashline-tagged content returned (single format)
     expect(read.error).toBeUndefined()
     expect("content" in read).toBe(false)
@@ -75,27 +75,27 @@ describe("plan_* tools unaffected by enforcement", () => {
     const updated = await updateTool.execute(
       { filePath: ".matrixx/plans/regression-plan.md", edits: [{ op: "replace", pos: anchor, lines: ["# New Title"] }] },
       ctx,
-    )
+    ).then((__r) => __r.content)
     //#then update applied (plain string result, not JSON)
     expect(updated).toContain("Updated")
     const read2 = JSON.parse(
-      await readTool.execute({ filePath: ".matrixx/plans/regression-plan.md", format: "content" }, ctx),
+      await readTool.execute({ filePath: ".matrixx/plans/regression-plan.md", format: "content" }, ctx).then((__r) => __r.content),
     )
     expect(read2.content).toContain("# New Title")
 
     //#when list
-    const listed = JSON.parse(await listTool.execute({}, ctx))
+    const listed = JSON.parse(await listTool.execute({}, ctx).then((__r) => __r.content))
     //#then file present
     expect(listed.plans.length).toBe(1)
     expect(listed.plans[0].fileName).toBe("regression-plan.md")
 
     //#when delete
-    const deleted = JSON.parse(await deleteTool.execute({ filePath: ".matrixx/plans/regression-plan.md" }, ctx))
+    const deleted = JSON.parse(await deleteTool.execute({ filePath: ".matrixx/plans/regression-plan.md" }, ctx).then((__r) => __r.content))
     //#then deleted
     expect(deleted.success).toBe(true)
 
     //#when list again
-    const listed2 = JSON.parse(await listTool.execute({}, ctx))
+    const listed2 = JSON.parse(await listTool.execute({}, ctx).then((__r) => __r.content))
     //#then empty
     expect(listed2.plans.length).toBe(0)
   })
@@ -106,19 +106,19 @@ describe("plan_* tools unaffected by enforcement", () => {
     const readTool = createPlanReadTool()
     const updateTool = createPlanUpdateTool()
     const ctx = testContext(testDir)
-    await createTool.execute({ filePath: ".matrixx/plans/append-plan.md", content: "# A\n" }, ctx)
+    await createTool.execute({ filePath: ".matrixx/plans/append-plan.md", content: "# A\n" }, ctx).then((__r) => __r.content)
 
     //#when append via hashline anchor
-    const read = JSON.parse(await readTool.execute({ filePath: ".matrixx/plans/append-plan.md" }, ctx))
+    const read = JSON.parse(await readTool.execute({ filePath: ".matrixx/plans/append-plan.md" }, ctx).then((__r) => __r.content))
     const anchor = read.hashline.split("\n")[0].split("|")[0]
     const updated = await updateTool.execute(
       { filePath: ".matrixx/plans/append-plan.md", edits: [{ op: "append", pos: anchor, lines: ["# B"] }] },
       ctx,
-    )
+    ).then((__r) => __r.content)
     //#then append applied (plain string result, not JSON)
     expect(updated).toContain("Updated")
     const read2 = JSON.parse(
-      await readTool.execute({ filePath: ".matrixx/plans/append-plan.md", format: "content" }, ctx),
+      await readTool.execute({ filePath: ".matrixx/plans/append-plan.md", format: "content" }, ctx).then((__r) => __r.content),
     )
     expect(read2.content).toContain("# B")
   })
@@ -127,7 +127,7 @@ describe("plan_* tools unaffected by enforcement", () => {
     //#given the create tool
     const createTool = createPlanCreateTool()
     //#when an out-of-scope path is used
-    const res = JSON.parse(await createTool.execute({ filePath: "src/evil.ts", content: "# x\n" }, testContext(testDir)))
+    const res = JSON.parse(await createTool.execute({ filePath: "src/evil.ts", content: "# x\n" }, testContext(testDir)).then((__r) => __r.content))
     //#then rejected
     expect(res.error).toBeDefined()
   })
@@ -136,7 +136,7 @@ describe("plan_* tools unaffected by enforcement", () => {
     //#given the read tool
     const readTool = createPlanReadTool()
     //#when a missing plan is read
-    const res = JSON.parse(await readTool.execute({ filePath: ".matrixx/plans/nope-plan.md" }, testContext(testDir)))
+    const res = JSON.parse(await readTool.execute({ filePath: ".matrixx/plans/nope-plan.md" }, testContext(testDir)).then((__r) => __r.content))
     //#then file_not_found
     expect(res.error).toBe("file_not_found")
   })

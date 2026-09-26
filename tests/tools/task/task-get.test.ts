@@ -55,7 +55,7 @@ describe("task_get tool", () => {
       writeFileSync(taskFile, JSON.stringify(taskData, null, 2))
 
       //#when
-      const resultStr = await tool.execute({ id: taskId }, TEST_CONTEXT)
+      const resultStr = await tool.execute({ id: taskId }, TEST_CONTEXT).then((__r) => __r.content)
       const result = JSON.parse(resultStr)
 
       //#then
@@ -71,7 +71,7 @@ describe("task_get tool", () => {
       const taskId = "T-nonexistent-999"
 
       //#when
-      const resultStr = await tool.execute({ id: taskId }, TEST_CONTEXT)
+      const resultStr = await tool.execute({ id: taskId }, TEST_CONTEXT).then((__r) => __r.content)
       const result = JSON.parse(resultStr)
 
       //#then
@@ -100,7 +100,7 @@ describe("task_get tool", () => {
       writeFileSync(taskFile, JSON.stringify(taskData, null, 2))
 
       //#when
-      const resultStr = await tool.execute({ id: taskId }, TEST_CONTEXT)
+      const resultStr = await tool.execute({ id: taskId }, TEST_CONTEXT).then((__r) => __r.content)
       const result = JSON.parse(resultStr)
 
       //#then
@@ -115,7 +115,7 @@ describe("task_get tool", () => {
       const invalidTaskId = "invalid-id-format"
 
       //#when
-      const resultStr = await tool.execute({ id: invalidTaskId }, TEST_CONTEXT)
+      const resultStr = await tool.execute({ id: invalidTaskId }, TEST_CONTEXT).then((__r) => __r.content)
       const result = JSON.parse(resultStr)
 
       //#then
@@ -130,7 +130,7 @@ describe("task_get tool", () => {
       writeFileSync(taskFile, "{ invalid json }")
 
       //#when
-      const resultStr = await tool.execute({ id: taskId }, TEST_CONTEXT)
+      const resultStr = await tool.execute({ id: taskId }, TEST_CONTEXT).then((__r) => __r.content)
       const result = JSON.parse(resultStr)
 
       //#then
@@ -149,7 +149,7 @@ describe("task_get tool", () => {
       writeFileSync(taskFile, JSON.stringify(invalidData, null, 2))
 
       //#when
-      const resultStr = await tool.execute({ id: taskId }, TEST_CONTEXT)
+      const resultStr = await tool.execute({ id: taskId }, TEST_CONTEXT).then((__r) => __r.content)
       const result = JSON.parse(resultStr)
 
       //#then
@@ -161,7 +161,7 @@ describe("task_get tool", () => {
       const args = {}
 
       //#when
-      const resultStr = await tool.execute(args, TEST_CONTEXT)
+      const resultStr = await tool.execute(args, TEST_CONTEXT).then((__r) => __r.content)
       const result = JSON.parse(resultStr)
 
       //#then
@@ -184,7 +184,7 @@ describe("task_get tool", () => {
       writeFileSync(taskFile, JSON.stringify(taskData, null, 2))
 
       //#when
-      const resultStr = await tool.execute({ id: taskId }, TEST_CONTEXT)
+      const resultStr = await tool.execute({ id: taskId }, TEST_CONTEXT).then((__r) => __r.content)
       const result = JSON.parse(resultStr)
 
       //#then
@@ -208,7 +208,7 @@ describe("task_get tool", () => {
       writeFileSync(taskFile, JSON.stringify(taskData, null, 2))
 
       //#when
-      const resultStr = await tool.execute({ id: taskId }, TEST_CONTEXT)
+      const resultStr = await tool.execute({ id: taskId }, TEST_CONTEXT).then((__r) => __r.content)
       const result = JSON.parse(resultStr)
 
       //#then

@@ -139,9 +139,9 @@ describe("DCP loop-hardening hook names", () => {
   })
 
   test("context-mode-enforcer literal is declared exactly once", () => {
-    //#given the schema source
+    //#given the hook-name data file that now backs HookNameSchema
     const source = readFileSync(
-      new URL("../../src/config/schema/hooks.ts", import.meta.url),
+      new URL("../../src/config/schema/hooks-v1-names.json", import.meta.url),
       "utf8",
     )
 

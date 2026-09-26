@@ -81,7 +81,7 @@ describe("handoff e2e lifecycle", () => {
     const createResult = await tools.handoff.execute(
       { action: "create", ...BASE_CREATE_ARGS },
       context
-    )
+    ).then((__r) => __r.content)
 
     //#then - handoff.md exists, create message confirms write
     const filePath = getHandoffFilePath(projectDir)
@@ -100,14 +100,14 @@ describe("handoff e2e lifecycle", () => {
     expect(validation.data.body.length).toBeGreaterThan(0)
 
     //#when - read returns the same content
-    const readResult = await tools.handoff.execute({ action: "read" }, context)
+    const readResult = await tools.handoff.execute({ action: "read" }, context).then((__r) => __r.content)
     //#then - read returns full content (frontmatter + body)
     expect(readResult).toContain("---")
     expect(readResult).toContain("session_id: ses_e2e_lifecycle")
     expect(readResult).toContain("Finish the auth refactor and ship")
 
     //#when - archive
-    const archiveResult = await tools.handoff.execute({ action: "archive" }, context)
+    const archiveResult = await tools.handoff.execute({ action: "archive" }, context).then((__r) => __r.content)
     //#then - archive message + file moved
     const consumedPath = getHandoffConsumedFilePath(projectDir)
     expect(archiveResult).toContain("Handoff archived")
@@ -115,7 +115,7 @@ describe("handoff e2e lifecycle", () => {
     expect(existsSync(consumedPath)).toBe(true)
 
     //#when - re-read after archive
-    const reReadResult = await tools.handoff.execute({ action: "read" }, context)
+    const reReadResult = await tools.handoff.execute({ action: "read" }, context).then((__r) => __r.content)
     //#then - clear error
     expect(reReadResult).toMatch(/^Error:/)
     expect(reReadResult).toContain("No handoff found at")
@@ -136,7 +136,7 @@ describe("handoff e2e lifecycle", () => {
     const result = await tools.handoff.execute(
       { action: "create", ...BASE_CREATE_ARGS },
       context
-    )
+    ).then((__r) => __r.content)
 
     //#then - .matrixx/ was created and handoff.md lives inside it
     expect(existsSync(join(projectDir, ".matrixx"))).toBe(true)
@@ -155,7 +155,7 @@ describe("handoff e2e lifecycle", () => {
     const context = makeContext("ses_e2e_empty", projectDir)
 
     //#when
-    const result = await tools.handoff.execute({ action: "read" }, context)
+    const result = await tools.handoff.execute({ action: "read" }, context).then((__r) => __r.content)
 
     //#then - explicit warning (not a silent no-op, not a hard error)
     expect(result).toMatch(/^Warning:/)
@@ -187,7 +187,7 @@ describe("handoff e2e lifecycle", () => {
     }
 
     //#when
-    const result = await tools.handoff.execute(fullArgs, context)
+    const result = await tools.handoff.execute(fullArgs, context).then((__r) => __r.content)
 
     //#then - file written
     expect(result).toContain("Handoff written to")
@@ -245,7 +245,7 @@ describe("handoff e2e lifecycle", () => {
     const context = makeContext("ses_e2e_malformed", projectDir)
 
     //#when
-    const result = await tools.handoff.execute({ action: "read" }, context)
+    const result = await tools.handoff.execute({ action: "read" }, context).then((__r) => __r.content)
 
     //#then - leading warning + raw content preserved (forgiving fallback)
     expect(result).toMatch(/^Warning:/)

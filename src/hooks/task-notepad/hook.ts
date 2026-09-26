@@ -1,6 +1,6 @@
 import { existsSync, mkdirSync, readdirSync, readFileSync, statSync, writeFileSync } from "node:fs"
 import { dirname, join } from "node:path"
-
+import { V1_HOOK_KEYS } from "../../config/schema/hooks-v1-keys"
 import { log } from "../../shared/logger"
 import {
   HOOK_NAME,
@@ -18,7 +18,7 @@ import type { PlanFile, TaskNotepadContext, TodoSnapshot } from "./types"
 
 export function createTaskNotepadHook(ctx: TaskNotepadContext) {
   return {
-    "tool.execute.after": async (
+    [V1_HOOK_KEYS.toolExecuteAfter]: async (
       input: { tool: string; sessionID: string; callID: string },
       output: { title: string; output: string; metadata: Record<string, unknown> } | undefined,
     ): Promise<void> => {

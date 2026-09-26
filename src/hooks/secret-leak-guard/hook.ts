@@ -1,5 +1,5 @@
-import type { PluginInput } from "@opencode-ai/plugin"
-
+import { V1_HOOK_KEYS } from "../../config/schema/hooks-v1-keys"
+import type { PluginContextSlice } from "../../plugin/types"
 import { log } from "../../shared"
 import { isGitCommitOrPush, isGitPush } from "./git-command-detector"
 import { runGitleaksPrePushScan, runGitleaksStagedScan } from "./gitleaks-runner"
@@ -12,12 +12,12 @@ interface SecretLeakGuardOptions {
   allowlist_paths?: string[]
 }
 
-export function createSecretLeakGuardHook(ctx: PluginInput, config?: SecretLeakGuardOptions) {
+export function createSecretLeakGuardHook(ctx: PluginContextSlice<"directory">, config?: SecretLeakGuardOptions) {
   const enabled = config?.enabled ?? true
   const blockOnDetection = config?.block_on_detection ?? true
 
   return {
-    "tool.execute.before": async (
+    [V1_HOOK_KEYS.toolExecuteBefore]: async (
       input: { tool: string; sessionID: string; callID: string },
       output: { args: Record<string, unknown> }
     ): Promise<void> => {

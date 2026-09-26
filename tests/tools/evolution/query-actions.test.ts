@@ -55,7 +55,7 @@ describe("T9 retrieval query actions", () => {
     seedSkill(dir, "u1", { status: "approved", kind: "gotcha" }, "# u1\n");
     const record = createEvolutionTool(makeCtx(dir));
     //#when searching for gotchas in this project's scope
-    const result = await record.evolution.execute({ action: "search", kind: "gotcha" }, makeToolContext(dir));
+    const result = await record.evolution.execute({ action: "search", kind: "gotcha" }, makeToolContext(dir)).then((__r) => __r.content);
     //#then only the head surfaces — superseded, quarantined, cross-project, and unscoped are excluded
     expect(result).toContain("head-v2");
     expect(result).not.toContain("superseded-v1");
@@ -72,7 +72,7 @@ describe("T9 retrieval query actions", () => {
     seedSkill(dir, "huge-skill", { status: "approved", kind: "gotcha", projectId: pid }, huge);
     const record = createEvolutionTool(makeCtx(dir));
     //#when requesting context
-    const result = await record.evolution.execute({ action: "get_context", kind: "gotcha" }, makeToolContext(dir));
+    const result = await record.evolution.execute({ action: "get_context", kind: "gotcha" }, makeToolContext(dir)).then((__r) => __r.content);
     //#then the marker is present and the raw oversized body was cut
     expect(result).toContain(CONTEXT_TRUNCATION_MARKER);
     expect(result.length).toBeLessThan(huge.length);
@@ -97,8 +97,8 @@ describe("T9 retrieval query actions", () => {
     const before = snapshotTree(path.join(dir, ".matrixx", "evolution"));
     const record = createEvolutionTool(makeCtx(dir));
     //#when running both query actions
-    await record.evolution.execute({ action: "search", kind: "gotcha" }, makeToolContext(dir));
-    await record.evolution.execute({ action: "get_context", kind: "gotcha" }, makeToolContext(dir));
+    await record.evolution.execute({ action: "search", kind: "gotcha" }, makeToolContext(dir)).then((__r) => __r.content);
+    await record.evolution.execute({ action: "get_context", kind: "gotcha" }, makeToolContext(dir)).then((__r) => __r.content);
     //#then the store tree is byte-for-byte the same (no writes, no audit)
     expect(snapshotTree(path.join(dir, ".matrixx", "evolution"))).toEqual(before);
   });

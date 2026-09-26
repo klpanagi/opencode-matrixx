@@ -1,5 +1,6 @@
 import type { Message, Part } from "@opencode-ai/sdk"
 import { createEnvContext } from "../../agents/env-context"
+import { V1_HOOK_KEYS } from "../../config/schema/hooks-v1-keys"
 
 interface MessageWithParts {
   info: Message
@@ -7,7 +8,7 @@ interface MessageWithParts {
 }
 
 type MessagesTransformHook = {
-  "experimental.chat.messages.transform"?: (
+  [V1_HOOK_KEYS.messagesTransform]?: (
     input: Record<string, never>,
     output: { messages: MessageWithParts[] }
   ) => Promise<void>
@@ -26,7 +27,7 @@ type MessagesTransformHook = {
  */
 export function createEnvContextInjectorHook(): MessagesTransformHook {
   return {
-    "experimental.chat.messages.transform": async (_input, output) => {
+    [V1_HOOK_KEYS.messagesTransform]: async (_input, output) => {
       const { messages } = output
       if (!messages || messages.length === 0) return
 

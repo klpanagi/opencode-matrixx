@@ -6,6 +6,8 @@ import { classifySuccess, truncate } from "./utils"
 
 export { classifySuccess, truncate } from "./utils"
 
+import { V1_HOOK_KEYS } from "../../config/schema/hooks-v1-keys"
+
 function resolveConfig(a?: unknown, b?: EvolutionConfig): EvolutionConfig | undefined {
   if (b !== undefined) return b
   if (a && typeof a === "object" && "enabled" in (a as Record<string, unknown>)) {
@@ -42,7 +44,7 @@ export function createEvolutionWatcherHook(a?: PluginContext | EvolutionConfig, 
   const pendingArgs = new Map<string, string>()
 
   return {
-    "tool.execute.before": async (
+    [V1_HOOK_KEYS.toolExecuteBefore]: async (
       input: { tool: string; sessionID: string; callID: string },
       output: { args: Record<string, unknown> },
     ): Promise<void> => {
@@ -64,7 +66,7 @@ export function createEvolutionWatcherHook(a?: PluginContext | EvolutionConfig, 
       } catch {}
     },
 
-    "tool.execute.after": async (
+    [V1_HOOK_KEYS.toolExecuteAfter]: async (
       input: { tool: string; sessionID: string; callID: string },
       output: { title: string; output: string; metadata: Record<string, unknown> },
     ): Promise<void> => {

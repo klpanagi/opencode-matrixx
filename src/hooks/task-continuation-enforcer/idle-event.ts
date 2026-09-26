@@ -1,12 +1,12 @@
 import { existsSync, readdirSync } from "node:fs"
 import { join } from "node:path"
-import type { PluginInput } from "@opencode-ai/plugin"
 import type { MatrixxConfig } from "../../config/schema"
 import type { BackgroundManager } from "../../features/background-agent"
 import type { ToolPermission } from "../../features/hook-message-injector"
 import { getSubagentSessionIDs, subagentSessions } from "../../features/session-state"
 import { getTaskDir, readJsonSafe } from "../../features/task-storage/storage"
 import type { Task } from "../../features/task-storage/types"
+import type { PluginContext } from "../../plugin/types"
 import { normalizeSDKResponse } from "../../shared"
 import { getAgentConfigKey } from "../../shared/agent-display-names"
 import { isAwaitingUser } from "../../shared/awaiting-user"
@@ -29,7 +29,7 @@ import { dropSubtasksWithResolvedParent, filterTasksBySession, getIncompleteTask
 import type { MessageInfo, ResolvedMessageInfo } from "./types"
 
 export async function handleSessionIdle(args: {
-  ctx: PluginInput
+  ctx: PluginContext
   sessionID: string
   sessionStateStore: SessionStateStore
   backgroundManager?: BackgroundManager

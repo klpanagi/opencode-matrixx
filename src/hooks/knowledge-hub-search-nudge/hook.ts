@@ -1,5 +1,6 @@
-import type { PluginInput } from "@opencode-ai/plugin"
+import { V1_HOOK_KEYS } from "../../config/schema/hooks-v1-keys"
 import type { LoadedHub } from "../../features/knowledge-hub/loader"
+import type { PluginContext } from "../../plugin/types"
 import { log } from "../../shared/logger"
 
 const HOOK_NAME = "knowledge-hub-search-nudge"
@@ -16,7 +17,7 @@ function buildNudge(hubs: LoadedHub[]): string {
   return `Check knowledge hub(s) ${names} before searching the web; resolve files via @hub/path on demand, never bulk-read.`
 }
 
-export function createKnowledgeHubSearchNudgeHook(ctx: PluginInput, options: KnowledgeHubSearchNudgeOptions = {}) {
+export function createKnowledgeHubSearchNudgeHook(ctx: PluginContext, options: KnowledgeHubSearchNudgeOptions = {}) {
   void ctx
   let warnedOnce = false
 
@@ -33,7 +34,7 @@ export function createKnowledgeHubSearchNudgeHook(ctx: PluginInput, options: Kno
   }
 
   return {
-    "tool.execute.before": async (
+    [V1_HOOK_KEYS.toolExecuteBefore]: async (
       input: { tool: string; sessionID: string; callID: string },
       output: { args: Record<string, unknown>; message?: string },
     ): Promise<void> => {

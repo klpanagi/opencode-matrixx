@@ -1,5 +1,5 @@
 import { describe, expect, test } from "bun:test"
-import { loadBuiltinCommands } from "../../../src/features/builtin-commands/commands"
+import { loadBuiltinCommands } from "../../../src/features/builtin-commands/registry"
 import { END_ULTRAWORK_TEMPLATE } from "../../../src/features/builtin-commands/templates/end-ultrawork"
 import { HANDOFF_TEMPLATE } from "../../../src/features/builtin-commands/templates/handoff"
 import { REMOVE_DEADCODE_TEMPLATE } from "../../../src/features/builtin-commands/templates/remove-deadcode"

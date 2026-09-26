@@ -1,10 +1,20 @@
-import type { Plugin } from "@opencode-ai/plugin"
+import { Plugin } from "@opencode/plugin"
+import type { Plugin as V1Plugin } from "@opencode-ai/plugin"
 
 import type { HookName } from "./config"
+import { V1_HOOK_KEYS } from "./config/schema/hooks-v1-keys"
 
 import { createHooks } from "./create-hooks"
 import { createManagers } from "./create-managers"
 import { createTools } from "./create-tools"
+import { createCompactionHandler } from "./plugin/compaction"
+import {
+  collectAgentPermissions,
+  createPermissionEvaluateHandler,
+  createSentinelPolicyRules,
+} from "./plugin/v2/permission-policy"
+import { registerV2Components } from "./plugin/v2/register-components"
+import { registerV2Hooks } from "./plugin/v2/register-hooks"
 import { loadPluginConfig } from "./plugin-config"
 import { setAvailableToolNames } from "./plugin-handlers/agent-config-handler"
 import { createPluginInterface } from "./plugin-interface"
@@ -15,7 +25,7 @@ import { switchProfile } from "./shared/dcp-switch-profile"
 import { createFirstMessageVariantGate } from "./shared/first-message-variant"
 import { startTmuxCheck } from "./tools"
 
-const MatrixxPlugin: Plugin = async (ctx) => {
+const v1Plugin: V1Plugin = async (ctx) => {
   log("[MatrixxPlugin] ENTRY - plugin loading", {
     directory: ctx.directory,
   })
@@ -85,30 +95,54 @@ const pluginConfig = await loadPluginConfig(ctx.directory, ctx)
     tools: toolsResult.filteredTools,
   })
 
+  const compacting = createCompactionHandler({ hooks })
+
   return {
     ...pluginInterface,
 
-    "experimental.session.compacting": async (
-      _input: { sessionID: string },
-      output: { context: string[] },
-    ): Promise<void> => {
-      await hooks.compactionTodoPreserver?.capture(_input.sessionID)
-      if (hooks.compactionContextInjector) {
-        output.context.push(hooks.compactionContextInjector(_input.sessionID))
-      }
-
-      // Inject plan context if mission is active
-      if (hooks.planPersister) {
-        const planContext = hooks.planPersister.buildRehydrationContext(_input.sessionID)
-        if (planContext) {
-          output.context.push(planContext)
-        }
-      }
-
-      await hooks.evolutionCompressor?.["experimental.session.compacting"]?.(_input, output)
-    },
+    [V1_HOOK_KEYS.sessionCompacting]: compacting,
   }
 }
+
+const v2Plugin = Plugin.define({
+  id: "matrixx",
+  setup: async (ctx) => {
+    const directory = ctx.location.directory
+    const pluginConfig = await loadPluginConfig(directory, ctx)
+    setContextModeForPrompts(pluginConfig.context_mode)
+
+    if (pluginConfig.dcp?.default_profile) {
+      switchProfile(pluginConfig.dcp.default_profile, { pluginConfig })
+    }
+
+    // Every handler built from the hook tiers needs the V1 PluginContext
+    // (client, project, worktree). That adapter arrives with the Wave 4 loader
+    // removal, so until then the V2 hooks are registered and disposed but have
+    // no handler to delegate to. See .matrixx/notepads — issues.md, task 3.1.
+    //
+    // The permission tier is the exception: it needs only the resolved config,
+    // so the ordered deny-over-allow evaluation and the read-only agent denies
+    // are enforced on V2 today rather than waiting for the adapter.
+    const disposeHooks = await registerV2Hooks(ctx, {
+      permissionEvaluate: createPermissionEvaluateHandler({
+        policies: pluginConfig.experimental?.policies,
+        agentPermissions: collectAgentPermissions(pluginConfig.agents),
+        agentRules: createSentinelPolicyRules(),
+      }),
+    })
+    const disposeComponents = await registerV2Components(ctx, {
+      directory,
+      pluginConfig,
+    })
+
+    return async () => {
+      await disposeComponents()
+      await disposeHooks()
+    }
+  },
+})
+
+const MatrixxPlugin = Object.assign(v1Plugin, v2Plugin)
 
 export default MatrixxPlugin
 

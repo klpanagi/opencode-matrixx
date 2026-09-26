@@ -1,6 +1,5 @@
 import { existsSync, readdirSync } from "node:fs"
 import { join } from "node:path"
-import type { PluginInput } from "@opencode-ai/plugin"
 import type { MatrixxConfig } from "../../config/schema"
 import type { BackgroundManager } from "../../features/background-agent"
 import {
@@ -9,8 +8,10 @@ import {
   type ToolPermission,
 } from "../../features/hook-message-injector"
 import { getSubagentSessionIDs, subagentSessions } from "../../features/session-state"
+import { resolveSessionSteering } from "../../features/session-steering"
 import { getTaskDir, readJsonSafe } from "../../features/task-storage/storage"
 import type { Task } from "../../features/task-storage/types"
+import type { PluginContext } from "../../plugin/types"
 import { getAgentConfigKey } from "../../shared/agent-display-names"
 import { isAwaitingUser } from "../../shared/awaiting-user"
 import { log } from "../../shared/logger"
@@ -39,7 +40,7 @@ function hasWritePermission(tools: Record<string, ToolPermission> | undefined): 
 }
 
 export async function injectContinuation(args: {
-  ctx: PluginInput
+  ctx: PluginContext
   sessionID: string
   backgroundManager?: BackgroundManager
   skipAgents?: string[]
@@ -211,14 +212,12 @@ ${taskList}${staleNote}`
       incompleteCount: freshIncompleteCount,
     })
 
-    await ctx.client.session.promptAsync({
-      path: { id: sessionID },
-      body: {
-        agent: agentName,
-        ...(model !== undefined ? { model } : {}),
-        parts: [{ type: "text", text: prompt }],
-      },
-      query: { directory: ctx.directory },
+    await resolveSessionSteering(ctx).deliver({
+      sessionID,
+      text: prompt,
+      directory: ctx.directory,
+      agent: agentName,
+      ...(model !== undefined ? { model } : {}),
     })
 
     log(`[${HOOK_NAME}] Injection successful`, { sessionID })

@@ -52,7 +52,7 @@ describe("task_update tool", () => {
         id: taskId,
         subject: "Updated subject",
       }
-      const resultStr = await tool.execute(args, TEST_CONTEXT)
+      const resultStr = await tool.execute(args, TEST_CONTEXT).then((__r) => __r.content)
       const result = JSON.parse(resultStr)
 
       //#then
@@ -81,7 +81,7 @@ describe("task_update tool", () => {
         id: taskId,
         description: "Updated description",
       }
-      const resultStr = await tool.execute(args, TEST_CONTEXT)
+      const resultStr = await tool.execute(args, TEST_CONTEXT).then((__r) => __r.content)
       const result = JSON.parse(resultStr)
 
       //#then
@@ -108,7 +108,7 @@ describe("task_update tool", () => {
         id: taskId,
         status: "in_progress" as const,
       }
-      const resultStr = await tool.execute(args, TEST_CONTEXT)
+      const resultStr = await tool.execute(args, TEST_CONTEXT).then((__r) => __r.content)
       const result = JSON.parse(resultStr)
 
       //#then
@@ -135,7 +135,7 @@ describe("task_update tool", () => {
         id: taskId,
         addBlocks: ["T-new-1", "T-new-2"],
       }
-      const resultStr = await tool.execute(args, TEST_CONTEXT)
+      const resultStr = await tool.execute(args, TEST_CONTEXT).then((__r) => __r.content)
       const result = JSON.parse(resultStr)
 
       //#then
@@ -165,7 +165,7 @@ describe("task_update tool", () => {
         id: taskId,
         addBlocks: ["T-existing-1", "T-new-1"],
       }
-      const resultStr = await tool.execute(args, TEST_CONTEXT)
+      const resultStr = await tool.execute(args, TEST_CONTEXT).then((__r) => __r.content)
       const result = JSON.parse(resultStr)
 
       //#then
@@ -194,7 +194,7 @@ describe("task_update tool", () => {
         id: taskId,
         addBlockedBy: ["T-blocker-2", "T-blocker-3"],
       }
-      const resultStr = await tool.execute(args, TEST_CONTEXT)
+      const resultStr = await tool.execute(args, TEST_CONTEXT).then((__r) => __r.content)
       const result = JSON.parse(resultStr)
 
       //#then
@@ -231,7 +231,7 @@ describe("task_update tool", () => {
           tags: ["bug"],
         },
       }
-      const resultStr = await tool.execute(args, TEST_CONTEXT)
+      const resultStr = await tool.execute(args, TEST_CONTEXT).then((__r) => __r.content)
       const result = JSON.parse(resultStr)
 
       //#then
@@ -267,7 +267,7 @@ describe("task_update tool", () => {
           assignee: null,
         },
       }
-      const resultStr = await tool.execute(args, TEST_CONTEXT)
+      const resultStr = await tool.execute(args, TEST_CONTEXT).then((__r) => __r.content)
       const result = JSON.parse(resultStr)
 
       //#then
@@ -296,7 +296,7 @@ describe("task_update tool", () => {
         id: taskId,
         activeForm: "implementing feature X",
       }
-      const resultStr = await tool.execute(args, TEST_CONTEXT)
+      const resultStr = await tool.execute(args, TEST_CONTEXT).then((__r) => __r.content)
       const result = JSON.parse(resultStr)
 
       //#then
@@ -323,7 +323,7 @@ describe("task_update tool", () => {
         id: taskId,
         owner: "morpheus",
       }
-      const resultStr = await tool.execute(args, TEST_CONTEXT)
+      const resultStr = await tool.execute(args, TEST_CONTEXT).then((__r) => __r.content)
       const result = JSON.parse(resultStr)
 
       //#then
@@ -337,7 +337,7 @@ describe("task_update tool", () => {
       }
 
       //#when
-      const resultStr = await tool.execute(args, TEST_CONTEXT)
+      const resultStr = await tool.execute(args, TEST_CONTEXT).then((__r) => __r.content)
       const result = JSON.parse(resultStr)
 
       //#then
@@ -352,7 +352,7 @@ describe("task_update tool", () => {
       }
 
       //#when
-      const resultStr = await tool.execute(args, TEST_CONTEXT)
+      const resultStr = await tool.execute(args, TEST_CONTEXT).then((__r) => __r.content)
       const result = JSON.parse(resultStr)
 
       //#then
@@ -380,7 +380,7 @@ describe("task_update tool", () => {
         id: taskId,
         subject: "Updated subject",
       }
-      await tool.execute(args, TEST_CONTEXT)
+      await tool.execute(args, TEST_CONTEXT).then((__r) => __r.content)
 
       //#then
       const savedContent = await Bun.file(taskPath).text()
@@ -411,7 +411,7 @@ describe("task_update tool", () => {
         status: "in_progress" as const,
         owner: "alice",
       }
-      const resultStr = await tool.execute(args, TEST_CONTEXT)
+      const resultStr = await tool.execute(args, TEST_CONTEXT).then((__r) => __r.content)
       const result = JSON.parse(resultStr)
 
       //#then
@@ -441,7 +441,7 @@ describe("task_update tool", () => {
         id: taskId,
         addBlockedBy: ["T-"],
       }
-      const resultStr = await tool.execute(args, TEST_CONTEXT)
+      const resultStr = await tool.execute(args, TEST_CONTEXT).then((__r) => __r.content)
       const result = JSON.parse(resultStr)
 
       //#then
@@ -468,7 +468,7 @@ describe("task_update tool", () => {
         id: taskId,
         addBlocks: ["T-a--b"],
       }
-      const resultStr = await tool.execute(args, TEST_CONTEXT)
+      const resultStr = await tool.execute(args, TEST_CONTEXT).then((__r) => __r.content)
       const result = JSON.parse(resultStr)
 
       //#then

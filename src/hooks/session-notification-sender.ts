@@ -1,5 +1,5 @@
 import { platform } from "node:os"
-import type { PluginInput } from "@opencode-ai/plugin"
+import type { PluginContextSlice } from "../plugin/types"
 import { log } from "../shared/logger"
 import { buildWindowsToastScript, escapeAppleScriptText, escapePowerShellSingleQuotedText } from "./session-notification-formatting"
 import {
@@ -33,7 +33,7 @@ export function getDefaultSoundPath(platform: Platform): string {
 }
 
 export async function sendSessionNotification(
-  ctx: PluginInput,
+  ctx: PluginContextSlice<"$">,
   platform: Platform,
   title: string,
   message: string
@@ -69,7 +69,7 @@ export async function sendSessionNotification(
 }
 
 export async function playSessionNotificationSound(
-  ctx: PluginInput,
+  ctx: PluginContextSlice<"$">,
   platform: Platform,
   soundPath: string
 ): Promise<void> {

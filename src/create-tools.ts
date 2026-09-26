@@ -5,13 +5,15 @@ import type { Managers } from "./create-managers"
 import type { BuiltinSkill } from "./features/builtin-skills"
 import { createAvailableCategories } from "./plugin/available-categories"
 import { createSkillContext } from "./plugin/skill-context"
-import { createToolRegistry } from "./plugin/tool-registry"
-import type { PluginContext, ToolsRecord } from "./plugin/types"
+import { createToolRegistry, registerV2Tools } from "./plugin/tool-registry"
+import type { PluginContext, ToolsRecord, V2ToolsRecord } from "./plugin/types"
 import { resolveTasksConfig } from "./shared/task-system-gating"
 import { setPollTimeoutMs } from "./tools/delegate-task/timing"
 
 type CreateToolsResult = {
   filteredTools: ToolsRecord
+  v2Tools: V2ToolsRecord
+  registerV2Tools: typeof registerV2Tools
   builtinSkills: BuiltinSkill[]
   availableSkills: AvailableSkill[]
   availableCategories: AvailableCategory[]
@@ -39,7 +41,7 @@ export async function createTools(args: {
 
   const availableCategories = createAvailableCategories(pluginConfig)
 
-  const { filteredTools, taskSystemEnabled } = createToolRegistry({
+  const { filteredTools, v2Tools, taskSystemEnabled } = createToolRegistry({
     ctx,
     pluginConfig,
     managers,
@@ -49,6 +51,8 @@ export async function createTools(args: {
 
   return {
     filteredTools,
+    v2Tools,
+    registerV2Tools,
     builtinSkills: skillContext.builtinSkills,
     availableSkills: skillContext.availableSkills,
     availableCategories,

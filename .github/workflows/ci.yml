@@ -36,7 +36,12 @@ jobs:
             echo "PR targets '${{ github.base_ref }}' branch - OK"
           fi
 
-  test:
+  # ---------------------------------------------------------------------------
+  # V2 is the AUTHORITATIVE surface as of the V1->V2 migration cutover.
+  # This job is REQUIRED: `build` depends on it, so a failure here blocks merge.
+  # It runs the full test suite (both V1-retained and V2-native tests).
+  # ---------------------------------------------------------------------------
+  test-v2:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
@@ -67,6 +72,43 @@ jobs:
           find tests script -name '*.test.ts' -type f \
             | grep -v -F -f script/mock-heavy-list.txt \
             | xargs bun test
+
+  # ---------------------------------------------------------------------------
+  # V1 COMPAT — NON-BLOCKING, ONE CYCLE ONLY.
+  #
+  # SANITY: V1 is retained behind src/compat/v1-shim.ts. This job exists purely to
+  # keep that retained surface honest for one cycle. It is deliberately NOT in
+  # any `needs:` list and is `continue-on-error`, so a red V1 job cannot block a
+  # merge to `dev`.
+  #
+  # SUNSET: delete this job in the first cycle after the PR that carries this
+  # cutover has merged to `dev` and completed one full green/red observation on
+  # `dev`. Do not extend the sunset without re-recording the shim-removal
+  # decision in .matrixx/notepads/opencode-v1-to-v2-migration/decisions.md.
+  #
+  # BLOCKED BY (do not read this job as a V2 verdict): the V1->V2 shim CANNOT be
+  # removed yet. `AgentEditor` in @opencode/plugin@2.0.16 exposes only
+  # list/get/default/update/remove — there is no `add` — so V2 cannot introduce
+  # any of the 14 Matrixx agents. V1 stays the only introducing mechanism.
+  # See src/plugin/v2/agent-partition.ts.
+  # ---------------------------------------------------------------------------
+  test-v1-compat:
+    runs-on: ubuntu-latest
+    continue-on-error: true
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: oven-sh/setup-bun@v2
+        with:
+          bun-version: 1.4.0
+
+      - name: Install dependencies
+        run: bun install
+        env:
+          BUN_INSTALL_ALLOW_SCRIPTS: "@ast-grep/napi"
+
+      - name: Run V1-surface compat tests (advisory)
+        run: bun test tests/plugin/dual-entry.test.ts tests/config/hooks-v1-keys.test.ts tests/cli/runtime/compat.test.ts tests/hooks/document-reader-guard-v1-wiring.test.ts tests/shared/permission-compat.test.ts
 
   typecheck:
     runs-on: ubuntu-latest
@@ -104,7 +146,7 @@ jobs:
 
   build:
     runs-on: ubuntu-latest
-    needs: [test, typecheck, lint]
+    needs: [test-v2, typecheck, lint]
     permissions:
       contents: write
     steps:

@@ -1,18 +1,20 @@
-import { type ToolDefinition, tool } from "@opencode-ai/plugin/tool"
 
+import { z } from "zod"
+import type { V2ToolDefinition } from "../../plugin/types"
 import { DEFAULT_MAX_REFERENCES } from "./constants"
 import { withLspClient } from "./lsp-client-wrapper"
 import { formatLocation } from "./lsp-formatters"
 import type { Location } from "./types"
 
-export const lsp_find_references: ToolDefinition = tool({
+export const lsp_find_references: V2ToolDefinition = {
+  name: "lsp_find_references",
   description: "Find ALL usages/references of a symbol across the entire workspace.",
-  args: {
-    filePath: tool.schema.string(),
-    line: tool.schema.number().min(1).describe("1-based"),
-    character: tool.schema.number().min(0).describe("0-based"),
-    includeDeclaration: tool.schema.boolean().optional().describe("Include the declaration itself"),
-  },
+  input: z.object({
+    filePath: z.string(),
+    line: z.number().min(1).describe("1-based"),
+    character: z.number().min(0).describe("0-based"),
+    includeDeclaration: z.boolean().optional().describe("Include the declaration itself"),
+  }),
   execute: async (args, _context) => {
     try {
       const result = await withLspClient(args.filePath, async (client) => {
@@ -23,7 +25,7 @@ export const lsp_find_references: ToolDefinition = tool({
 
       if (!result || result.length === 0) {
         const output = "No references found"
-        return output
+        return { content: await (output) }
       }
 
       const total = result.length
@@ -34,10 +36,10 @@ export const lsp_find_references: ToolDefinition = tool({
         lines.unshift(`Found ${total} references (showing first ${DEFAULT_MAX_REFERENCES}):`)
       }
       const output = lines.join("\n")
-      return output
+      return { content: await (output) }
     } catch (e) {
       const output = `Error: ${e instanceof Error ? e.message : String(e)}`
-      return output
+      return { content: await (output) }
     }
   },
-})
+}

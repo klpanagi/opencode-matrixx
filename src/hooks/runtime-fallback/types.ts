@@ -6,7 +6,7 @@ export interface RuntimeFallbackInterval {
 
 export type RuntimeFallbackTimeout = object | number
 
-export interface RuntimeFallbackPluginInput {
+export interface RuntimeFallbackPluginContext {
   client: {
     session: {
       abort: (input: { path: { id: string } }) => Promise<unknown>
@@ -67,7 +67,7 @@ export interface RuntimeFallbackHook {
 }
 
 export interface HookDeps {
-  ctx: RuntimeFallbackPluginInput
+  ctx: RuntimeFallbackPluginContext
   config: Required<RuntimeFallbackConfig>
   options: RuntimeFallbackOptions | undefined
   pluginConfig: MatrixxConfig | undefined

@@ -44,7 +44,7 @@ describe("createTaskCleanupTool", () => {
     const tool = createTaskCleanupTool(config)
 
     //#when executing without filter
-    const raw = await tool.execute({}, { sessionID: "sess-test" } as never)
+    const raw = await tool.execute({}, { sessionID: "sess-test" } as never).then((__r) => __r.content)
     const result = JSON.parse(raw as string)
 
     //#then deleted 2, remaining 1, pending file still exists
@@ -70,7 +70,7 @@ describe("createTaskCleanupTool", () => {
     const tool = createTaskCleanupTool(config)
 
     //#when olderThan 7d
-    const raw = await tool.execute({ olderThan: "7d" }, { sessionID: "sess-test" } as never)
+    const raw = await tool.execute({ olderThan: "7d" }, { sessionID: "sess-test" } as never).then((__r) => __r.content)
     const result = JSON.parse(raw as string)
 
     //#then only old deleted
@@ -94,7 +94,7 @@ describe("createTaskCleanupTool", () => {
     const tool = createTaskCleanupTool(config)
 
     //#when
-    const raw = await tool.execute({}, { sessionID: "sess-test" } as never)
+    const raw = await tool.execute({}, { sessionID: "sess-test" } as never).then((__r) => __r.content)
     const result = JSON.parse(raw as string)
 
     //#then only completed deleted
@@ -112,7 +112,7 @@ describe("createTaskCleanupTool", () => {
     //#given
     const tool = createTaskCleanupTool(config)
     //#when invalid format
-    const raw = await tool.execute({ olderThan: "bad" }, { sessionID: "sess-test" } as never)
+    const raw = await tool.execute({ olderThan: "bad" }, { sessionID: "sess-test" } as never).then((__r) => __r.content)
     const result = JSON.parse(raw as string)
     //#then error
     expect(result.error).toBe("validation_error")

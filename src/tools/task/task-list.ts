@@ -1,9 +1,9 @@
 import { existsSync, readdirSync } from "node:fs"
 import { join } from "node:path"
-import type { PluginInput } from "@opencode-ai/plugin"
-import { type ToolDefinition, tool } from "@opencode-ai/plugin/tool"
+import { z } from "zod"
 import type { MatrixxConfig } from "../../config/schema"
 import { getTaskDir, readJsonSafe } from "../../features/task-storage/storage"
+import type { V2ToolDefinition } from "../../plugin/types"
 import type { TaskObject, TaskStatus } from "./types"
 import { TaskObjectSchema } from "./types"
 
@@ -16,8 +16,9 @@ interface TaskSummary {
   parentID?: string
 }
 
-export function createTaskList(config: Partial<MatrixxConfig>, ctx?: PluginInput): ToolDefinition {
-  return tool({
+export function createTaskList(config: Partial<MatrixxConfig>, ctx?: { directory?: string }): V2ToolDefinition {
+  return {
+    name: "task_list",
     description: `[TRACKING — local progress records only. Spawns nothing, executes nothing.]
 List all active tasks with summary information.
     
@@ -27,19 +28,19 @@ Returns summary format: id, subject, status, owner, blockedBy (not full descript
 
 Optional \`parentID\` filter: when provided, returns only tasks whose parentID matches
 (i.e. the subtasks of that parent task).`,
-    args: {
-      parentID: tool.schema.string().optional().describe("Filter to subtasks of this parent task ID"),
-    },
-    execute: async (args: Record<string, unknown>, context?: { sessionID: string }): Promise<string> => {
+    input: z.object({
+      parentID: z.string().optional().describe("Filter to subtasks of this parent task ID"),
+    }),
+    execute: async (args: Record<string, unknown>, context?: { sessionID: string }) => {
       const parentID = args.parentID as string | undefined
       const directory =
-        ((context as unknown as Record<string, unknown>)?.directory as string | undefined) ??
-        ((ctx as unknown as Record<string, unknown>)?.directory as string | undefined) ??
+        ((context as unknown as { directory?: string })?.directory as string | undefined) ??
+        ((ctx as unknown as { directory?: string })?.directory as string | undefined) ??
         process.cwd()
       const taskDir = getTaskDir(config, directory)
 
       if (!existsSync(taskDir)) {
-        return JSON.stringify({ tasks: [] })
+        return { content: await (JSON.stringify({ tasks: [] })) }
       }
 
       const files = readdirSync(taskDir)
@@ -47,7 +48,7 @@ Optional \`parentID\` filter: when provided, returns only tasks whose parentID m
         .map((f) => f.replace(".json", ""))
 
       if (files.length === 0) {
-        return JSON.stringify({ tasks: [] })
+        return { content: await (JSON.stringify({ tasks: [] })) }
       }
 
       const allTasks: TaskObject[] = []
@@ -87,10 +88,10 @@ Optional \`parentID\` filter: when provided, returns only tasks whose parentID m
         }
       })
 
-       return JSON.stringify({
+       return { content: await (JSON.stringify({
          tasks: summaries,
          reminder: "1 task = 1 task. Maximize parallel execution by running independent tasks (tasks with empty blockedBy) concurrently."
-       })
+       })) }
     },
-  })
+  }
 }

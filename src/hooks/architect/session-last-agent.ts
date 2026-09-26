@@ -1,8 +1,8 @@
-import type { PluginInput } from "@opencode-ai/plugin"
 import { findNearestMessageWithFields, findNearestMessageWithFieldsFromSDK } from "../../features/hook-message-injector"
+import type { PluginContext } from "../../plugin/types"
 import { getMessageDir, isSqliteBackend } from "../../shared"
 
-type OpencodeClient = PluginInput["client"]
+type OpencodeClient = PluginContext["client"]
 
 export async function getLastAgentFromSession(
   sessionID: string,

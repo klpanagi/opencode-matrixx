@@ -1,4 +1,5 @@
-import type { PluginInput } from "@opencode-ai/plugin"
+import { V1_HOOK_KEYS } from "../../config/schema/hooks-v1-keys"
+import type { PluginContext } from "../../plugin/types"
 import { log } from "../../shared"
 import {
   MAX_WEBFETCH_REDIRECTS,
@@ -55,11 +56,11 @@ function buildRedirectLimitMessage(url?: string): string {
   return `Error: WebFetch failed: exceeded maximum redirects (${MAX_WEBFETCH_REDIRECTS})${suffix}`
 }
 
-export function createWebFetchRedirectGuardHook(_ctx: PluginInput) {
+export function createWebFetchRedirectGuardHook(_ctx: PluginContext) {
   const pendingFailures = new Map<string, PendingRedirectFailure>()
 
   return {
-    "tool.execute.before": async (input: ToolExecuteInput, output: ToolExecuteBeforeOutput) => {
+    [V1_HOOK_KEYS.toolExecuteBefore]: async (input: ToolExecuteInput, output: ToolExecuteBeforeOutput) => {
       if (!isWebFetchTool(input.tool)) return
 
       const url = getWebFetchUrl(output.args)
@@ -90,7 +91,7 @@ export function createWebFetchRedirectGuardHook(_ctx: PluginInput) {
       }
     },
 
-    "tool.execute.after": async (input: ToolExecuteInput, output: ToolExecuteAfterOutput) => {
+    [V1_HOOK_KEYS.toolExecuteAfter]: async (input: ToolExecuteInput, output: ToolExecuteAfterOutput) => {
       if (!isWebFetchTool(input.tool)) return
       if (!isToolErrorOutput(output.output)) return
       if (!isRedirectLoopError(output.output)) return

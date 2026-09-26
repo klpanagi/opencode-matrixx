@@ -1,3 +1,4 @@
+import { V1_HOOK_KEYS } from "../config/schema/hooks-v1-keys"
 import type { CreatedHooks } from "../create-hooks"
 import {
   disableAssembly,
@@ -39,27 +40,30 @@ export function createToolExecuteBeforeHandler(args: {
   // resolves 16 optional-chain property lookups (`hooks.X?.["..."]?.(...)`)
   // which costs ~1.5us per call in V8. With caching, the per-call path
   // reads the bound reference directly.
-  const qualityGateHook = hooks.qualityGate?.["tool.execute.before"]
-  const commentCheckerHook = hooks.commentChecker?.["tool.execute.before"]
-  const directoryAgentsInjectorHook = hooks.directoryAgentsInjector?.["tool.execute.before"]
-  const rulesInjectorHook = hooks.rulesInjector?.["tool.execute.before"]
-  const secretLeakGuardHook = hooks.secretLeakGuard?.["tool.execute.before"]
-  const envFileWriteGuardHook = hooks.envFileWriteGuard?.["tool.execute.before"]
-  const writeExistingFileGuardHook = hooks.writeExistingFileGuard?.["tool.execute.before"]
-  const taskEditGuardHook = hooks.taskEditGuard?.["tool.execute.before"]
-  const knowledgeHubGuardHook = hooks.knowledgeHubGuard?.["tool.execute.before"]
-  const knowledgeHubSearchNudgeHook = (hooks as Record<string, { "tool.execute.before"?: (input: unknown, output: unknown) => Promise<void> }>).knowledgeHubSearchNudge?.["tool.execute.before"]
-  const tasksTodowriteDisablerHook = hooks.tasksTodowriteDisabler?.["tool.execute.before"]
-  const oracleMdOnlyHook = hooks.oracleMdOnly?.["tool.execute.before"]
-  const backgroundTaskBlockerHook = hooks.backgroundTaskBlocker?.["tool.execute.before"]
-  const contextModeEnforcerHook = (hooks as Record<string, { "tool.execute.before"?: (input: unknown, output: unknown) => Promise<void> }>).contextModeEnforcer?.["tool.execute.before"]
-  const nonInteractiveEnvHook = hooks.nonInteractiveEnv?.["tool.execute.before"]
-  const bashFileReadGuardHook = hooks.bashFileReadGuard?.["tool.execute.before"]
-  const mouseNotepadHook = hooks.mouseNotepad?.["tool.execute.before"]
-  const architectHookHook = hooks.architectHook?.["tool.execute.before"]
-const rtkBashRewriterHook = hooks.rtkBashRewriter?.["tool.execute.before"]
-  const webfetchRedirectGuardHook = hooks.webfetchRedirectGuard?.["tool.execute.before"]
-  const evolutionWatcherHook = hooks.evolutionWatcher?.["tool.execute.before"]
+  const qualityGateHook = hooks.qualityGate?.[V1_HOOK_KEYS.toolExecuteBefore]
+  const commentCheckerHook = hooks.commentChecker?.[V1_HOOK_KEYS.toolExecuteBefore]
+  const directoryAgentsInjectorHook = hooks.directoryAgentsInjector?.[V1_HOOK_KEYS.toolExecuteBefore]
+  const rulesInjectorHook = hooks.rulesInjector?.[V1_HOOK_KEYS.toolExecuteBefore]
+  const secretLeakGuardHook = hooks.secretLeakGuard?.[V1_HOOK_KEYS.toolExecuteBefore]
+  const envFileWriteGuardHook = hooks.envFileWriteGuard?.[V1_HOOK_KEYS.toolExecuteBefore]
+  const writeExistingFileGuardHook = hooks.writeExistingFileGuard?.[V1_HOOK_KEYS.toolExecuteBefore]
+  const taskEditGuardHook = hooks.taskEditGuard?.[V1_HOOK_KEYS.toolExecuteBefore]
+  // Wave 6.1: created + V2-wired but never invoked here, so V1 binary reads were
+  // unenforced. It throws, so it belongs in blocking Wave 2. This ADDS a V1 deny.
+  const documentReaderGuardHook = hooks.documentReaderGuard?.[V1_HOOK_KEYS.toolExecuteBefore]
+  const knowledgeHubGuardHook = hooks.knowledgeHubGuard?.[V1_HOOK_KEYS.toolExecuteBefore]
+  const knowledgeHubSearchNudgeHook = (hooks as Record<string, { [V1_HOOK_KEYS.toolExecuteBefore]?: (input: unknown, output: unknown) => Promise<void> }>).knowledgeHubSearchNudge?.[V1_HOOK_KEYS.toolExecuteBefore]
+  const tasksTodowriteDisablerHook = hooks.tasksTodowriteDisabler?.[V1_HOOK_KEYS.toolExecuteBefore]
+  const oracleMdOnlyHook = hooks.oracleMdOnly?.[V1_HOOK_KEYS.toolExecuteBefore]
+  const backgroundTaskBlockerHook = hooks.backgroundTaskBlocker?.[V1_HOOK_KEYS.toolExecuteBefore]
+  const contextModeEnforcerHook = (hooks as Record<string, { [V1_HOOK_KEYS.toolExecuteBefore]?: (input: unknown, output: unknown) => Promise<void> }>).contextModeEnforcer?.[V1_HOOK_KEYS.toolExecuteBefore]
+  const nonInteractiveEnvHook = hooks.nonInteractiveEnv?.[V1_HOOK_KEYS.toolExecuteBefore]
+  const bashFileReadGuardHook = hooks.bashFileReadGuard?.[V1_HOOK_KEYS.toolExecuteBefore]
+  const mouseNotepadHook = hooks.mouseNotepad?.[V1_HOOK_KEYS.toolExecuteBefore]
+  const architectHookHook = hooks.architectHook?.[V1_HOOK_KEYS.toolExecuteBefore]
+const rtkBashRewriterHook = hooks.rtkBashRewriter?.[V1_HOOK_KEYS.toolExecuteBefore]
+  const webfetchRedirectGuardHook = hooks.webfetchRedirectGuard?.[V1_HOOK_KEYS.toolExecuteBefore]
+  const evolutionWatcherHook = hooks.evolutionWatcher?.[V1_HOOK_KEYS.toolExecuteBefore]
 
   return async (input, output): Promise<void> => {
     // webfetch-redirect-guard: MUTATOR + NETWORK (non-blocking, try/catch).
@@ -76,7 +80,7 @@ const rtkBashRewriterHook = hooks.rtkBashRewriter?.["tool.execute.before"]
     // within a wave, hooks run concurrently.
     //
     // Wave 1 (5 hooks): pure READ_ONLY — no mutation, no I/O, no throws.
-    //   Safe to parallelize via Promise.all. Either no-op in tool.execute.before
+    //   Safe to parallelize via Promise.all. Either no-op in the before-hook
     //   (directory*, rulesInjector) or only write to a private in-memory Map
     //   keyed by callID (qualityGate, commentChecker). No shared state with
     //   other hooks in the wave.
@@ -88,7 +92,7 @@ const rtkBashRewriterHook = hooks.rtkBashRewriter?.["tool.execute.before"]
       evolutionWatcherHook?.(input, output),
     ])
 
-    // Wave 2 (5 hooks): fail-fast BLOCKING — each guard throws on a
+    // Wave 2 (6 hooks): fail-fast BLOCKING — each guard throws on a
     //   DIFFERENT condition for a DIFFERENT tool; no two guards fire on
     //   the same input. Use Promise.all (NOT allSettled): the first
     //   rejection short-circuits and propagates immediately. This is
@@ -112,6 +116,7 @@ const rtkBashRewriterHook = hooks.rtkBashRewriter?.["tool.execute.before"]
       oracleMdOnlyHook?.(input, output),
       contextModeEnforcerHook?.(input as never, output as never),
       backgroundTaskBlockerHook?.(input, output),
+      documentReaderGuardHook?.(input, output),
     ])
 
     // Wave 3 (7 hooks): MUTATOR — must run sequentially to preserve

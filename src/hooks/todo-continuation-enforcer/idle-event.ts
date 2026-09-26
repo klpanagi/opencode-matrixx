@@ -1,8 +1,7 @@
-import type { PluginInput } from "@opencode-ai/plugin"
-
 import type { BackgroundManager } from "../../features/background-agent"
 import type { ToolPermission } from "../../features/hook-message-injector"
 import { subagentSessions } from "../../features/session-state"
+import type { PluginContext } from "../../plugin/types"
 import { normalizeSDKResponse } from "../../shared"
 import { getAgentConfigKey } from "../../shared/agent-display-names"
 import { isAwaitingUser } from "../../shared/awaiting-user"
@@ -22,7 +21,7 @@ import { getIncompleteCount } from "./todo"
 import type { MessageInfo, ResolvedMessageInfo, Todo } from "./types"
 
 export async function handleSessionIdle(args: {
-  ctx: PluginInput
+  ctx: PluginContext
   sessionID: string
   sessionStateStore: SessionStateStore
   backgroundManager?: BackgroundManager

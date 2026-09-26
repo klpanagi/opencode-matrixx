@@ -1,19 +1,21 @@
-import { type ToolDefinition, tool } from "@opencode-ai/plugin/tool"
 
+import { z } from "zod"
+import type { V2ToolDefinition } from "../../plugin/types"
 import { DEFAULT_MAX_DIAGNOSTICS } from "./constants"
 import { withLspClient } from "./lsp-client-wrapper"
 import { filterDiagnosticsBySeverity, formatDiagnostic } from "./lsp-formatters"
 import type { Diagnostic } from "./types"
 
-export const lsp_diagnostics: ToolDefinition = tool({
+export const lsp_diagnostics: V2ToolDefinition = {
+  name: "lsp_diagnostics",
   description: "Get errors, warnings, hints from language server BEFORE running build.",
-  args: {
-    filePath: tool.schema.string(),
-    severity: tool.schema
+  input: z.object({
+    filePath: z.string(),
+    severity: z
       .enum(["error", "warning", "information", "hint", "all"])
       .optional()
       .describe("Filter by severity level"),
-  },
+  }),
   execute: async (args, _context) => {
     try {
       const result = await withLspClient(args.filePath, async (client) => {
@@ -33,7 +35,7 @@ export const lsp_diagnostics: ToolDefinition = tool({
 
       if (diagnostics.length === 0) {
         const output = "No diagnostics found"
-        return output
+        return { content: await (output) }
       }
 
       const total = diagnostics.length
@@ -44,10 +46,10 @@ export const lsp_diagnostics: ToolDefinition = tool({
         lines.unshift(`Found ${total} diagnostics (showing first ${DEFAULT_MAX_DIAGNOSTICS}):`)
       }
       const output = lines.join("\n")
-      return output
+      return { content: await (output) }
     } catch (e) {
       const output = `Error: ${e instanceof Error ? e.message : String(e)}`
       throw new Error(output)
     }
   },
-})
+}

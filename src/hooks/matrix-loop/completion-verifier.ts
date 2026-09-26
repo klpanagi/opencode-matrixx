@@ -1,4 +1,6 @@
-import type { PluginInput } from "@opencode-ai/plugin"
+import { resolveSessionOps } from "../../features/session-steering/resolve-session-ops"
+import { resolveSessionSteering } from "../../features/session-steering/resolve-steering"
+import type { PluginContextSlice } from "../../plugin/types"
 import { log } from "../../shared/logger"
 import type { OpenCodeSessionMessage } from "./completion-promise-detector"
 import { DEFAULT_VERIFICATION_AGENT, DEFAULT_VERIFICATION_TIMEOUT_MS, HOOK_NAME } from "./constants"
@@ -9,6 +11,7 @@ interface VerificationResult {
 }
 
 const VERIFICATION_TAG_PATTERN = /<verification>(.*?)<\/verification>/is
+const VERIFICATION_SESSION_TITLE = "Matrix Loop Verification"
 
 function buildVerificationPrompt(options: {
 	prompt: string
@@ -58,7 +61,7 @@ function extractAssistantText(messages: OpenCodeSessionMessage[]): string | unde
 }
 
 export async function verifyCompletion(
-	ctx: PluginInput,
+	ctx: PluginContextSlice<"client">,
 	options: {
 		sessionID: string
 		directory: string
@@ -81,17 +84,21 @@ export async function verifyCompletion(
 	let verifySessionID: string | undefined
 
 	try {
-		const createResult = await ctx.client.session.create({
-			body: { parentID: options.sessionID, title: "Matrix Loop Verification" } as Record<string, unknown>,
-			query: { directory: options.directory },
+		const createResult = await resolveSessionOps(ctx).create({
+			description: VERIFICATION_SESSION_TITLE,
+			title: VERIFICATION_SESSION_TITLE,
+			agent,
+			parentSessionID: options.sessionID,
+			directory: options.directory,
+			subagent: true,
 		})
 
-		if ((createResult as { error?: unknown }).error || !createResult.data?.id) {
+		if (!createResult.ok) {
 			log(`[${HOOK_NAME}] Verification session creation failed`)
 			return { verified: true }
 		}
 
-		verifySessionID = createResult.data.id
+		verifySessionID = createResult.sessionID
 
 		const verificationPrompt = buildVerificationPrompt({
 			prompt: options.prompt,
@@ -99,14 +106,13 @@ export async function verifyCompletion(
 			completionPromise: options.completionPromise,
 		})
 
-		await ctx.client.session.prompt({
-			path: { id: verifySessionID },
-			body: {
-				agent,
-				parts: [{ type: "text", text: verificationPrompt }],
-			},
-			query: { directory: options.directory },
-		} as Parameters<typeof ctx.client.session.prompt>[0])
+		await resolveSessionSteering(ctx).deliver({
+			sessionID: verifySessionID,
+			text: verificationPrompt,
+			directory: options.directory,
+			agent,
+			awaitCompletion: true,
+		})
 
 		const deadline = Date.now() + timeoutMs
 		while (Date.now() < deadline) {

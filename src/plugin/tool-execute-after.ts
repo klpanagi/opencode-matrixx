@@ -1,3 +1,4 @@
+import { V1_HOOK_KEYS } from "../config/schema/hooks-v1-keys"
 import type { CreatedHooks } from "../create-hooks"
 import { consumeToolMetadata } from "../features/tool-metadata-store"
 
@@ -27,35 +28,35 @@ export function createToolExecuteAfterHandler(args: {
       }
     }
 
-    await hooks.toolOutputTruncator?.["tool.execute.after"]?.(input, output)
+    await hooks.toolOutputTruncator?.[V1_HOOK_KEYS.toolExecuteAfter]?.(input, output)
 
     // Run preemptiveCompaction in parallel with remaining hooks — it has a 60s timeout
     // on session.summarize() and should not block the other 16 hooks in the chain.
     // Total time: max(prepaction, remaining) instead of preemption + remaining.
     const remainingHooks = async () => {
-      await hooks.webfetchRedirectGuard?.["tool.execute.after"]?.(input, output)
-      await hooks.evolutionWatcher?.["tool.execute.after"]?.(input, output)
-      await hooks.contextWindowMonitor?.["tool.execute.after"]?.(input, output)
-      await hooks.commentChecker?.["tool.execute.after"]?.(input, output)
-      await hooks.directoryAgentsInjector?.["tool.execute.after"]?.(input, output)
-      await hooks.rulesInjector?.["tool.execute.after"]?.(input, output)
-      await hooks.emptyTaskResponseDetector?.["tool.execute.after"]?.(input, output)
-      await hooks.agentUsageReminder?.["tool.execute.after"]?.(input, output)
-      await hooks.categorySkillReminder?.["tool.execute.after"]?.(input, output)
-      await hooks.interactiveBashSession?.["tool.execute.after"]?.(input, output)
-      await hooks.editErrorRecovery?.["tool.execute.after"]?.(input, output)
-      await hooks.delegateTaskRetry?.["tool.execute.after"]?.(input, output)
-      await hooks.architectHook?.["tool.execute.after"]?.(input, output)
-      await hooks.taskResumeInfo?.["tool.execute.after"]?.(input, output)
-      await hooks.hashlineReadEnhancer?.["tool.execute.after"]?.(input, output)
-      await hooks.jsonErrorRecovery?.["tool.execute.after"]?.(input, output)
-      await hooks.readImageResizer?.["tool.execute.after"]?.(input, output)
-      await hooks.taskNotepad?.["tool.execute.after"]?.(input, output)
+      await hooks.webfetchRedirectGuard?.[V1_HOOK_KEYS.toolExecuteAfter]?.(input, output)
+      await hooks.evolutionWatcher?.[V1_HOOK_KEYS.toolExecuteAfter]?.(input, output)
+      await hooks.contextWindowMonitor?.[V1_HOOK_KEYS.toolExecuteAfter]?.(input, output)
+      await hooks.commentChecker?.[V1_HOOK_KEYS.toolExecuteAfter]?.(input, output)
+      await hooks.directoryAgentsInjector?.[V1_HOOK_KEYS.toolExecuteAfter]?.(input, output)
+      await hooks.rulesInjector?.[V1_HOOK_KEYS.toolExecuteAfter]?.(input, output)
+      await hooks.emptyTaskResponseDetector?.[V1_HOOK_KEYS.toolExecuteAfter]?.(input, output)
+      await hooks.agentUsageReminder?.[V1_HOOK_KEYS.toolExecuteAfter]?.(input, output)
+      await hooks.categorySkillReminder?.[V1_HOOK_KEYS.toolExecuteAfter]?.(input, output)
+      await hooks.interactiveBashSession?.[V1_HOOK_KEYS.toolExecuteAfter]?.(input, output)
+      await hooks.editErrorRecovery?.[V1_HOOK_KEYS.toolExecuteAfter]?.(input, output)
+      await hooks.delegateTaskRetry?.[V1_HOOK_KEYS.toolExecuteAfter]?.(input, output)
+      await hooks.architectHook?.[V1_HOOK_KEYS.toolExecuteAfter]?.(input, output)
+      await hooks.taskResumeInfo?.[V1_HOOK_KEYS.toolExecuteAfter]?.(input, output)
+      await hooks.hashlineReadEnhancer?.[V1_HOOK_KEYS.toolExecuteAfter]?.(input, output)
+      await hooks.jsonErrorRecovery?.[V1_HOOK_KEYS.toolExecuteAfter]?.(input, output)
+      await hooks.readImageResizer?.[V1_HOOK_KEYS.toolExecuteAfter]?.(input, output)
+      await hooks.taskNotepad?.[V1_HOOK_KEYS.toolExecuteAfter]?.(input, output)
     }
 
     await Promise.all([
-      hooks.preemptiveCompaction?.["tool.execute.after"]?.(input, output),
-      hooks.qualityGate?.["tool.execute.after"]?.(input, output),
+      hooks.preemptiveCompaction?.[V1_HOOK_KEYS.toolExecuteAfter]?.(input, output),
+      hooks.qualityGate?.[V1_HOOK_KEYS.toolExecuteAfter]?.(input, output),
       remainingHooks(),
     ])
   }

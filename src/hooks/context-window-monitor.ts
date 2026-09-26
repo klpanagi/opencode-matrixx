@@ -1,7 +1,9 @@
 // Boundary: 70% warn (read-only) → preemptive-compaction 78% (proactive) → context-window-limit-recovery (reactive, error-parse only). Shared: context-limits.ts + token-cache.ts.
-import type { PluginInput } from "@opencode-ai/plugin"
+
 import type { MatrixxConfig } from "../config"
 import type { ExperimentalConfig } from "../config/schema/experimental"
+import { V1_HOOK_KEYS } from "../config/schema/hooks-v1-keys"
+import type { PluginContext } from "../plugin/types"
 import {
   ANTHROPIC_DISPLAY_LIMIT,
   DEFAULT_ANTHROPIC_ACTUAL_LIMIT,
@@ -40,7 +42,7 @@ interface CachedTokenState {
 let misorderWarned = false
 
 export function createContextWindowMonitorHook(
-  _ctx: PluginInput,
+  _ctx: PluginContext,
   pluginConfig?: MatrixxConfig | { experimental?: ExperimentalConfig },
 ) {
   const warningThreshold = resolveWarningThreshold(pluginConfig?.experimental)
@@ -121,7 +123,7 @@ export function createContextWindowMonitorHook(
   }
 
   return {
-    "tool.execute.after": toolExecuteAfter,
+    [V1_HOOK_KEYS.toolExecuteAfter]: toolExecuteAfter,
     event: eventHandler,
   }
 }

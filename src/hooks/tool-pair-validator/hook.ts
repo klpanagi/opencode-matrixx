@@ -1,4 +1,5 @@
 import type { Message, Part } from "@opencode-ai/sdk"
+import { V1_HOOK_KEYS } from "../../config/schema/hooks-v1-keys"
 import { log } from "../../shared/logger"
 
 const TOOL_RESULT_PLACEHOLDER = "Tool output unavailable (context compacted)"
@@ -15,7 +16,7 @@ interface MessageWithParts {
 }
 
 type MessagesTransformHook = {
-  "experimental.chat.messages.transform"?: (
+  [V1_HOOK_KEYS.messagesTransform]?: (
     input: Record<string, never>,
     output: { messages: MessageWithParts[] }
   ) => Promise<void>
@@ -122,7 +123,7 @@ function repairMissingToolResults(messages: MessageWithParts[], assistantIndex: 
 
 export function createToolPairValidatorHook(): MessagesTransformHook {
   return {
-    "experimental.chat.messages.transform": async (_input, output) => {
+    [V1_HOOK_KEYS.messagesTransform]: async (_input, output) => {
       for (let i = 0; i < output.messages.length; i++) {
         if (output.messages[i].info.role !== "assistant") continue
         repairMissingToolResults(output.messages, i)

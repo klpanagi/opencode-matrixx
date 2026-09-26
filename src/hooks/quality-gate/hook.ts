@@ -1,3 +1,5 @@
+import { V1_HOOK_KEYS } from "../../config/schema/hooks-v1-keys"
+
 interface PendingCall {
   filePath: string
   sessionID: string
@@ -71,7 +73,7 @@ export function createQualityGateHook() {
   startCleanup()
 
   return {
-    "tool.execute.before": async (
+    [V1_HOOK_KEYS.toolExecuteBefore]: async (
       input: { tool: string; sessionID: string; callID: string },
       output: { args: Record<string, unknown> },
     ): Promise<void> => {
@@ -93,7 +95,7 @@ export function createQualityGateHook() {
       })
     },
 
-    "tool.execute.after": async (
+    [V1_HOOK_KEYS.toolExecuteAfter]: async (
       input: { tool: string; sessionID: string; callID: string },
       output: { title: string; output: string; metadata: Record<string, unknown> },
     ): Promise<void> => {

@@ -3,28 +3,15 @@
 import { afterEach, beforeEach, describe, expect, spyOn, test } from "bun:test"
 import type { MatrixxConfig } from "../../src/config"
 import * as builtinCommandsModule from "../../src/features/builtin-commands"
-import * as ccCommandLoaderModule from "../../src/features/command-loader"
 
 let loadBuiltinCommandsSpy: ReturnType<typeof spyOn>
-let loadUserCommandsSpy: ReturnType<typeof spyOn>
-let loadProjectCommandsSpy: ReturnType<typeof spyOn>
-let loadOpencodeGlobalCommandsSpy: ReturnType<typeof spyOn>
-let loadOpencodeProjectCommandsSpy: ReturnType<typeof spyOn>
 
 beforeEach(() => {
   loadBuiltinCommandsSpy = spyOn(builtinCommandsModule, "loadBuiltinCommands").mockReturnValue({})
-  loadUserCommandsSpy = spyOn(ccCommandLoaderModule, "loadUserCommands").mockResolvedValue({})
-  loadProjectCommandsSpy = spyOn(ccCommandLoaderModule, "loadProjectCommands").mockResolvedValue({})
-  loadOpencodeGlobalCommandsSpy = spyOn(ccCommandLoaderModule, "loadOpencodeGlobalCommands").mockResolvedValue({})
-  loadOpencodeProjectCommandsSpy = spyOn(ccCommandLoaderModule, "loadOpencodeProjectCommands").mockResolvedValue({})
 })
 
 afterEach(() => {
   loadBuiltinCommandsSpy.mockRestore()
-  loadUserCommandsSpy.mockRestore()
-  loadProjectCommandsSpy.mockRestore()
-  loadOpencodeGlobalCommandsSpy.mockRestore()
-  loadOpencodeProjectCommandsSpy.mockRestore()
 })
 
 const EMPTY_PLUGIN_COMPONENTS = {

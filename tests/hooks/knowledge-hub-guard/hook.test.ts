@@ -244,7 +244,7 @@ describe("hub write approvals", () => {
     const confirm = createKnowledgeHubConfirmTool(makeCtx(tmpdir()));
     const context = { sessionID: "ses-e2e", directory: tmpdir() } as unknown as ToolContext;
     //#when the user-approved path is confirmed
-    const receipt = await confirm.execute({ path: target }, context);
+    const receipt = await confirm.execute({ path: target }, context).then((__r) => __r.content);
     //#then the receipt names the path and the retry succeeds
     expect(receipt).toContain(target);
     expect(receipt).toContain("ses-e2e");

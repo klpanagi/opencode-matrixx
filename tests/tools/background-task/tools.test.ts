@@ -68,7 +68,7 @@ describe("background_output full_session", () => {
     } as unknown as ToolContext
 
     // #when
-    await tool.execute({ task_id: "task-1" }, ctxWithCallId)
+    await tool.execute({ task_id: "task-1" }, ctxWithCallId).then((__r) => __r.content)
 
     // #then
     const restored = consumeToolMetadata("test-session", "call-1")
@@ -95,7 +95,7 @@ describe("background_output full_session", () => {
     } as unknown as ToolContext
 
     // #when
-    await tool.execute({ task_id: "task-1" }, ctxWithCallId)
+    await tool.execute({ task_id: "task-1" }, ctxWithCallId).then((__r) => __r.content)
 
     // #then
     const restored = consumeToolMetadata("test-session", "call-1")
@@ -135,7 +135,7 @@ describe("background_output full_session", () => {
       full_session: true,
       include_thinking: true,
       include_tool_results: true,
-    }, mockContext)
+    }, mockContext).then((__r) => __r.content)
 
     // #then
     expect(output).toContain("thinking text")
@@ -168,7 +168,7 @@ describe("background_output full_session", () => {
       task_id: "task-1",
       full_session: true,
       since_message_id: "m1",
-    }, mockContext)
+    }, mockContext).then((__r) => __r.content)
 
     // #then
     expect(output.includes("hello")).toBe(false)
@@ -195,7 +195,7 @@ describe("background_output full_session", () => {
       task_id: "task-1",
       full_session: true,
       since_message_id: "missing",
-    }, mockContext)
+    }, mockContext).then((__r) => __r.content)
 
     // #then
     expect(output).toContain("since_message_id not found")
@@ -221,7 +221,7 @@ describe("background_output full_session", () => {
       task_id: "task-1",
       full_session: true,
       message_limit: 200,
-    }, mockContext)
+    }, mockContext).then((__r) => __r.content)
 
     // #then
     expect(output).toContain("Returned: 100")
@@ -236,7 +236,7 @@ describe("background_output full_session", () => {
     const tool = createBackgroundOutput(manager, client)
 
     // #when
-    const output = await tool.execute({ task_id: "task-1" }, mockContext)
+    const output = await tool.execute({ task_id: "task-1" }, mockContext).then((__r) => __r.content)
 
     // #then
     expect(output).toContain("# Full Session Output")
@@ -250,7 +250,7 @@ describe("background_output full_session", () => {
     const tool = createBackgroundOutput(manager, client)
 
     // #when
-    const output = await tool.execute({ task_id: "task-1", full_session: false }, mockContext)
+    const output = await tool.execute({ task_id: "task-1", full_session: false }, mockContext).then((__r) => __r.content)
 
     // #then
     expect(output).toContain("# Task Status")
@@ -282,7 +282,7 @@ describe("background_output full_session", () => {
       full_session: true,
       include_thinking: true,
       thinking_max_chars: 100,
-    }, mockContext)
+    }, mockContext).then((__r) => __r.content)
 
     // #then
     expect(output).toContain(`[thinking] ${"x".repeat(100)}...`)
@@ -313,7 +313,7 @@ describe("background_output full_session", () => {
       task_id: "task-1",
       full_session: true,
       include_thinking: true,
-    }, mockContext)
+    }, mockContext).then((__r) => __r.content)
 
     // #then
     expect(output).toContain(`[thinking] ${"y".repeat(2000)}...`)
@@ -339,7 +339,7 @@ describe("background_cancel", () => {
     const tool = createBackgroundCancel(manager, client)
 
     // #when
-    const output = await tool.execute({ taskId: task.id }, mockContext)
+    const output = await tool.execute({ taskId: task.id }, mockContext).then((__r) => __r.content)
 
     // #then
     expect(cancelled).toEqual([task.id])
@@ -365,7 +365,7 @@ describe("background_cancel", () => {
     const tool = createBackgroundCancel(manager, client)
 
     // #when
-    const output = await tool.execute({ all: true }, mockContext)
+    const output = await tool.execute({ all: true }, mockContext).then((__r) => __r.content)
 
     // #then
     expect(cancelled).toEqual([taskA.id, taskB.id])
@@ -389,7 +389,7 @@ describe("background_cancel", () => {
     const tool = createBackgroundCancel(manager, client)
 
     // #when
-    const output = await tool.execute({ all: true }, mockContext)
+    const output = await tool.execute({ all: true }, mockContext).then((__r) => __r.content)
 
     // #then
     expect(output).toContain("| `task-a` | running task | running | `ses-a` |")
@@ -413,7 +413,7 @@ describe("background_cancel", () => {
     const tool = createBackgroundCancel(manager, client)
 
     // #when - cancel all tasks
-    await tool.execute({ all: true }, mockContext)
+    await tool.execute({ all: true }, mockContext).then((__r) => __r.content)
 
     // #then - skipNotification should be true to prevent self-deadlock
     expect(cancelOptions).toHaveLength(1)
@@ -439,7 +439,7 @@ describe("background_cancel", () => {
     const tool = createBackgroundCancel(manager, client)
 
     // #when - cancel single task
-    await tool.execute({ taskId: task.id }, mockContext)
+    await tool.execute({ taskId: task.id }, mockContext).then((__r) => __r.content)
 
     // #then - skipNotification should be true
     expect(cancelOptions).toHaveLength(1)

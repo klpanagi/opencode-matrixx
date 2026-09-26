@@ -1,4 +1,4 @@
-import type { PluginInput } from "@opencode-ai/plugin"
+import type { PluginContext } from "../../plugin/types"
 
 type TodoStatus = "pending" | "in_progress" | "completed" | "cancelled"
 type TodoPriority = "low" | "medium" | "high"
@@ -16,4 +16,4 @@ export interface PlanFile {
   mtimeMs: number
 }
 
-export type TaskNotepadContext = Pick<PluginInput, "client" | "directory">
+export type TaskNotepadContext = Pick<PluginContext, "client" | "directory">

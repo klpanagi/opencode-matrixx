@@ -1,6 +1,7 @@
-import type { PluginInput } from "@opencode-ai/plugin"
+import { V1_HOOK_KEYS } from "../../config/schema/hooks-v1-keys"
 import { clearMissionState, getPlanProgress, readMissionState } from "../../features/mission-state"
 import { subagentSessions } from "../../features/session-state"
+import type { PluginContext } from "../../plugin/types"
 import { getAgentConfigKey } from "../../shared/agent-display-names"
 import { isAbortError } from "../../shared/is-abort-error"
 import { log } from "../../shared/logger"
@@ -12,7 +13,7 @@ import type { ArchitectHookOptions, SessionState } from "./types"
 const CONTINUATION_COOLDOWN_MS = 5000
 
 export function createArchitectEventHandler(input: {
-  ctx: PluginInput
+  ctx: PluginContext
   options?: ArchitectHookOptions
   sessions: Map<string, SessionState>
   getState: (sessionID: string) => SessionState
@@ -169,7 +170,7 @@ export function createArchitectEventHandler(input: {
       return
     }
 
-    if (event.type === "tool.execute.before" || event.type === "tool.execute.after") {
+    if (event.type === V1_HOOK_KEYS.toolExecuteBefore || event.type === V1_HOOK_KEYS.toolExecuteAfter) {
       const sessionID = props?.sessionID as string | undefined
       if (sessionID) {
         const state = sessions.get(sessionID)

@@ -1,4 +1,5 @@
 import type { EvolutionConfig } from "../../config/schema/evolution"
+import { V1_HOOK_KEYS } from "../../config/schema/hooks-v1-keys"
 import type { LlmCall } from "../../features/evolution/compressor/interface"
 import { evaluatePromotedSkills } from "../../features/evolution/evaluator"
 import { runEvolutionPipeline } from "../../features/evolution/pipeline"
@@ -97,7 +98,7 @@ export function createEvolutionCompressorHook(a?: PluginContext | EvolutionConfi
         await runCompression(type, sessionID)
       } catch {}
     },
-    "experimental.session.compacting": async (input: { sessionID: string }, _output: { context: string[] }): Promise<void> => {
+    [V1_HOOK_KEYS.sessionCompacting]: async (input: { sessionID: string }, _output: { context: string[] }): Promise<void> => {
       try {
         const triggerCfg = config?.compressor?.trigger ?? "both"
         if (triggerCfg === "idle") return

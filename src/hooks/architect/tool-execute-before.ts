@@ -1,4 +1,4 @@
-import type { PluginInput } from "@opencode-ai/plugin"
+import type { PluginContextSlice } from "../../plugin/types"
 import { log } from "../../shared/logger"
 import { isCallerOrchestrator } from "../../shared/session-utils"
 import { SYSTEM_DIRECTIVE_PREFIX } from "../../shared/system-directive"
@@ -8,7 +8,7 @@ import { ORCHESTRATOR_DELEGATION_REQUIRED, SINGLE_TASK_DIRECTIVE } from "./syste
 import { isWriteOrEditToolName } from "./write-edit-tool-policy"
 
 export function createToolExecuteBeforeHandler(input: {
-  ctx: PluginInput
+  ctx: PluginContextSlice<"client">
   pendingFilePaths: Map<string, string>
 }): (
   toolInput: { tool: string; sessionID?: string; callID?: string },
@@ -26,7 +26,7 @@ export function createToolExecuteBeforeHandler(input: {
     if (isWriteOrEditToolName(toolInput.tool)) {
       const filePath = (toolOutput.args.filePath ?? toolOutput.args.path ?? toolOutput.args.file) as string | undefined
       if (filePath && !isMatrixPath(filePath)) {
-        // Store filePath for use in tool.execute.after
+        // Store filePath for use in the tool-execute-after handler
         if (toolInput.callID) {
           pendingFilePaths.set(toolInput.callID, filePath)
         }

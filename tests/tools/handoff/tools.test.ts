@@ -108,7 +108,7 @@ describe("handoff tool", () => {
     const context = makeContext("ses_abc123", projectDir)
 
     //#when
-    const result = await execute({ action: "create", ...VALID_CREATE_ARGS }, context)
+    const result = (await execute({ action: "create", ...VALID_CREATE_ARGS }, context)).content
 
     //#then
     const filePath = getHandoffFilePath(projectDir)
@@ -138,7 +138,7 @@ describe("handoff tool", () => {
     const context = makeContext("ses_explicit_id", projectDir)
 
     //#when
-    await tools.handoff.execute({ action: "create", ...VALID_CREATE_ARGS }, context)
+    await tools.handoff.execute({ action: "create", ...VALID_CREATE_ARGS }, context).then((__r) => __r.content)
 
     //#then
     const content = readFileSync(getHandoffFilePath(projectDir), "utf-8")
@@ -156,7 +156,7 @@ describe("handoff tool", () => {
     const context = makeContext("", projectDir)
 
     //#when
-    await tools.handoff.execute({ action: "create", ...VALID_CREATE_ARGS }, context)
+    await tools.handoff.execute({ action: "create", ...VALID_CREATE_ARGS }, context).then((__r) => __r.content)
 
     //#then
     const content = readFileSync(getHandoffFilePath(projectDir), "utf-8")
@@ -174,7 +174,7 @@ describe("handoff tool", () => {
     const context = makeContext("ses_xyz", projectDir)
 
     //#when
-    await tools.handoff.execute({ action: "create", ...VALID_CREATE_ARGS }, context)
+    await tools.handoff.execute({ action: "create", ...VALID_CREATE_ARGS }, context).then((__r) => __r.content)
 
     //#then
     const content = readFileSync(getHandoffFilePath(projectDir), "utf-8")
@@ -194,7 +194,7 @@ describe("handoff tool", () => {
 
     //#when
     const before = Date.now() - 100
-    await tools.handoff.execute({ action: "create", ...VALID_CREATE_ARGS }, context)
+    await tools.handoff.execute({ action: "create", ...VALID_CREATE_ARGS }, context).then((__r) => __r.content)
     const after = Date.now() + 100
 
     //#then
@@ -227,7 +227,7 @@ describe("handoff tool", () => {
     }
 
     //#when
-    await tools.handoff.execute(args, context)
+    await tools.handoff.execute(args, context).then((__r) => __r.content)
 
     //#then
     const content = readFileSync(getHandoffFilePath(projectDir), "utf-8")
@@ -258,7 +258,7 @@ describe("handoff tool", () => {
     const context = makeContext("ses_min", projectDir)
 
     //#when
-    await tools.handoff.execute({ action: "create", ...VALID_CREATE_ARGS }, context)
+    await tools.handoff.execute({ action: "create", ...VALID_CREATE_ARGS }, context).then((__r) => __r.content)
 
     //#then
     const content = readFileSync(getHandoffFilePath(projectDir), "utf-8")
@@ -281,7 +281,7 @@ describe("handoff tool", () => {
     const badArgs: AnyArgs = { action: "create", ...VALID_CREATE_ARGS, topics: [] }
 
     //#when
-    const result = await tools.handoff.execute(badArgs, context)
+    const result = await tools.handoff.execute(badArgs, context).then((__r) => __r.content)
 
     //#then
     expect(result).toMatch(/^Error:/)
@@ -300,7 +300,7 @@ describe("handoff tool", () => {
     const context = makeContext("ses_conflict", realFile)
 
     //#when
-    const result = await tools.handoff.execute({ action: "create", ...VALID_CREATE_ARGS }, context)
+    const result = await tools.handoff.execute({ action: "create", ...VALID_CREATE_ARGS }, context).then((__r) => __r.content)
 
     //#then
     expect(result).toMatch(/^Error:/)
@@ -318,7 +318,7 @@ describe("handoff tool", () => {
     const result = await tools.handoff.execute(
       { action: "create", ...VALID_CREATE_ARGS, topics: ["alpha", "beta", "gamma"] },
       context
-    )
+    ).then((__r) => __r.content)
 
     //#then
     expect(result).toContain(".matrixx/handoff.md")
@@ -367,7 +367,7 @@ describe("handoff tool", () => {
     const context = makeContext("ses_x", projectDir)
 
     //#when
-    const result = await tools.handoff.execute({ action: "read" }, context)
+    const result = await tools.handoff.execute({ action: "read" }, context).then((__r) => __r.content)
 
     //#then - full content returned (YAML frontmatter + markdown body)
     expect(result).toContain("---")
@@ -385,7 +385,7 @@ describe("handoff tool", () => {
     const context = makeContext("ses_x", projectDir)
 
     //#when
-    const result = await tools.handoff.execute({ action: "read" }, context)
+    const result = await tools.handoff.execute({ action: "read" }, context).then((__r) => __r.content)
 
     //#then
     expect(result).toMatch(/^Error:/)
@@ -407,7 +407,7 @@ describe("handoff tool", () => {
     const context = makeContext("ses_x", projectDir)
 
     //#when
-    const result = await tools.handoff.execute({ action: "archive" }, context)
+    const result = await tools.handoff.execute({ action: "archive" }, context).then((__r) => __r.content)
 
     //#then
     expect(existsSync(filePath)).toBe(false)
@@ -426,7 +426,7 @@ describe("handoff tool", () => {
     const context = makeContext("ses_x", projectDir)
 
     //#when
-    const result = await tools.handoff.execute({ action: "archive" }, context)
+    const result = await tools.handoff.execute({ action: "archive" }, context).then((__r) => __r.content)
 
     //#then
     expect(result).toMatch(/^Error:/)
@@ -446,7 +446,7 @@ describe("handoff tool", () => {
     const context = makeContext("ses_x", projectDir)
 
     //#when
-    const result = await tools.handoff.execute({ action: "list" }, context)
+    const result = await tools.handoff.execute({ action: "list" }, context).then((__r) => __r.content)
 
     //#then
     expect(result).toContain("handoff.md")
@@ -462,7 +462,7 @@ describe("handoff tool", () => {
     const context = makeContext("ses_x", projectDir)
 
     //#when
-    const result = await tools.handoff.execute({ action: "list" }, context)
+    const result = await tools.handoff.execute({ action: "list" }, context).then((__r) => __r.content)
 
     //#then
     expect(result).toContain("No handoffs found in .matrixx/")

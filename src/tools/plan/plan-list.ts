@@ -1,30 +1,31 @@
 import { existsSync, readdirSync, statSync } from "node:fs"
 import { join } from "node:path"
-import { type ToolDefinition, tool } from "@opencode-ai/plugin/tool"
+import { z } from "zod"
 import {
   countPlanProgressFromContent,
   type PlanProgress,
   readPlanFile,
 } from "../../features/mission-state"
-import type { PluginContext } from "../../plugin/types"
+import type { PluginContext, V2ToolDefinition } from "../../plugin/types"
 import { PLAN_FILENAME_KEBAB_REGEX, PLANS_DIR } from "./constants"
 import { resolveDirectory } from "./types"
 
 type PlanListProgress = PlanProgress | { unreadable: true }
 
-export function createPlanListTool(ctx?: PluginContext): ToolDefinition {
-  return tool({
+export function createPlanListTool(ctx?: PluginContext): V2ToolDefinition {
+  return {
+    name: "plan_list",
     description: `List plan files under .matrixx/plans/*.md. Filters *.md with kebab-case, sorts by mtime.`,
-    args: {},
+    input: z.object({}),
     execute: async (_args, context) => {
       try {
         const directory = resolveDirectory(
-          (context as Record<string, unknown>)?.directory,
-          (ctx as unknown as Record<string, unknown>)?.directory,
+          (context as { directory?: string })?.directory,
+          (ctx as unknown as { directory?: string })?.directory,
         )
         const plansDir = join(directory, PLANS_DIR)
         if (!existsSync(plansDir)) {
-          return JSON.stringify({ plans: [] })
+          return { content: await (JSON.stringify({ plans: [] })) }
         }
         const entries = readdirSync(plansDir).filter((f) => f.endsWith(".md") && PLAN_FILENAME_KEBAB_REGEX.test(f))
         const plans = entries
@@ -49,11 +50,11 @@ export function createPlanListTool(ctx?: PluginContext): ToolDefinition {
           })
           .filter((p): p is NonNullable<typeof p> => p !== null)
           .sort((a, b) => b.mtimeMs - a.mtimeMs)
-        return JSON.stringify({ plans })
+        return { content: await (JSON.stringify({ plans })) }
       } catch (error) {
         const message = error instanceof Error ? error.message : String(error)
-        return JSON.stringify({ error: "internal_error", message })
+        return { content: await (JSON.stringify({ error: "internal_error", message })) }
       }
     },
-  })
+  }
 }

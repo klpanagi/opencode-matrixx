@@ -22,6 +22,7 @@ const SkillDefinitionSchema = z.object({
   metadata: z.record(z.string(), z.unknown()).optional(),
   "allowed-tools": z.array(z.string()).optional(),
   disable: z.boolean().optional(),
+  subagent: z.boolean().optional(),
 })
 
 const SkillEntrySchema = z.union([z.boolean(), SkillDefinitionSchema])
@@ -35,5 +36,13 @@ export const SkillsConfigSchema = z.union([
   }).catchall(SkillEntrySchema),
 ])
 
+export const V2SkillEntrySchema = SkillDefinitionSchema.extend({
+  name: z.string(),
+})
+
+export const V2SkillsConfigSchema = z.array(V2SkillEntrySchema)
+
 export type SkillsConfig = z.infer<typeof SkillsConfigSchema>
 export type SkillDefinition = z.infer<typeof SkillDefinitionSchema>
+export type V2SkillEntry = z.infer<typeof V2SkillEntrySchema>
+export type V2SkillsConfig = z.infer<typeof V2SkillsConfigSchema>

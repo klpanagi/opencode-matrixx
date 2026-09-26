@@ -1,4 +1,3 @@
-import type { PluginInput } from "@opencode-ai/plugin"
 import type { ContextCollector } from "../../features/context-injector"
 import {
   getMainSessionID,
@@ -6,6 +5,7 @@ import {
   subagentSessions,
 } from "../../features/session-state"
 import { getUltraworkState } from "../../features/ultrawork-state"
+import type { PluginContextSlice } from "../../plugin/types"
 import { log } from "../../shared"
 import {
   isSystemDirective,
@@ -14,7 +14,7 @@ import {
 import { isPlannerAgent } from "./constants"
 import { detectKeywordsWithType, extractPromptText } from "./detector"
 
-export function createKeywordDetectorHook(ctx: PluginInput, _collector?: ContextCollector) {
+export function createKeywordDetectorHook(ctx: PluginContextSlice<"client">, _collector?: ContextCollector) {
   return {
     "chat.message": async (
       input: {

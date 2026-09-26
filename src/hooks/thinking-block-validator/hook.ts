@@ -4,7 +4,7 @@
  * Prevents "Expected thinking/redacted_thinking but found tool_use" errors
  * by validating and fixing message structure BEFORE sending to Anthropic API.
  *
- * This hook runs on the "experimental.chat.messages.transform" hook point,
+ * This hook runs on the experimental messages-transform hook point,
  * which is called before messages are converted to ModelMessage format and
  * sent to the API.
  *
@@ -15,6 +15,7 @@
  */
 
 import type { Message, Part } from "@opencode-ai/sdk"
+import { V1_HOOK_KEYS } from "../../config/schema/hooks-v1-keys"
 
 interface MessageWithParts {
   info: Message
@@ -22,7 +23,7 @@ interface MessageWithParts {
 }
 
 type MessagesTransformHook = {
-  "experimental.chat.messages.transform"?: (
+  [V1_HOOK_KEYS.messagesTransform]?: (
     input: Record<string, never>,
     output: { messages: MessageWithParts[] }
   ) => Promise<void>
@@ -102,7 +103,7 @@ function prependThinkingBlock(message: MessageWithParts, thinkingContent: string
  */
 export function createThinkingBlockValidatorHook(): MessagesTransformHook {
   return {
-    "experimental.chat.messages.transform": async (_input, output) => {
+    [V1_HOOK_KEYS.messagesTransform]: async (_input, output) => {
       const { messages } = output
 
       if (!messages || messages.length === 0) {

@@ -1,7 +1,8 @@
 import { existsSync, mkdtempSync, writeFileSync } from "node:fs"
 import { tmpdir } from "node:os"
 import { join } from "node:path"
-import { type ToolDefinition, tool } from "@opencode-ai/plugin/tool"
+import { z } from "zod"
+import type { V2ToolDefinition, V2ToolsRecord } from "../../plugin/types"
 import { log } from "../../shared"
 
 const PYTHON_SCRIPT = `#!/usr/bin/env python3
@@ -215,62 +216,63 @@ async function runExtraction(args: PdfExtractFiguresArgs): Promise<string> {
   return stdout
 }
 
-export function createPdfExtractFiguresTool(): Record<string, ToolDefinition> {
-  const pdf_extract_figures: ToolDefinition = tool({
+export function createPdfExtractFiguresTool(): V2ToolsRecord {
+  const pdf_extract_figures: V2ToolDefinition = {
+    name: "pdf_extract_figures",
     description:
       "Extract embedded images/figures from PDF files using PyMuPDF. " +
       "Returns structured metadata (page number, dimensions, format, file size, position) " +
       "for every image found. Optionally saves images to a specified output directory. " +
       "Useful for extracting figures, diagrams, charts, and photos from PDF documents. " +
       "Requires Python 3.8+ with PyMuPDF installed (pip install PyMuPDF).",
-    args: {
-      file_path: tool.schema
+    input: z.object({
+      file_path: z
         .string()
         .describe("Absolute path to the PDF file to extract images from"),
-      output_dir: tool.schema
+      output_dir: z
         .string()
         .optional()
         .describe(
           "Directory to save extracted image files. " +
             "If omitted, only JSON metadata is returned (no files saved).",
         ),
-      page: tool.schema
+      page: z
         .number()
         .optional()
         .describe("Only extract images from this specific page number (1-indexed)"),
-      min_width: tool.schema
+      min_width: z
         .number()
         .optional()
         .describe("Minimum image width in pixels (filters out smaller images like icons)"),
-      min_height: tool.schema
+      min_height: z
         .number()
         .optional()
         .describe("Minimum image height in pixels (filters out smaller images like icons)"),
-      min_area: tool.schema
+      min_area: z
         .number()
         .optional()
         .describe(
           "Minimum image area in square pixels (filters out small decorative elements)",
         ),
-      json_only: tool.schema
+      json_only: z
         .boolean()
         .optional()
         .describe(
           "If true, only return JSON metadata without saving image files (overrides output_dir)",
         ),
-    },
+    }),
     async execute(rawArgs) {
       const args = rawArgs as unknown as PdfExtractFiguresArgs
 
       const validationError = validateArgs(args)
       if (validationError) {
         log(`[pdf_extract_figures] Validation failed: ${validationError}`)
-        return validationError
+        return { content: await (validationError) }
       }
 
-      return runExtraction(args)
+      return { content: await (runExtraction(args)) }
     },
-  })
+  }
 
   return { pdf_extract_figures }
 }

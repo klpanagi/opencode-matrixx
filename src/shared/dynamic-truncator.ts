@@ -1,4 +1,4 @@
-import type { PluginInput } from "@opencode-ai/plugin";
+import type { PluginContext } from "../plugin/types";
 import { normalizeSDKResponse } from "./normalize-sdk-response"
 import { getCachedTokenUsage } from "./token-cache"
 
@@ -109,7 +109,7 @@ function truncateToTokenLimit(
 }
 
  async function getContextWindowUsage(
-	ctx: PluginInput,
+	ctx: PluginContext,
 	sessionID: string,
 ): Promise<{
 	usedTokens: number;
@@ -167,7 +167,7 @@ function truncateToTokenLimit(
 }
 
  async function dynamicTruncate(
-	ctx: PluginInput,
+	ctx: PluginContext,
 	sessionID: string,
 	output: string,
 	options: TruncationOptions = {},
@@ -203,7 +203,7 @@ function truncateToTokenLimit(
 	return truncateToTokenLimit(output, maxOutputTokens, preserveHeaderLines);
 }
 
-export function createDynamicTruncator(ctx: PluginInput) {
+export function createDynamicTruncator(ctx: PluginContext) {
 	return {
 		truncate: (
 			sessionID: string,

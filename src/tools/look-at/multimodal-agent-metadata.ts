@@ -1,4 +1,3 @@
-import type { PluginInput } from "@opencode-ai/plugin"
 import { log } from "../../shared"
 import { isRecord } from "../../shared/record-type-guard"
 import { CONSTRUCT_AGENT } from "./constants"
@@ -30,8 +29,12 @@ function toAgentInfo(value: unknown): AgentInfo | null {
   return { name, model, variant }
 }
 
+type MultimodalContext = {
+  client: ReturnType<typeof import("@opencode-ai/sdk").createOpencodeClient>
+}
+
 export async function resolveMultimodalLookerAgentMetadata(
-  ctx: PluginInput
+  ctx: MultimodalContext
 ): Promise<ResolvedAgentMetadata> {
   try {
     const agentsResult = await ctx.client.app?.agents?.()

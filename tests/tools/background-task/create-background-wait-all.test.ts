@@ -31,7 +31,7 @@ describe("background_wait_all", () => {
     const tool = createBackgroundWaitAll(mockManager)
 
     // #when
-    const output = await tool.execute({}, createMockContext())
+    const output = await tool.execute({}, createMockContext()).then((__r) => __r.content)
 
     // #then
     expect(output).toBe("No background tasks were running or pending. Nothing to wait for.")
@@ -52,7 +52,7 @@ describe("background_wait_all", () => {
     const tool = createBackgroundWaitAll(mockManager)
 
     // #when
-    const output = await tool.execute({}, createMockContext())
+    const output = await tool.execute({}, createMockContext()).then((__r) => __r.content)
 
     // #then
     expect(output).toContain("## Completed (2)")
@@ -74,7 +74,7 @@ describe("background_wait_all", () => {
     const tool = createBackgroundWaitAll(mockManager)
 
     // #when
-    const output = await tool.execute({}, createMockContext())
+    const output = await tool.execute({}, createMockContext()).then((__r) => __r.content)
 
     // #then
     expect(output).toContain("## Timed Out (1)")
@@ -98,7 +98,7 @@ describe("background_wait_all", () => {
     const tool = createBackgroundWaitAll(mockManager)
 
     // #when
-    const output = await tool.execute({}, createMockContext())
+    const output = await tool.execute({}, createMockContext()).then((__r) => __r.content)
 
     // #then
     expect(output).toContain("## Completed (1)")
@@ -113,7 +113,7 @@ describe("background_wait_all", () => {
     const tool = createBackgroundWaitAll(mockManager)
 
     // #when
-    await tool.execute({ timeout: 5000 }, createMockContext())
+    await tool.execute({ timeout: 5000 }, createMockContext()).then((__r) => __r.content)
 
     // #then
     expect(mockManager.waitForAllDescendants).toHaveBeenCalledWith("test-session", 5000)
@@ -127,7 +127,7 @@ describe("background_wait_all", () => {
     const tool = createBackgroundWaitAll(mockManager)
 
     // #when - pass a value larger than the cap
-    await tool.execute({ timeout: 999999 }, createMockContext())
+    await tool.execute({ timeout: 999999 }, createMockContext()).then((__r) => __r.content)
 
     // #then - should be capped at 120000
     expect(mockManager.waitForAllDescendants).toHaveBeenCalledWith("test-session", 120000)
@@ -141,7 +141,7 @@ describe("background_wait_all", () => {
     const tool = createBackgroundWaitAll(mockManager)
 
     // #when
-    await tool.execute({}, createMockContext())
+    await tool.execute({}, createMockContext()).then((__r) => __r.content)
 
     // #then
     expect(mockManager.waitForAllDescendants).toHaveBeenCalledWith("test-session", 30000)
@@ -158,7 +158,7 @@ describe("background_wait_all", () => {
     const ctx = createMockContextWithCallID("call-wait-all")
 
     // #when
-    await tool.execute({}, ctx)
+    await tool.execute({}, ctx).then((__r) => __r.content)
 
     // #then
     const restored = consumeToolMetadata("test-session", "call-wait-all")
@@ -177,7 +177,7 @@ describe("background_wait_all", () => {
     const ctx = createMockContextWithCallID("call-wait-all-2")
 
     // #when
-    await tool.execute({ timeout: 60000 }, ctx)
+    await tool.execute({ timeout: 60000 }, ctx).then((__r) => __r.content)
 
     // #then
     const restored = consumeToolMetadata("test-session", "call-wait-all-2")
@@ -194,7 +194,7 @@ describe("background_wait_all", () => {
     const tool = createBackgroundWaitAll(mockManager)
 
     // #when
-    const output = await tool.execute({}, createMockContext())
+    const output = await tool.execute({}, createMockContext()).then((__r) => __r.content)
 
     // #then
     expect(output).toContain("[ERROR]")
@@ -212,7 +212,7 @@ describe("background_wait_all", () => {
     const tool = createBackgroundWaitAll(mockManager)
 
     // #when
-    const output = await tool.execute({}, createMockContext())
+    const output = await tool.execute({}, createMockContext()).then((__r) => __r.content)
 
     // #then
     expect(output).toContain("[ERROR]")

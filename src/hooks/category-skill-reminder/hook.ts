@@ -1,6 +1,7 @@
-import type { PluginInput } from "@opencode-ai/plugin"
 import type { AvailableSkill } from "../../agents/dynamic-agent-prompt-builder"
+import { V1_HOOK_KEYS } from "../../config/schema/hooks-v1-keys"
 import { getSessionAgent } from "../../features/session-state"
+import type { PluginContext } from "../../plugin/types"
 import { log } from "../../shared"
 import { getAgentConfigKey } from "../../shared/agent-display-names"
 import { buildReminderMessage } from "./formatter"
@@ -55,7 +56,7 @@ interface SessionState {
 }
 
 export function createCategorySkillReminderHook(
-  _ctx: PluginInput,
+  _ctx: PluginContext,
   availableSkills: AvailableSkill[] = []
 ) {
   const sessionStates = new Map<string, SessionState>()
@@ -135,7 +136,7 @@ export function createCategorySkillReminderHook(
   }
 
   return {
-    "tool.execute.after": toolExecuteAfter,
+    [V1_HOOK_KEYS.toolExecuteAfter]: toolExecuteAfter,
     event: eventHandler,
   }
 }
