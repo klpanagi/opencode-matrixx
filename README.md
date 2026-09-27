@@ -26,10 +26,10 @@ Instead of one model doing everything, Matrixx coordinates a **team of specialis
 ```
 You: "Add OAuth2 with PKCE to the API"
      ↓
-Morpheus (Claude Opus)     → Plans the implementation
-  ├─ Keymaker (GPT 5.3)    → Builds auth middleware + routes
-  ├─ Oracle (Claude Sonnet 4.6)  → Reviews architecture in parallel
-  └─ Sentinel (Sonnet 4.6) → Audits for security vulnerabilities
+Morpheus (kimi)             → Plans the implementation
+  ├─ Keymaker (minimax-m3) → Builds auth middleware + routes
+  ├─ Oracle (glm-5)        → Reviews architecture in parallel
+  └─ Sentinel (qwen3.6)    → Audits for security vulnerabilities
      ↓
      Done. Tested. Secure.
 ```
@@ -148,6 +148,8 @@ Use `--json` for machine-readable output or `--category <name>` for a specific c
 ---
 ## The Agent Team
 
+> Model IDs below are OpenCode's free tier — copy-paste as-is, or point any agent at `<provider>/<model>` from your own provider. Shipped defaults are a provider-resolved fallback chain (see `src/shared/model-requirements.ts`).
+
 ### 01. Morpheus — *The Orchestrator*
 
 <img src=".github/assets/morpheus.png" width="200" align="right"/>
@@ -156,7 +158,7 @@ Use `--json` for machine-readable output or `--category <name>` for a specific c
 
 **Role:** Master orchestrator and strategic coordinator
 
-**Model:** Claude Opus 4.6 · `temperature: 0.1`
+**Model:** `opencode/kimi-k2.5-free` · `temperature: 0.1`
 
 Plans, delegates, and executes. Fires background agents in parallel, leverages LSP and AST-Grep for surgical refactoring, and never stops until the task list is empty. Morpheus sees the code for what it truly is — and routes every task to the agent best suited for it.
 
@@ -170,7 +172,7 @@ Plans, delegates, and executes. Fires background agents in parallel, leverages L
 
 **Role:** Autonomous deep worker
 
-**Model:** GPT 5.3 Codex · `temperature: 0.1`
+**Model:** `opencode/minimax-m3-free` · `temperature: 0.1`
 
 Explores the codebase, matches your patterns, and delivers end-to-end. Keymaker doesn't need step-by-step instructions — give him a destination and he'll find the path, writing production-quality code along the way.
 
@@ -184,7 +186,7 @@ Explores the codebase, matches your patterns, and delivers end-to-end. Keymaker 
 
 **Role:** DSL engineering specialist
 
-**Model:** Claude Sonnet 4.6 · `temperature: 0.1`
+**Model:** `opencode/kimi-k2.5-free` · `temperature: 0.1`
 
 Grammars, parsers, type systems, code generators, metamodels. 11 composable skills covering textX, ANTLR4, tree-sitter, PyEcore, and more. If it involves defining a language or transforming code, Cipher is your specialist.
 
@@ -198,7 +200,7 @@ Grammars, parsers, type systems, code generators, metamodels. 11 composable skil
 
 **Role:** Read-only security specialist
 
-**Model:** Claude Sonnet 4.6 · `temperature: 0.1`
+**Model:** `opencode/qwen3.6-plus-free` · `temperature: 0.1`
 
 Scans for vulnerabilities but never touches code. OWASP Top 10, SAST, DAST, dependency CVEs, secret detection, crypto audit, infrastructure hardening. 9 composable security skills. Sentinel reports findings with CWE IDs, exact locations, and actionable remediation.
 
@@ -212,7 +214,7 @@ Scans for vulnerabilities but never touches code. OWASP Top 10, SAST, DAST, depe
 
 **Role:** Frontend specialist
 
-**Model:** Claude Sonnet 4.6 · `temperature: 0.1`
+**Model:** `opencode/qwen3.6-plus-free` · `temperature: 0.1`
 
 React/Next.js, Svelte/SvelteKit, accessibility, performance, design tokens, component architecture, build tooling. Sati ships production-grade UI work with browser verification via Playwright. Invoke directly with `@sati/` or `task(subagent_type="sati")` for any non-trivial frontend task.
 
@@ -226,7 +228,7 @@ React/Next.js, Svelte/SvelteKit, accessibility, performance, design tokens, comp
 
 **Role:** Strategic planning, architecture decisions, work plan generation
 
-**Model:** Claude Sonnet 4.6 · `temperature: 0.1`
+**Model:** `opencode/glm-5-free` · `temperature: 0.1`
 
 Creates detailed, structured work plans from complex requests. Decomposes ambiguous requirements into atomic, verifiable steps with clear success criteria. Oracle builds the plan — Morpheus executes it.
 
@@ -240,7 +242,7 @@ Creates detailed, structured work plans from complex requests. Decomposes ambigu
 
 **Role:** High-IQ consultation, hard debugging, architecture design
 
-**Model:** Claude Sonnet 4.6 · `temperature: 0.1`
+**Model:** `opencode/glm-5-free` · `temperature: 0.1`
 
 Read-only consultation for hard debugging (after 2+ failed attempts), multi-system tradeoffs, and architecture decisions requiring deep reasoning. Merovingian analyzes — never implements.
 
@@ -254,7 +256,7 @@ Read-only consultation for hard debugging (after 2+ failed attempts), multi-syst
 
 **Role:** Plan execution orchestrator, session coordination
 
-**Model:** Claude Sonnet 4.6 · `temperature: 0.1`
+**Model:** `opencode/glm-5-free` · `temperature: 0.1`
 
 Executes Oracle's work plans, coordinates session state, manages task dependencies, and ensures every phase completes before moving to the next. The Architect is the bridge between planning and shipping.
 
@@ -268,7 +270,7 @@ Executes Oracle's work plans, coordinates session state, manages task dependenci
 
 **Role:** Pre-planning analysis, ambiguity detection, AI failure prevention
 
-**Model:** Claude Opus 4.6 · `temperature: 0.3`
+**Model:** `opencode/glm-5-free` · `temperature: 0.3`
 
 Analyzes requests to identify hidden intentions, ambiguities, scope creep, and AI failure points. Seraph intervenes before planning starts — preventing costly mistakes downstream.
 
@@ -282,7 +284,7 @@ Analyzes requests to identify hidden intentions, ambiguities, scope creep, and A
 
 **Role:** Plan validation, completeness review, gap detection
 
-**Model:** Claude Sonnet 4.6 · `temperature: 0.1`
+**Model:** `opencode/glm-5-free` · `temperature: 0.1`
 
 Evaluates work plans against rigorous clarity, verifiability, and completeness standards. Catches gaps, ambiguities, and missing context before implementation begins. Smith is the last line of defense.
 
@@ -296,7 +298,7 @@ Evaluates work plans against rigorous clarity, verifiability, and completeness s
 
 **Role:** External documentation, OSS search, library research
 
-**Model:** Claude Haiku 4.5 · `temperature: 0.1`
+**Model:** `opencode/deepseek-v4-flash-free` · `temperature: 0.1`
 
 Specialized codebase understanding agent for multi-repository analysis, searching remote codebases, retrieving official documentation, and finding implementation examples using GitHub CLI, Context7, and Web Search.
 
@@ -310,7 +312,7 @@ Specialized codebase understanding agent for multi-repository analysis, searchin
 
 **Role:** Blazing fast codebase grep, pattern discovery
 
-**Model:** Claude Haiku 4.5 · `temperature: 0.1`
+**Model:** `opencode/deepseek-v4-flash-free` · `temperature: 0.1`
 
 Contextual grep for codebases. Answers "Where is X?", "Which file has Y?", "Find the code that does Z". Fires multiple in parallel for broad searches. Quick, medium, or very thorough — you choose.
 
@@ -324,7 +326,7 @@ Contextual grep for codebases. Answers "Where is X?", "Which file has Y?", "Find
 
 **Role:** PDF, image & diagram analysis
 
-**Model:** Claude Sonnet 4.6 · `temperature: 0.1`
+**Model:** `opencode/qwen3.6-plus-free` · `temperature: 0.1`
 
 Analyzes media files that require interpretation beyond raw text. Extracts specific information or summaries from documents, describes visual content. Use when you need analyzed/extracted data rather than literal file contents.
 
@@ -336,12 +338,14 @@ Analyzes media files that require interpretation beyond raw text. Extracts speci
 
 **Role:** Category-spawned delegated executor
 
-**Model:** Claude Sonnet 4.6 · `temperature: 0.1`
+**Model:** `opencode/qwen3.6-plus-free` · `temperature: 0.1`
 
 Mouse is the worker layer in Matrixx's 3-tier architecture. Spawned automatically when you
 use `task(category="...")`, Mouse executes the task directly without delegating further.
 It cannot spawn sub-agents (`task` tool blocked) — implementation is always done in-house.
-Model-specific prompt variants optimize behavior for Claude, GPT, DeepSeek, Mimo, and Qwen.
+Model-specific prompt variants optimize behavior per model family (reasoning-heavy, fast, and structured-output families).
+
+> **How models get assigned.** The model IDs below are OpenCode's free tier — copy-paste as-is, or point any agent at `<provider>/<model>` from your own provider. Shipped defaults are a provider-resolved fallback chain (see `src/shared/model-requirements.ts`): Matrixx declares a per-agent and per-category chain of candidates and selects the first whose provider is connected. Override via `modelRequirements` or `model_presets`.
 
 ---
 
@@ -377,11 +381,11 @@ Matrixx includes a structured **6-phase development pipeline** that coordinates 
 
 | Role | Agent | Skills | Purpose |
 |------|-------|--------|---------|
-| **Architect** | Oracle (`claude-sonnet-4-6`) | — | System design, architecture decisions, plan (`/.matrixx/plans/*.md`) breakdown |
+| **Architect** | Oracle (`opencode/glm-5-free`) | — | System design, architecture decisions, plan (`/.matrixx/plans/*.md`) breakdown |
 | **Developer** | `category="source"` (Mouse) | `git-master`, `tdd-enforcer` (opt-in `tdd_enforcer.enabled=true`) | Implementation — RED→GREEN→REFACTOR per task |
 | **Tester** | `category="source"` (Mouse) | `tdd-enforcer`, `quality-gate` | Test authoring (`src/**/*.test.ts`, `//#given//#when//#then`), coverage |
 | **Quality Evaluator** | Red-pill category | `quality-gate`, `review-work` | Lint, typecheck, 5-agent code review |
-| **Security Expert** | Sentinel (Claude Opus) | `security-core`, `security-sast`, `security-api`, `security-dependencies` | Vulnerability scanning, CVE checks |
+| **Security Expert** | Sentinel (`opencode/qwen3.6-plus-free`) | `security-core`, `security-sast`, `security-api`, `security-dependencies` | Vulnerability scanning, CVE checks |
 
 ### Pipeline Phases
 

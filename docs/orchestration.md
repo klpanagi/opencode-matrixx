@@ -111,7 +111,7 @@ the issues and resubmits. There is no retry limit.
 
 ## Layer 2: Execution (Architect)
 
-Architect (`src/agents/architect/`, with Claude and GPT prompt variants) is
+Architect (`src/agents/architect/`, with multiple prompt variants) is
 the plan executor. Think conductor, not instrumentalist: it reads the plan,
 decomposes it into waves, delegates each task, verifies each result, and
 reports. It does not write implementation code itself.
@@ -283,7 +283,7 @@ omission.
 | Aspect | Keymaker | Morpheus + `ulw` / `ultrawork` |
 |--------|-----------|-------------------------------|
 | **What** | Dedicated agent for autonomous deep work | Keyword that activates ultrawork mode in any session |
-| **Model** | GPT-5.3 Codex family (medium reasoning) | Your configured default model |
+| **Model** | `opencode/minimax-m3-free` | Your configured default model |
 | **Planning** | Self-plans during execution | Uses Oracle plans when available, explores autonomously otherwise |
 | **Best for** | Deep architectural reasoning, hard debugging, cross-domain synthesis | General complex tasks, "just do it" scenarios |
 
@@ -579,7 +579,7 @@ prompt shape while the worker performs to the task.
 {
   "categories": {
     "unity-game-dev": {
-      "model": "openai/gpt-5.2",
+      "model": "opencode/kimi-k2.5-free",
       "temperature": 0.3,
       "prompt_append": "You are a Unity game development expert..."
     }

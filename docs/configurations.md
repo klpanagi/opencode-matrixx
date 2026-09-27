@@ -24,14 +24,14 @@ It asks about your providers (Claude, OpenAI, Gemini, etc.) and generates optima
   
   // Override specific agent models
   "agents": {
-    "oracle": { "model": "openai/gpt-5.2" },                // Use GPT for debugging
-    "operator": { "model": "anthropic/claude-haiku-4-5" },   // Cheap & fast for research
-    "trinity": { "model": "anthropic/claude-haiku-4-5" }     // Cheap & fast for grep
+    "oracle": { "model": "opencode/kimi-k2.5-free" },                // Use a strong reasoning model for debugging
+    "operator": { "model": "zai-coding-plan/glm-4.7" },             // Cheap & fast for research
+    "trinity": { "model": "opencode/deepseek-v4-flash-free" }       // Cheap & fast for grep
   },
   
   // Override category models (used by task)
   "categories": {
-    "bullet-time": { "model": "anthropic/claude-haiku-4-5" } // Fast/cheap for trivial tasks
+    "bullet-time": { "model": "opencode/ling-3.0-flash-free" } // Fast/cheap for trivial tasks
   }
 }
 ```
@@ -75,10 +75,10 @@ When both `matrixx.jsonc` and `matrixx.json` files exist, `.jsonc` takes priorit
   /* Agent overrides - customize models for specific tasks */
   "agents": {
     "oracle": {
-      "model": "openai/gpt-5.2"  // GPT for strategic reasoning
+      "model": "opencode/kimi-k2.5-free"  // Strong reasoning for strategic planning
     },
     "trinity": {
-      "model": "anthropic/claude-haiku-4-5"  // Fast for exploration
+      "model": "opencode/deepseek-v4-flash-free"  // Fast for exploration
     },
   },
 }
@@ -156,7 +156,7 @@ Override built-in agent settings:
 {
   "agents": {
     "trinity": {
-      "model": "anthropic/claude-haiku-4-5",
+      "model": "opencode/deepseek-v4-flash-free",
       "temperature": 0.5
     },
     "construct": {
@@ -179,7 +179,7 @@ Each agent supports: `model`, `temperature`, `top_p`, `prompt`, `prompt_append`,
 | `textVerbosity`      | string  | Text verbosity level. Values: `low`, `medium`, `high`.                                        |
 | `providerOptions`    | object  | Provider-specific options passed directly to OpenCode SDK.                                      |
 | `fallbackChain`      | array   | Fallback provider/model chain: `[{ providers: string[], model: string, variant?: string }]`      |
-#### Thinking Options (Anthropic)
+#### Thinking Options
 
 ```json
 {
@@ -358,7 +358,7 @@ Define custom skills directly in your config:
     "data-analyst": {
       "description": "Specialized for data analysis tasks",
       "template": "You are a data analyst. Focus on statistical analysis, visualization, and data interpretation.",
-      "model": "openai/gpt-5.2",
+      "model": "opencode/qwen3.6-plus-free",
       "allowed-tools": ["read", "bash", "lsp_diagnostics"]
     }
   }
@@ -599,7 +599,7 @@ The `git-master` skill (`src/features/builtin-skills/skills/git-master.ts`) driv
 
 When enabled (default), Morpheus provides a powerful orchestrator with optional specialized agents. See [Orchestration](orchestration.md) for the full planning/execution model.
 
-- **Morpheus**: Primary orchestrator agent (Claude Opus 4.6)
+- **Morpheus**: Primary orchestrator agent (strong reasoning model)
 - **OpenCode-Builder**: OpenCode's default build agent, renamed due to SDK limitations (disabled by default)
 - **Oracle (Planner)**: OpenCode's default plan agent with work-planner methodology (enabled by default)
 - **Seraph (Plan Consultant)**: Pre-planning analysis agent that identifies hidden requirements and AI failure points
@@ -645,17 +645,17 @@ You can also customize Morpheus agents like other agents:
 {
   "agents": {
     "Morpheus": {
-      "model": "anthropic/claude-opus-4-6",
+      "model": "opencode/kimi-k2.5-free",
       "temperature": 0.1
     },
     "OpenCode-Builder": {
-      "model": "anthropic/claude-opus-4"
+      "model": "opencode/qwen3.6-plus-free"
     },
     "Oracle (Planner)": {
-      "model": "openai/gpt-5.2"
+      "model": "opencode/kimi-k2.5-free"
     },
     "Seraph (Plan Consultant)": {
-      "model": "anthropic/claude-sonnet-4-6"
+      "model": "opencode/glm-5-free"
     }
   }
 }
@@ -689,8 +689,8 @@ Configure concurrency limits for background agent tasks. This controls how many 
       "google": 10
     },
     "modelConcurrency": {
-      "anthropic/claude-opus-4-6": 2,
-      "anthropic/claude-haiku-4-5": 10
+      "opencode/kimi-k2.5-free": 2,
+      "opencode/ling-3.0-flash-free": 10
     },
     "wakeScheduler": {
       "enabled": true,
@@ -712,7 +712,7 @@ Configure concurrency limits for background agent tasks. This controls how many 
 | `messageStalenessTimeoutMs` | `120000` | Timeout for message staleness detection (minimum: 60000)                                                         |
 | `maxToolCalls`        | `75`    | Maximum tool calls per background task (minimum: 10)                                                                    |
 | `providerConcurrency` | -       | Per-provider concurrency limits. Keys are provider names (e.g., `anthropic`, `openai`, `google`)                        |
-| `modelConcurrency`    | -       | Per-model concurrency limits. Keys are full model names (e.g., `anthropic/claude-opus-4-6`). Overrides provider limits. |
+| `modelConcurrency`    | -       | Per-model concurrency limits. Keys are full model names (e.g., `opencode/kimi-k2.5-free`). Overrides provider limits. |
 | `circuitBreaker.enabled` | `false` | Enable circuit breaker for failing tasks                                                                            |
 | `circuitBreaker.maxToolCalls` | `50` | Max tool calls before circuit breaker trips                                                                       |
 | `circuitBreaker.consecutiveThreshold` | `3` | Consecutive failures before circuit breaker opens                                                              |
@@ -730,8 +730,8 @@ Configure concurrency limits for background agent tasks. This controls how many 
 **Priority Order**: `modelConcurrency` > `providerConcurrency` > `defaultConcurrency`
 
 **Use Cases**:
-- Limit expensive models (e.g., Opus) to prevent cost spikes
-- Allow more concurrent tasks for fast/cheap models (e.g., Gemini Flash)
+- Limit expensive models to prevent cost spikes
+- Allow more concurrent tasks for fast/cheap models
 - Respect provider rate limits by setting provider-level caps
 
 ## Categories
@@ -744,14 +744,14 @@ All 8 categories come with optimal model defaults, but **you must configure them
 
 | Category             | Built-in Default Model             | Description                                                          |
 | -------------------- | ---------------------------------- | -------------------------------------------------------------------- |
-| `construct`          | `anthropic/claude-sonnet-4-6`       | Frontend, UI/UX, design, styling, animation                          |
-| `source`             | `anthropic/claude-opus-4-6`        | Deep logical reasoning, complex architecture decisions               |
-| `deep-jack`          | `anthropic/claude-sonnet-4-6`       | Goal-oriented autonomous problem-solving, thorough research          |
-| `matrix-bend`        | `anthropic/claude-sonnet-4-6`       | Complex problem-solving with creative approaches                     |
-| `bullet-time`        | `anthropic/claude-haiku-4-5`       | Trivial tasks - single file changes, typo fixes, simple modifications|
-| `blue-pill`          | `anthropic/claude-sonnet-4-6`      | Tasks that don't fit other categories, low effort required           |
-| `red-pill`           | `anthropic/claude-opus-4-6` (max)  | Tasks that don't fit other categories, high effort required          |
-| `broadcast`          | `anthropic/claude-sonnet-4-6`       | Documentation, prose, technical writing                              |
+| `construct`          | `opencode/qwen3.6-plus-free`       | Frontend, UI/UX, design, styling, animation                          |
+| `source`             | `opencode/kimi-k2.5-free`          | Deep logical reasoning, complex architecture decisions               |
+| `deep-jack`          | `opencode/kimi-k2.5-free`          | Goal-oriented autonomous problem-solving, thorough research          |
+| `matrix-bend`        | `opencode/qwen3.6-plus-free`       | Complex problem-solving with creative approaches                     |
+| `bullet-time`        | `opencode/ling-3.0-flash-free`     | Trivial tasks - single file changes, typo fixes, simple modifications|
+| `blue-pill`          | `opencode/qwen3.6-plus-free`       | Tasks that don't fit other categories, low effort required           |
+| `red-pill`           | `opencode/kimi-k2.5-free` (max)    | Tasks that don't fit other categories, high effort required          |
+| `broadcast`          | `opencode/nemotron-3-super-free`   | Documentation, prose, technical writing                              |
 
 ### ⚠️ Critical: Model Resolution Priority
 
@@ -768,15 +768,15 @@ All 8 categories come with optimal model defaults, but **you must configure them
 
 ```json
 // opencode.json
-{ "model": "anthropic/claude-sonnet-4-6" }
+{ "model": "opencode/qwen3.6-plus-free" }
 
 // matrixx.json (empty categories section)
 {}
 
-// Result: ALL categories use claude-sonnet-4-6 (wasteful!)
-// - bullet-time tasks use Sonnet instead of Haiku (expensive)
-// - source tasks use Sonnet instead of Opus (inferior reasoning)
-// - construct tasks use Sonnet instead of dedicated model (suboptimal)
+// Result: ALL categories use qwen3.6-plus-free (wasteful!)
+// - bullet-time tasks use a heavy model instead of a trivial one (expensive)
+// - source tasks lose their dedicated reasoning model (inferior reasoning)
+// - construct tasks use one model for everything (suboptimal)
 ```
 
 ### Recommended Configuration
@@ -787,30 +787,30 @@ All 8 categories come with optimal model defaults, but **you must configure them
 {
   "categories": {
     "source": { 
-      "model": "anthropic/claude-opus-4-6"     // Deep reasoning & architecture
+      "model": "opencode/kimi-k2.5-free"      // Deep reasoning & architecture
     },
     "deep-jack": { 
-      "model": "anthropic/claude-sonnet-4-6",  // Goal-oriented problem solving
+      "model": "opencode/kimi-k2.5-free",     // Goal-oriented problem solving
       "variant": "medium"
     },
     "matrix-bend": { 
-      "model": "anthropic/claude-sonnet-4-6"   // Creative problem solving
+      "model": "opencode/qwen3.6-plus-free"   // Creative problem solving
     },
     "construct": { 
-      "model": "anthropic/claude-sonnet-4-6"   // Frontend, UI/UX, design
+      "model": "opencode/qwen3.6-plus-free"   // Frontend, UI/UX, design
     },
     "red-pill": { 
-      "model": "anthropic/claude-opus-4-6",    // High effort, complex
+      "model": "opencode/kimi-k2.5-free",     // High effort, complex
       "variant": "max"
     },
     "blue-pill": { 
-      "model": "anthropic/claude-sonnet-4-6"   // Low effort, general
+      "model": "opencode/qwen3.6-plus-free"   // Low effort, general
     },
     "broadcast": { 
-      "model": "anthropic/claude-sonnet-4-6"   // Documentation, prose
+      "model": "opencode/nemotron-3-super-free" // Documentation, prose
     },
     "bullet-time": { 
-      "model": "anthropic/claude-haiku-4-5"    // Fast + cheap for trivial tasks
+      "model": "opencode/ling-3.0-flash-free"   // Fast + cheap for trivial tasks
     }
   }
 }
@@ -837,12 +837,12 @@ Add your own categories or override built-in ones:
 {
   "categories": {
     "data-science": {
-      "model": "anthropic/claude-sonnet-4-6",
+      "model": "zai-coding-plan/glm-4.7",
       "temperature": 0.2,
       "prompt_append": "Focus on data analysis, ML pipelines, and statistical methods."
     },
     "construct": {
-      "model": "anthropic/claude-sonnet-4-6",
+      "model": "opencode/qwen3.6-plus-free",
       "prompt_append": "Use shadcn/ui components and Tailwind CSS."
     }
   }
@@ -859,11 +859,11 @@ Each category can define a `temperature` that overrides the agent's default temp
 {
   "categories": {
     "source": {
-      "model": "anthropic/claude-opus-4-6",
+      "model": "opencode/kimi-k2.5-free",
       "temperature": 0.1
     },
     "broadcast": {
-      "model": "anthropic/claude-sonnet-4-6",
+      "model": "opencode/nemotron-3-super-free",
       "temperature": 0.5
     }
   }
@@ -873,9 +873,9 @@ Each category can define a `temperature` that overrides the agent's default temp
 | Option             | Type    | Default | Description                                                                                         |
 | ------------------ | ------- | ------- | --------------------------------------------------------------------------------------------------- |
 | `description`       | string  | -       | Human-readable description of the category's purpose. Shown in task prompt.                     |
-| `is_unstable_agent`| boolean | `false`  | Mark agent as unstable - forces background mode for monitoring. Auto-enabled for gemini models. |
+| `is_unstable_agent`| boolean | `false`  | Mark agent as unstable - forces background mode for monitoring. Auto-enabled for known-flaky model families. |
 | `fallback_models`   | string\|string[] | - | Fallback model(s) for this category. Overrides provider chain.                            |
-| `complexity_downgrades` | object | -   | Map complexity level to model downgrade: `{ "2": "anthropic/claude-haiku-4-5" }`                              |
+| `complexity_downgrades` | object | -   | Map complexity level to model downgrade: `{ "2": "opencode/ling-3.0-flash-free" }`                              |
 | `disable`           | boolean | `false` | When `true`, disables this category.                                                        |
 ## Model Resolution System
 
@@ -913,9 +913,9 @@ At runtime, Matrixx uses a 3-step resolution process to determine which model to
 │   │ anthropic → github-copilot → opencode → antigravity     │   │
 │   │     │            │              │            │          │   │
 │   │     ▼            ▼              ▼            ▼          │   │
-│   │ Try: anthropic/claude-opus-4-6                          │   │
-│   │ Try: github-copilot/claude-opus-4-6                     │   │
-│   │ Try: opencode/claude-opus-4-6                           │   │
+│   │ Try: anthropic/kimi-k2.5-free                            │   │
+│   │ Try: github-copilot/kimi-k2.5-free                       │   │
+│   │ Try: opencode/kimi-k2.5-free                             │   │
 │   │ ...                                                     │   │
 │   │                                                         │   │
 │   │ Found in available models? → Return matched model       │   │
@@ -933,36 +933,36 @@ At runtime, Matrixx uses a 3-step resolution process to determine which model to
 
 ### Agent Provider Chains
 
-Each agent has a defined provider priority chain. The system tries providers in order until it finds an available model:
+Each agent and category declares an ordered fallback chain of `<provider>/<model>` candidates; Matrixx selects the first whose provider is connected. Configure via `modelRequirements` (see `src/shared/model-requirements.ts`).
 
-| Agent | Model (no prefix) | Provider Priority Chain |
+| Agent | Model (no prefix) | Fallback chain |
 |-------|-------------------|-------------------------|
-| **Morpheus** | `claude-opus-4-6` | anthropic → opencode (kimi-k2.5-free) → zai-coding-plan (glm-5) → opencode (big-pickle) |
-| **Keymaker** | `gpt-5.3-codex` | openai/venice → github-copilot (gpt-5.2) |
-| **Merovingian** | `claude-sonnet-4-6` | anthropic → openai (gpt-5.2) → google (gemini-3.1-pro) |
-| **Operator** | `glm-4.7` | zai-coding-plan → opencode (glm-4.7-free) → opencode (minimax-m2.5-free) → anthropic (claude-sonnet-4-6) |
-| **Trinity** | `grok-code-fast-1` | github-copilot → opencode (minimax-m2.5-free) → anthropic (claude-haiku-4-5) → opencode (gpt-5-nano) |
-| **Construct** | `claude-sonnet-4-6` | anthropic → openai (gpt-5.2) → opencode (kimi-k2.5-free) → zai-coding-plan (glm-4.6v) |
-| **Oracle (Planner)** | `claude-sonnet-4-6` | anthropic → openai (gpt-5.2) → opencode (kimi-k2.5-free) → google (gemini-3.1-pro) |
-| **Seraph (Plan Consultant)** | `claude-opus-4-6` | anthropic → opencode (kimi-k2.5-free) → openai (gpt-5.2) → google (gemini-3.1-pro) |
-| **Smith (Plan Reviewer)** | `gpt-5.2` | openai → anthropic (claude-opus-4-6) → google (gemini-3.1-pro) |
-| **Architect** | `claude-sonnet-4-6` | anthropic → openai (gpt-5.2) → opencode (kimi-k2.5-free) |
-| **Cipher** | `claude-sonnet-4-6` | anthropic → google-vertex-anthropic → openai (gpt-5.2) → opencode (kimi-k2.5-free) → google (gemini-3.1-pro) |
+| **Morpheus** | `kimi-k2.5-free` | zai-coding-plan (glm-4.7) → opencode (kimi-k2.5-free) → opencode (glm-5-free) |
+| **Keymaker** | `minimax-m3-free` | opencode (minimax-m3-free) → zai-coding-plan (glm-4.7) → opencode (kimi-k2.5-free) |
+| **Merovingian** | `glm-5-free` | zai-coding-plan (glm-4.7) → opencode (glm-5-free) → opencode (qwen3.6-plus-free) |
+| **Operator** | `deepseek-v4-flash-free` | opencode (deepseek-v4-flash-free) → opencode (ling-3.0-flash-free) |
+| **Trinity** | `deepseek-v4-flash-free` | opencode (deepseek-v4-flash-free) → opencode (ling-3.0-flash-free) |
+| **Construct** | `qwen3.6-plus-free` | zai-coding-plan (glm-4.7) → opencode (qwen3.6-plus-free) → opencode (kimi-k2.5-free) |
+| **Oracle (Planner)** | `kimi-k2.5-free` | zai-coding-plan (glm-4.7) → opencode (kimi-k2.5-free) → opencode (glm-5-free) |
+| **Seraph (Plan Consultant)** | `kimi-k2.5-free` | opencode (kimi-k2.5-free) → zai-coding-plan (glm-4.7) → opencode (glm-5-free) |
+| **Smith (Plan Reviewer)** | `glm-5-free` | opencode (glm-5-free) → zai-coding-plan (glm-4.7) → opencode (qwen3.6-plus-free) |
+| **Architect** | `kimi-k2.5-free` | zai-coding-plan (glm-4.7) → opencode (kimi-k2.5-free) → opencode (glm-5-free) |
+| **Cipher** | `qwen3.6-plus-free` | opencode (qwen3.6-plus-free) → opencode (kimi-k2.5-free) → zai-coding-plan (glm-4.7) |
 
 ### Category Provider Chains
 
 Categories follow the same resolution logic:
 
-| Category | Model (no prefix) | Provider Priority Chain |
+| Category | Model (no prefix) | Fallback chain |
 |----------|-------------------|-------------------------|
-| **construct** | `claude-sonnet-4-6` | anthropic → google (gemini-3.1-pro) → openai (gpt-5.2) |
-| **source** | `claude-opus-4-6` | anthropic → openai (gpt-5.3-codex) → google (gemini-3.1-pro) |
-| **deep-jack** | `claude-sonnet-4-6` | anthropic → openai (gpt-5.3-codex) → google (gemini-3.1-pro) |
-| **matrix-bend** | `claude-sonnet-4-6` | anthropic → google (gemini-3.1-pro) → openai (gpt-5.2) |
-| **bullet-time** | `claude-haiku-4-5` | anthropic → opencode (gpt-5-nano) → opencode (minimax-m2.5-free) |
-| **blue-pill** | `claude-sonnet-4-6` | anthropic → openai (gpt-5.3-codex) → google (gemini-3.1-pro) |
-| **red-pill** | `claude-opus-4-6` | anthropic → openai (gpt-5.2) → google (gemini-3.1-pro) |
-| **broadcast** | `claude-sonnet-4-6` | anthropic → opencode (kimi-k2.5-free) → google (gemini-3.1-pro) → openai (gpt-5.2) |
+| **construct** | `qwen3.6-plus-free` | zai-coding-plan → opencode (qwen3.6-plus-free) → opencode (kimi-k2.5-free) |
+| **source** | `kimi-k2.5-free` | zai-coding-plan → opencode (kimi-k2.5-free) → opencode (deepseek-v4-flash-free) |
+| **deep-jack** | `kimi-k2.5-free` | zai-coding-plan → opencode (kimi-k2.5-free) → opencode (qwen3.6-plus-free) |
+| **matrix-bend** | `qwen3.6-plus-free` | zai-coding-plan → opencode (qwen3.6-plus-free) → opencode (glm-5-free) |
+| **bullet-time** | `ling-3.0-flash-free` | zai-coding-plan → opencode (ling-3.0-flash-free) → opencode (deepseek-v4-flash-free) |
+| **blue-pill** | `qwen3.6-plus-free` | zai-coding-plan → opencode (qwen3.6-plus-free) → opencode (deepseek-v4-flash-free) |
+| **red-pill** | `kimi-k2.5-free` | zai-coding-plan → opencode (kimi-k2.5-free) → opencode (glm-5-free) |
+| **broadcast** | `nemotron-3-super-free` | zai-coding-plan → opencode (nemotron-3-super-free) → opencode (kimi-k2.5-free) |
 
 ### Checking Your Configuration
 
@@ -986,15 +986,15 @@ Override any agent or category model in `matrixx.json`:
 {
   "agents": {
     "Morpheus": {
-      "model": "anthropic/claude-sonnet-4-6"
+      "model": "opencode/kimi-k2.5-free"
     },
     "oracle": {
-      "model": "openai/o3"
+      "model": "zai-coding-plan/glm-4.7"
     }
   },
   "categories": {
     "source": {
-      "model": "anthropic/claude-opus-4-6"
+      "model": "opencode/kimi-k2.5-free"
     }
   }
 }
@@ -1012,17 +1012,17 @@ Model presets are **named static bundles of explicit `"provider/model"` strings*
 {
   "model_presets": {
     "default": {
-      "default_model": "anthropic/claude-sonnet-4-6",
-      "agents": { "trinity": { "model": "anthropic/claude-haiku-4-5" } },
-      "categories": { "source": { "model": "anthropic/claude-sonnet-4-6" } }
+      "default_model": "opencode/qwen3.6-plus-free",
+      "agents": { "trinity": { "model": "opencode/deepseek-v4-flash-free" } },
+      "categories": { "source": { "model": "opencode/kimi-k2.5-free" } }
     },
     "flagship": {
-      "default_model": "anthropic/claude-opus-4-6",
+      "default_model": "opencode/kimi-k2.5-free",
       "agents": {
-        "morpheus": { "model": "anthropic/claude-opus-4-6" },
-        "trinity": { "model": "anthropic/claude-sonnet-4-6" }
+        "morpheus": { "model": "opencode/kimi-k2.5-free" },
+        "trinity": { "model": "zai-coding-plan/glm-4.7" }
       },
-      "categories": { "source": { "model": "anthropic/claude-opus-4-6", "variant": "max" } }
+      "categories": { "source": { "model": "opencode/kimi-k2.5-free", "variant": "max" } }
     }
   },
   "active_preset": "default"
@@ -1213,7 +1213,7 @@ Two small top-level keys (`src/config/schema/matrixx-config.ts`):
 
 ```jsonc
 {
-  "global_model": "anthropic/claude-sonnet-4-6",  // fallback when an agent/category entry has no explicit model
+  "global_model": "opencode/qwen3.6-plus-free",  // fallback when an agent/category entry has no explicit model
   "auto_update": true                             // default true — automatic update behavior in session hooks
 }
 ```
@@ -1422,7 +1422,11 @@ Multi-model debate — 3-5 parallel voters from different providers, synthesis v
     "default_voters": 3,        // 2–5
     "default_rounds": 2,        // 1–3
     "timeout_ms": 60000,        // 10000–300000
-    "providers": [{ "providerID": "anthropic", "modelID": "claude-sonnet-4-6" }]
+    "providers": [
+      { "providerID": "opencode", "modelID": "kimi-k2.5-free" },
+      { "providerID": "zai-coding-plan", "modelID": "glm-4.7" },
+      { "providerID": "opencode", "modelID": "qwen3.6-plus-free" }
+    ]
   }
 }
 ```
@@ -1611,7 +1615,7 @@ Self-referential development loop — agent iterates until completion criteria m
 
 ## Babysitting
 
-Unstable-agent monitoring — forces background mode for flaky providers (auto-enabled for Gemini).
+Unstable-agent monitoring — forces background mode for flaky providers (auto-enabled for known-flaky model families).
 
 ```jsonc
 {
@@ -1683,9 +1687,9 @@ Smaller or legacy top-level keys (`src/config/schema/matrixx-config.ts`):
     "hubs": [{ "name": "kb", "path": "<your-knowledge-dir>", "index": "_index.md", "scope": "global", "mode": "router-only" }]
   },
   "modelRequirements": {  // config-driven agent/category model requirements
-    "agents": { "oracle": { "fallbackChain": [{ "providers": ["anthropic"], "model": "claude-opus-4-6" }] } }
+    "agents": { "oracle": { "fallbackChain": [{ "providers": ["zai-coding-plan"], "model": "glm-4.7" }] } }
   },
-  "complexityDowngrades": { "bullet-time": { "hard": "anthropic/claude-haiku-4-5" } },  // per-category downgrade targets (<provider>/<model>)
+  "complexityDowngrades": { "bullet-time": { "hard": "opencode/ling-3.0-flash-free" } },  // per-category downgrade targets (<provider>/<model>)
   "_migrations": ["model-v2"]  // migration history (prevents re-applying migrations)
 }
 ```

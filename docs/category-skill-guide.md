@@ -26,14 +26,20 @@ A Category is an agent configuration preset optimized for specific domains.
 
 | Category | Default Model | Use Cases |
 |----------|---------------|-----------|
-| `construct` | Claude Sonnet 4.6 | Frontend, UI/UX, design, styling, animation |
-| `source` | Claude Opus 4.6 | Hard logic, backend, core implementation |
-| `deep-jack` | Claude Sonnet 4.6 | Goal-oriented autonomous problem-solving. Thorough research before action. |
-| `matrix-bend` | Claude Sonnet 4.6 | Creative tasks, novel ideas |
-| `bullet-time` | Claude Haiku 4.5 | Quick fixes, trivial tasks — single file changes, typo fixes |
-| `blue-pill` | Claude Sonnet 4.6 | General tasks, moderate effort |
-| `red-pill` | Claude Opus 4.6 | Complex tasks, high effort |
-| `broadcast` | Claude Sonnet 4.6 | Documentation, prose, technical writing |
+| `construct` | `opencode/qwen3.6-plus-free` | Frontend, UI/UX, design, styling, animation |
+| `source` | `opencode/kimi-k2.5-free` | Hard logic, backend, core implementation |
+| `deep-jack` | `opencode/kimi-k2.5-free` | Goal-oriented autonomous problem-solving. Thorough research before action. |
+| `matrix-bend` | `opencode/minimax-m3-free` | Creative tasks, novel ideas |
+| `bullet-time` | `opencode/ling-3.0-flash-free` | Quick fixes, trivial tasks — single file changes, typo fixes |
+| `blue-pill` | `opencode/glm-5-free` | General tasks, moderate effort |
+| `red-pill` | `opencode/kimi-k2.5-free` | Complex tasks, high effort |
+| `broadcast` | `opencode/nemotron-3-super-free` | Documentation, prose, technical writing |
+
+Each category declares a fallback chain of `<provider>/<model>` candidates; Matrixx
+selects the first whose provider is connected. Shipped defaults are illustrative —
+override via `modelRequirements` or `model_presets` (see
+`src/shared/model-requirements.ts`). The IDs in this table are OpenCode's free tier —
+copy-paste as-is, or substitute any `<provider>/<model>` from your own provider.
 
 ### Usage
 
@@ -144,7 +150,7 @@ You can create powerful specialized agents by combining Categories and Skills.
 ### 🏗️ The Architect (Design Review)
 - **Category**: `red-pill`
 - **load_skills**: `[]` (pure reasoning)
-- **Effect**: Leverages Claude Opus reasoning for in-depth system architecture analysis.
+- **Effect**: Leverages the strongest available reasoning model for in-depth system architecture analysis.
 
 ### ⚡ The Maintainer (Quick Fixes)
 - **Category**: `bullet-time`
@@ -186,7 +192,7 @@ You can fine-tune categories in `matrixx.json`.
 | Field | Type | Description |
 |-------|------|-------------|
 | `description` | string | Human-readable description of the category's purpose. Shown in task prompt. |
-| `model` | string | AI model ID to use (e.g., `anthropic/claude-opus-4-6`) |
+| `model` | string | AI model ID to use (e.g., `opencode/kimi-k2.5-free`) |
 | `variant` | string | Model variant (e.g., `max`, `xhigh`) |
 | `temperature` | number | Creativity level (0.0 ~ 2.0). Lower is more deterministic. |
 | `top_p` | number | Nucleus sampling parameter (0.0 ~ 1.0) |
@@ -198,7 +204,7 @@ You can fine-tune categories in `matrixx.json`.
 | `maxTokens` | number | Maximum response token count |
 | `is_unstable_agent` | boolean | Mark agent as unstable - forces background mode for monitoring |
 | `fallback_models` | string\|string[] | Fallback model(s) for this category. Overrides provider chain. |
-| `complexity_downgrades` | object | Map complexity level to model downgrade: `{ "2": "haiku" }` |
+| `complexity_downgrades` | object | Map complexity level to model downgrade: `{ "2": "opencode/ling-3.0-flash-free" }` |
 | `disable` | boolean | When `true`, disables this category. |
 
 ### Example Configuration
@@ -208,20 +214,20 @@ You can fine-tune categories in `matrixx.json`.
   "categories": {
     // 1. Define new custom category
     "korean-writer": {
-      "model": "anthropic/claude-sonnet-4-6",
+      "model": "opencode/minimax-m2.5-free",
       "temperature": 0.5,
       "prompt_append": "You are a Korean technical writer. Maintain a friendly and clear tone."
     },
     
     // 2. Override existing category (change model)
     "construct": {
-      "model": "openai/gpt-5.3-codex", // Can change model
+      "model": "opencode/kimi-k2.5-free", // Can change model
       "temperature": 0.8
     },
 
     // 3. Configure thinking model and restrict tools
     "deep-reasoning": {
-      "model": "anthropic/claude-opus-4-6",
+      "model": "zai-coding-plan/glm-4.7", // or any provider you have
       "thinking": {
         "type": "enabled",
         "budgetTokens": 32000

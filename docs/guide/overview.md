@@ -114,32 +114,42 @@ Based on your answers, it generates `~/.config/opencode/matrixx.jsonc` with opti
 Each agent has a **provider priority chain**. The system tries providers in order until it finds an available model:
 
 ```
-Example: construct
-google → openai → zai-coding-plan → anthropic → opencode
-   ↓        ↓           ↓              ↓           ↓
-gemini   gpt-5.2     glm-4.6v       haiku     gpt-5-nano
+Example: source
+strongest: opencode/kimi-k2.5-free
+   ↓
+balanced: opencode/glm-5-free
+   ↓
+fast/cheap: opencode/deepseek-v4-flash-free
 ```
 
-If you have Gemini, it uses `google/gemini-3-flash`. No Gemini but have Claude? Uses `anthropic/claude-haiku-4-5`. And so on.
+Each slot names a tier, not a fixed model. The chain names providers in your order
+of preference, so which concrete model a slot resolves to depends on which providers
+you actually have connected. The free OpenCode IDs shown above work out of the box
+for anyone.
+
+If the first provider is connected, its model is used. If not, the next one is
+tried, and so on down the chain.
 
 ### Example Configuration
 
-Here's a real-world config for a user with **Claude, OpenAI, Gemini, and Z.ai** all available:
+Here's a real-world config for a user with several providers available, where
+the agent-to-model mappings express role intent (strongest for architecture,
+cheap for trivial work):
 
 ```jsonc
 {
   "$schema": "https://raw.githubusercontent.com/klpanagi/opencode-matrixx/refs/heads/dev/dist/matrixx.schema.json",
   "agents": {
     // Override specific agents only - rest use fallback chain
-    "architect": { "model": "anthropic/claude-sonnet-4-6", "variant": "max" },
+    "architect": { "model": "opencode/kimi-k2.5-free", "variant": "max" },
     "operator": { "model": "zai-coding-plan/glm-4.7" },
-    "trinity": { "model": "opencode/gpt-5-nano" },
-    "construct": { "model": "zai-coding-plan/glm-4.6v" }
+    "trinity": { "model": "opencode/deepseek-v4-flash-free" },
+    "construct": { "model": "opencode/qwen3.6-plus-free" }
   },
   "categories": {
     // Override categories for cost optimization
-    "bullet-time": { "model": "opencode/gpt-5-nano" },
-    "broadcast": { "model": "zai-coding-plan/glm-4.7" }
+    "bullet-time": { "model": "opencode/ling-3.0-flash-free" },
+    "broadcast": { "model": "opencode/nemotron-3-super-free" }
   },
   "experimental": {
     "aggressive_truncation": true
@@ -150,7 +160,7 @@ Here's a real-world config for a user with **Claude, OpenAI, Gemini, and Z.ai** 
 **Key points:**
 - You only need to override what you want to change
 - Unspecified agents/categories use the automatic fallback chain
-- Mix providers freely (Claude for main work, Z.ai for cheap tasks, etc.)
+- Mix providers freely — a strong model for main work, a cheap model for trivial tasks
 
 ### Finding Available Models
 
