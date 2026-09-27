@@ -24,12 +24,12 @@ Generate hierarchical AGENTS.md files. Root + complexity-scored subdirectories.
 <critical>
 **task_create ALL phases. Mark in_progress → completed in real-time.**
 \`\`\`
-task_create([
-  { subject: "discovery", status: "pending", priority: "high", description: "Fire explore agents + LSP codemap + read existing" },
-  { subject: "scoring", status: "pending", priority: "high", description: "Score directories, determine locations" },
-  { subject: "generate", status: "pending", priority: "high", description: "Generate AGENTS.md files (root + subdirs)" },
-  { subject: "review", status: "pending", priority: "medium", description: "Deduplicate, validate, trim" }
-])
+task_create({ items: [
+  { subject: "discovery", priority: "high", description: "Fire explore agents + LSP codemap + read existing" },
+  { subject: "scoring", priority: "high", description: "Score directories, determine locations" },
+  { subject: "generate", priority: "high", description: "Generate AGENTS.md files (root + subdirs)" },
+  { subject: "review", priority: "medium", description: "Deduplicate, validate, trim" }
+]})
 \`\`\`
 </critical>
 

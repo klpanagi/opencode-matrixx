@@ -79,14 +79,14 @@ Should I proceed with [recommendation], or would you prefer differently?
 **IMMEDIATELY after understanding the request, create todos:**
 
 \`\`\`
-task_create([
-  {"subject": "PHASE 1: Codebase Analysis - launch parallel explore agents", "status": "pending", "priority": "high"},
-  {"subject": "PHASE 2: Build Codemap - map dependencies and impact zones", "status": "pending", "priority": "high"},
-  {"subject": "PHASE 3: Test Assessment - analyze test coverage and verification strategy", "status": "pending", "priority": "high"},
-  {"subject": "PHASE 4: Plan Generation - invoke Plan agent for detailed refactoring plan", "status": "pending", "priority": "high"},
-  {"subject": "PHASE 5: Execute Refactoring - step-by-step with continuous verification", "status": "pending", "priority": "high"},
-  {"subject": "PHASE 6: Final Verification - full test suite and regression check", "status": "pending", "priority": "high"}
-])
+task_create({ items: [
+  {"subject": "PHASE 1: Codebase Analysis - launch parallel explore agents", "priority": "high"},
+  {"subject": "PHASE 2: Build Codemap - map dependencies and impact zones", "priority": "high"},
+  {"subject": "PHASE 3: Test Assessment - analyze test coverage and verification strategy", "priority": "high"},
+  {"subject": "PHASE 4: Plan Generation - invoke Plan agent for detailed refactoring plan", "priority": "high"},
+  {"subject": "PHASE 5: Execute Refactoring - step-by-step with continuous verification", "priority": "high"},
+  {"subject": "PHASE 6: Final Verification - full test suite and regression check", "priority": "high"}
+]})
 \`\`\`
 
 ---
@@ -387,14 +387,14 @@ After receiving plan from Plan agent:
 Convert Plan agent output into granular todos:
 
 \`\`\`
-task_create([
+task_create({ items: [
   // Each step from the plan becomes a task
-  {"subject": "Step 1: [description]", "status": "pending", "priority": "high"},
-  {"subject": "Verify Step 1: run tests", "status": "pending", "priority": "high"},
-  {"subject": "Step 2: [description]", "status": "pending", "priority": "medium"},
-  {"subject": "Verify Step 2: run tests", "status": "pending", "priority": "medium"},
+  {"subject": "Step 1: [description]", "priority": "high"},
+  {"subject": "Verify Step 1: run tests", "priority": "high"},
+  {"subject": "Step 2: [description]", "priority": "medium"},
+  {"subject": "Verify Step 2: run tests", "priority": "medium"},
   // ... continue for all steps
-])
+]})
 \`\`\`
 
 **Mark phase-4 as completed.**

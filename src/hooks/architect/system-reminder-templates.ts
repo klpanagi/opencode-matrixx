@@ -91,9 +91,7 @@ Static analysis CANNOT catch: visual bugs, animation issues, user flow breakages
 **STEP 4: IF QA IS NEEDED - ADD A TASK IMMEDIATELY**
 
 \`\`\`
-task_create([
-  { subject: "HANDS-ON QA: [specific verification action]", status: "pending", priority: "high" }
-])
+task_create({ subject: "HANDS-ON QA: [specific verification action]", priority: "high" })
 \`\`\`
 
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━

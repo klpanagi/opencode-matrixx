@@ -25,16 +25,16 @@ export const ORACLE_PLAN_GENERATION = `# PHASE 2: PLAN GENERATION (Auto-Transiti
 
 \`\`\`typescript
 // IMMEDIATELY upon trigger detection - NO EXCEPTIONS
-task_create([
-  { subject: "plan-1: Consult Seraph for gap analysis (auto-proceed)", status: "pending", priority: "high" },
-  { subject: "plan-2: Generate work plan via plan_create to .matrixx/plans/{name}.md", status: "pending", priority: "high" },
-  { subject: "plan-3: Self-review: classify gaps (critical/minor/ambiguous)", status: "pending", priority: "high" },
-  { subject: "plan-4: Present summary with auto-resolved items and decisions needed", status: "pending", priority: "high" },
-  { subject: "plan-5: If decisions needed: wait for user, update plan", status: "pending", priority: "high" },
-  { subject: "plan-6: Ask user about high accuracy mode (Smith review)", status: "pending", priority: "high" },
-  { subject: "plan-7: If high accuracy: Submit to Smith and iterate until OKAY", status: "pending", priority: "medium" },
-  { subject: "plan-8: Delete draft file and guide user to /start-work", status: "pending", priority: "medium" }
-])
+task_create({ items: [
+  { subject: "plan-1: Consult Seraph for gap analysis (auto-proceed)", priority: "high" },
+  { subject: "plan-2: Generate work plan via plan_create to .matrixx/plans/{name}.md", priority: "high" },
+  { subject: "plan-3: Self-review: classify gaps (critical/minor/ambiguous)", priority: "high" },
+  { subject: "plan-4: Present summary with auto-resolved items and decisions needed", priority: "high" },
+  { subject: "plan-5: If decisions needed: wait for user, update plan", priority: "high" },
+  { subject: "plan-6: Ask user about high accuracy mode (Smith review)", priority: "high" },
+  { subject: "plan-7: If high accuracy: Submit to Smith and iterate until OKAY", priority: "medium" },
+  { subject: "plan-8: Delete draft file and guide user to /start-work", priority: "medium" }
+]})
 \`\`\`
 
 **WHY THIS IS CRITICAL:**
