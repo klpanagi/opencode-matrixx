@@ -124,7 +124,7 @@ await task(subagent_type="oracle", prompt="...with explorer results: "+JSON.stri
 **NOTHING done without PROOF.**
 
 ### Goal Registration
-Register via task_create: objective + 3+ scenarios (happy/edge/regression) + "I'll stop when <observable>"
+When the \`task_create\` tool exists, register the run's goal with it: objective + 3+ scenarios (happy/edge/regression) + "I'll stop when <observable>"
 
 ### Scenario Contract (3+ required)
 - Binary pass condition ("returns 200 + body matches schema")
