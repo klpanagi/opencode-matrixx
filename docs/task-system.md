@@ -31,7 +31,8 @@ The Task System replaces OpenCode's ephemeral session-memory todos with **file-b
 ```
 matrixx.jsonc
   tasks { scope?, storage_path?, task_list_id?,
-          stale_after_hours?, session_scoped?, pollTimeoutMs? }   (canonical)
+          stale_after_hours?, background_stale_after_hours?,
+          session_scoped?, pollTimeoutMs? }   (canonical)
   morpheus.tasks.* / task.pollTimeoutMs (legacy fallback for storage keys only)
             │
             ├─── Tool Registry (src/plugin/tool-registry.ts)
@@ -100,6 +101,7 @@ There is no enable/disable switch. `resolveTasksConfig()` always resolves `enabl
     "task_list_id": "my-project",   // explicit list ID, alternative to ULTRAWORK_TASK_LIST_ID
     "scope": "project",             // "project" | "global"
     "stale_after_hours": 24,        // stale-task threshold for task-continuation enforcer
+    "background_stale_after_hours": 2, // background completion-gate staleness window
     "session_scoped": true,         // enforcer sees only current session + live subagents
     "pollTimeoutMs": 600000         // blocking task() poll budget, minimum 60000
   }
@@ -112,12 +114,22 @@ There is no enable/disable switch. `resolveTasksConfig()` always resolves `enabl
 | `storage_path` | `string` | none | Absolute path used verbatim; relative path resolves as `join(cwd, storage_path)`. When set, bypasses `scope`/`listId` resolution. |
 | `task_list_id` | `string` | none | Explicit list ID. Alternative to the `ULTRAWORK_TASK_LIST_ID` env var. Sanitized to `[a-zA-Z0-9_-]`. |
 | `scope` | `"project" \| "global"` | `"project"` | `project` → `.matrixx/tasks` in the project root. `global` → `~/.config/opencode/tasks/{listId}` via `getOpenCodeConfigDir()`. |
-| `stale_after_hours` | `int`, min 1 | `24` | Pending/in_progress tasks with no file activity for this many hours count as stale. Stale-only queues skip the continuation directive; mixed queues annotate stale entries. |
+| `stale_after_hours` | `number`, min `0.25` | `24` | Pending/in_progress tasks with no file activity for this many hours count as stale. Stale-only queues skip the continuation directive; mixed queues annotate stale entries. Fractional hours are accepted (floor 0.25 = 15 minutes), because the background gate's window is too coarse at a 1-hour floor. |
+| `background_stale_after_hours` | `number`, min `0.25` | `2` | Window used only by the background-agent completion gates. A pending/in_progress task with no file activity for this long stops blocking completion of its background handle. |
 | `session_scoped` | `boolean` | `true` | When true, the task-continuation-enforcer only considers tasks created by the current session (or its live subagent sessions). When false, all project tasks count regardless of origin. |
 | `pollTimeoutMs` | `number`, min 60000 | `600000` (10 min) | Poll timeout for blocking `task()` calls. Raise for agents that delegate to subagents with long wall times. |
 | `claude_code_compat` | `boolean` | `false` | Legacy `morpheus.tasks` flag, reserved path-compatibility marker. No behavior is keyed on it in the current tree. |
 
-Legacy mirror: `MorpheusTasksConfigSchema` in `src/config/schema/morpheus.ts` keeps `storage_path`, `task_list_id`, `scope`, `stale_after_hours`, `session_scoped` as fallbacks. Resolution order per key: `tasks.*` → `morpheus.tasks.*` → default. `task.pollTimeoutMs` falls back to `tasks.pollTimeoutMs` the same way.
+Legacy mirror: `MorpheusTasksConfigSchema` in `src/config/schema/morpheus.ts` keeps `storage_path`, `task_list_id`, `scope`, `stale_after_hours`, `session_scoped` as fallbacks. Resolution order per key: `tasks.*` → `morpheus.tasks.*` → default. `task.pollTimeoutMs` falls back to `tasks.pollTimeoutMs` the same way. `background_stale_after_hours` has **no** legacy mirror: it is canonical-only and resolves to its default when the canonical key is absent.
+
+**Two staleness windows.** The two thresholds are independent knobs, resolved by different functions in `src/hooks/task-continuation-enforcer/staleness.ts`, and they exist because their failure costs differ:
+
+| Window | Default | Consumer | Why |
+|--------|---------|----------|-----|
+| `stale_after_hours` | 24 | `task-continuation-enforcer` | A long-running task is normal here, and a missed continuation nudge is cheap. The 24h default stays. |
+| `background_stale_after_hours` | 2 | Background-agent completion gates (`session.idle`, polling, reconcile probe) | A task that stays `pending`/`in_progress` with no file activity while its worker is gone is a wedged handle, not a slow one. Releasing it is what lets the session complete. |
+
+Both read the same basis, the task file's mtime. The wall-clock backstop is a third, separate knob and is unchanged: `background_task.wallClockTimeoutMs`, default `0` (off).
 
 ### 3.3 Directory Resolution
 
@@ -496,7 +508,9 @@ One-paragraph summaries here. Full hook internals (state machines, prompts, coun
 
 **Behavior:** on idle, the handler skips during recovery, right after an abort, while background tasks run, when continuation is stopped, past the failure circuit breaker, or inside cooldown. Otherwise it counts incomplete tasks: zero → done; all stale → skip with a log line; otherwise a 2-second countdown injects the `CONTINUATION_PROMPT` directive (work next pending task, mark `in_progress`/`completed`, respect `blockedBy`). Injection failures increment the consecutive-failure counter.
 
-**Cross-session scope and liveness:** the enforcer reads the project-wide store, so a directive reflects the union of sessions in the project. With `tasks.session_scoped: true` (default), tasks are admitted only when their `threadID` is the current session or a live subagent of it; orphaned tasks from dead sessions are excluded. Pre-migration tasks without `threadID` are always included. Stale handling keys on `tasks.stale_after_hours` (default 24): all-stale queues skip on both the idle path and the post-countdown injection path; mixed queues annotate stale entries with a `(stale: Nh)` suffix plus an orphan-suspect note.
+**Cross-session scope and liveness:** the enforcer reads the project-wide store, so a directive reflects the union of sessions in the project. With `tasks.session_scoped: true` (default), tasks are admitted only when their `threadID` is the current session or a live subagent of it; orphaned tasks from dead sessions are excluded. Pre-migration tasks without `threadID` are always included. Stale handling keys on `tasks.stale_after_hours` (enforcer default 24): all-stale queues skip on both the idle path and the post-countdown injection path; mixed queues annotate stale entries with a `(stale: Nh)` suffix plus an orphan-suspect note.
+
+**Durable ancestry scope (background completion gate).** Session scoping follows the durable `parentID` chain, not just live-session membership. `src/features/task-session-scope/ancestry.ts` walks `parentID` ancestors up to `DEFAULT_ANCESTRY_DEPTH = 3` hops, so a delegated subagent's or grandchild's task still counts toward the gate even when the intermediate session is already gone. The walk stops on a cycle, and only an in-scope ancestor admits a descendant, so an unrelated open task can never wedge a handle. The default applies at every call site; no config key selects the depth. Staleness composes with the expansion rather than bypassing it, so an expanded-but-stale grandchild still drops out — and it drops out on the gate's own window, `tasks.background_stale_after_hours` (default 2), not the enforcer's 24. The two differ because a missed continuation nudge is cheap while a handle held `running` past its worker is not. The wall-clock backstop (`background_task.wallClockTimeoutMs`, default `0`, off) is unchanged.
 
 **Subtask rollup:** a task with `parentID` is a subtask. Subtasks whose parent is `completed`/`deleted` count as resolved and leave the incomplete set (`dropSubtasksWithResolvedParent` in `todo.ts`, applied before session filtering on both paths). A parent with incomplete subtasks stays incomplete through its own status.
 

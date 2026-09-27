@@ -1141,6 +1141,7 @@ system is unconditional: there is no master switch. Legacy `morpheus.tasks` and
     "storage_path": ".matrixx/tasks",
     "task_list_id": "my-project",
     "stale_after_hours": 24,
+    "background_stale_after_hours": 2,
     "session_scoped": true,
     "pollTimeoutMs": 600000
   }
@@ -1155,9 +1156,22 @@ system is unconditional: there is no master switch. Legacy `morpheus.tasks` and
 | `storage_path`       | `string` | — (runtime default: `.matrixx/tasks` when `scope=project`) | Absolute or relative path override. When set, bypasses `scope`/`listId` resolution. |
 | `task_list_id`       | `string` | — (falls back to `basename(cwd)` sanitized) | Force task list ID (alternative to `ULTRAWORK_TASK_LIST_ID` / `CLAUDE_CODE_TASK_LIST_ID` env). Sanitized to `[a-zA-Z0-9_-]`. |
 | `scope`              | `"global" \| "project"` | `"project"` | `project` → `.matrixx/tasks` per project (default). `global` → `~/.config/opencode/tasks/{listId}`. |
-| `stale_after_hours`  | `number`   | `24`              | Pending/in_progress tasks with no file activity for this many hours are treated as stale by `task-continuation-enforcer` (skipped when all incomplete are stale; annotated `(stale: N)` otherwise). |
-| `session_scoped`     | `boolean` | `true`            | Only current-session (and subagent) tasks drive `task-continuation-enforcer` directives. `false` → all project tasks considered. |
+| `stale_after_hours`  | `number`   | `24` (min `0.25`)  | Pending/in_progress tasks with no file activity for this many hours are treated as stale by `task-continuation-enforcer` (skipped when all incomplete are stale; annotated `(stale: N)` otherwise). Fractional hours are accepted, so the floor is 15 minutes rather than 1 hour. |
+| `background_stale_after_hours` | `number` | `2` (min `0.25`) | Window used **only** by the background-agent completion gates (`session.idle`, polling, and the restart reconcile probe). A pending/in_progress task with no file activity for this long stops blocking completion of its background handle. |
+| `session_scoped`     | `boolean` | `true`            | Only current-session (and subagent) tasks drive `task-continuation-enforcer` directives. `false` → all project tasks considered. This option does not apply to the background completion gate, which is always session- and ancestry-scoped. |
 | `pollTimeoutMs`      | `number`   | `600000` (min `60000`) | Poll budget for blocking `task()` calls. Increase for agents that delegate to sub-agents. |
+
+**Why there are two staleness windows.** They serve different consumers whose
+failure costs differ, so one knob would be wrong for one of them.
+`stale_after_hours` stays at 24 hours for the enforcer: a long-running task is
+normal, and a missed continuation nudge is cheap. `background_stale_after_hours`
+defaults to 2 hours because a task holding `pending` or `in_progress` with no file
+activity while its worker has gone is a wedged handle, not a slow one, and the
+handle has to be released so the session can be considered complete. Both read
+the same basis (task-file mtime), and `background_stale_after_hours` is canonical
+only: there is no `morpheus.tasks` mirror of it. The wall-clock backstop is a
+separate knob and is unchanged: `background_task.wallClockTimeoutMs`, default `0`
+(off).
 
 ## MCPs
 
