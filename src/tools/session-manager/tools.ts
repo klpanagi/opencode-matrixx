@@ -1,5 +1,6 @@
 import type { PluginInput } from "@opencode-ai/plugin"
 import { type ToolDefinition, tool } from "@opencode-ai/plugin/tool"
+import type { MatrixxConfig } from "../../config/schema"
 import {
   SESSION_INFO_DESCRIPTION,
   SESSION_LIST_DESCRIPTION,
@@ -22,6 +23,7 @@ import {
   readSessionTodos,
   sessionExists,
   setStorageClient,
+  setStorageConfig,
   setStorageDirectory,
 } from "./storage"
 import type { SearchResult, SessionInfoArgs, SessionListArgs, SessionReadArgs, SessionSearchArgs } from "./types"
@@ -31,10 +33,14 @@ const MAX_SESSIONS_TO_SCAN = 50
 
 import { withTimeout } from "../../shared/with-timeout"
 
-export function createSessionManagerTools(ctx: PluginInput): Record<string, ToolDefinition> {
+export function createSessionManagerTools(
+  ctx: PluginInput,
+  pluginConfig?: Partial<MatrixxConfig>
+): Record<string, ToolDefinition> {
   // Initialize storage client for SDK-based operations (beta mode)
   setStorageClient(ctx.client)
   setStorageDirectory(ctx.directory)
+  setStorageConfig(pluginConfig)
 
   const session_list: ToolDefinition = tool({
     description: SESSION_LIST_DESCRIPTION,

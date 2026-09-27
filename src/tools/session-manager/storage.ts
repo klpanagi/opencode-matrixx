@@ -2,6 +2,7 @@ import { existsSync } from "node:fs"
 import { readdir, readFile } from "node:fs/promises"
 import { join } from "node:path"
 import type { PluginInput } from "@opencode-ai/plugin"
+import type { MatrixxConfig } from "../../config/schema"
 import { readSessionTasks } from "../../features/task-session-scope"
 import { normalizeSDKResponse } from "../../shared"
 import { getMessageDir } from "../../shared/opencode-message-dir"
@@ -17,6 +18,8 @@ interface GetMainSessionsOptions {
 let sdkClient: PluginInput["client"] | null = null
 
 let storageDirectory: string | undefined
+
+let pluginConfig: Partial<MatrixxConfig> | undefined
 
 export function setStorageClient(client: PluginInput["client"]): void {
   sdkClient = client
@@ -39,6 +42,18 @@ export function resetStorageClient(): void {
  */
 export function setStorageDirectory(directory: string | undefined): void {
   storageDirectory = directory
+}
+
+/**
+ * Thread the plugin config into the task read, for the same reason as the directory:
+ * `getSessionInfo` is a second consumer of `readSessionTodos` and carries neither a
+ * config nor a directory of its own. Without it the read always resolves the
+ * `process.cwd()`-relative project store, which silently returns nothing for a user
+ * who configured `tasks.storage_path` or `tasks.scope: "global"` — the `include_todos`
+ * diagnostic would be permanently empty for exactly those users.
+ */
+export function setStorageConfig(config: Partial<MatrixxConfig> | undefined): void {
+  pluginConfig = config
 }
 
 export async function getMainSessions(options: GetMainSessionsOptions): Promise<SessionMetadata[]> {
@@ -288,7 +303,11 @@ function toTodoStatus(status: "pending" | "in_progress" | "completed" | "deleted
  * `[]` rather than throwing, matching the contract of the reads it replaces.
  */
 export async function readSessionTodos(sessionID: string): Promise<TodoItem[]> {
-  return readSessionTasks({ directory: storageDirectory ?? process.cwd(), sessionID }).map((task) => ({
+  return readSessionTasks({
+    config: pluginConfig,
+    directory: storageDirectory ?? process.cwd(),
+    sessionID,
+  }).map((task) => ({
     id: task.id,
     content: task.subject,
     status: toTodoStatus(task.status),
