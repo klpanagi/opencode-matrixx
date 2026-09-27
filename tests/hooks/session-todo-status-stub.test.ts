@@ -119,12 +119,12 @@ describe("the retained read is explicitly deprecated", () => {
     expect(comments).toMatch(/R2|issue/i)
   })
 
-  test("the background-agent probe checkSessionTodos also keeps the real read", () => {
+  test("the background-agent manager no longer reads OpenCode todos", () => {
     //#given the background-agent manager source
     const source = fs.readFileSync(MANAGER_FILE, "utf-8")
 
-    //#then its own probe still performs the real read instead of returning false
-    expect(source).toContain("checkSessionTodos")
-    expect(source).toMatch(/checkSessionTodos[\s\S]{0,200}client\.session\.todo\(/)
+    //#then its completion gate consults the file-backed task store instead
+    expect(source).not.toContain("client.session.todo(")
+    expect(source).toContain("hasIncompleteTasksForSession")
   })
 })

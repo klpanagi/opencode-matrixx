@@ -6,7 +6,6 @@ import { getAgentToolRestrictions, log, normalizeSDKResponse, promptWithModelSug
 import { hasPendingQuestionMessage } from "../../shared/awaiting-user"
 import { delay } from "../../shared/delay"
 import { formatDuration } from "../../shared/format-duration"
-import { warn } from "../../shared/logger"
 import { setSessionTemperature, setSessionTools } from "../../shared/session-state"
 import { isInsideTmux } from "../../shared/tmux"
 import { formatWallclockTimeout } from "../../shared/wallclock-outcome"
@@ -68,25 +67,6 @@ type OpencodeClient = PluginInput["client"]
  */
 const NESTED_RESERVE_ATTEMPT_TIMEOUT_MS = 100
 
-const LEGACY_TODO_READ_DEPRECATION =
-  "[background-agent] The OpenCode todo read is deprecated but still active. " +
-  "OpenCode's todo state is per-session and persists across the upgrade, so the read " +
-  "is retained for in-flight sessions; it will be removed in v3.0."
-
-let hasLoggedLegacyTodoReadDeprecation = false
-
-/** Test-only: allow the one-time deprecation notice to fire again. */
-export function resetBackgroundTodoReadDeprecationWarning(): void {
-  hasLoggedLegacyTodoReadDeprecation = false
-}
-
-function warnAboutLegacyTodoReadOnce(): void {
-  if (hasLoggedLegacyTodoReadDeprecation) return
-  hasLoggedLegacyTodoReadDeprecation = true
-  warn(LEGACY_TODO_READ_DEPRECATION)
-}
-
-
 interface MessagePartInfo {
   sessionID?: string
   type?: string
@@ -104,13 +84,6 @@ export interface EventProperties {
 interface Event {
   type: string
   properties?: EventProperties
-}
-
-interface Todo {
-  content: string
-  status: string
-  priority: string
-  id: string
 }
 
 interface QueueItem {
@@ -1200,32 +1173,6 @@ export class BackgroundManager {
     return rows.map((row) => ({ taskId: row.taskId, description: row.description, agent: row.agent, status: row.status, sessionID: row.sessionID, terminalReason: row.terminalReason }))
   }
 
-  /**
-   * Why the real `client.session.todo()` read is retained after the legacy todo
-   * system was removed: OpenCode's todo state is per-session and PERSISTS across
-   * the upgrade, so a session opened before the removal can still hold a non-empty
-   * list. Returning a hard-coded `false` here would mark such a background task
-   * complete while the user still has pending items, in the wrong direction on day
-   * one. Kept for one release, tracked as a removal issue scheduled for v3.0.
-   */
-  private async checkSessionTodos(sessionID: string): Promise<boolean> {
-    try {
-      warnAboutLegacyTodoReadOnce()
-      const response = await this.client.session.todo({
-        path: { id: sessionID },
-      })
-      const todos = normalizeSDKResponse(response, [] as Todo[], { preferResponseOnMissingData: true })
-      if (!todos || todos.length === 0) return false
-
-      const incomplete = todos.filter(
-        (t) => t.status !== "completed" && t.status !== "cancelled"
-      )
-      return incomplete.length > 0
-    } catch {
-      return false
-    }
-  }
-
   handleEvent(event: Event): void {
     const props = event.properties
 
@@ -1354,16 +1301,27 @@ export class BackgroundManager {
           return
         }
 
-        const hasIncompleteTodos = await this.checkSessionTodos(sessionID)
+        // Scope is `task.sessionID` — the child session the worker runs inside —
+        // never `task.parentSessionID` and never a parent-scoped descendant
+        // expansion. `task_create` stamps `threadID: context.sessionID`, so the
+        // worker's own tasks carry the child id. Widening this to "any open project
+        // task" would let an unrelated task hold the worker open forever (livelock).
+        // `this.config` is BackgroundTaskConfig (concurrency/circuit-breaker/
+        // wallclock only) and carries no `tasks.*` keys; the predicate resolves the
+        // store location and stale threshold through its own defaults.
+        const hasIncompleteTaskWork = hasIncompleteTasksForSession({
+          directory: this.directory,
+          sessionID: task.sessionID ?? sessionID,
+        })
 
         // Re-check status after async operation again
         if (task.status !== "running") {
-          log("[background-agent] Task status changed during todo check, skipping:", { taskId: task.id, status: task.status })
+          log("[background-agent] Task status changed during output validation, skipping:", { taskId: task.id, status: task.status })
           return
         }
 
-        if (hasIncompleteTodos) {
-          log("[background-agent] Task has incomplete todos, waiting for todo-continuation:", task.id)
+        if (hasIncompleteTaskWork) {
+          log("[background-agent] Task has incomplete task-store work, waiting for task-continuation:", task.id)
           return
         }
 
@@ -2253,9 +2211,14 @@ export class BackgroundManager {
           // Re-check status after async operation
           if (task.status !== "running") continue
 
-          const hasIncompleteTodos = await this.checkSessionTodos(sessionID)
-          if (hasIncompleteTodos) {
-            log("[background-agent] Task has incomplete todos via polling, waiting:", task.id)
+          // Same predicate and same child-session scope as the session.idle path
+          // above, so the two call sites cannot diverge.
+          const hasIncompleteTaskWork = hasIncompleteTasksForSession({
+            directory: this.directory,
+            sessionID: task.sessionID ?? sessionID,
+          })
+          if (hasIncompleteTaskWork) {
+            log("[background-agent] Task has incomplete task-store work via polling, waiting:", task.id)
             continue
           }
 
