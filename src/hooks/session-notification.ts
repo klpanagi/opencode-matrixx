@@ -1,5 +1,10 @@
 import type { PluginInput } from "@opencode-ai/plugin"
-import { getMainSessionID, subagentSessions } from "../features/session-state"
+import {
+  getMainSessionID,
+  getSubagentSessionIDs,
+  subagentSessions,
+} from "../features/session-state"
+import { hasIncompleteTasksForSession } from "../features/task-session-scope"
 import { createIdleNotificationScheduler } from "./session-notification-scheduler"
 import {
   detectPlatform,
@@ -10,7 +15,6 @@ import {
 import {
   startBackgroundCheck,
 } from "./session-notification-utils"
-import { hasIncompleteTodos } from "./session-todo-status"
 
 interface SessionNotificationConfig {
   title?: string
@@ -19,7 +23,7 @@ interface SessionNotificationConfig {
   soundPath?: string
   /** Delay in ms before sending notification to confirm session is still idle (default: 1500) */
   idleConfirmationDelay?: number
-  /** Skip notification if there are incomplete todos (default: true) */
+  /** Skip notification if the session (or one of its subagents) still has pending work in the file-backed task store (default: true) */
   skipIfIncompleteTodos?: boolean
   /** Maximum number of sessions to track before cleanup (default: 100) */
   maxTrackedSessions?: number
@@ -44,11 +48,18 @@ export function createSessionNotification(
     ...config,
   }
 
+  const hasIncompleteTaskWork = async (_ctx: PluginInput, sessionID: string): Promise<boolean> =>
+    hasIncompleteTasksForSession({
+      directory: ctx.directory,
+      sessionID,
+      subagentIDs: getSubagentSessionIDs(sessionID),
+    })
+
   const scheduler = createIdleNotificationScheduler({
     ctx,
     platform: currentPlatform,
     config: mergedConfig,
-    hasIncompleteTodos,
+    hasIncompleteTaskWork,
     send: sendSessionNotification,
     playSound: playSessionNotificationSound,
   })

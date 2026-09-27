@@ -1,13 +1,18 @@
 import { afterEach, beforeEach, describe, expect, spyOn, test } from "bun:test"
 import type { PluginInput } from "@opencode-ai/plugin"
+import { existsSync, mkdirSync, rmSync, writeFileSync } from "node:fs"
+import { join } from "node:path"
+import { tmpdir } from "node:os"
 import { _resetForTesting, setMainSession, subagentSessions } from "../../src/features/session-state"
 import { createSessionNotification } from "../../src/hooks/session-notification"
 import * as utils from "../../src/hooks/session-notification-utils"
 
+const TASK_STORE_TEST_ROOT = join(tmpdir(), "matrixx-session-notification-tests")
+
 describe("session-notification", () => {
   let notificationCalls: string[]
 
-  function createMockPluginInput() {
+  function createMockPluginInput(directory = "/tmp/test") {
     return {
       $: async (cmd: TemplateStringsArray | string, ...values: unknown[]) => {
         // given - track notification commands (osascript, notify-send, powershell)
@@ -25,8 +30,30 @@ describe("session-notification", () => {
           todo: async () => ({ data: [] }),
         },
       },
-      directory: "/tmp/test",
+      directory,
     } as unknown as PluginInput
+  }
+
+  /**
+   * Write a single file-backed task into `<root>/.matrixx/tasks/`.
+   * `TaskObjectSchema` is `.strict()` and `threadID` is required, so a task with no
+   * session attribution would be structurally invisible to the predicate.
+   */
+  function writeTask(root: string, id: string, threadID: string): void {
+    const taskDir = join(root, ".matrixx", "tasks")
+    mkdirSync(taskDir, { recursive: true })
+    writeFileSync(
+      join(taskDir, `${id}.json`),
+      JSON.stringify({
+        id,
+        subject: "Wire the idle-suppression predicate",
+        description: "Bound predicate over the file-backed task store.",
+        status: "pending",
+        blocks: [],
+        blockedBy: [],
+        threadID,
+      }),
+    )
   }
 
   beforeEach(() => {
@@ -46,6 +73,7 @@ describe("session-notification", () => {
     // given - cleanup after each test
     subagentSessions.clear()
     _resetForTesting()
+    rmSync(TASK_STORE_TEST_ROOT, { recursive: true, force: true })
   })
 
   test("should not trigger notification for subagent session", async () => {
@@ -356,6 +384,81 @@ describe("session-notification", () => {
     await new Promise((resolve) => setTimeout(resolve, 50))
 
     // then - only one notification should be sent
+    expect(notificationCalls).toHaveLength(1)
+  })
+
+  test("should suppress notification while the notified session has its own pending task", async () => {
+    //#given
+    const root = join(TASK_STORE_TEST_ROOT, "own-pending-task")
+    mkdirSync(root, { recursive: true })
+    writeTask(root, "T-11111111-1111-4111-8111-111111111111", "ses_target")
+    const sessionID = "ses_target"
+    setMainSession(sessionID)
+
+    const hook = createSessionNotification(createMockPluginInput(root), {
+      idleConfirmationDelay: 10,
+    })
+
+    //#when
+    await hook({
+      event: {
+        type: "session.idle",
+        properties: { sessionID },
+      },
+    })
+    await new Promise((resolve) => setTimeout(resolve, 100))
+
+    //#then
+    expect(notificationCalls).toHaveLength(0)
+  })
+
+  test("LIVELOCK FENCE: unrelated pending task must not suppress the notification", async () => {
+    //#given
+    const root = join(TASK_STORE_TEST_ROOT, "unrelated-pending-task")
+    mkdirSync(root, { recursive: true })
+    writeTask(root, "T-22222222-2222-4222-8222-222222222222", "ses_unrelated")
+    const sessionID = "ses_target"
+    setMainSession(sessionID)
+
+    const hook = createSessionNotification(createMockPluginInput(root), {
+      idleConfirmationDelay: 10,
+    })
+
+    //#when
+    await hook({
+      event: {
+        type: "session.idle",
+        properties: { sessionID },
+      },
+    })
+    await new Promise((resolve) => setTimeout(resolve, 100))
+
+    //#then
+    expect(notificationCalls).toHaveLength(1)
+  })
+
+  test("should deliver the notification when the task store is missing (fail-open)", async () => {
+    //#given
+    const root = join(TASK_STORE_TEST_ROOT, "no-task-store")
+    mkdirSync(root, { recursive: true })
+    expect(existsSync(join(root, ".matrixx", "tasks"))).toBe(false)
+    const sessionID = "ses_target"
+    setMainSession(sessionID)
+
+    const hook = createSessionNotification(createMockPluginInput(root), {
+      idleConfirmationDelay: 10,
+    })
+
+    //#when
+    await hook({
+      event: {
+        type: "session.idle",
+        properties: { sessionID },
+      },
+    })
+    await new Promise((resolve) => setTimeout(resolve, 100))
+
+    //#then
     expect(notificationCalls).toHaveLength(1)
   })
 })
