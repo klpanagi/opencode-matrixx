@@ -4,6 +4,10 @@ import { TASK_ID_PATTERN } from "./constants"
 export const TaskStatusSchema = z.enum(["pending", "in_progress", "completed", "deleted"])
 export type TaskStatus = z.infer<typeof TaskStatusSchema>
 
+/** Optional with no default: pre-existing task files must keep loading unmodified. */
+export const TaskPrioritySchema = z.enum(["low", "medium", "high"])
+export type TaskPriority = z.infer<typeof TaskPrioritySchema>
+
 /** Task ID must match T-{uuid}-style format (rejects truncated IDs like "T-"). */
 export const TaskIdSchema = z.string().regex(TASK_ID_PATTERN)
 
@@ -22,6 +26,7 @@ export const TaskObjectSchema = z
     parentID: z.string().optional(),
     threadID: z.string(),
     projectRoot: z.string().optional(),
+    priority: TaskPrioritySchema.optional(),
   })
   .strict()
 
@@ -42,6 +47,7 @@ export const TaskCreateInputSchema = z.object({
   metadata: z.record(z.string(), z.unknown()).optional(),
   repoURL: z.string().optional(),
   parentID: TaskIdSchema.optional(),
+  priority: TaskPrioritySchema.optional(),
 })
 
 export type TaskCreateInput = z.infer<typeof TaskCreateInputSchema>
@@ -71,6 +77,7 @@ export const TaskUpdateInputSchema = z.object({
   metadata: z.record(z.string(), z.unknown()).optional(),
   repoURL: z.string().optional(),
   parentID: TaskIdSchema.optional(),
+  priority: TaskPrioritySchema.optional(),
 })
 
 export type TaskUpdateInput = z.infer<typeof TaskUpdateInputSchema>
