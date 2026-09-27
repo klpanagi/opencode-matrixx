@@ -51,7 +51,6 @@ export { buildWindowsToastScript, escapeAppleScriptText, escapePowerShellSingleQ
 export { createIdleNotificationScheduler } from "./session-notification-scheduler";
 export { detectPlatform, getDefaultSoundPath, playSessionNotificationSound, sendSessionNotification } from "./session-notification-sender";
 export { createSessionRecoveryHook, type SessionRecoveryHook, type SessionRecoveryOptions } from "./session-recovery";
-export { hasIncompleteTodos } from "./session-todo-status";
 export { createStartWorkHook } from "./start-work";
 export { createStopContinuationGuardHook, type StopContinuationGuard } from "./stop-continuation-guard";
 export { createTaskContinuationEnforcer, type TaskContinuationEnforcer } from "./task-continuation-enforcer";
