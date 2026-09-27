@@ -2,6 +2,7 @@
 
 import type { PluginInput } from "@opencode-ai/plugin"
 import type { BackgroundTaskConfig, DcpHandoffCompression, MatrixxConfig, TmuxConfig } from "../../config/schema"
+import { getBackgroundStaleAfterMs } from "../../hooks/task-continuation-enforcer/staleness"
 import { getAgentToolRestrictions, log, normalizeSDKResponse, promptWithModelSuggestionRetry } from "../../shared"
 import { hasPendingQuestionMessage } from "../../shared/awaiting-user"
 import { delay } from "../../shared/delay"
@@ -310,7 +311,15 @@ export class BackgroundManager {
         // The plugin config arrives via `options.pluginConfig`; `resolveTasksConfig`
         // reads only the `tasks.*` keys from it (store location, stale threshold).
         hasPendingTaskWork: async (sessionID) =>
-          hasIncompleteTasksForSession({ config: this.pluginConfig, directory: this.directory, sessionID }),
+          hasIncompleteTasksForSession({
+            config: this.pluginConfig,
+            directory: this.directory,
+            sessionID,
+            // The gate uses the BACKGROUND window (default 2h), not the enforcer's
+            // `stale_after_hours` (24h): a missed continuation nudge is cheap, but a
+            // handle held `running` by a crashed worker's orphaned task is not.
+            staleAfterMs: getBackgroundStaleAfterMs(this.pluginConfig),
+          }),
       })
     } catch (error) {
       log("[background-agent] Handle reconciliation failed:", { taskId: handle.taskId, error })
@@ -1312,10 +1321,15 @@ export class BackgroundManager {
         // worker's own tasks carry the child id. Widening this to "any open project
         // task" would let an unrelated task hold the worker open forever (livelock).
         // `tasks.*` (store location, stale threshold) arrives via `options.pluginConfig`.
+        // The threshold here is the BACKGROUND window (default 2h), NOT the enforcer's
+        // `stale_after_hours` (24h). The costs are asymmetric: a missed continuation
+        // nudge is cheap, but a handle left `running` by a crashed worker's orphaned
+        // task wedges a concurrency slot. Do not "unify" these two windows.
         const hasIncompleteTaskWork = hasIncompleteTasksForSession({
           config: this.pluginConfig,
           directory: this.directory,
           sessionID: task.sessionID ?? sessionID,
+          staleAfterMs: getBackgroundStaleAfterMs(this.pluginConfig),
         })
 
         // Re-check status after async operation again
@@ -2215,12 +2229,15 @@ export class BackgroundManager {
           // Re-check status after async operation
           if (task.status !== "running") continue
 
-          // Same predicate and same child-session scope as the session.idle path
-          // above, so the two call sites cannot diverge.
+          // Same predicate, same child-session scope, and the same BACKGROUND window
+          // (default 2h) as the session.idle gate above — a missed continuation nudge
+          // is cheap, a handle wedged `running` by an orphaned task is not. If the two
+          // call sites must diverge, change both.
           const hasIncompleteTaskWork = hasIncompleteTasksForSession({
             config: this.pluginConfig,
             directory: this.directory,
             sessionID: task.sessionID ?? sessionID,
+            staleAfterMs: getBackgroundStaleAfterMs(this.pluginConfig),
           })
           if (hasIncompleteTaskWork) {
             log("[background-agent] Task has incomplete task-store work via polling, waiting:", task.id)

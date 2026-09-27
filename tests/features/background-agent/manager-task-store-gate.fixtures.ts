@@ -6,7 +6,7 @@
  * missing `description` fails the `.strict()` schema and produces a
  * convincing false negative (prior-plan learnings, T1).
  */
-import { mkdirSync, mkdtempSync, rmSync, writeFileSync } from "node:fs"
+import { mkdirSync, mkdtempSync, rmSync, utimesSync, writeFileSync } from "node:fs"
 import { tmpdir } from "node:os"
 import { join } from "node:path"
 import type { PluginInput } from "@opencode-ai/plugin"
@@ -65,6 +65,39 @@ export function writeTask(storeDir: string, projectRoot: string): string {
     projectRoot,
   })
   writeFileSync(join(storeDir, `${task.id}.json`), JSON.stringify(task))
+  return task.id
+}
+
+/**
+ * Write one schema-valid task whose FILE mtime is backdated by `ageMs`.
+ *
+ * Staleness is decided purely by `statSync().mtimeMs` (`getTaskAgeMs`), so ageing
+ * a fixture means ageing the file on disk — not the JSON payload, and not the
+ * task's own timestamps.
+ */
+export function writeAgedTask(
+  storeDir: string,
+  projectRoot: string,
+  ageMs: number,
+  overrides?: { id?: string; threadID?: string },
+): string {
+  mkdirSync(storeDir, { recursive: true })
+  const task = TaskObjectSchema.parse({
+    id:
+      overrides?.id ??
+      `T-${projectRoot.replace(/[^a-zA-Z0-9]/g, "")}-0000-4000-8000-000000000002`,
+    subject: "unfinished work",
+    description: "",
+    status: "in_progress",
+    blocks: [],
+    blockedBy: [],
+    threadID: overrides?.threadID ?? CHILD_SESSION,
+    projectRoot,
+  })
+  const file = join(storeDir, `${task.id}.json`)
+  writeFileSync(file, JSON.stringify(task))
+  const seconds = (Date.now() - ageMs) / 1000
+  utimesSync(file, seconds, seconds)
   return task.id
 }
 
