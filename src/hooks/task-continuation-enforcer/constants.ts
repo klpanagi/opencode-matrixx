@@ -12,7 +12,12 @@ Incomplete Matrixx tasks remain. Continue working on the next pending task.
 - Proceed without asking for permission
 - Mark each task in_progress before starting, completed immediately after
 - Respect blockedBy dependencies (skip blocked tasks)
-- Do not stop until all tasks are done`
+- Do not stop until all tasks are done
+
+BEFORE starting new work, audit the list below: if a task is already finished
+(delegate/background result received, change already made, verification already
+passed), close it with task_update(status="completed") right now instead of
+redoing it. Never leave finished work marked in_progress.`
 
 export const COUNTDOWN_SECONDS = 2
 export const TOAST_DURATION_MS = 900

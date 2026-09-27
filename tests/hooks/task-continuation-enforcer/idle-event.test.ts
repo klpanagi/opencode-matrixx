@@ -282,10 +282,10 @@ describe("filterTasksBySession", () => {
     expect(result).toHaveLength(2)
   })
 
-  test("pre-migration tasks (no threadID) are included", () => {
+  test("pre-migration tasks (no threadID) are excluded", () => {
     const tasks = [makeTask({ threadID: undefined })]
     const result = filterTasksBySession(tasks, { sessionID: "my-session", subagentIDs: [] })
-    expect(result).toHaveLength(1)
+    expect(result).toHaveLength(0)
   })
 
   test("current session tasks are included", () => {
@@ -306,7 +306,7 @@ describe("filterTasksBySession", () => {
     expect(result).toHaveLength(0)
   })
 
-  test("mixed sessions: only current + subagent + legacy pass through", () => {
+  test("mixed sessions: only current + subagent pass through, unattributed excluded", () => {
     const tasks = [
       makeTask({ id: "T-legacy" }),
       makeTask({ id: "T-current", threadID: "my-session" }),
@@ -314,8 +314,8 @@ describe("filterTasksBySession", () => {
       makeTask({ id: "T-other", threadID: "other-session" }),
     ]
     const result = filterTasksBySession(tasks, { sessionID: "my-session", subagentIDs: ["sub-1"] })
-    expect(result).toHaveLength(3)
-    expect(result.map((t: { id: string }) => t.id).sort()).toEqual(["T-current", "T-legacy", "T-sub"])
+    expect(result).toHaveLength(2)
+    expect(result.map((t: { id: string }) => t.id).sort()).toEqual(["T-current", "T-sub"])
   })
 
   test("empty tasks array returns empty array", () => {

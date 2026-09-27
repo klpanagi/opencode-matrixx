@@ -72,7 +72,7 @@ describe("useTaskSystem is gone from src/agents (C7 static half)", () => {
   })
 })
 
-describe("task-tool instruction rows name TaskUpdate literally (DoD-5 canary)", () => {
+describe("task-tool instruction rows name task_update literally (DoD-5 canary)", () => {
   test("no interpolated `| Tracking | ${...} |` row survives", () => {
     //#given every non-test file under src/agents
     const offenders = agentSources()
@@ -83,11 +83,11 @@ describe("task-tool instruction rows name TaskUpdate literally (DoD-5 canary)", 
     expect(offenders).toEqual([])
   })
 
-  test("at least three literal `| Tracking | TaskUpdate |` rows exist", () => {
+  test("at least three literal `| Tracking | task_update |` rows exist", () => {
     //#given every non-test file under src/agents (positive side, so an empty
     // corpus cannot pass vacuously)
     const files = agentSources().filter(({ content }) =>
-      /^\|\s*Tracking\s*\|\s*TaskUpdate\s*\|/m.test(content),
+      /^\|\s*Tracking\s*\|\s*task_update\s*\|/m.test(content),
     )
 
     //#then the 3 tracking rows still exist with a hard-coded tool name
@@ -108,7 +108,7 @@ describe("task-tool instruction rows name TaskUpdate literally (DoD-5 canary)", 
  * in three of those variants.
  */
 describe("rendered prompts name only the task tools (R8)", () => {
-  const TASK_TOOLS = ["TaskCreate", "TaskUpdate"]
+  const TASK_TOOLS = ["task_create", "task_update"]
   const BANNED = /todowrite|todoread|TodoWrite/i
   const TRACKING_ROW = /^\|\s*Tracking\s*\|\s*([^|]+?)\s*\|/gm
 
@@ -126,7 +126,7 @@ describe("rendered prompts name only the task tools (R8)", () => {
 
     //#then no `| Tracking |` row names a non-task tool
     for (const match of prompt.matchAll(TRACKING_ROW)) {
-      expect(`${label}: tracking cell "${match[1]}"`).toMatch(/TaskCreate|TaskUpdate/)
+      expect(`${label}: tracking cell "${match[1]}"`).toMatch(/task_create|task_update/)
     }
   }
 

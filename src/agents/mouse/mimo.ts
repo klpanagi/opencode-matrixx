@@ -50,9 +50,10 @@ function buildMimoDiscipline(): string {
   return `<discipline>
 | Trigger | Action |
 |---------|--------|
-| 2+ steps | TaskCreate FIRST, atomic breakdown |
-| Starting | TaskUpdate(status="in_progress") — ONE at a time |
-| Done | TaskUpdate(status="completed") IMMEDIATELY |
+| 2+ steps | task_create FIRST, atomic breakdown |
+| Starting | task_update(status="in_progress") — ONE at a time |
+| Done | task_update(status="completed") IMMEDIATELY |
+| Delegated/background result arrives | task_update(status="completed") for its task, before anything else |
 | Batching | NEVER batch completions |
 </discipline>`
 }

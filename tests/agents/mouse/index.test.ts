@@ -211,8 +211,8 @@ describe("createMouseAgentWithOverrides", () => {
       const result = createMouseAgentWithOverrides(override)
 
       //#then
-      expect(result.prompt).toContain("TaskCreate")
-      expect(result.prompt).toContain("TaskUpdate")
+      expect(result.prompt).toContain("task_create")
+      expect(result.prompt).toContain("task_update")
       expect(result.prompt).not.toContain("todowrite")
     })
 
@@ -225,7 +225,7 @@ describe("createMouseAgentWithOverrides", () => {
 
       //#then
       expect(result.prompt).toContain("<task_discipline_spec>")
-      expect(result.prompt).toContain("TaskCreate")
+      expect(result.prompt).toContain("task_create")
       expect(result.prompt).not.toContain("<todo_discipline_spec>")
     })
 
@@ -511,7 +511,7 @@ describe("buildMousePrompt", () => {
 
     // then
     expect(prompt).toContain("<task_discipline_spec>")
-    expect(prompt).toContain("TaskCreate")
+    expect(prompt).toContain("task_create")
   })
 
   })
@@ -593,7 +593,7 @@ describe("buildMousePrompt (new variants)", () => {
     expect(prompt).toContain("<Task_Discipline>");
     expect(prompt).toContain("<Critical_Constraints>");
     expect(prompt).toContain("<Verification>");
-    expect(prompt).toContain("TaskCreate");
+    expect(prompt).toContain("task_create");
   });
 
   test("Mimo prompt uses Task reference", () => {
@@ -604,8 +604,8 @@ describe("buildMousePrompt (new variants)", () => {
     const prompt = buildMousePrompt(model);
 
     //#then
-    expect(prompt).toContain("TaskCreate");
-    expect(prompt).toContain("TaskUpdate");
+    expect(prompt).toContain("task_create");
+    expect(prompt).toContain("task_update");
   });
 
   
@@ -618,7 +618,7 @@ describe("buildMousePrompt (new variants)", () => {
 
     //#then
     expect(prompt).toContain("<task_discipline>");
-    expect(prompt).toContain("TaskCreate");
+    expect(prompt).toContain("task_create");
     expect(prompt).toContain("task_create");
   });
 
@@ -654,7 +654,7 @@ describe("shared prompt utilities", () => {
   test("buildTodoDisciplineSection uses Task_Discipline", () => {
     const section = buildTodoDisciplineSection();
     expect(section).toContain("<Task_Discipline>");
-    expect(section).toContain("TaskCreate");
+    expect(section).toContain("task_create");
     expect(section).not.toContain("todowrite");
   });
 
@@ -666,9 +666,9 @@ describe("shared prompt utilities", () => {
     expect(table).toContain("No evidence = not complete.");
   });
 
-  test("buildVerificationTable references TaskUpdate", () => {
+  test("buildVerificationTable references task_update", () => {
     const table = buildVerificationTable();
-    expect(table).toContain("TaskUpdate");
+    expect(table).toContain("task_update");
     expect(table).toContain("All tasks marked completed");
   });
 

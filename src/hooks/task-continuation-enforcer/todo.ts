@@ -49,9 +49,10 @@ export function dropSubtasksWithResolvedParent(tasks: Task[]): Task[] {
 /**
  * Filter tasks by session scope.
  * - When sessionScoped=false: all tasks pass through (opt-out / legacy behavior)
- * - Pre-migration tasks (no threadID) are always included for backward compatibility
  * - Current session's tasks (threadID === sessionID) are included
  * - Subagent session tasks (threadID in subagentIDs) are included
+ * - Tasks with no threadID are excluded: threadID is required by TaskObjectSchema, so
+ *   an unattributed task cannot be attributed and is not claimed by any session
  * - All other tasks are excluded
  */
 export function filterTasksBySession(
@@ -60,7 +61,7 @@ export function filterTasksBySession(
 ): Task[] {
   if (options.sessionScoped === false) return tasks
   return tasks.filter((task) => {
-    if (!task.threadID) return true
+    if (!task.threadID) return false
     if (task.threadID === options.sessionID) return true
     if (options.subagentIDs.includes(task.threadID)) return true
     return false

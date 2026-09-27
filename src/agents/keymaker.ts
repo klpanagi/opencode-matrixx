@@ -28,16 +28,17 @@ function buildTodoDisciplineSection(): string {
 
 | Trigger | Action |
 |---------|--------|
-| 2+ step task | \`TaskCreate\` FIRST, atomic breakdown |
-| Uncertain scope | \`TaskCreate\` to clarify thinking |
+| 2+ step task | \`task_create\` FIRST, atomic breakdown |
+| Uncertain scope | \`task_create\` to clarify thinking |
 | Complex single task | Break down into trackable steps |
 
 ### Workflow (STRICT)
 
-1. **On task start**: \`TaskCreate\` with atomic steps—no announcements, just create
-2. **Before each step**: \`TaskUpdate(status="in_progress")\` (ONE at a time)
-3. **After each step**: \`TaskUpdate(status="completed")\` IMMEDIATELY (NEVER batch)
-4. **Scope changes**: Update tasks BEFORE proceeding
+1. **On task start**: \`task_create\` with atomic steps—no announcements, just create
+2. **Before each step**: \`task_update(status="in_progress")\` (ONE at a time)
+3. **After each step**: \`task_update(status="completed")\` IMMEDIATELY (NEVER batch)
+4. **On a background/delegated result**: close its task with \`task_update(status="completed")\` BEFORE anything else
+5. **Scope changes**: Update tasks BEFORE proceeding
 
 ### Why This Matters
 
