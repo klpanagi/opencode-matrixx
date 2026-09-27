@@ -3,6 +3,9 @@
  *
  * Simulates: plan creation → work → session.idle writes →
  * process restart (new PluginInput) → rehydration context matches original state.
+ *
+ * Progress is driven by mission-linked task files, the only source the
+ * plan-persister hook reads.
  */
 import { describe, expect, it } from "bun:test"
 import { mkdirSync, readFileSync, writeFileSync } from "node:fs"
@@ -19,22 +22,8 @@ function tmpDir(): string {
   return d
 }
 
-function makeMockContext(
-  todoResponses: Array<Array<{ content: string; status: string }>>,
-): PluginInput {
-  let callIndex = 0
+function makeMockContext(): PluginInput {
   const client = createOpencodeClient({ directory: "/tmp/test" })
-  type SessionTodoOptions = Parameters<typeof client.session.todo>[0]
-  type SessionTodoResult = ReturnType<typeof client.session.todo>
-
-  const request = new Request("http://localhost")
-  const response = new Response()
-  client.session.todo = async (_: SessionTodoOptions): Promise<SessionTodoResult> => {
-    const current = todoResponses[Math.min(callIndex, todoResponses.length - 1)] ?? []
-    callIndex += 1
-    return { data: current, error: undefined, request, response }
-  }
-
   return {
     client,
     project: { id: "test-project", worktree: "/tmp/test", time: { created: Date.now() } },
@@ -60,6 +49,34 @@ function setupMission(dir: string, planName: string, planPath: string): void {
   )
 }
 
+/** Write a mission-linked task file under `.matrixx/tasks/`. */
+function writeLinkedTask(
+  dir: string,
+  planName: string,
+  subject: string,
+  status: "pending" | "in_progress" | "completed",
+): void {
+  const tasksDir = join(dir, ".matrixx", "tasks")
+  mkdirSync(tasksDir, { recursive: true })
+  // One file per subject, so re-writing a subject updates its status in place.
+  const id = `T-integration-${subject.toLowerCase().replace(/[^a-z0-9]+/g, "-")}`
+  writeFileSync(
+    join(tasksDir, `${id}.json`),
+    JSON.stringify({
+      id,
+      subject,
+      description: subject,
+      status,
+      blocks: [],
+      blockedBy: [],
+      threadID: "integration-session",
+      projectRoot: dir,
+      metadata: { planName },
+    }),
+    "utf-8",
+  )
+}
+
 /**
  * Scenario: Plan is generated → agent works through steps → session.idle
  * persists progress → process restarts (new PluginInput) → rehydration
@@ -67,6 +84,7 @@ function setupMission(dir: string, planName: string, planPath: string): void {
  */
 describe("plan persistence round-trip", () => {
   it("survives a simulated process restart with correct rehydration", async () => {
+    //#given
     // Phase 1: Plan is generated
     const dir = tmpDir()
     const planPath = join(dir, ".matrixx", "plans", "integration-plan.md")
@@ -86,21 +104,19 @@ describe("plan persistence round-trip", () => {
     setupMission(dir, "integration-plan", planPath)
 
     // Phase 2: Agent works, completing step 1
-    const ctx1 = makeMockContext([
-      [
-        { content: "Set up authentication", status: "completed" },
-        { content: "Configure database", status: "pending" },
-        { content: "Deploy to staging", status: "pending" },
-      ],
-    ])
-    const hook1 = createPlanPersister(ctx1, { directory: dir })
+    writeLinkedTask(dir, "integration-plan", "Set up authentication", "completed")
+    writeLinkedTask(dir, "integration-plan", "Configure database", "pending")
+    writeLinkedTask(dir, "integration-plan", "Deploy to staging", "pending")
+    const hook1 = createPlanPersister(makeMockContext(), { directory: dir })
 
+    //#when
     // Simulate session.idle after step 1
     await hook1.event({
       event: { type: "session.idle", properties: { sessionID: "integration-session" } },
     })
     await new Promise((resolve) => setTimeout(resolve, 10))
 
+    //#then
     // Verify plan file shows step 1 completed
     const afterStep1 = readFileSync(planPath, "utf-8")
     expect(afterStep1).toContain("- [x] Set up authentication")
@@ -108,14 +124,8 @@ describe("plan persistence round-trip", () => {
     expect(afterStep1).toContain("- [ ] Deploy to staging")
 
     // Phase 3: Agent completes step 2
-    const ctx2 = makeMockContext([
-      [
-        { content: "Set up authentication", status: "completed" },
-        { content: "Configure database", status: "completed" },
-        { content: "Deploy to staging", status: "pending" },
-      ],
-    ])
-    const hook2 = createPlanPersister(ctx2, { directory: dir })
+    writeLinkedTask(dir, "integration-plan", "Configure database", "completed")
+    const hook2 = createPlanPersister(makeMockContext(), { directory: dir })
 
     await hook2.event({
       event: { type: "session.idle", properties: { sessionID: "integration-session" } },
@@ -130,14 +140,7 @@ describe("plan persistence round-trip", () => {
 
     // Phase 4: Simulate process restart — fresh PluginInput, no in-memory state
     // The plan file on disk should have all the state we need
-    const freshCtx = makeMockContext([
-      [
-        { content: "Set up authentication", status: "completed" },
-        { content: "Configure database", status: "completed" },
-        { content: "Deploy to staging", status: "pending" },
-      ],
-    ])
-    const freshHook = createPlanPersister(freshCtx, { directory: dir })
+    const freshHook = createPlanPersister(makeMockContext(), { directory: dir })
 
     // Phase 5: Rehydrate and verify state matches
     const rehydrated = freshHook.buildRehydrationContext("integration-session")
