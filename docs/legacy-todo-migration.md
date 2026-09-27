@@ -14,7 +14,9 @@ The legacy system wrapped OpenCode's ephemeral session-memory todos. The file-ba
 | `todo-continuation-enforcer` | Idle-event countdown that pushed the agent to finish leftover session todos | `task-continuation-enforcer`, which counts file-backed tasks |
 | `compaction-todo-preserver` | Re-injected the todo list after a compaction so summarization could not lose it | Nothing. File-backed tasks are re-read from disk after compaction, so there is nothing to preserve |
 | `tasks-todowrite-disabler` | Blocking `tool.execute.before` that threw on the two legacy todo tools, steering the model to the task workflow | Nothing needed. The tools stay denied in `tool-config-handler.ts`, and no prompt mentions them |
-| `task-notepad` | Injected a `.matrixx/tasks` context fragment (task counts) at session start | Nothing needed. `task-continuation-enforcer` and `task_list` read the store on demand |
+| `task-notepad` | Kept a notepad file in sync with the session-memory todo list on every todo mutation | `task-notepad-writer`, which writes a notepad file on `task_create` and stamps completion on `task_update` → `completed` |
+
+**Why `task-notepad` went and `task-notepad-writer` took over**: the original hook was removed in commit `f8de08cfb`. Its only data source was `session.todo()`, and that API is gone for good, so there was nothing left to key a notepad on. The replacement hangs off the file-backed task store instead of session memory: it fires on `task_create` to write the notepad, and on `task_update` when the status becomes `completed` to stamp the completion time into the file.
 
 Alongside the hooks, the removal also collapsed the `useTaskSystem` prompt fork (agents had a todo-discipline branch), made the task-system pivot unconditional, and rewrote every prompt, skill, and command payload to name `task_create` / `task_list` directly.
 
