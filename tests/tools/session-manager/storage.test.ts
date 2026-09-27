@@ -453,32 +453,35 @@ describe("session-manager storage - SDK path (beta mode)", () => {
     expect(messages[1].role).toBe("assistant")
   })
 
-  test("readSessionTodos uses SDK when beta mode is enabled", async () => {
-    // given
-    const mockTodos = [
-      { id: "todo_1", content: "Task 1", status: "pending", priority: "high" },
-      { id: "todo_2", content: "Task 2", status: "completed", priority: "medium" },
-    ]
-    mockClient.session.todo.mockImplementation(() => Promise.resolve({ data: mockTodos }))
-
-    mock.module("../../../src/shared/opencode-storage-detection", () => ({
-      isSqliteBackend: () => true,
-      resetSqliteBackendCache: () => {},
-    }))
-
-    const { setStorageClient, readSessionTodos } = await import("../../../src/tools/session-manager/storage")
+  test("readSessionTodos reads task state and never calls the SDK todo endpoint", async () => {
+    // given - a task attributed to this session in the file-backed store
+    mkdirSync(join(TEST_DIR, ".matrixx", "tasks"), { recursive: true })
+    writeFileSync(
+      join(TEST_DIR, ".matrixx", "tasks", `T-${randomUUID()}.json`),
+      JSON.stringify({
+        id: `T-${randomUUID()}`,
+        subject: "Task 1",
+        description: "",
+        status: "pending",
+        blocks: [],
+        blockedBy: [],
+        threadID: "ses_test",
+      })
+    )
+    const { setStorageDirectory, setStorageClient, readSessionTodos } = await import(
+      "../../../src/tools/session-manager/storage"
+    )
+    setStorageDirectory(TEST_DIR)
     setStorageClient(mockClient as unknown as Parameters<typeof setStorageClient>[0])
 
     // when
     const todos = await readSessionTodos("ses_test")
 
-    // then
-    expect(mockClient.session.todo).toHaveBeenCalledWith({ path: { id: "ses_test" } })
-    expect(todos.length).toBe(2)
+    // then - the SDK is never asked, and task state is returned instead
+    expect(mockClient.session.todo).not.toHaveBeenCalled()
+    expect(todos).toHaveLength(1)
     expect(todos[0].content).toBe("Task 1")
-    expect(todos[1].content).toBe("Task 2")
     expect(todos[0].status).toBe("pending")
-    expect(todos[1].status).toBe("completed")
   })
 
   test("SDK path returns empty array on error", async () => {

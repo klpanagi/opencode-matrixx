@@ -1,7 +1,12 @@
 import { describe, expect, test } from "bun:test"
+import { randomUUID } from "node:crypto"
+import { mkdirSync, rmSync, writeFileSync } from "node:fs"
+import { tmpdir } from "node:os"
+import { join } from "node:path"
 import type { PluginInput } from "@opencode-ai/plugin"
 import type { ToolContext } from "@opencode-ai/plugin/tool"
 import { createSessionManagerTools } from "../../../src/tools/session-manager/tools"
+import { readSessionTodos } from "../../../src/tools/session-manager/storage"
 
 const projectDir = "/Users/yeongyu/local-workspaces/matrixx"
 
@@ -76,8 +81,43 @@ describe("session-manager tools", () => {
       include_todos: true,
       include_transcript: true,
     }, mockContext)
-    
+
     expect(typeof result).toBe("string")
+  })
+
+  test("session_read still accepts the include_todos argument and reads task state", async () => {
+    //#given a project directory holding one task attributed to the session
+    const dir = join(tmpdir(), `matrixx-tools-${randomUUID()}`)
+    const taskDir = join(dir, ".matrixx", "tasks")
+    mkdirSync(taskDir, { recursive: true })
+    const taskId = `T-${randomUUID()}`
+    writeFileSync(
+      join(taskDir, `${taskId}.json`),
+      JSON.stringify({
+        id: taskId,
+        subject: "Ship the task store swap",
+        description: "",
+        status: "pending",
+        blocks: [],
+        blockedBy: [],
+        threadID: "ses_test123",
+      })
+    )
+
+    //#when the tools are built for that directory and the read is invoked
+    const scoped = createSessionManagerTools({ directory: dir } as PluginInput)
+    const accepted = await scoped.session_read.execute(
+      { session_id: "ses_test123", include_todos: true },
+      mockContext
+    )
+    const todos = await readSessionTodos("ses_test123")
+
+    //#then the argument name is unchanged and the diagnostic carries task state
+    expect(typeof accepted).toBe("string")
+    expect(todos).toHaveLength(1)
+    expect(todos[0].content).toBe("Ship the task store swap")
+
+    rmSync(dir, { recursive: true, force: true })
   })
 
   test("session_read respects limit parameter", async () => {
