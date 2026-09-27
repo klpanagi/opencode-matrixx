@@ -45,15 +45,15 @@ export function createPlanPersister(
     // Foreign sessions never vote; drifted files log as unknown.
     const { todos } = collectLinkedTodos(directory, mission)
 
-    // Mandatory early return. `applyFilteredSync` has no zero-vote guard, so an
-    // empty list would reach `atomicWrite` and uncheck plan boxes. Syncing is
-    // therefore skipped — and logged — whenever no mission-linked task votes.
+    // A zero-vote list needs no guard. `syncCheckboxesDetailed` returns every
+    // line verbatim when no todo matches (plan-storage.ts:139-142) and only
+    // ever checks, never unchecks (:143-144), so the unconditional write
+    // refreshes the metadata stamp without touching a single checkbox.
     if (todos.length === 0) {
-      log(`[${HOOK_NAME}] Sync skipped: no mission-linked tasks for this session`, {
+      log(`[${HOOK_NAME}] No mission-linked tasks; stamping plan only`, {
         sessionID,
         plan: planPath,
       })
-      return
     }
 
     await applyFilteredSync({

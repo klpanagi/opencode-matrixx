@@ -11,6 +11,7 @@ import { join } from "node:path"
 import type { PluginInput } from "@opencode-ai/plugin"
 import { createOpencodeClient } from "@opencode-ai/sdk"
 
+import { parseMetadataComment } from "../../../src/features/mission-state/plan-storage"
 import { createPlanPersister } from "../../../src/hooks/plan-persister/hook"
 
 const LOG_FILE = join(tmpdir(), "matrixx.log")
@@ -210,11 +211,17 @@ describe("plan-persister", () => {
     await hook.event({ event: { type: "session.deleted", properties: { sessionID: "ses_1" } } })
   })
 
-  it("never calls ctx.client.session.todo and leaves the plan byte-identical", async () => {
+  // REWRITTEN (was: "never calls ctx.client.session.todo and leaves the plan
+  // byte-identical"). The old assertion `expect(readFileSync(planPath)).toBe(before)`
+  // encoded the false premise that a zero-vote list means the plan file is never
+  // written. It was only true because of an early return whose justification
+  // ("applyFilteredSync ... would uncheck plan boxes") was factually wrong. The
+  // true contract has two halves: the body is byte-identical, the stamp is
+  // refreshed. The `session.todo` spy assertion is preserved verbatim.
+  it("never calls ctx.client.session.todo; zero-vote capture stamps the plan and leaves the body byte-identical", async () => {
     //#given
     const dir = tmpDir()
-    const planPath = setupFixture(dir, "no-fallback", "- [ ] Task\n")
-    const before = readFileSync(planPath, "utf-8")
+    const planPath = setupFixture(dir, "no-fallback", "- [ ] Task")
     const { ctx, invocations } = createThrowingTodoContext()
     const hook = createPlanPersister(ctx, { directory: dir })
 
@@ -223,14 +230,23 @@ describe("plan-persister", () => {
     await waitForPendingTicks()
 
     //#then
+    const after = readFileSync(planPath, "utf-8")
     expect(invocations()).toBe(0)
-    expect(readFileSync(planPath, "utf-8")).toBe(before)
+    expect(after.replace(/\n\n<!-- plan-persister:[\s\S]*?-->\n$/, "")).toBe("- [ ] Task")
+    const meta = parseMetadataComment(after)
+    expect(meta?.sessionId).toBe("test-session-1")
+    expect(meta?.id).toBe("no-fallback")
   })
 
-  it("logs the zero-linked-todos condition naming the session", async () => {
+  // REWRITTEN (was: "logs the zero-linked-todos condition naming the session").
+  // The old expectation required the string "no mission-linked tasks", which
+  // belonged to the "Sync skipped" log line of the deleted early return. The
+  // diagnosability intent survives: a zero-vote capture still names the session
+  // and the plan, and the sync that followed it is now recorded too.
+  it("logs the zero-vote condition naming the session, then records the sync", async () => {
     //#given
     const dir = tmpDir()
-    setupFixture(dir, "diagnosable", "- [ ] Task")
+    const planPath = setupFixture(dir, "diagnosable", "- [ ] Task")
     const offset = logSize()
     const hook = createPlanPersister(createMockContext(), { directory: dir })
 
@@ -240,8 +256,10 @@ describe("plan-persister", () => {
 
     //#then
     const tail = logSince(offset)
-    expect(tail).toContain("no mission-linked tasks")
+    expect(tail).toContain("No mission-linked tasks")
     expect(tail).toContain("test-session-1")
+    expect(tail).toContain(planPath)
+    expect(tail).toContain("Plan synced")
   })
 
   it("buildRehydrationContext returns directive string when mission is active", () => {
