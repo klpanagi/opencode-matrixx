@@ -25,7 +25,7 @@ Returns a formatted view of session messages with role, timestamp, and content. 
 
 Arguments:
 - session_id (required): Session ID to read
-- include_todos (optional): Include the session's task state from the task store if available (default: false)
+- include_todos (optional): Include the session's task state from the task store if available (default: false). Every task attributed to the session is listed, including one that has been untouched long enough to be stale, so an unfinished item is never hidden from this diagnostic.
 - include_transcript (optional): Include transcript log if available (default: false)
 - limit (optional): Maximum number of messages to return (default: all)
 

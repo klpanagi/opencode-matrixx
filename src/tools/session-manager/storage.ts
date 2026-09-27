@@ -301,12 +301,22 @@ function toTodoStatus(status: "pending" | "in_progress" | "completed" | "deleted
  *
  * Fails open via `readSessionTasks`: a missing store or an unreadable file yields
  * `[]` rather than throwing, matching the contract of the reads it replaces.
+ *
+ * `excludeStale: false` is an explicit local opt-out, not a change of default.
+ * `SessionTaskQuery.excludeStale` stays `true` so a completion gate cannot leak a
+ * pending handle forever; that bound belongs to the gates, not to this read. This
+ * is the `include_todos` / `SessionInfo.todos` diagnostic, and the native list it
+ * replaced applied no staleness filter at all, so inheriting the default silently
+ * dropped an untouched-but-unfinished task from the view a user inspects when
+ * asking "what is this session carrying?" — which is why a session could report
+ * `has_todos: true` and render an empty list.
  */
 export async function readSessionTodos(sessionID: string): Promise<TodoItem[]> {
   return readSessionTasks({
     config: pluginConfig,
     directory: storageDirectory ?? process.cwd(),
     sessionID,
+    excludeStale: false,
   }).map((task) => ({
     id: task.id,
     content: task.subject,
