@@ -56,9 +56,10 @@ export const MatrixxConfigSchema = z.object({
   disabled_hooks: z.array(HookNameSchema).optional(),
   disabled_commands: z.array(BuiltinCommandNameSchema).optional(),
   /** Disable specific tools by name.
-   * The legacy `["todowrite", "todoread"]` example is a no-op since v2.7 —
-   * both tools are gone with the legacy todo system. The key itself still
-   * parses and is honoured for any tool name OpenCode still registers. */
+   * A `["todowrite", "todoread"]` entry here is a no-op since v2.7: both tools
+   * are unreachable, not merely disabled, so there is nothing for the list to
+   * act on. The key itself stays, and is honoured for tool names OpenCode
+   * still registers. */
   disabled_tools: z.array(z.string()).optional(),
   agents: AgentOverridesSchema.optional(),
   categories: CategoriesConfigSchema.optional(),

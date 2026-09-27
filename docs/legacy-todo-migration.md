@@ -41,15 +41,25 @@ The four names in the table above remain in `HookNameSchema` (`src/config/schema
 
 They are scheduled for deletion in v3.0. If you want the warning to stop before then, remove the names from your `disabled_hooks` array.
 
-## What Still Reads Session Todos
+## Nothing Reads Session Todos Anymore
 
-Two read paths survive, both on purpose. OpenCode keeps its per-session todo state across the plugin upgrade, so code that inspects it still gets a meaningful answer instead of a hard error:
+An earlier draft of this document said two read paths survived the removal, on purpose, so that code inspecting OpenCode's ephemeral todo state would keep getting a meaningful answer instead of a hard error. **That is no longer true.** Every internal read of session todos was removed too. The directive was simple: neither the tools nor the state they carry is mentioned or used anywhere, so there is nothing to read.
 
-- `src/hooks/session-todo-status.ts` (`hasIncompleteTodos`) checks the session todo state at session start and logs a one-time deprecation notice.
-- `src/features/background-agent/manager.ts` (`checkSessionTodos`) makes the same check when deciding whether a background task may launch.
-- `src/tools/session-manager/**` keeps its `include_todos` option, so an agent inspecting a session can still see the todo state that session was created with.
+What the reads were doing, and what replaced them:
 
-None of these write to the todo state, and none of them gate the task tools. They are read-only compatibility shims and go away in v3.0.
+- The session-start deprecation notice is gone. There is no todo state left to warn about.
+- The background-task launch check no longer asks whether the session had open todos. It reads the file-backed task store instead, scoped to the calling session, so a background task can only be judged against work actually attributed to that session.
+- The `session-manager` diagnostic is the one place the old vocabulary leaks through. It keeps an `include_todos` option, but the name is stale: the option no longer touches todo state. It reads task state for the session, and the argument name was deliberately left alone so the tool's parameter surface does not churn. Expect to see `include_todos` in code and understand it as "include task state".
+
+The scoping that makes this safe is structural, not defensive. Every task record carries a `threadID`, and it is a required field. A task with no session attribution cannot be written at all, so it is invisible to a session-scoped read by construction rather than by a filter someone might later forget to tighten.
+
+## Accepted Behaviour Changes
+
+Two consequences of the above are real and are accepted, not deferred.
+
+**Plan checkboxes with no mission-linked tasks no longer sync.** The `plan-persister` hook reconciles plan checkbox state against the task store. It can only reconcile checkboxes it can tie to a task, and a mission whose checkboxes were never linked to any task has nothing to reconcile against. That mission's plan state stops syncing. The capture path logs this condition when it happens, so the situation is diagnosable from `/tmp/matrixx.log` rather than showing up as a silent divergence.
+
+**A session mid-flight on OpenCode-native todos loses that state.** If you upgrade the plugin while a session still holds open native todos, those todos are simply gone. There is no migration path, and no telemetry path standing in for one. That is a decision, not an oversight. The alternative was keeping a read or a scrape alive purely to observe state the plugin had already decided not to own, and that is exactly the coupling this removal exists to break. If you were mid-task, the file-backed tasks are the record of where you were.
 
 ## A Note On The Web Config Editor
 

@@ -2,7 +2,7 @@
 
 > **Scope:** Persistent, file-backed task management for Matrixx agent orchestration.
 > **Audience:** Engineers evolving the task system: storage, tools, hooks, scheduling, and agent integration.
-> **Version:** 2.6.10, verified against source. Canonical config lives in `tasks.*` (`src/config/schema/tasks.ts`); the file-backed task system is **unconditional** and `morpheus.tasks.*` remains a lower-precedence legacy fallback for storage keys (see §3). The legacy todo system is gone: see `docs/legacy-todo-migration.md` for the retired hooks, the config keys that are now accepted no-ops, and the `session.todo()` read paths that remain until v3.0.
+> **Version:** 2.6.10, verified against source. Canonical config lives in `tasks.*` (`src/config/schema/tasks.ts`); the file-backed task system is **unconditional** and `morpheus.tasks.*` remains a lower-precedence legacy fallback for storage keys (see §3). The legacy todo system is gone: see `docs/legacy-todo-migration.md` for the retired hooks, the config keys that are now accepted no-ops, and why nothing reads session todo state any longer.
 
 Every normative claim below traces to the source path cited beside it. Where behavior belongs to another doc, this spec cross-links instead of duplicating: hook internals → `docs/hooks.md`, orchestration and wave planning flow → `docs/orchestration.md`, command reference → `docs/command-reference.md`.
 
@@ -517,7 +517,6 @@ Three blocks:
 | `task-resume-info` (`src/hooks/task-resume-info/`) | `tool.execute.after` for delegate targets | Extracts `session_id` via `SESSION_ID_PATTERNS`, appends `to continue: task(session_id="…")` unless present; ignores `Error:` outputs. Always registered (`create-session-hooks.ts`). |
 | `empty-task-response-detector` (`src/hooks/empty-task-response-detector.ts`) | response analysis | Detects an empty assistant message while tasks remain; triggers a re-prompt |
 | `delegate-task-retry` (`src/hooks/delegate-task-retry/`) | `delegate_task` failure | Retries transient LLM failures via pattern matching in `patterns.ts` |
-| `session-todo-status` (`src/hooks/session-todo-status.ts`) | session start | Retained `session.todo()` read with a one-time deprecation log. OpenCode's per-session todo state persists across the upgrade, so the read stays until v3.0; see `docs/legacy-todo-migration.md`. |
 
 ### 8.4 `task-toast-manager`: Background-Task Toasts
 
@@ -594,7 +593,6 @@ Used by: `create-continuation-hooks`, `tool-registry`. Never read `config.tasks`
 | `src/tools/plan/plan-read.ts`, `plan-update.ts` | `plan_read` (hashline output), `plan_update` (`LINE#ID` edits) |
 | `src/hooks/task-continuation-enforcer/` | Enforcer factory, idle handler, injection, countdown, staleness, session filter |
 | `src/hooks/task-edit-guard/` | Write/Edit/Read + bash guard for `.matrixx/plans` and `.matrixx/tasks` |
-| `src/hooks/session-todo-status.ts` | Retained `session.todo()` read with a one-time deprecation log (removed in v3.0) |
 | `src/hooks/task-resume-info/` | Resume hint `task(session_id="…")` |
 | `src/tools/delegate-task/sync-task-deps.ts` | Bidirectional dep sync |
 | `src/config/schema/tasks.ts` | Canonical `TasksConfigSchema` |
