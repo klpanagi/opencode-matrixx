@@ -65,6 +65,7 @@ const HookNameEnum = z.enum([
   "knowledge-hub-search-nudge",
   "dcp-nudge-sanitizer",
   "nudge-loop-breaker",
+  "task-notepad-writer",
 ])
 
 // Deprecated alias — remove in v2.7 (BREAKING: rename anthropic- → generic)
