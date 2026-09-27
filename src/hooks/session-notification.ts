@@ -1,4 +1,5 @@
 import type { PluginInput } from "@opencode-ai/plugin"
+import type { MatrixxConfig } from "../config/schema"
 import {
   getMainSessionID,
   getSubagentSessionIDs,
@@ -30,7 +31,13 @@ interface SessionNotificationConfig {
 }
 export function createSessionNotification(
   ctx: PluginInput,
-  config: SessionNotificationConfig = {}
+  config: SessionNotificationConfig = {},
+  /**
+   * The plugin config is a separate parameter, not part of `SessionNotificationConfig`:
+   * only `tasks.*` is read here, and widening the hook-local config would blur a
+   * presentation-only shape into a carrier for task-storage settings.
+   */
+  pluginConfig?: Partial<MatrixxConfig>
 ) {
   const currentPlatform = detectPlatform()
   const defaultSoundPath = getDefaultSoundPath(currentPlatform)
@@ -50,6 +57,7 @@ export function createSessionNotification(
 
   const hasIncompleteTaskWork = async (_ctx: PluginInput, sessionID: string): Promise<boolean> =>
     hasIncompleteTasksForSession({
+      config: pluginConfig,
       directory: ctx.directory,
       sessionID,
       subagentIDs: getSubagentSessionIDs(sessionID),

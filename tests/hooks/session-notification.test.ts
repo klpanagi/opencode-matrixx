@@ -1,11 +1,13 @@
 import { afterEach, beforeEach, describe, expect, spyOn, test } from "bun:test"
 import type { PluginInput } from "@opencode-ai/plugin"
-import { existsSync, mkdirSync, rmSync, writeFileSync } from "node:fs"
+import { existsSync, mkdirSync, mkdtempSync, rmSync, writeFileSync } from "node:fs"
 import { join } from "node:path"
 import { tmpdir } from "node:os"
+import type { MatrixxConfig } from "../../src/config"
 import { _resetForTesting, setMainSession, subagentSessions } from "../../src/features/session-state"
 import { createSessionNotification } from "../../src/hooks/session-notification"
 import * as utils from "../../src/hooks/session-notification-utils"
+import { TaskObjectSchema } from "../../src/tools/task/types"
 
 const TASK_STORE_TEST_ROOT = join(tmpdir(), "matrixx-session-notification-tests")
 
@@ -56,6 +58,40 @@ describe("session-notification", () => {
     )
   }
 
+  /**
+   * Write a task into an arbitrary task directory.
+   * Uses `TaskObjectSchema.parse` because a hand-rolled object that fails the
+   * `.strict()` schema is indistinguishable from "no pending work" to the predicate.
+   */
+  function writeTaskInto(
+    taskDir: string,
+    id: string,
+    threadID: string,
+    projectRoot: string,
+    status: "pending" | "in_progress" = "in_progress"
+  ): void {
+    mkdirSync(taskDir, { recursive: true })
+    const task = TaskObjectSchema.parse({
+      id,
+      subject: "Wire the idle-suppression predicate",
+      description: "Bound predicate over the file-backed task store.",
+      status,
+      blocks: [],
+      blockedBy: [],
+      threadID,
+      projectRoot,
+    })
+    writeFileSync(join(taskDir, `${id}.json`), JSON.stringify(task))
+  }
+
+  const tempDirs: string[] = []
+
+  function makeTempDir(): string {
+    const dir = mkdtempSync(join(tmpdir(), "matrixx-sessnotif-"))
+    tempDirs.push(dir)
+    return dir
+  }
+
   beforeEach(() => {
     _resetForTesting()
     notificationCalls = []
@@ -74,6 +110,8 @@ describe("session-notification", () => {
     subagentSessions.clear()
     _resetForTesting()
     rmSync(TASK_STORE_TEST_ROOT, { recursive: true, force: true })
+    for (const dir of tempDirs) rmSync(dir, { recursive: true, force: true })
+    tempDirs.length = 0
   })
 
   test("should not trigger notification for subagent session", async () => {
@@ -456,6 +494,130 @@ describe("session-notification", () => {
         properties: { sessionID },
       },
     })
+    await new Promise((resolve) => setTimeout(resolve, 100))
+
+    //#then
+    expect(notificationCalls).toHaveLength(1)
+  })
+
+  test("suppresses the notification for pending work in tasks.storage_path", async () => {
+    //#given
+    const projectRoot = makeTempDir()
+    const customTaskDir = join(makeTempDir(), "custom-tasks")
+    const sessionID = "ses_storage_path"
+    setMainSession(sessionID)
+    writeTaskInto(
+      customTaskDir,
+      "T-33333333-3333-4333-8333-333333333333",
+      sessionID,
+      projectRoot
+    )
+    const pluginConfig: Partial<MatrixxConfig> = {
+      tasks: { enabled: true, storage_path: customTaskDir },
+    }
+
+    const hook = createSessionNotification(
+      createMockPluginInput(projectRoot),
+      { idleConfirmationDelay: 10 },
+      pluginConfig
+    )
+
+    //#when
+    await hook({
+      event: { type: "session.idle", properties: { sessionID } },
+    })
+    await new Promise((resolve) => setTimeout(resolve, 100))
+
+    //#then
+    expect(notificationCalls).toHaveLength(0)
+  })
+
+  test("suppresses the notification for pending work under tasks.scope global", async () => {
+    //#given
+    const projectRoot = makeTempDir()
+    const fakeConfigDir = makeTempDir()
+    const previousConfigDir = process.env.OPENCODE_CONFIG_DIR
+    process.env.OPENCODE_CONFIG_DIR = fakeConfigDir
+    const globalTaskDir = join(fakeConfigDir, "tasks", "list-global")
+    const sessionID = "ses_global_scope"
+    setMainSession(sessionID)
+    writeTaskInto(
+      globalTaskDir,
+      "T-44444444-4444-4444-8444-444444444444",
+      sessionID,
+      projectRoot
+    )
+    const pluginConfig: Partial<MatrixxConfig> = {
+      tasks: { enabled: true, scope: "global", task_list_id: "list-global" },
+    }
+
+    try {
+      const hook = createSessionNotification(
+        createMockPluginInput(projectRoot),
+        { idleConfirmationDelay: 10 },
+        pluginConfig
+      )
+
+      //#when
+      await hook({
+        event: { type: "session.idle", properties: { sessionID } },
+      })
+      await new Promise((resolve) => setTimeout(resolve, 100))
+
+      //#then
+      expect(notificationCalls).toHaveLength(0)
+    } finally {
+      if (previousConfigDir === undefined) delete process.env.OPENCODE_CONFIG_DIR
+      else process.env.OPENCODE_CONFIG_DIR = previousConfigDir
+    }
+  })
+
+  test("still notifies when tasks.storage_path holds no pending work", async () => {
+    //#given
+    const projectRoot = makeTempDir()
+    const emptyTaskDir = join(makeTempDir(), "empty-tasks")
+    mkdirSync(emptyTaskDir, { recursive: true })
+    const sessionID = "ses_empty_custom"
+    setMainSession(sessionID)
+    const pluginConfig: Partial<MatrixxConfig> = {
+      tasks: { enabled: true, storage_path: emptyTaskDir },
+    }
+
+    const hook = createSessionNotification(
+      createMockPluginInput(projectRoot),
+      { idleConfirmationDelay: 10 },
+      pluginConfig
+    )
+
+    //#when
+    await hook({ event: { type: "session.idle", properties: { sessionID } } })
+    await new Promise((resolve) => setTimeout(resolve, 100))
+
+    //#then
+    expect(notificationCalls).toHaveLength(1)
+  })
+
+  test("fails open when the tasks.storage_path directory does not exist", async () => {
+    //#given
+    const projectRoot = makeTempDir()
+    const missingTaskDir = join(makeTempDir(), "never-created")
+    expect(existsSync(missingTaskDir)).toBe(false)
+    const sessionID = "ses_missing_custom"
+    setMainSession(sessionID)
+    const pluginConfig: Partial<MatrixxConfig> = {
+      tasks: { enabled: true, storage_path: missingTaskDir },
+    }
+
+    const hook = createSessionNotification(
+      createMockPluginInput(projectRoot),
+      { idleConfirmationDelay: 10 },
+      pluginConfig
+    )
+
+    //#when
+    await expect(
+      hook({ event: { type: "session.idle", properties: { sessionID } } })
+    ).resolves.toBeUndefined()
     await new Promise((resolve) => setTimeout(resolve, 100))
 
     //#then
