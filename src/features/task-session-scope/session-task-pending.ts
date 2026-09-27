@@ -7,6 +7,7 @@ import { log } from "../../shared/logger"
 import { TaskObjectSchema } from "../../tools/task/types"
 import { getTaskDir, readJsonSafe } from "../task-storage/storage"
 import type { Task } from "../task-storage/types"
+import { expandByParentAncestry } from "./ancestry"
 
 const LOG_SCOPE = "[task-session-scope]"
 
@@ -24,6 +25,20 @@ export interface SessionTaskQuery {
    * Defaults to true so a worker that died cannot leak a pending handle forever.
    */
   excludeStale?: boolean
+  /**
+   * Max `parentID` hops followed upward when admitting delegated workers' tasks.
+   * Defaults to 3 (`DEFAULT_ANCESTRY_DEPTH`), matching `MAX_PARENT_DEPTH` in
+   * `src/hooks/plan-persister/task-link.ts`. Deeper chains stay out of scope, which
+   * under-counts rather than over-counts — the safe direction for a completion gate.
+   */
+  ancestryDepth?: number
+  /**
+   * Overrides the config-derived stale window (`tasks.stale_after_hours`, default 24h)
+   * for this query only. The background completion gates pass a much shorter window
+   * (`tasks.background_stale_after_hours`, default 2h) so a dead background handle is
+   * not held open for a full day, while the continuation enforcer keeps its 24h.
+   */
+  staleAfterMs?: number
 }
 
 /**
@@ -52,6 +67,15 @@ export interface SessionTaskQuery {
  * makes unscoped tasks structurally invisible here, eliminating the "unscoped task
  * blocks every session" vector.
  *
+ * The direct filter above is not the whole scope. Work delegated to a subagent (or a
+ * grandchild) is recorded under the *worker's* `threadID`, so the strict match alone
+ * would let a parent complete while its own delegated work is still open. The kept
+ * set is therefore expanded upward along the on-disk `parentID` chain by
+ * `expandByParentAncestry` — see `./ancestry.ts` for the depth bound, the cycle rule,
+ * and why that backstop is durable where the in-memory `subagentSessions` registry is
+ * not. `subagentIDs` stays: the union is the correct scope, since the registry still
+ * adds coverage while the process is alive.
+ *
  * Staleness uses the real exports `getStaleAfterMs` / `isTaskStale` from the
  * enforcer's `staleness.ts` (their names are unchanged; only this call site is new).
  */
@@ -71,16 +95,20 @@ export function readSessionTasks(query: SessionTaskQuery): Task[] {
       if (parsed) tasks.push(parsed)
     }
 
-    const scoped = tasks.filter((task) => {
-      if (task.threadID === query.sessionID) return true
-      if (!task.threadID) return false
-      return query.subagentIDs?.includes(task.threadID) === true
-    })
+    const scoped = expandByParentAncestry(
+      tasks.filter((task) => {
+        if (task.threadID === query.sessionID) return true
+        if (!task.threadID) return false
+        return query.subagentIDs?.includes(task.threadID) === true
+      }),
+      tasks,
+      { taskDir, depth: query.ancestryDepth },
+    )
 
     const excludeStale = query.excludeStale ?? true
     if (!excludeStale) return scoped
 
-    const staleAfterMs = getStaleAfterMs(query.config)
+    const staleAfterMs = query.staleAfterMs ?? getStaleAfterMs(query.config)
     const fresh = scoped.filter((task) => !isTaskStale(join(taskDir, `${task.id}.json`), staleAfterMs))
     if (fresh.length !== scoped.length) {
       log(`${LOG_SCOPE} Dropped stale tasks`, {
