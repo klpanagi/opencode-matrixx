@@ -100,7 +100,7 @@ describe("task-system gating collapse", () => {
       expect(isTaskSystemEnabled(config)).toBe(true)
     })
 
-    test("the other six resolved fields survive the collapse", () => {
+    test("the other resolved fields survive the collapse", () => {
       //#given a config that only sets the canonical storage keys
       const config = {
         tasks: { enabled: true, scope: "global" as const, storage_path: "/tmp/x", task_list_id: "L" },

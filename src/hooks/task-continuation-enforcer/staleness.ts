@@ -2,9 +2,11 @@ import { statSync } from "node:fs"
 import { join } from "node:path"
 import type { MatrixxConfig } from "../../config/schema"
 import type { Task } from "../../features/task-storage/types"
-import { resolveTasksConfig } from "../../shared/task-system-gating"
+import { DEFAULT_BACKGROUND_STALE_AFTER_HOURS, resolveTasksConfig } from "../../shared/task-system-gating"
 
 export const DEFAULT_STALE_AFTER_HOURS = 24
+
+export { DEFAULT_BACKGROUND_STALE_AFTER_HOURS } from "../../shared/task-system-gating"
 
 const HOUR_MS = 60 * 60 * 1000
 
@@ -15,6 +17,19 @@ const HOUR_MS = 60 * 60 * 1000
  */
 export function getStaleAfterMs(config?: Partial<MatrixxConfig>): number {
   const hours = resolveTasksConfig(config).stale_after_hours ?? DEFAULT_STALE_AFTER_HOURS
+  return hours * HOUR_MS
+}
+
+/**
+ * Resolve the background completion-gate threshold (ms) from plugin config.
+ * `tasks.background_stale_after_hours` (default 2h, canonical only) — the same
+ * mtime basis as `getStaleAfterMs`, but a much shorter window because a task
+ * held `pending`/`in_progress` with no file activity is a far stronger signal
+ * when it is blocking a background handle than when it is merely delaying a
+ * continuation nudge. The enforcer's 24h default deliberately stays at 24.
+ */
+export function getBackgroundStaleAfterMs(config?: Partial<MatrixxConfig>): number {
+  const hours = resolveTasksConfig(config).background_stale_after_hours ?? DEFAULT_BACKGROUND_STALE_AFTER_HOURS
   return hours * HOUR_MS
 }
 

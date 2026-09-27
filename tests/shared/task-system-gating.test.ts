@@ -77,6 +77,7 @@ describe("resolveTasksConfig", () => {
       storage_path: undefined,
       task_list_id: undefined,
       stale_after_hours: undefined,
+      background_stale_after_hours: 2,
       session_scoped: true,
       pollTimeoutMs: undefined,
     })

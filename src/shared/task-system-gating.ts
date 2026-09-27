@@ -9,10 +9,22 @@ export type ResolvedTasksConfig = Required<
 > &
   Pick<
     TasksConfig,
-    "storage_path" | "task_list_id" | "stale_after_hours" | "pollTimeoutMs"
+    | "storage_path"
+    | "task_list_id"
+    | "stale_after_hours"
+    | "pollTimeoutMs"
+    | "background_stale_after_hours"
   >
 
 const LOG_MARKER = "[task-system-legacy-keys]"
+
+/**
+ * Fallback for `tasks.background_stale_after_hours` when the key is absent.
+ * Kept here, next to the resolution that applies it, so the default and its
+ * use site cannot drift; re-exported from the enforcer's `staleness.ts` where
+ * the other staleness default lives.
+ */
+export const DEFAULT_BACKGROUND_STALE_AFTER_HOURS = 2
 
 const LOUD_WARNING =
   "tasks.enabled=false was working until this release and is now ignored: " +
@@ -120,6 +132,11 @@ export function resolveTasksConfig(
     task_list_id: canonical?.task_list_id ?? legacyTasks?.task_list_id,
     stale_after_hours:
       canonical?.stale_after_hours ?? legacyTasks?.stale_after_hours,
+    // Canonical only: `background_stale_after_hours` is new, so it has no
+    // legacy spelling to mirror. A second spelling for a key introduced in
+    // the same release is a trap, not a compatibility path.
+    background_stale_after_hours:
+      canonical?.background_stale_after_hours ?? DEFAULT_BACKGROUND_STALE_AFTER_HOURS,
     session_scoped:
       canonical?.session_scoped ?? legacyTasks?.session_scoped ?? true,
     pollTimeoutMs: canonical?.pollTimeoutMs ?? legacyPoll,

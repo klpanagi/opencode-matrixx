@@ -27,9 +27,19 @@ export const TasksConfigSchema = z.object({
   /** Force task list ID (alternative to env ULTRAWORK_TASK_LIST_ID) */
   task_list_id: z.string().optional(),
   /** Pending tasks with no file activity for this many hours are considered
-   * stale (default: 24). Stale tasks are excluded from task-continuation directives. */
-  stale_after_hours: z.number().int().min(1).optional()
-    .describe("Pending tasks with no file activity for this many hours are considered stale (default: 24). Stale tasks are excluded from task-continuation directives."),
+   * stale (default: 24). Stale tasks are excluded from task-continuation directives.
+   * Fractional hours are accepted (floor 0.25 = 15 minutes): there is no separate
+   * `stale_after_minutes` companion, so one key covers every window size both
+   * consumers need and quarter-hour granularity is enough. */
+  stale_after_hours: z.number().min(0.25).optional()
+    .describe("Pending tasks with no file activity for this many hours are considered stale and excluded from task-continuation directives. Accepts fractional hours (minimum 0.25 = 15 minutes); there is no separate minutes companion key. Default 24."),
+  /** Window used ONLY by the background-agent completion gates (session.idle and
+   * polling): a pending/in_progress task with no file activity for this long is
+   * treated as stale and stops blocking completion of its worker handle. Kept
+   * separate from `stale_after_hours` because the failure costs differ — a missed
+   * continuation nudge vs. a background handle held `running` past its worker. (default: 2) */
+  background_stale_after_hours: z.number().min(0.25).default(2).optional()
+    .describe("Window used only by the background-agent completion gates: a pending/in_progress task with no file activity for this many hours stops blocking completion of its background handle. Separate from stale_after_hours because a missed nudge and a wedged handle are different failures. Accepts fractional hours (min 0.25). Default 2."),
   /** When true, the task-continuation-enforcer only considers tasks created by
    * the current session (or its subagent sessions). When false, all project
    * tasks are considered regardless of session origin. */
