@@ -52,14 +52,19 @@ When `morpheus_agent.planner_enabled === true`:
 
 ## TOOL PERMISSIONS
 
+`task-permissions.ts` owns the task-store grant: an agent receives `task_*` iff `MODE ∈ {primary, all}` and its work is multi-step. `isTaskStorePrimary(agent)` reads the agent's declared `mode` — never a name list. `taskStorePermissions` grants `task_*` only (tracking, no delegation); `fullTaskPermissions` adds `task` and `teammate`. `deriveTaskPermissions` picks the tracking-only set when the agent declares `permission.task === "deny"` for itself, so a read-only agent such as Sentinel needs no name list. `grantTaskPermissions` merges fill-only via `??=`, never clobbering a factory value or a user override. The criterion is one-directional — `Mouse` (`mode: "subagent"`) is the documented carve-out. Full policy: `docs/task-system.md` §3.5.
+
 | Agent | Special Permissions |
 |-------|---------------------|
 | operator | github_search allowed |
 | trinity | github_search allowed |
 | architect | task, task_*, teammate allowed |
 | morpheus | task, task_*, teammate, question allowed |
-| keymaker | task, question allowed |
+| keymaker | task, task_*, teammate, question allowed |
 | construct | Denies task, look_at |
+| cipher | task, task_*, teammate allowed (derived, `mode: "all"`) |
+| sentinel | task_* allowed, task denied (self-declared read-only) |
+| bdd-contract | task, task_*, teammate allowed (derived, `mode: "all"`) |
 
 ## INTEGRATION
 

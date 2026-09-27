@@ -11,7 +11,11 @@ const TEST_CONTEXT = {
   sessionID: TEST_SESSION_ID,
   messageID: "test-message-123",
   agent: "test-agent",
+  directory: process.cwd(),
+  worktree: process.cwd(),
   abort: TEST_ABORT_CONTROLLER.signal,
+  metadata: () => {},
+  ask: async () => {},
 }
 
 describe("task_create tool", () => {
@@ -52,9 +56,10 @@ describe("task_create tool", () => {
       const result = JSON.parse(resultStr)
 
       //#then
-      expect(result).toHaveProperty("task")
-      expect(result.task).toHaveProperty("id")
-      expect(result.task.subject).toBe("Implement authentication")
+      expect(result).toHaveProperty("tasks")
+      expect(result.tasks).toHaveLength(1)
+      expect(result.tasks[0]).toHaveProperty("id")
+      expect(result.tasks[0].subject).toBe("Implement authentication")
     })
 
     test("auto-generates T-{uuid} format ID", async () => {
@@ -68,7 +73,7 @@ describe("task_create tool", () => {
       const result = JSON.parse(resultStr)
 
       //#then
-      expect(result.task.id).toMatch(/^T-[a-f0-9-]+$/)
+      expect(result.tasks[0].id).toMatch(/^T-[a-f0-9-]+$/)
     })
 
     test("auto-records threadID from session context", async () => {
@@ -80,7 +85,7 @@ describe("task_create tool", () => {
       //#when
       const resultStr = await tool.execute(args, TEST_CONTEXT)
       const result = JSON.parse(resultStr)
-      const taskId = result.task.id
+      const taskId = result.tasks[0].id
 
       //#then
       const taskFile = join(testDir, TEST_STORAGE, `${taskId}.json`)
@@ -98,7 +103,7 @@ describe("task_create tool", () => {
       //#when
       const resultStr = await tool.execute(args, TEST_CONTEXT)
       const result = JSON.parse(resultStr)
-      const taskId = result.task.id
+      const taskId = result.tasks[0].id
 
       //#then
       const taskFile = join(testDir, TEST_STORAGE, `${taskId}.json`)
@@ -115,7 +120,7 @@ describe("task_create tool", () => {
       //#when
       const resultStr = await tool.execute(args, TEST_CONTEXT)
       const result = JSON.parse(resultStr)
-      const taskId = result.task.id
+      const taskId = result.tasks[0].id
 
       //#then
       const taskFile = join(testDir, TEST_STORAGE, `${taskId}.json`)
@@ -134,7 +139,7 @@ describe("task_create tool", () => {
       //#when
       const resultStr = await tool.execute(args, TEST_CONTEXT)
       const result = JSON.parse(resultStr)
-      const taskId = result.task.id
+      const taskId = result.tasks[0].id
 
       //#then
       const taskFile = join(testDir, TEST_STORAGE, `${taskId}.json`)
@@ -152,7 +157,7 @@ describe("task_create tool", () => {
       //#when
       const resultStr = await tool.execute(args, TEST_CONTEXT)
       const result = JSON.parse(resultStr)
-      const taskId = result.task.id
+      const taskId = result.tasks[0].id
 
       //#then
       const taskFile = join(testDir, TEST_STORAGE, `${taskId}.json`)
@@ -170,7 +175,7 @@ describe("task_create tool", () => {
       //#when
       const resultStr = await tool.execute(args, TEST_CONTEXT)
       const result = JSON.parse(resultStr)
-      const taskId = result.task.id
+      const taskId = result.tasks[0].id
 
       //#then
       const taskFile = join(testDir, TEST_STORAGE, `${taskId}.json`)
@@ -188,7 +193,7 @@ describe("task_create tool", () => {
       //#when
       const resultStr = await tool.execute(args, TEST_CONTEXT)
       const result = JSON.parse(resultStr)
-      const taskId = result.task.id
+      const taskId = result.tasks[0].id
 
       //#then
       const taskFile = join(testDir, TEST_STORAGE, `${taskId}.json`)
@@ -206,7 +211,7 @@ describe("task_create tool", () => {
       //#when
       const resultStr = await tool.execute(args, TEST_CONTEXT)
       const result = JSON.parse(resultStr)
-      const taskId = result.task.id
+      const taskId = result.tasks[0].id
 
       //#then
       const taskFile = join(testDir, TEST_STORAGE, `${taskId}.json`)
@@ -224,7 +229,7 @@ describe("task_create tool", () => {
       //#when
       const resultStr = await tool.execute(args, TEST_CONTEXT)
       const result = JSON.parse(resultStr)
-      const taskId = result.task.id
+      const taskId = result.tasks[0].id
 
       //#then
       const taskFile = join(testDir, TEST_STORAGE, `${taskId}.json`)
@@ -242,7 +247,7 @@ describe("task_create tool", () => {
       //#when
       const resultStr = await tool.execute(args, TEST_CONTEXT)
       const result = JSON.parse(resultStr)
-      const taskId = result.task.id
+      const taskId = result.tasks[0].id
 
       //#then
       const taskFile = join(testDir, TEST_STORAGE, `${taskId}.json`)
@@ -261,9 +266,9 @@ describe("task_create tool", () => {
       const result = JSON.parse(resultStr)
 
       //#then
-      expect(result.task).toHaveProperty("id")
-      expect(result.task).toHaveProperty("subject")
-      expect(result.task.subject).toBe("Test task")
+      expect(result.tasks[0]).toHaveProperty("id")
+      expect(result.tasks[0]).toHaveProperty("subject")
+      expect(result.tasks[0].subject).toBe("Test task")
     })
 
     test("rejects missing subject", async () => {
@@ -288,7 +293,7 @@ describe("task_create tool", () => {
       //#when
       const resultStr = await tool.execute(args, TEST_CONTEXT)
       const result = JSON.parse(resultStr)
-      const taskId = result.task.id
+      const taskId = result.tasks[0].id
 
       //#then
       const taskFile = join(testDir, TEST_STORAGE, `${taskId}.json`)
@@ -342,9 +347,9 @@ describe("task_create tool", () => {
       const second = JSON.parse(secondStr)
 
       //#then
-      expect(second.task.id).toBe(first.task.id)
-      expect(second.task.subject).toBe("Implement authentication")
-      expect(second.deduplicated).toBe(true)
+      expect(second.tasks[0].id).toBe(first.tasks[0].id)
+      expect(second.tasks[0].subject).toBe("Implement authentication")
+      expect(second.tasks[0].deduplicated).toBe(true)
       const taskFiles = readdirSync(join(testDir, TEST_STORAGE)).filter(
         (f) => f.startsWith("T-") && f.endsWith(".json")
       )
@@ -363,8 +368,8 @@ describe("task_create tool", () => {
       const second = JSON.parse(secondStr)
 
       //#then
-      expect(second.task.id).not.toBe(first.task.id)
-      expect(second.deduplicated).toBeUndefined()
+      expect(second.tasks[0].id).not.toBe(first.tasks[0].id)
+      expect(second.tasks[0].deduplicated).toBeUndefined()
       const taskFiles = readdirSync(join(testDir, TEST_STORAGE)).filter(
         (f) => f.startsWith("T-") && f.endsWith(".json")
       )

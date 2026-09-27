@@ -69,7 +69,7 @@ Do it yourself only when trivial (<10 lines) or you have full context loaded.
 
 **Verification Guarantee**
 
-Goal: Register with task_create before implementation — objective, scenarios, stop condition.
+Goal: When the \`task_create\` tool exists, register the run's goal with it before implementation — objective, scenarios, stop condition.
 
 Scenarios: 3+ binary pass/fail — happy path, edge, regression. Each with real-surface proof and test id.
 

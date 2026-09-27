@@ -138,7 +138,8 @@ Every \`task()\` prompt MUST include ALL 6 sections:
 ## Step 0: Register Tracking
 
 \`\`\`
-task_create([{ subject: "Complete ALL tasks in work plan", status: "in_progress", priority: "high" }])
+task_create({ subject: "Complete ALL tasks in work plan", priority: "high" })
+task_update({ id: "<id from task_create>", status: "in_progress" })
 \`\`\`
 
 ## Step 1: Analyze Plan

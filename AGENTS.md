@@ -123,7 +123,7 @@ matrixx/
 │   ├── agents/   → 14 agents + AGENTS.md
 │   ├── hooks/    → 75 entries (59 dirs + 16 loose .ts; HookNameSchema 62 enum + 5 literals = 67 accepted) in 3 tiers
 │   ├── tools/    → 24 dirs (LSP, AST-grep, delegate-task, bdd-*, handoff, etc.; conditional via tool-gating.ts)
-│   ├── features/ → 19 dirs (background-agent, builtin-skills/commands, task-storage, handoff, knowledge-hub, ...)
+│   ├── features/ → 21 dirs (background-agent, builtin-skills/commands, task-storage, handoff, knowledge-hub, ...)
 │   ├── shared/   → 80+ utilities (logger → /tmp/matrixx.log)
 │   ├── mcp/      → 3 built-in MCPs (websearch, context7, document-reader) + native `github_search` tool
 │   ├── cli/      → installer, doctor, config-manager

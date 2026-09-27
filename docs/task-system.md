@@ -164,6 +164,37 @@ ULTRAWORK_TASK_LIST_ID=my-list opencode
 grep -E "task.*dir|getTaskDir|migrateLegacy" /tmp/matrixx.log | tail -n 100
 ```
 
+### 3.5 Task-Store Eligibility Policy
+
+The task store (`.matrixx/tasks/`) is a write channel separate from the codebase. Who may reach it is decided in exactly one place: `src/plugin-handlers/task-permissions.ts`, applied during `applyToolConfig`.
+
+**The criterion:**
+
+> An agent receives `task_*` iff `MODE ∈ {primary, all}` and its work is multi-step.
+
+The code half of that is `isTaskStorePrimary(agent) = agent.mode === "primary" || agent.mode === "all"`. It is derived from the agent's declared `mode` (`AgentMode` in `src/agents/types.ts`), never from a hardcoded list of names. A name list is precisely what let the original drift go unnoticed: keymaker's prompt called the task store "your execution backbone" while its permission arm held no `task_*` at all, and cipher's prompt told users to delegate "via the task() tool" while `task` was denied everywhere. Documentation and implementation agreed with each other, and both were wrong.
+
+**The criterion is ONE-DIRECTIONAL.** "iff" is being used loosely and readers should know it: the code tests only the *sufficient* direction (`mode ∈ {primary, all}` ⇒ grant). There is no biconditional test, nothing scans prompts to decide whether an agent's work "is multi-step", and no test may assert the converse.
+
+**The Mouse carve-out.** Mouse is `mode: "subagent"` and is nonetheless granted full task permissions. It executes delegated multi-step work inside its own child session and must own the resulting task-store records. Mouse is the standing counter-example: if you add a test or a lint rule that asserts the converse of the criterion, Mouse will fail it correctly.
+
+**The permission split.** Two exported objects, both built on `denyTodoTools` (`todowrite`/`todoread` denied — the legacy todo API is never granted to a task-capable agent):
+
+| Object | Contents | Meaning |
+|--------|----------|---------|
+| `taskStorePermissions` | `task_*` | Tracking only. Read and write own records, no delegation. |
+| `fullTaskPermissions` | `task_*` + `task` + `teammate` | Tracking plus outgoing delegation. |
+
+`deriveTaskPermissions` picks `taskStorePermissions` when the agent declares `permission.task === "deny"` for itself, and `fullTaskPermissions` otherwise. That is why a read-only agent such as Sentinel is safe without a special-case arm and without a name list: it restricts itself, and the self-declared denial is honoured automatically. Sentinel's read-only mandate covers *files*; the task store is not a source file, it is how a read-only auditor hands findings to an implementer without touching the code.
+
+`grantTaskPermissions` merges fill-only via `??=`. A factory value or an explicit user override in an agent's own config is never overwritten.
+
+**`task_create` returns one shape.** `{ tasks: [...], errors: [...] }`, always, including when a single task is created. This is a **breaking change** for any caller reading the old single-object `{ task: { id, subject } }` return.
+
+Batches are partial-success: an invalid item fails only itself and is reported in `errors` with its `index`; the remaining items are still created. Do not treat a non-empty `errors` array as "nothing was created".
+
+**`priority` has no reader.** It is stored on the task object and round-trips through create and update, but nothing currently sorts, filters or renders on it. Treat it as inert: do not build a plan, a workflow, or a UI that depends on it having an effect.
+
 ---
 
 ## 4. Data Model

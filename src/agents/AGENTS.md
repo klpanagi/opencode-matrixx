@@ -66,15 +66,20 @@ agents/
 
 ## TOOL RESTRICTIONS
 
-| Agent | Denied | Allowed |
-|-------|--------|---------|
-| Merovingian | write, edit, task | Read-only consultation |
-| Operator | write, edit, task | Research tools only |
-| Trinity | write, edit, task | Search tools only |
-| Construct | ALL except `read` | Vision-only |
-| Mouse | task | No delegation |
-| Architect | task | Orchestration only |
-| Sentinel | write, edit, multiedit, task | Read-only security auditing |
+An agent receives `task_*` iff `MODE ∈ {primary, all}` and its work is multi-step. The grant is derived from `mode` in `src/plugin-handlers/task-permissions.ts`, never from a name list, and the criterion is one-directional: `mode ∈ {primary, all}` ⇒ granted, never the converse. `Mouse` is the documented carve-out (`mode: "subagent"`, full task permissions — it owns the task-store records for the delegated work it runs). Full policy in `docs/task-system.md` §3.5.
+
+| Agent | Mode | Denied | Allowed |
+|-------|------|--------|---------|
+| Merovingian | subagent | write, edit, task | Read-only consultation |
+| Operator | subagent | write, edit, task | Research tools only |
+| Trinity | subagent | write, edit, task | Search tools only |
+| Construct | subagent | ALL except `read` | Vision-only |
+| Mouse | subagent | — (task permitted, see carve-out) | `task_*` — owns its delegated task records |
+| Architect | primary | — (task permitted) | `task_*`, teammate — orchestration only |
+| Sentinel | all | write, edit, multiedit, `task` (delegation denied, `task_*` tracking allowed) | Read-only security auditing |
+| Cipher | all | — | `task_*`, teammate — delegates per target language |
+| Keymaker | primary | — | `task_*`, teammate |
+| Bdd-contract | all | — | `task_*`, teammate |
 
 ## THINKING / REASONING
 

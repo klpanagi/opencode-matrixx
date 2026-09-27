@@ -863,7 +863,7 @@ describe("keyword-detector agent-specific ultrawork messages", () => {
     const textPart = output.parts.find(p => p.type === "text")
     expect(textPart).toBeDefined()
     expect(textPart?.text).toContain("Set mission")
-    expect(textPart?.text).toContain("Register with task_create")
+    expect(textPart?.text).toContain("When the `task_create` tool exists")
     expect(textPart?.text).toContain("Scenarios: 3+ binary pass/fail")
     expect(textPart?.text).toContain("TDD Workflow")
   })

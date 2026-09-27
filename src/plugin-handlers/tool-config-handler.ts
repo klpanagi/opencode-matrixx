@@ -1,11 +1,7 @@
 import type { MatrixxConfig } from "../config";
+import { denyTodoTools, fullTaskPermissions, grantTaskPermissions, taskStorePermissions } from "./task-permissions";
 
-type AgentWithPermission = { permission?: Record<string, unknown> };
-
-/** The legacy todo tools are denied for every task-capable agent. */
-const denyTodoTools = { todowrite: "deny", todoread: "deny" } as const
-/** Incoming task-system permissions granted to the full-capability agents. */
-const fullTaskPermissions = { task: "allow", "task_*": "allow", teammate: "allow", ...denyTodoTools } as const
+type AgentWithPermission = { permission?: Record<string, unknown>; mode?: string };
 
 function agentByKey(agentResult: Record<string, unknown>, key: string): AgentWithPermission | undefined {
   return agentResult[key] as AgentWithPermission | undefined;
@@ -65,12 +61,13 @@ export function applyToolConfig(params: {
   }
   const keymaker = agentByKey(params.agentResult, "keymaker");
   if (keymaker) {
-    keymaker.permission = {
-      ...keymaker.permission,
-      question: questionPermission,
-      task: "allow",
-      ...denyTodoTools,
-    };
+    // Fill-only, so a user who narrowed the task store keeps their own choice.
+    const defaults = { question: questionPermission, task: "allow", ...taskStorePermissions };
+    const permission = (keymaker.permission ?? {}) as Record<string, unknown>;
+    for (const [key, value] of Object.entries(defaults)) {
+      permission[key] ??= value;
+    }
+    keymaker.permission = permission;
   }
   const oracle = agentByKey(params.agentResult, "oracle");
   if (oracle) {
@@ -82,10 +79,21 @@ export function applyToolConfig(params: {
   }
   const mouse = agentByKey(params.agentResult, "mouse");
   if (mouse) {
+    // Mouse carve-out (R7): Mouse is mode "subagent", so the derived grant
+    // below skips it — yet it executes delegated multi-step work in its own
+    // child session and must own the resulting task-store records.
     mouse.permission = {
       ...mouse.permission,
       ...fullTaskPermissions,
     };
+  }
+
+  // Mode-derived grant: every agent that can run as a top-level session
+  // (mode "primary" or "all") gets task-store access. Read-only auditors that
+  // already deny `task` for themselves keep that denial — see task-permissions.
+  for (const key of Object.keys(params.agentResult)) {
+    const agent = agentByKey(params.agentResult, key);
+    if (agent) grantTaskPermissions(agent);
   }
 
   params.config.permission = {
@@ -93,5 +101,6 @@ export function applyToolConfig(params: {
     webfetch: "allow",
     external_directory: "allow",
     task: "deny",
+    ...denyTodoTools,
   };
 }

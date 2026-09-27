@@ -73,7 +73,7 @@ Task management system with auto-generated T-{uuid} IDs, dependency tracking, an
 
 ### task_create
 
-Create a new task with auto-generated ID and threadID recording.
+Create one or more tasks with auto-generated IDs and threadID recording. **Returns `{ tasks: [...], errors: [...] }` always, including for a single task** — a breaking change from the old `{ task: { id, subject } }` return. Batches are partial-success: one invalid item fails only itself and is reported in `errors` with its `index`. See `docs/task-system.md` §3.5 for who receives `task_*` in the first place.
 
 **Args:**
 | Arg | Type | Required | Description |
@@ -86,6 +86,7 @@ Create a new task with auto-generated ID and threadID recording.
 | `blocks` | string[] | No | Task IDs this task blocks |
 | `repoURL` | string | No | Repository URL |
 | `parentID` | string | No | Parent task ID |
+| `priority` | "low" \| "medium" \| "high" | No | Stored but **not read by anything** — see note below |
 
 **Example:**
 ```typescript
@@ -96,7 +97,9 @@ task_create({
 })
 ```
 
-**Returns:** `{ task: { id, subject } }`
+**Returns:** `{ tasks: [{ id, subject }], errors: [] }` — one shape, always, N=1 included. A caller still reading `result.task` is reading the pre-change contract and will get `undefined`.
+
+**`priority` (`low` | `medium` | `high`, optional) has no reader.** It is stored and round-trips through `task_create` / `task_update`, but nothing currently sorts, filters or renders on it. Do not build a plan or workflow that depends on it having an effect.
 
 ### task_list
 

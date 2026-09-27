@@ -86,7 +86,7 @@ export const ULTRAWORK_DEEPSEEK_MESSAGE = `<ultrawork-mode>
   Nothing is done without proof.
 
   ### Goal Registration (BINDING)
-  Register the goal with task_create BEFORE any implementation: objective, scenario contract, and WHEN TO STOP line.
+  When the \`task_create\` tool exists, register the goal with it BEFORE any implementation: objective, scenario contract, and WHEN TO STOP line.
 
   ### Scenario Contract (BINDING)
   Define 3+ scenarios before coding: happy path, edge (boundary/empty/malformed/concurrent), adjacent-surface regression. Each has a binary pass condition, real surface proof, and test id.

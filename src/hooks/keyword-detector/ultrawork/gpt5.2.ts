@@ -129,7 +129,7 @@ Create a notepad file to track progress. Initialize it with sections: Plan, Scen
 
 ## GOAL REGISTRATION
 
-Register the run's goal using \`task_create\` BEFORE any implementation: the objective, the scenario contract, and the WHEN TO STOP line. Record the same contract in the notepad and treat it as binding.
+When the \`task_create\` tool exists, register the run's goal with it BEFORE any implementation: the objective, the scenario contract, and the WHEN TO STOP line. Record the same contract in the notepad and treat it as binding.
 
 ## TODO DISCIPLINE
 
