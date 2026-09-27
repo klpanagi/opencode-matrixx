@@ -14,13 +14,15 @@ In The Matrix, Morpheus was the captain who saw the truth beyond the simulation 
 
 **Yes! LLM Agents are no different from us. They can write code as brilliant as ours and work just as excellently — if you give them great tools and solid teammates.**
 
-Meet the main agent: **Morpheus** (Claude Opus 4.6). Everything below is customizable. All features are enabled by default. Battery included, works out of the box.
+> **How models are chosen:** The model IDs below are OpenCode's free tier — copy-paste as-is, or point any agent at `<provider>/<model>` from your own provider. Shipped defaults are a provider-resolved fallback chain: Matrixx declares a per-agent and per-category chain of candidates and selects the first whose provider is connected. Override via `modelRequirements` or `model_presets` (see `src/shared/model-requirements.ts`).
+
+Meet the main agent: **Morpheus** (`opencode/kimi-k2.5-free`). Everything below is customizable. All features are enabled by default. Battery included, works out of the box.
 
 ### What Morpheus Does
 
 1. **Delegates, doesn't grind** — fires off background tasks to faster, cheaper models in parallel to map the territory. Keeps the main context lean.
 2. **Surgical refactoring** — leverages LSP for deterministic, safe, surgical code changes.
-3. **Specialist delegation** — UI work goes to Sati (Claude Sonnet 4.6). Debugging goes to Merovingian (Claude Sonnet 4.6). The right model for the right job.
+3. **Specialist delegation** — UI work goes to Sati (`opencode/qwen3.6-plus-free`). Debugging goes to Merovingian (`opencode/glm-5-free`). The right model for the right job.
 4. **Contextual awareness** — spawns subagents to digest source code and documentation in real-time when working with unfamiliar frameworks.
 5. **Clean code enforcement** — either justifies a comment's existence or nukes it. Code should be indistinguishable from human-written.
 6. **Relentless execution** — bound by the task list (`.matrixx/tasks`, see [Task System](./task-system.md)). If he doesn't finish, `task-continuation-enforcer` forces him back — tasks survive `/clear`. Your task gets done, period.
@@ -30,20 +32,20 @@ Meet the main agent: **Morpheus** (Claude Opus 4.6). Everything below is customi
 
 | Agent | Role | Model |
 |-------|------|-------|
-| **Keymaker** | Autonomous deep worker | GPT 5.3 Codex |
-| **Merovingian** | Architecture and debugging | Claude Sonnet 4.6 |
-| **Operator** | Docs, OSS search, codebase exploration | Claude Haiku 4.5 |
-| **Trinity** | Fast codebase grep | Claude Haiku 4.5 |
-| **Cipher** | DSL engineering | Claude Opus 4.6 |
-| **Construct** | PDF/image analysis | Claude Sonnet 4.6 |
-| **Oracle** | Strategic planning | Claude Opus 4.6 |
-| **Seraph** | Pre-planning analysis | Claude Opus 4.6 |
-| **Smith** | Plan validation | Claude Sonnet 4.6 |
-| **Architect** | Plan execution orchestrator | Claude Sonnet 4.6 |
-| **Mouse** | Category-spawned task executor (delegated worker) | Claude Sonnet 4.6 |
-| **Sati** | Frontend specialist (components, a11y, perf, testing) | Claude Sonnet 4.6 |
-| **Sentinel** | Security auditor | Claude Sonnet 4.6 |
-| **BDD Contract** | BDD contract authoring | Claude Sonnet 4.6 |
+| **Keymaker** | Autonomous deep worker | `opencode/minimax-m3-free` |
+| **Merovingian** | Architecture and debugging | `opencode/glm-5-free` |
+| **Operator** | Docs, OSS search, codebase exploration | `opencode/deepseek-v4-flash-free` |
+| **Trinity** | Fast codebase grep | `opencode/deepseek-v4-flash-free` |
+| **Cipher** | DSL engineering | `opencode/kimi-k2.5-free` |
+| **Construct** | PDF/image analysis | `opencode/qwen3.6-plus-free` |
+| **Oracle** | Strategic planning | `opencode/glm-5-free` |
+| **Seraph** | Pre-planning analysis | `opencode/glm-5-free` |
+| **Smith** | Plan validation | `opencode/glm-5-free` |
+| **Architect** | Plan execution orchestrator | `opencode/glm-5-free` |
+| **Mouse** | Category-spawned task executor (delegated worker) | `opencode/qwen3.6-plus-free` |
+| **Sati** | Frontend specialist (components, a11y, perf, testing) | `opencode/qwen3.6-plus-free` |
+| **Sentinel** | Security auditor | `opencode/qwen3.6-plus-free` |
+| **BDD Contract** | BDD contract authoring | `opencode/qwen3.6-plus-free` |
 
 The 14 names above match `BuiltinAgentNameSchema` in `src/config/schema/agent-names.ts`. Thirteen are registered statically in `agentSources` (`src/agents/builtin-agents.ts`); Oracle is built dynamically by `buildOracleAgentConfig()`. Mouse is the dynamic category-spawned worker used when `task()` is called with a `category` (see below and [Orchestration](orchestration.md)). Default models and fallback chains live in `src/shared/model-requirements.ts`.
 
@@ -67,7 +69,7 @@ The 14 names above match `BuiltinAgentNameSchema` in `src/config/schema/agent-na
 
 In The Matrix, the Keymaker could craft keys to open any door — a master craftsman with unmatched precision and purpose, creating exactly what was needed to unlock any path.
 
-**Meet the autonomous deep worker: Keymaker (GPT 5.3 Codex). The Legitimate Craftsman Agent.**
+**Meet the autonomous deep worker: Keymaker (`opencode/minimax-m3-free`). The Legitimate Craftsman Agent.**
 
 *Why "Legitimate"? When Anthropic blocked third-party access citing ToS violations, the community started joking about "legitimate" usage. Keymaker embraces this irony — he's the craftsman who builds things the right way, methodically and thoroughly, without cutting corners.*
 
@@ -87,7 +89,7 @@ Keymaker is inspired by [AmpCode's deep mode](https://ampcode.com) — autonomou
 
 ![Meet Cipher](../.github/assets/cipher.png)
 
-In The Matrix, ciphers were the encoded signals flowing through the system — the raw language underneath reality itself. **Meet the DSL engineering specialist: Cipher (Claude Opus 4.6). The Language Architect.**
+In The Matrix, ciphers were the encoded signals flowing through the system — the raw language underneath reality itself. **Meet the DSL engineering specialist: Cipher (`opencode/kimi-k2.5-free`). The Language Architect.**
 
 Cipher is the agent you call when you need to design, build, or extend domain-specific languages. He doesn't just write parsers — he thinks in grammars, type systems, and metamodels.
 
@@ -95,7 +97,7 @@ Cipher is the agent you call when you need to design, build, or extend domain-sp
 
 | Property | Value |
 |----------|-------|
-| **Model** | Claude Opus 4.6 (provider-resolved fallback chain, see `src/shared/model-requirements.ts`) |
+| **Model** | `opencode/kimi-k2.5-free` (provider-resolved fallback chain — see `src/shared/model-requirements.ts`) |
 | **Mode** | `all` — selectable in agent menu AND spawnable as subagent |
 | **Thinking** | Extended thinking enabled (32k budget) |
 | **Max Tokens** | 64,000 — DSL tasks produce large outputs (grammars + parsers + code generators) |
@@ -227,7 +229,7 @@ Sati is the dedicated frontend specialist. Self-contained execution — Sati han
 ### Agent Characteristics
 
 - **Role**: Frontend specialist
-- **Model**: Claude Sonnet 4.6 (provider-resolved fallback chain, see `src/shared/model-requirements.ts`)
+- **Model**: `opencode/qwen3.6-plus-free` (provider-resolved fallback chain — see `src/shared/model-requirements.ts`)
 - **Tool Restrictions**: Cannot use `task` or `delegate_agent` (self-contained execution)
 - **Skills**: 8 frontend and browser skills (`frontend-react-nextjs`, `frontend-svelte-sveltekit`, `frontend-a11y`, `frontend-perf`, `frontend-testing`, `frontend-state-data`, `frontend-build-tooling`, `playwright`, verified in `src/agents/sati.ts` via `SATI_FRONTEND_SKILLS`)
 - **Mode**: `subagent` — explicitly invokable only
@@ -270,12 +272,12 @@ Workers must be **stateless and disposable**. The Architect remains in context a
 
 | Property | Value |
 |----------|-------|
-| **Model** | Claude Sonnet 4.6 (configurable via `agents.mouse.model`) |
+| **Model** | `opencode/qwen3.6-plus-free` (provider-resolved fallback chain) — configurable via `agents.mouse.model` |
 | **Mode** | `subagent` — spawnable only, never appears in agent menu |
 | **Max Tokens** | 64,000 |
 | **Temperature** | 0.1 |
-| **Thinking** | Extended thinking enabled (32k budget) — for Claude and DeepSeek |
-| **Reasoning** | `medium` — for GPT models |
+| **Thinking** | Extended thinking enabled (32k budget) — for extended-thinking model families |
+| **Reasoning** | `medium` — for reasoning-effort model families |
 | **Color** | `#20B2AA` (Light Sea Green) |
 | **Delegation** | `task` tool BLOCKED — cannot spawn sub-agents |
 
@@ -283,15 +285,15 @@ Workers must be **stateless and disposable**. The Architect remains in context a
 
 Mouse has **5 model-specific prompt variants** auto-selected at runtime:
 
-| Variant | File | Target Models | Focus |
-|---------|------|---------------|-------|
-| **Default** | `default.ts` | Claude (Anthropic) | Extended reasoning, strong constraint enforcement for Claude's "helpful" tendency |
-| **GPT** | `gpt.ts` | GPT-5.2+ (OpenAI) | Verbosity limits, scope discipline, table-based specs, uncertainty handling |
-| **DeepSeek** | `deepseek.ts` | DeepSeek v4 flash | Structured XML, moderate verbosity, verification tables |
-| **Mimo** | `mimo.ts` | Mimo v2.5 | Extra concise, minimal prose, tool-first emphasis |
-| **Qwen** | `qwen.ts` | Qwen 3.7 Plus | Structured sections, reasoning-first, explicit output formatting |
+| Variant | File | Behavior Profile | Focus |
+|---------|------|------------------|-------|
+| **Default** | `default.ts` | Reasoning-first, strong constraint enforcement (provider: any) | Extended reasoning, strict constraint enforcement against "helpful" drift |
+| **GPT** | `gpt.ts` | Verbosity limits, scope discipline, table-based specs | Uncertainty handling, bounded output length |
+| **DeepSeek** | `deepseek.ts` | Structured XML output, moderate verbosity, verification tables | Output-shape enforcement, self-check tables |
+| **Mimo** | `mimo.ts` | Extra concise, minimal prose, tool-first emphasis | Token economy, action over narration |
+| **Qwen** | `qwen.ts` | Reasoning-first, explicit output formatting | Structured sections, consistent section headers |
 
-Routing is driven by model detection in `getMousePromptSource()`: GPT → gpt.ts, DeepSeek → deepseek.ts, Mimo → mimo.ts, Qwen → qwen.ts, everything else → default.ts.
+Routing is driven by model-family detection in `getMousePromptSource()`: each variant is selected when the resolved model belongs to the matching family, and everything unrecognized falls through to `default.ts`. The file suffixes (`claude.ts`, `gpt.ts`, `deepseek.ts`, `qwen.ts`, `mimo.ts`) are real on-disk filenames, so the entries above describe the prompt style each one encodes, not the vendor whose name happens to appear in the filename.
 
 ### Tool Restrictions
 
@@ -331,39 +333,39 @@ The 14-agent roster maps to **distinct cognitive functions** in software develop
 
 ### The Orchestration Layer (3 agents)
 
-- **Morpheus** (user-facing orchestrator, Claude Opus 4.6): The "face" — translates user intent into delegation decisions. Orchestration requires the strongest model for understanding nuance.
-- **Architect** (subagent orchestrator, Claude Sonnet 4.6): Pure conductor — denied `task`/`delegate_agent` to prevent the "orchestrator doing implementation" anti-pattern. Exists to enforce the separation of concerns.
-- **Mouse** (task executor, Claude Sonnet 4.6): The "hands" — spawned per-task with category-specific config. Workers are stateless and disposable.
+- **Morpheus** (user-facing orchestrator, `opencode/kimi-k2.5-free`): The "face" — translates user intent into delegation decisions. Orchestration requires the strongest model for understanding nuance.
+- **Architect** (subagent orchestrator, `opencode/glm-5-free`): Pure conductor — denied `task`/`delegate_agent` to prevent the "orchestrator doing implementation" anti-pattern. Exists to enforce the separation of concerns.
+- **Mouse** (task executor, `opencode/qwen3.6-plus-free`): The "hands" — spawned per-task with category-specific config. Workers are stateless and disposable.
 
 ### The Intelligence Layer (3 agents)
 
-- **Merovingian** (strategic advisor, Claude Sonnet 4.6): Read-only consultation for hard architecture decisions and debugging.
-- **Oracle** (planner, Claude Opus 4.6): Interview-mode plan generation. Structured output with RED-GREEN-REFACTOR built into plans (see [Quality, Part B](quality.md)).
-- **Seraph** (pre-planning, Claude Opus 4.6): Classifies intent BEFORE Oracle plans. Prevents AI failure patterns (ambiguity, scope creep, false assumptions).
+- **Merovingian** (strategic advisor, `opencode/glm-5-free`): Read-only consultation for hard architecture decisions and debugging.
+- **Oracle** (planner, `opencode/glm-5-free`): Interview-mode plan generation. Structured output with RED-GREEN-REFACTOR built into plans (see [Quality, Part B](quality.md)).
+- **Seraph** (pre-planning, `opencode/glm-5-free`): Classifies intent BEFORE Oracle plans. Prevents AI failure patterns (ambiguity, scope creep, false assumptions).
 
 ### The Review Layer (2 agents)
 
-- **Smith** (plan reviewer, Claude Sonnet 4.6): Approval-biased validator. Outputs [OKAY] or [REJECT] — no "looks good but..." cop-outs.
-- **Sentinel** (security auditor, Claude Sonnet 4.6): Read-only, 9 security skills (`security-core`, `security-secrets`, `security-sast`, `security-dast`, `security-dependencies`, `security-api`, `security-crypto`, `security-infra`, `security-review`, verified in `src/agents/sentinel.ts`). Security needs dedicated attention, not an afterthought.
+- **Smith** (plan reviewer, `opencode/glm-5-free`): Approval-biased validator. Outputs [OKAY] or [REJECT] — no "looks good but..." cop-outs.
+- **Sentinel** (security auditor, `opencode/qwen3.6-plus-free`): Read-only, 9 security skills (`security-core`, `security-secrets`, `security-sast`, `security-dast`, `security-dependencies`, `security-api`, `security-crypto`, `security-infra`, `security-review`, verified in `src/agents/sentinel.ts`). Security needs dedicated attention, not an afterthought.
 
 ### The Specialist Layer (3 agents)
 
-- **Sati** (frontend specialist, Claude Sonnet 4.6): Self-contained with 8 frontend skills + browser verification. It doesn't delegate — it does the full-stack frontend work itself.
-- **Cipher** (DSL engineering, Claude Opus 4.6): 11 DSL skills for grammar design, parser engineering, code generation. Niche but critical for language work.
-- **Construct** (multimodal, Claude Sonnet 4.6): PDF/image/diagram interpretation. Architecture diagrams and specs come in visual formats.
+- **Sati** (frontend specialist, `opencode/qwen3.6-plus-free`): Self-contained with 8 frontend skills + browser verification. It doesn't delegate — it does the full-stack frontend work itself.
+- **Cipher** (DSL engineering, `opencode/kimi-k2.5-free`): 11 DSL skills for grammar design, parser engineering, code generation. Niche but critical for language work.
+- **Construct** (multimodal, `opencode/qwen3.6-plus-free`): PDF/image/diagram interpretation. Architecture diagrams and specs come in visual formats.
 
 ### The Research Layer (2 agents)
 
-- **Operator** (librarian, Claude Haiku 4.5): External research with mandatory citations. Cheap cost signals: use liberally for documentation lookup.
-- **Trinity** (codebase explorer, Claude Haiku 4.5): Read-only grep/AST/LSP. Fire in parallel, use as a peer tool.
+- **Operator** (librarian, `opencode/deepseek-v4-flash-free`): External research with mandatory citations. Cheap cost signals: use liberally for documentation lookup.
+- **Trinity** (codebase explorer, `opencode/deepseek-v4-flash-free`): Read-only grep/AST/LSP. Fire in parallel, use as a peer tool.
 
 ### BDD Contract Agent
 
-- **bdd-contract** (Claude Sonnet 4.6): BDD contract generation from Gherkin files (see `/bdd-contract` in the [Command Reference](command-reference.md)).
+- **bdd-contract** (`opencode/qwen3.6-plus-free`): BDD contract generation from Gherkin files (see `/bdd-contract` in the [Command Reference](command-reference.md)).
 
 ### Design Rationale
 
-Each agent fills a **specific gap** that general-purpose agents handle poorly: security needs dedicated attention → Sentinel; frontend has unique verification needs (browser) → Sati; DSL work requires specialized knowledge → Cipher; planning needs structured interview → Oracle; plans need validation → Smith; pre-planning catches ambiguities → Seraph; research needs citations → Operator; codebase search needs speed → Trinity. Per-agent model assignments keep expensive models off cheap tasks — don't burn Opus tokens on grep.
+Each agent fills a **specific gap** that general-purpose agents handle poorly: security needs dedicated attention → Sentinel; frontend has unique verification needs (browser) → Sati; DSL work requires specialized knowledge → Cipher; planning needs structured interview → Oracle; plans need validation → Smith; pre-planning catches ambiguities → Seraph; research needs citations → Operator; codebase search needs speed → Trinity. Per-agent model assignments keep expensive models off cheap tasks — don't burn your strongest tier on grep.
 
 ---
 
@@ -376,32 +378,32 @@ graph TB
     end
 
     subgraph PRIMARY["Primary Agents (mode: primary)"]
-        MOR["🔴 Morpheus<br/>Claude Opus 4.6<br/><i>Main Orchestrator</i>"]
-        KEY["🟡 Keymaker<br/>GPT 5.3 Codex<br/><i>Autonomous Deep Worker</i>"]
-        ARC["🟣 Architect<br/>Claude Sonnet 4.6<br/><i>Plan Execution Orchestrator</i>"]
+        MOR["🔴 Morpheus<br/>kimi-k2.5-free<br/><i>Main Orchestrator</i>"]
+        KEY["🟡 Keymaker<br/>minimax-m3-free<br/><i>Autonomous Deep Worker</i>"]
+        ARC["🟣 Architect<br/>glm-5-free<br/><i>Plan Execution Orchestrator</i>"]
     end
 
     subgraph SPECIALIST["Specialist Agents (mode: all)"]
-        CIP["🔵 Cipher<br/>Claude Opus 4.6<br/><i>DSL Engineering</i><br/>11 skills"]
-        SAT["🎨 Sati<br/>Claude Sonnet 4.6<br/><i>Frontend Specialist</i><br/>8 skills"]
+        CIP["🔵 Cipher<br/>kimi-k2.5-free<br/><i>DSL Engineering</i><br/>11 skills"]
+        SAT["🎨 Sati<br/>qwen3.6-plus-free<br/><i>Frontend Specialist</i><br/>8 skills"]
     end
 
     subgraph ADVISORS["Advisory Agents (mode: subagent)"]
-        ORA["📋 Oracle<br/>Claude Opus 4.6<br/><i>Strategic Planning</i>"]
-        MER["🏛️ Merovingian<br/>Claude Sonnet 4.6<br/><i>Architecture & Debugging</i>"]
-        SER["👁️ Seraph<br/>Claude Opus 4.6<br/><i>Pre-Planning Analysis</i>"]
-        SMI["⚔️ Smith<br/>Claude Sonnet 4.6<br/><i>Plan Validation</i>"]
-        SEN["🛡️ Sentinel<br/>Claude Sonnet 4.6<br/><i>Security Auditor</i><br/>9 skills"]
+        ORA["📋 Oracle<br/>glm-5-free<br/><i>Strategic Planning</i>"]
+        MER["🏛️ Merovingian<br/>glm-5-free<br/><i>Architecture & Debugging</i>"]
+        SER["👁️ Seraph<br/>glm-5-free<br/><i>Pre-Planning Analysis</i>"]
+        SMI["⚔️ Smith<br/>glm-5-free<br/><i>Plan Validation</i>"]
+        SEN["🛡️ Sentinel<br/>qwen3.6-plus-free<br/><i>Security Auditor</i><br/>9 skills"]
     end
 
     subgraph EXPLORERS["Exploration Agents (mode: subagent)"]
-        TRI["⚡ Trinity<br/>Claude Haiku 4.5<br/><i>Codebase Grep</i>"]
-        OPR["📚 Operator<br/>Claude Haiku 4.5<br/><i>Docs & OSS Search</i>"]
-        CON["👀 Construct<br/>Claude Sonnet 4.6<br/><i>Multimodal Analysis</i>"]
+        TRI["⚡ Trinity<br/>deepseek-v4-flash-free<br/><i>Codebase Grep</i>"]
+        OPR["📚 Operator<br/>deepseek-v4-flash-free<br/><i>Docs & OSS Search</i>"]
+        CON["👀 Construct<br/>qwen3.6-plus-free<br/><i>Multimodal Analysis</i>"]
     end
 
     subgraph EXECUTOR["Dynamic Executor"]
-        MOU["🐭 Mouse<br/>Claude Sonnet 4.6<br/><i>Category-Spawned Worker</i>"]
+        MOU["🐭 Mouse<br/>qwen3.6-plus-free<br/><i>Category-Spawned Worker</i>"]
     end
 
     UI --> MOR
@@ -637,8 +639,8 @@ flowchart TD
     STEP3 --> BUILD["Build AgentConfig"]
 
     BUILD --> THINKING{"Model Type?"}
-    THINKING -->|"Anthropic/Claude"| ANT["thinking: {<br/>  type: 'enabled',<br/>  budgetTokens: 32000<br/>}"]
-    THINKING -->|"OpenAI/GPT"| GPT["reasoningEffort: 'medium'<br/>textVerbosity: 'high'"]
+    THINKING -->|"Extended-thinking family"| ANT["thinking: {<br/>  type: 'enabled',<br/>  budgetTokens: 32000<br/>}"]
+    THINKING -->|"Reasoning-effort family"| GPT["reasoningEffort: 'medium'<br/>textVerbosity: 'high'"]
     THINKING -->|"Other"| OTHER["Default config"]
 
     ANT --> AGENT["Ready Agent"]
