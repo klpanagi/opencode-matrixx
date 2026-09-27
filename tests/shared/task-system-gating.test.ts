@@ -21,13 +21,13 @@ describe("isTaskSystemEnabled", () => {
     expect(result).toBe(true)
   })
 
-  test("returns false when task_system is explicitly false", () => {
+  test("returns true when task_system is explicitly false (legacy key ignored)", () => {
     //#given
     const config = { experimental: { task_system: false } }
     //#when
     const result = isTaskSystemEnabled(config)
     //#then
-    expect(result).toBe(false)
+    expect(result).toBe(true)
   })
 
   test("returns true when task_system is explicitly true", () => {
@@ -77,12 +77,13 @@ describe("resolveTasksConfig", () => {
       storage_path: undefined,
       task_list_id: undefined,
       stale_after_hours: undefined,
+      background_stale_after_hours: 2,
       session_scoped: true,
       pollTimeoutMs: undefined,
     })
   })
 
-  test("canonical tasks.* wins over all legacy keys", () => {
+  test("canonical tasks.* wins for the remaining fields and is ignored for enabled", () => {
     //#given
     const config = {
       tasks: { enabled: false, scope: "global", session_scoped: false, stale_after_hours: 48, pollTimeoutMs: 120000 },
@@ -93,12 +94,12 @@ describe("resolveTasksConfig", () => {
     //#when
     const resolved = resolveTasksConfig(config as never)
     //#then
-    expect(resolved.enabled).toBe(false)
+    expect(resolved.enabled).toBe(TASK_SYSTEM_DEFAULT)
     expect(resolved.scope).toBe("global")
     expect(resolved.session_scoped).toBe(false)
     expect(resolved.stale_after_hours).toBe(48)
     expect(resolved.pollTimeoutMs).toBe(120000)
-    expect(isTaskSystemEnabled(config as never)).toBe(false)
+    expect(isTaskSystemEnabled(config as never)).toBe(true)
   })
 
   test("legacy keys fill gaps when tasks.* is unset", () => {
@@ -111,7 +112,7 @@ describe("resolveTasksConfig", () => {
     //#when
     const resolved = resolveTasksConfig(config as never)
     //#then
-    expect(resolved.enabled).toBe(false)
+    expect(resolved.enabled).toBe(TASK_SYSTEM_DEFAULT)
     expect(resolved.scope).toBe("global")
     expect(resolved.task_list_id).toBe("team")
     expect(resolved.stale_after_hours).toBe(72)
@@ -119,12 +120,12 @@ describe("resolveTasksConfig", () => {
     expect(resolved.pollTimeoutMs).toBe(300000)
   })
 
-  test("dead new_task_system_enabled acts as last-resort fallback", () => {
+  test("new_task_system_enabled is ignored", () => {
     //#given
     const config = { new_task_system_enabled: false }
     //#when
     //#then
-    expect(resolveTasksConfig(config as never).enabled).toBe(false)
-    expect(isTaskSystemEnabled(config as never)).toBe(false)
+    expect(resolveTasksConfig(config as never).enabled).toBe(TASK_SYSTEM_DEFAULT)
+    expect(isTaskSystemEnabled(config as never)).toBe(true)
   })
 })

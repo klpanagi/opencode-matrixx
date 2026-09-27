@@ -13,7 +13,6 @@ tests/hooks/comment-checker/cli.test.ts
 tests/hooks/comment-checker/hook.apply-patch.test.ts
 tests/hooks/directory-agents-injector/injector.test.ts
 tests/hooks/rules-injector/injector.test.ts
-tests/hooks/compaction-todo-preserver/index.test.ts
 tests/hooks/preemptive-compaction.test.ts
 tests/tools/lsp/client.test.ts
 tests/tools/lsp/lsp-process.test.ts
@@ -21,7 +20,6 @@ tests/tools/skill/tools.test.ts
 tests/hooks/context-window-limit-recovery/recovery-hook.test.ts
 tests/hooks/context-window-limit-recovery/storage.test.ts
 tests/agents/utils.test.ts
-tests/hooks/task-notepad/hook.test.ts
 tests/tools/bdd-parse-gherkin/tools.test.ts
 tests/tools/bdd-create-contract/tools.test.ts
 tests/tools/bdd-pipeline/pipeline-runner.test.ts
@@ -43,3 +41,4 @@ tests/config/model-migration.test.ts
 tests/tools/preset/tools.test.ts
 tests/tools/delegate-task/sync-task.timeout.test.ts
 tests/tools/delegate-task/timing.test.ts
+tests/shared/opencode-http-api.test.ts

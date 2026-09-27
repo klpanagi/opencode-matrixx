@@ -19,7 +19,6 @@ export function maybeCreateArchitectConfig(input: {
   mergedCategories: Record<string, CategoryConfig>
   directory?: string
   userCategories?: CategoriesConfig
-  useTaskSystem?: boolean
 }): AgentConfig | undefined {
   const {
     disabledAgents,

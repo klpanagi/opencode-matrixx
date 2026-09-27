@@ -1,7 +1,11 @@
 import type { MatrixxConfig } from "../config";
-import { isTaskSystemEnabled } from "../shared/task-system-gating";
 
 type AgentWithPermission = { permission?: Record<string, unknown> };
+
+/** The legacy todo tools are denied for every task-capable agent. */
+const denyTodoTools = { todowrite: "deny", todoread: "deny" } as const
+/** Incoming task-system permissions granted to the full-capability agents. */
+const fullTaskPermissions = { task: "allow", "task_*": "allow", teammate: "allow", ...denyTodoTools } as const
 
 function agentByKey(agentResult: Record<string, unknown>, key: string): AgentWithPermission | undefined {
   return agentResult[key] as AgentWithPermission | undefined;
@@ -12,14 +16,6 @@ export function applyToolConfig(params: {
   pluginConfig: MatrixxConfig;
   agentResult: Record<string, unknown>;
 }): void {
-  const isTaskSystem = isTaskSystemEnabled(params.pluginConfig)
-  const denyTodoTools = isTaskSystem
-    ? { todowrite: "deny", todoread: "deny" }
-    : {}
-  const denyTaskTools = !isTaskSystem
-    ? { "task_*": "deny" as const, task: "deny" as const }
-    : {}
-
   params.config.tools = {
     ...(params.config.tools as Record<string, unknown>),
     github_search: false,
@@ -28,11 +24,9 @@ export function applyToolConfig(params: {
     LspCodeActionResolve: false,
     "task_*": false,
     teammate: false,
-    ...(isTaskSystem
-      ? { todowrite: false, todoread: false }
-      : { "task_*": false, task: false }),
+    todowrite: false,
+    todoread: false,
   };
-
 
   const isCliRunMode = process.env.OPENCODE_CLI_RUN_MODE === "true";
   const questionPermission = isCliRunMode ? "deny" : "allow";
@@ -54,9 +48,7 @@ export function applyToolConfig(params: {
     // Fill-only: factory owns outgoing-task allow (see architect/agent.ts #111
     // option b). Fill gaps per key with ?? so a factory value or explicit user
     // override is never overwritten here.
-    const defaults = isTaskSystem
-      ? { task: "allow", "task_*": "allow", teammate: "allow", ...denyTodoTools }
-      : { todowrite: "allow", todoread: "allow", ...denyTaskTools };
+    const defaults = { ...fullTaskPermissions }
     const permission = (architect.permission ?? {}) as Record<string, unknown>;
     for (const [key, value] of Object.entries(defaults)) {
       permission[key] ??= value;
@@ -68,9 +60,7 @@ export function applyToolConfig(params: {
     morpheus.permission = {
       ...morpheus.permission,
       question: questionPermission,
-      ...(isTaskSystem
-        ? { task: "allow", "task_*": "allow", teammate: "allow", ...denyTodoTools }
-        : { todowrite: "allow", todoread: "allow", ...denyTaskTools }),
+      ...fullTaskPermissions,
     };
   }
   const keymaker = agentByKey(params.agentResult, "keymaker");
@@ -78,7 +68,8 @@ export function applyToolConfig(params: {
     keymaker.permission = {
       ...keymaker.permission,
       question: questionPermission,
-      ...(isTaskSystem ? { task: "allow", ...denyTodoTools } : { todowrite: "allow", todoread: "allow", ...denyTaskTools }),
+      task: "allow",
+      ...denyTodoTools,
     };
   }
   const oracle = agentByKey(params.agentResult, "oracle");
@@ -86,18 +77,14 @@ export function applyToolConfig(params: {
     oracle.permission = {
       ...oracle.permission,
       question: questionPermission,
-      ...(isTaskSystem
-        ? { task: "allow", "task_*": "allow", teammate: "allow", ...denyTodoTools }
-        : { todowrite: "allow", todoread: "allow", ...denyTaskTools }),
+      ...fullTaskPermissions,
     };
   }
   const mouse = agentByKey(params.agentResult, "mouse");
   if (mouse) {
     mouse.permission = {
       ...mouse.permission,
-      ...(isTaskSystem
-        ? { task: "allow", "task_*": "allow", teammate: "allow", ...denyTodoTools }
-        : { todowrite: "allow", todoread: "allow", ...denyTaskTools }),
+      ...fullTaskPermissions,
     };
   }
 

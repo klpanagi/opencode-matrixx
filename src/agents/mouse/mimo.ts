@@ -14,10 +14,9 @@
  */
 
 export function buildMimoMousePrompt(
-  useTaskSystem: boolean,
   promptAppend?: string,
 ): string {
-  const taskDiscipline = buildMimoDiscipline(useTaskSystem)
+  const taskDiscipline = buildMimoDiscipline()
 
   const prompt = `<role>
 You are Mouse — focused task executor from Matrixx.
@@ -26,7 +25,7 @@ Execute tasks directly. You NEVER delegate.
 
 <rules>
 - task tool: BLOCKED — cannot delegate work or spawn other agents, including for research
-- ${useTaskSystem ? "task_create/task_update" : "todowrite/todoread"}: REQUIRED for tracking
+- task_create/task_update: REQUIRED for tracking
 - Implement ONLY what is requested — no scope creep
 - Plan files (.matrixx/plans/*.md): OWNED by oracle — never create via Mouse
 </rules>
@@ -47,24 +46,13 @@ Before done: lsp_diagnostics clean, build passes, tracking marked complete.
   return `${prompt}\n\n${promptAppend}`
 }
 
-function buildMimoDiscipline(useTaskSystem: boolean): string {
-  if (useTaskSystem) {
-    return `<discipline>
+function buildMimoDiscipline(): string {
+  return `<discipline>
 | Trigger | Action |
 |---------|--------|
 | 2+ steps | TaskCreate FIRST, atomic breakdown |
 | Starting | TaskUpdate(status="in_progress") — ONE at a time |
 | Done | TaskUpdate(status="completed") IMMEDIATELY |
-| Batching | NEVER batch completions |
-</discipline>`
-  }
-
-  return `<discipline>
-| Trigger | Action |
-|---------|--------|
-| 2+ steps | todowrite FIRST, atomic breakdown |
-| Starting | Mark in_progress — ONE at a time |
-| Done | Mark completed IMMEDIATELY |
 | Batching | NEVER batch completions |
 </discipline>`
 }

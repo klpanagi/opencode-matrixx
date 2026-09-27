@@ -44,7 +44,9 @@ export const MatrixxConfigSchema = z.object({
   model_presets: ModelPresetsSchema.optional(),
   /** Name of the active preset in model_presets */
   active_preset: ActivePresetSchema.optional(),
-  /** Legacy flag (deprecated: use tasks.enabled instead — kept as fallback, no runtime reader) */
+  /** @deprecated no-op since v2.7 — the legacy todo system it toggled is removed.
+   * Parses and is ignored; `tasks.enabled` is the only task-system switch.
+   * Remove in v3.0. */
   new_task_system_enabled: z.boolean().optional(),
   /** Default agent name for `matrixx run` (env: OPENCODE_DEFAULT_AGENT) */
   default_run_agent: z.string().optional(),
@@ -53,7 +55,11 @@ export const MatrixxConfigSchema = z.object({
   disabled_skills: z.array(BuiltinSkillNameSchema).optional(),
   disabled_hooks: z.array(HookNameSchema).optional(),
   disabled_commands: z.array(BuiltinCommandNameSchema).optional(),
-  /** Disable specific tools by name (e.g., ["todowrite", "todoread"]) */
+  /** Disable specific tools by name.
+   * A `["todowrite", "todoread"]` entry here is a no-op since v2.7: both tools
+   * are unreachable, not merely disabled, so there is nothing for the list to
+   * act on. The key itself stays, and is honoured for tool names OpenCode
+   * still registers. */
   disabled_tools: z.array(z.string()).optional(),
   agents: AgentOverridesSchema.optional(),
   categories: CategoriesConfigSchema.optional(),

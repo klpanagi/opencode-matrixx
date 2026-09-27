@@ -10,12 +10,11 @@ import {
   buildTodoDisciplineSection,
   buildVerificationTable,
 } from "../../../src/agents/mouse/shared"
-import {
-  buildMousePrompt,
-  createMouseAgentWithOverrides,
-  getMousePromptSource,
-  MOUSE_DEFAULTS,
-} from "../../../src/agents/mouse/index"
+
+type AgentConfigWithModelConfig = {
+  thinking?: { type: "enabled" | "disabled"; budgetTokens?: number }
+  reasoningEffort?: "low" | "medium" | "high" | "xhigh"
+}
 
 describe("createMouseAgentWithOverrides", () => {
   describe("honored fields", () => {
@@ -203,13 +202,13 @@ describe("createMouseAgentWithOverrides", () => {
     })
   })
 
-  describe("useTaskSystem integration", () => {
-    test("useTaskSystem=true produces Task_Discipline prompt for Claude", () => {
+  describe("task system integration", () => {
+    test("produces Task_Discipline prompt for Claude", () => {
       //#given
       const override = { model: "anthropic/claude-sonnet-4-5" }
 
       //#when
-      const result = createMouseAgentWithOverrides(override, undefined, true)
+      const result = createMouseAgentWithOverrides(override)
 
       //#then
       expect(result.prompt).toContain("TaskCreate")
@@ -217,12 +216,12 @@ describe("createMouseAgentWithOverrides", () => {
       expect(result.prompt).not.toContain("todowrite")
     })
 
-    test("useTaskSystem=true produces task_discipline_spec prompt for GPT", () => {
+    test("produces task_discipline_spec prompt for GPT", () => {
       //#given
       const override = { model: "openai/gpt-5.2" }
 
       //#when
-      const result = createMouseAgentWithOverrides(override, undefined, true)
+      const result = createMouseAgentWithOverrides(override)
 
       //#then
       expect(result.prompt).toContain("<task_discipline_spec>")
@@ -230,24 +229,13 @@ describe("createMouseAgentWithOverrides", () => {
       expect(result.prompt).not.toContain("<todo_discipline_spec>")
     })
 
-    test("useTaskSystem=false (default) produces Todo_Discipline prompt", () => {
-      //#given
-      const override = {}
-
-      //#when
-      const result = createMouseAgentWithOverrides(override)
-
-      //#then
-      expect(result.prompt).toContain("todowrite")
-      expect(result.prompt).not.toContain("TaskCreate")
-    })
-
-    test("useTaskSystem=true explicitly lists task management tools as ALLOWED for Claude", () => {
+    
+    test("explicitly lists task management tools as ALLOWED for Claude", () => {
       //#given
       const override = { model: "anthropic/claude-sonnet-4-5" }
 
       //#when
-      const result = createMouseAgentWithOverrides(override, undefined, true)
+      const result = createMouseAgentWithOverrides(override)
 
       //#then - prompt must disambiguate: delegation tool blocked, management tools allowed
       expect(result.prompt).toContain("task_create")
@@ -257,12 +245,12 @@ describe("createMouseAgentWithOverrides", () => {
       expect(result.prompt).toContain("agent delegation tool")
     })
 
-    test("useTaskSystem=true explicitly lists task management tools as ALLOWED for GPT", () => {
+    test("explicitly lists task management tools as ALLOWED for GPT", () => {
       //#given
       const override = { model: "openai/gpt-5.2" }
 
       //#when
-      const result = createMouseAgentWithOverrides(override, undefined, true)
+      const result = createMouseAgentWithOverrides(override)
 
       //#then - prompt must disambiguate: delegation tool blocked, management tools allowed
       expect(result.prompt).toContain("task_create")
@@ -272,17 +260,45 @@ describe("createMouseAgentWithOverrides", () => {
       expect(result.prompt).toContain("Agent delegation tool")
     })
 
-    test("useTaskSystem=false does NOT list task management tools in constraints", () => {
-      //#given - Claude model without task system
-      const override = { model: "anthropic/claude-sonnet-4-5" }
+      })
 
-      //#when
-      const result = createMouseAgentWithOverrides(override, undefined, false)
+  // C7 fence: the file-backed task system is unconditional and the legacy todo
+  // tools are denied for mouse, so NO mouse prompt variant may name them.
+  const LEGACY_TODO_TOOL = /todowrite|todoread|TodoWrite/i
+  const VARIANT_MODELS = [
+    "anthropic/claude-sonnet-4-5",
+    "openai/gpt-5.2",
+    "opencode-go/deepseek-v4-flash",
+    "opencode-go/mimo-v2.5",
+    "opencode-go/qwen3.7-plus",
+  ]
 
-      //#then - no task management tool references in constraints section
-      expect(result.prompt).not.toContain("task_create")
-      expect(result.prompt).not.toContain("task_update")
-    })
+  test.each(VARIANT_MODELS)("%s prompt names no legacy todo tool", (model) => {
+    //#given a mouse model variant
+
+    //#when
+    const prompt = buildMousePrompt(model)
+
+    //#then
+    expect(prompt).not.toContain("todowrite")
+    expect(prompt).not.toContain("todoread")
+    expect(prompt).not.toMatch(LEGACY_TODO_TOOL)
+  })
+
+  test("every shared prompt utility section names no legacy todo tool", () => {
+    //#given the shared section builders
+
+    //#when
+    const sections = [
+      buildConstraintsSection(),
+      buildTodoDisciplineSection(),
+      buildVerificationTable(),
+    ]
+
+    //#then
+    for (const section of sections) {
+      expect(section).not.toMatch(LEGACY_TODO_TOOL)
+    }
   })
 
   describe("prompt composition", () => {
@@ -337,11 +353,6 @@ describe("createMouseAgentWithOverrides", () => {
       expect(appendIndex).toBeGreaterThan(baseEndIndex)
     })
   })
-
-  type AgentConfigWithModelConfig = {
-    thinking?: { type: "enabled" | "disabled"; budgetTokens?: number }
-    reasoningEffort?: "low" | "medium" | "high" | "xhigh"
-  }
 
   describe("model-specific thinking/reasoning config", () => {
     test("Claude model gets thinking config", () => {
@@ -469,7 +480,7 @@ describe("buildMousePrompt", () => {
     const model = "openai/gpt-5.2"
 
     // when
-    const prompt = buildMousePrompt(model, false)
+    const prompt = buildMousePrompt(model)
 
     // then
     expect(prompt).toContain("<identity>")
@@ -483,7 +494,7 @@ describe("buildMousePrompt", () => {
     const model = "anthropic/claude-sonnet-4-5"
 
     // when
-    const prompt = buildMousePrompt(model, false)
+    const prompt = buildMousePrompt(model)
 
     // then
     expect(prompt).toContain("<Role>")
@@ -491,30 +502,19 @@ describe("buildMousePrompt", () => {
     expect(prompt).toContain("BLOCKED ACTIONS")
   })
 
-  test("useTaskSystem=true includes Task_Discipline for GPT", () => {
+  test("includes Task_Discipline for GPT", () => {
     // given
     const model = "openai/gpt-5.2"
 
     // when
-    const prompt = buildMousePrompt(model, true)
+    const prompt = buildMousePrompt(model)
 
     // then
     expect(prompt).toContain("<task_discipline_spec>")
     expect(prompt).toContain("TaskCreate")
   })
 
-  test("useTaskSystem=false includes Todo_Discipline for Claude", () => {
-    // given
-    const model = "anthropic/claude-sonnet-4-5"
-
-    // when
-    const prompt = buildMousePrompt(model, false)
-
-    // then
-    expect(prompt).toContain("<Todo_Discipline>")
-    expect(prompt).toContain("todowrite")
   })
-})
 
 describe("getMousePromptSource (new variants)", () => {
   test("returns 'deepseek' for DeepSeek models", () => {
@@ -540,7 +540,7 @@ describe("buildMousePrompt (new variants)", () => {
     const model = "opencode-go/deepseek-v4-flash";
 
     //#when
-    const prompt = buildMousePrompt(model, false);
+    const prompt = buildMousePrompt(model);
 
     //#then
     expect(prompt).toContain("<Role>");
@@ -555,7 +555,7 @@ describe("buildMousePrompt (new variants)", () => {
     const model = "opencode-go/mimo-v2.5";
 
     //#when
-    const prompt = buildMousePrompt(model, false);
+    const prompt = buildMousePrompt(model);
 
     //#then
     expect(prompt).toContain("<role>");
@@ -571,23 +571,23 @@ describe("buildMousePrompt (new variants)", () => {
     const model = "opencode-go/qwen3.7-plus";
 
     //#when
-    const prompt = buildMousePrompt(model, false);
+    const prompt = buildMousePrompt(model);
 
     //#then
     expect(prompt).toContain("<identity>");
     expect(prompt).toContain("<blocked_actions>");
     expect(prompt).toContain("<scope_control>");
-    expect(prompt).toContain("<todo_discipline>");
+    expect(prompt).toContain("<task_discipline>");
     expect(prompt).toContain("<verification>");
     expect(prompt).toContain("<style>");
   });
 
-  test("DeepSeek prompt with useTaskSystem=true uses Task_Discipline", () => {
+  test("DeepSeek prompt uses Task_Discipline", () => {
     //#given
     const model = "opencode-go/deepseek-v4-flash";
 
     //#when
-    const prompt = buildMousePrompt(model, true);
+    const prompt = buildMousePrompt(model);
 
     //#then
     expect(prompt).toContain("<Task_Discipline>");
@@ -596,36 +596,25 @@ describe("buildMousePrompt (new variants)", () => {
     expect(prompt).toContain("TaskCreate");
   });
 
-  test("Mimo prompt with useTaskSystem=true uses Task reference", () => {
+  test("Mimo prompt uses Task reference", () => {
     //#given
     const model = "opencode-go/mimo-v2.5";
 
     //#when
-    const prompt = buildMousePrompt(model, true);
+    const prompt = buildMousePrompt(model);
 
     //#then
     expect(prompt).toContain("TaskCreate");
     expect(prompt).toContain("TaskUpdate");
   });
 
-  test("Mimo prompt with useTaskSystem=false uses todowrite reference", () => {
-    //#given
-    const model = "opencode-go/mimo-v2.5";
-
-    //#when
-    const prompt = buildMousePrompt(model, false);
-
-    //#then
-    expect(prompt).toContain("todowrite");
-    expect(prompt).not.toContain("TaskCreate");
-  });
-
-  test("Qwen prompt with useTaskSystem=true uses task_discipline", () => {
+  
+  test("Qwen prompt uses task_discipline", () => {
     //#given
     const model = "opencode-go/qwen3.7-plus";
 
     //#when
-    const prompt = buildMousePrompt(model, true);
+    const prompt = buildMousePrompt(model);
 
     //#then
     expect(prompt).toContain("<task_discipline>");
@@ -633,19 +622,7 @@ describe("buildMousePrompt (new variants)", () => {
     expect(prompt).toContain("task_create");
   });
 
-  test("Qwen prompt with useTaskSystem=false uses todo_discipline", () => {
-    //#given
-    const model = "opencode-go/qwen3.7-plus";
-
-    //#when
-    const prompt = buildMousePrompt(model, false);
-
-    //#then
-    expect(prompt).toContain("<todo_discipline>");
-    expect(prompt).toContain("todowrite");
-    expect(prompt).not.toContain("TaskCreate");
   });
-});
 
 describe("createMouseAgentWithOverrides (DeepSeek thinking)", () => {
   test("DeepSeek model gets thinking config (like Anthropic)", () => {
@@ -662,47 +639,37 @@ describe("createMouseAgentWithOverrides (DeepSeek thinking)", () => {
 
 describe("shared prompt utilities", () => {
   test("buildConstraintsSection blocks task delegation", () => {
-    const constraints = buildConstraintsSection(false);
+    const constraints = buildConstraintsSection();
     expect(constraints).toContain("BLOCKED");
     expect(constraints).toContain("task");
     expect(constraints).toContain("You work ALONE");
   });
 
-  test("buildConstraintsSection with useTaskSystem includes task management tools", () => {
-    const constraints = buildConstraintsSection(true);
+  test("buildConstraintsSection includes task management tools", () => {
+    const constraints = buildConstraintsSection();
     expect(constraints).toContain("task_create");
     expect(constraints).toContain("task_update");
   });
 
-  test("buildTodoDisciplineSection with useTaskSystem uses Task_Discipline", () => {
-    const section = buildTodoDisciplineSection(true);
+  test("buildTodoDisciplineSection uses Task_Discipline", () => {
+    const section = buildTodoDisciplineSection();
     expect(section).toContain("<Task_Discipline>");
     expect(section).toContain("TaskCreate");
     expect(section).not.toContain("todowrite");
   });
 
-  test("buildTodoDisciplineSection without useTaskSystem uses Todo_Discipline", () => {
-    const section = buildTodoDisciplineSection(false);
-    expect(section).toContain("<Todo_Discipline>");
-    expect(section).toContain("todowrite");
-  });
-
+  
   test("buildVerificationTable returns table with lsp_diagnostics check", () => {
-    const table = buildVerificationTable(false);
+    const table = buildVerificationTable();
     expect(table).toContain("lsp_diagnostics");
     expect(table).toContain("Zero errors");
     expect(table).toContain("No evidence = not complete.");
   });
 
-  test("buildVerificationTable with useTaskSystem references TaskUpdate", () => {
-    const table = buildVerificationTable(true);
+  test("buildVerificationTable references TaskUpdate", () => {
+    const table = buildVerificationTable();
     expect(table).toContain("TaskUpdate");
     expect(table).toContain("All tasks marked completed");
   });
 
-  test("buildVerificationTable without useTaskSystem references todowrite", () => {
-    const table = buildVerificationTable(false);
-    expect(table).toContain("todowrite");
-    expect(table).toContain("All todos marked completed");
   });
-});

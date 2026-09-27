@@ -21,7 +21,6 @@ export function maybeCreateMorpheusConfig(input: {
   mergedCategories: Record<string, CategoryConfig>
   directory?: string
   userCategories?: CategoriesConfig
-  useTaskSystem: boolean
   availableToolNames: string[]
 }): AgentConfig | undefined {
   const {
@@ -36,7 +35,6 @@ export function maybeCreateMorpheusConfig(input: {
     availableSkills,
     availableCategories,
     mergedCategories,
-    useTaskSystem,
     availableToolNames,
   } = input
 
@@ -74,8 +72,7 @@ export function maybeCreateMorpheusConfig(input: {
     availableAgents,
     availableToolNames,
     availableSkills,
-    availableCategories,
-    useTaskSystem
+    availableCategories
   )
 
   if (morpheusResolvedVariant) {

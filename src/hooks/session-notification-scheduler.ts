@@ -15,7 +15,7 @@ export function createIdleNotificationScheduler(options: {
   ctx: PluginInput
   platform: Platform
   config: SessionNotificationConfig
-  hasIncompleteTodos: (ctx: PluginInput, sessionID: string) => Promise<boolean>
+  hasIncompleteTaskWork: (ctx: PluginInput, sessionID: string) => Promise<boolean>
   send: (ctx: PluginInput, platform: Platform, title: string, message: string) => Promise<void>
   playSound: (ctx: PluginInput, platform: Platform, soundPath: string) => Promise<void>
 }) {
@@ -87,7 +87,7 @@ export function createIdleNotificationScheduler(options: {
     executingNotifications.add(sessionID)
     try {
       if (options.config.skipIfIncompleteTodos) {
-        const hasPendingWork = await options.hasIncompleteTodos(options.ctx, sessionID)
+        const hasPendingWork = await options.hasIncompleteTaskWork(options.ctx, sessionID)
         if (notificationVersions.get(sessionID) !== version) {
           return
         }

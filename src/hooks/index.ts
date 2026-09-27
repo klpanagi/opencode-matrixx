@@ -8,7 +8,6 @@ export { createBashFileReadGuardHook } from "./bash-file-read-guard"
 export { createCategorySkillReminderHook } from "./category-skill-reminder";
 export { createCommentCheckerHooks } from "./comment-checker";
 export { createCompactionContextInjector } from "./compaction-context-injector";
-export { createCompactionTodoPreserverHook } from "./compaction-todo-preserver";
 export { createContextModeEnforcerHook } from "./context-mode-enforcer";
 export { type ContextWindowLimitRecoveryOptions, type ContextWindowLimitRecoveryOptions as AnthropicContextWindowLimitRecoveryOptions, createContextWindowLimitRecoveryHook, createContextWindowLimitRecoveryHook as createAnthropicContextWindowLimitRecoveryHook } from "./context-window-limit-recovery";
 export { createContextWindowMonitorHook } from "./context-window-monitor";
@@ -52,17 +51,13 @@ export { buildWindowsToastScript, escapeAppleScriptText, escapePowerShellSingleQ
 export { createIdleNotificationScheduler } from "./session-notification-scheduler";
 export { detectPlatform, getDefaultSoundPath, playSessionNotificationSound, sendSessionNotification } from "./session-notification-sender";
 export { createSessionRecoveryHook, type SessionRecoveryHook, type SessionRecoveryOptions } from "./session-recovery";
-export { hasIncompleteTodos } from "./session-todo-status";
 export { createStartWorkHook } from "./start-work";
 export { createStopContinuationGuardHook, type StopContinuationGuard } from "./stop-continuation-guard";
 export { createTaskContinuationEnforcer, type TaskContinuationEnforcer } from "./task-continuation-enforcer";
 export { createTaskEditGuardHook } from "./task-edit-guard";
-export { createTaskNotepadHook } from "./task-notepad"
 export { createTaskResumeInfoHook } from "./task-resume-info";
-export { createTasksTodowriteDisablerHook } from "./tasks-todowrite-disabler";
 export { createThinkModeHook } from "./think-mode";
 export { createThinkingBlockValidatorHook } from "./thinking-block-validator";
-export { createTodoContinuationEnforcer, type TodoContinuationEnforcer } from "./todo-continuation-enforcer";
 export { createToolOutputTruncatorHook } from "./tool-output-truncator";
 export { createToolPairValidatorHook } from "./tool-pair-validator"
 export { createUnstableAgentBabysitterHook } from "./unstable-agent-babysitter";

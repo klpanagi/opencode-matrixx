@@ -45,9 +45,10 @@
   // "disabled_skills": ["playwright"],
   // "disabled_hooks": ["comment-checker", "agent-usage-reminder", "input-secret-guard"],
   // "disabled_commands": ["init-deep", "start-work"],
-  // "disabled_tools": ["todowrite", "todoread"],
+  // "disabled_tools": ["webfetch", "pdf-extract-figures"],
 
-  // Legacy flag (deprecated: use tasks.enabled instead — kept as fallback)
+  // DEPRECATED no-op: parsed, ignored, warns once. The task system is
+  // unconditional. Remove this key.
   // "new_task_system_enabled": true,
 
   // Auto-update Matrixx when a new version is available (default: not set → manual)
@@ -123,11 +124,13 @@
 
   // ─────────────────────────────────────────────────────────────────────────
   // Tasks — canonical task-system configuration (.matrixx/tasks/T-*.json)
-  // Legacy `morpheus.tasks`, `task.pollTimeoutMs`, `experimental.task_system`
-  // still parse and act as fallback — explicit `tasks.*` always wins.
+  // There is no master switch: the file-backed task system is unconditional,
+  // so `tasks.enabled` is parsed but ignored. Legacy `morpheus.tasks` and
+  // `task.pollTimeoutMs` still supply fallback storage keys — explicit
+  // `tasks.*` always wins. See docs/legacy-todo-migration.md.
   // ─────────────────────────────────────────────────────────────────────────
   // "tasks": {
-  //   "enabled": true,                      // master switch (default: true); false → task_* tools off, legacy todo-enforcer on
+  //   "enabled": true,                      // DEPRECATED no-op (default: true); parsed, ignored, warns once. Omit it.
   //   "scope": "project",                   // "project" → .matrixx/tasks per project (default) | "global" → ~/.config/opencode/tasks/{listId}
   //   "storage_path": ".matrixx/tasks",     // absolute or relative path override
   //   "task_list_id": "my-list",            // force task list ID (alt to ULTRAWORK_TASK_LIST_ID env)
@@ -154,7 +157,7 @@
   // Experimental features (opt-in, may change)
   // ─────────────────────────────────────────────────────────────────────────
   "experimental": {
-    // "task_system": true,                // legacy (deprecated: use tasks.enabled) — fallback when tasks.enabled is unset
+    // "task_system": true,                 // DEPRECATED no-op: parsed, ignored, warns once. Remove it.
     // "aggressive_truncation": false,      // aggressively truncate tool outputs when token limit exceeded
     // "auto_resume": true,                 // auto-resume session after thinking block recovery
     // "preemptive_compaction": true,       // enable preemptive compaction before context window fills

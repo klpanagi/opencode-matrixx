@@ -220,7 +220,7 @@ task(subagent_type="plan", load_skills=[], run_in_background=false, prompt="<gat
 
 ### GOAL REGISTRATION (BINDING)
 
-When the \`todowrite\` tool exists, you MUST register the run's goal with it BEFORE any implementation: the full objective, the scenario contract below, and one line "I'll stop right away when <the exact observable state that ends this run>". Record the same contract in your notepad and treat it as binding.
+When the \`task_create\` tool exists, you MUST register the run's goal with it BEFORE any implementation: the full objective, the scenario contract below, and one line "I'll stop right away when <the exact observable state that ends this run>". Record the same contract in your notepad and treat it as binding.
 
 ### SCENARIO CONTRACT (binding, defined BEFORE coding)
 

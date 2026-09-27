@@ -6,10 +6,9 @@
  *                                                     commentChecker,
  *                                                     directoryAgentsInjector,
  *                                                     rulesInjector
- *   Wave 2 (5 hooks, parallel via Promise.allSettled): secretLeakGuard,
+ *   Wave 2 (4 hooks, parallel via Promise.allSettled): secretLeakGuard,
  *                                                     envFileWriteGuard,
  *                                                     writeExistingFileGuard,
- *                                                     tasksTodowriteDisabler,
  *                                                     oracleMdOnly (BLOCKING)
  *   Wave 3 (5 calls, sequential):                     nonInteractiveEnv,
  *                                                     bashFileReadGuard,
@@ -17,7 +16,7 @@
  *                                                     mouseNotepad,
  *                                                     architectHook
  *
- * Total: 14 calls per iteration (oracleMdOnly appears in both Wave 2 and
+ * Total: 13 calls per iteration (oracleMdOnly appears in both Wave 2 and
  * Wave 3; the handler calls `hooks.oracleMdOnly?.["tool.execute.before"]`
  * twice — once in Wave 2 and once in Wave 3 — so the bench must build a
  * SINGLE oracleMdOnly hook that records both invocations).
@@ -62,7 +61,6 @@ const WAVE_2: HookName[] = [
   "secretLeakGuard",
   "envFileWriteGuard",
   "writeExistingFileGuard",
-  "tasksTodowriteDisabler",
   "oracleMdOnly",
 ]
 

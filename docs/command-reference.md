@@ -163,7 +163,7 @@ Stop all automated continuation mechanisms for the current session.
 
 No arguments. This command:
 
-1. Stops the todo-continuation-enforcer from auto-continuing incomplete tasks
+1. Stops `task-continuation-enforcer` from auto-continuing incomplete tasks
 2. Cancels any active Matrix Loop
 3. Clears the mission state
 

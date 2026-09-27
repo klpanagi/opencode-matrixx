@@ -453,32 +453,35 @@ describe("session-manager storage - SDK path (beta mode)", () => {
     expect(messages[1].role).toBe("assistant")
   })
 
-  test("readSessionTodos uses SDK when beta mode is enabled", async () => {
-    // given
-    const mockTodos = [
-      { id: "todo_1", content: "Task 1", status: "pending", priority: "high" },
-      { id: "todo_2", content: "Task 2", status: "completed", priority: "medium" },
-    ]
-    mockClient.session.todo.mockImplementation(() => Promise.resolve({ data: mockTodos }))
-
-    mock.module("../../../src/shared/opencode-storage-detection", () => ({
-      isSqliteBackend: () => true,
-      resetSqliteBackendCache: () => {},
-    }))
-
-    const { setStorageClient, readSessionTodos } = await import("../../../src/tools/session-manager/storage")
+  test("readSessionTodos reads task state and never calls the SDK todo endpoint", async () => {
+    // given - a task attributed to this session in the file-backed store
+    mkdirSync(join(TEST_DIR, ".matrixx", "tasks"), { recursive: true })
+    writeFileSync(
+      join(TEST_DIR, ".matrixx", "tasks", `T-${randomUUID()}.json`),
+      JSON.stringify({
+        id: `T-${randomUUID()}`,
+        subject: "Task 1",
+        description: "",
+        status: "pending",
+        blocks: [],
+        blockedBy: [],
+        threadID: "ses_test",
+      })
+    )
+    const { setStorageDirectory, setStorageClient, readSessionTodos } = await import(
+      "../../../src/tools/session-manager/storage"
+    )
+    setStorageDirectory(TEST_DIR)
     setStorageClient(mockClient as unknown as Parameters<typeof setStorageClient>[0])
 
     // when
     const todos = await readSessionTodos("ses_test")
 
-    // then
-    expect(mockClient.session.todo).toHaveBeenCalledWith({ path: { id: "ses_test" } })
-    expect(todos.length).toBe(2)
+    // then - the SDK is never asked, and task state is returned instead
+    expect(mockClient.session.todo).not.toHaveBeenCalled()
+    expect(todos).toHaveLength(1)
     expect(todos[0].content).toBe("Task 1")
-    expect(todos[1].content).toBe("Task 2")
     expect(todos[0].status).toBe("pending")
-    expect(todos[1].status).toBe("completed")
   })
 
   test("SDK path returns empty array on error", async () => {
@@ -514,6 +517,96 @@ describe("session-manager storage - SDK path (beta mode)", () => {
 
     //#then should return empty array since no client and no JSON fallback
     expect(messages).toEqual([])
+  })
+
+  test("getSessionInfo resolves the task store from the plugin config", async () => {
+    //#given a session with a message and a task in a custom store
+    const sessionID = "ses_config_probe"
+    const sessionPath = join(TEST_MESSAGE_STORAGE, sessionID)
+    mkdirSync(sessionPath, { recursive: true })
+    writeFileSync(
+      join(sessionPath, "msg_1.json"),
+      JSON.stringify({ id: "msg_1", role: "assistant", agent: "build", time: { created: 1 } })
+    )
+    mkdirSync(TEST_PART_STORAGE, { recursive: true })
+    writeFileSync(join(TEST_PART_STORAGE, "msg_1.json"), JSON.stringify([]))
+    const configuredDir = join(TEST_DIR, "custom-tasks")
+    mkdirSync(configuredDir, { recursive: true })
+    writeFileSync(
+      join(configuredDir, `T-${randomUUID()}.json`),
+      JSON.stringify({
+        id: `T-${randomUUID()}`,
+        subject: "Configured work",
+        description: "",
+        status: "pending",
+        blocks: [],
+        blockedBy: [],
+        threadID: sessionID,
+      })
+    )
+    const { setStorageDirectory, setStorageConfig } = await import(
+      "../../../src/tools/session-manager/storage"
+    )
+    setStorageDirectory(TEST_DIR)
+    setStorageConfig({ tasks: { enabled: true, background_stale_after_hours: 2, storage_path: configuredDir } })
+
+    //#when the session info is assembled
+    const info = await getSessionInfo(sessionID)
+
+    //#then the second consumer of the read honours the configured store
+    expect(info?.has_todos).toBe(true)
+    expect(info?.todos).toHaveLength(1)
+    expect(info?.todos?.[0].content).toBe("Configured work")
+
+    setStorageConfig(undefined)
+  })
+
+  test("has_todos stays display-only and is not an incomplete-work proxy", async () => {
+    //#given a session whose only task is completed
+    const sessionID = "ses_completed_probe"
+    const sessionPath = join(TEST_MESSAGE_STORAGE, sessionID)
+    mkdirSync(sessionPath, { recursive: true })
+    writeFileSync(
+      join(sessionPath, "msg_1.json"),
+      JSON.stringify({ id: "msg_1", role: "assistant", agent: "build", time: { created: 1 } })
+    )
+    mkdirSync(TEST_PART_STORAGE, { recursive: true })
+    writeFileSync(join(TEST_PART_STORAGE, "msg_1.json"), JSON.stringify([]))
+    const configuredDir = join(TEST_DIR, "completed-tasks")
+    mkdirSync(configuredDir, { recursive: true })
+    writeFileSync(
+      join(configuredDir, `T-${randomUUID()}.json`),
+      JSON.stringify({
+        id: `T-${randomUUID()}`,
+        subject: "Finished work",
+        description: "",
+        status: "completed",
+        blocks: [],
+        blockedBy: [],
+        threadID: sessionID,
+      })
+    )
+    const { setStorageDirectory, setStorageConfig } = await import(
+      "../../../src/tools/session-manager/storage"
+    )
+    const { hasIncompleteTasksForSession } = await import("../../../src/features/task-session-scope")
+    setStorageDirectory(TEST_DIR)
+    const config = { tasks: { enabled: true, background_stale_after_hours: 2, storage_path: configuredDir } }
+    setStorageConfig(config)
+
+    //#when both the display flag and the completion gate are asked
+    const info = await getSessionInfo(sessionID)
+    const hasIncomplete = hasIncompleteTasksForSession({
+      config,
+      directory: TEST_DIR,
+      sessionID,
+    })
+
+    //#then "this session had task work" is never conflated with "unfinished work"
+    expect(info?.has_todos).toBe(true)
+    expect(hasIncomplete).toBe(false)
+
+    setStorageConfig(undefined)
   })
 
   afterAll(() => {

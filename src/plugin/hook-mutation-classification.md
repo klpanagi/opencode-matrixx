@@ -32,7 +32,6 @@ relevant for parallelization decisions; **Secondary** lists everything else.
 | 8 | commentChecker | `READ_ONLY` | — | — | NO | None in `before`; only calls `registerPendingCall` (in-memory Map, line 74-83); heavy CLI work happens in `tool.execute.after` (line 177) | `src/hooks/comment-checker/hook.ts:38-84` (before-handler) |
 | 9 | directoryAgentsInjector | `READ_ONLY` | — | — | NO | None — `tool.execute.before` is a NO-OP (`void input; void output;`, factory.ts:66-67); real work is in `tool.execute.after` | `src/hooks/directory-injector/factory.ts:62-68` |
 | 11 | rulesInjector | `READ_ONLY` | — | — | NO | None — `tool.execute.before` is a NO-OP (`void input; void output;`, hook.ts:59-60); real work is in `tool.execute.after` | `src/hooks/rules-injector/hook.ts:55-61` |
-| 12 | tasksTodowriteDisabler | `BLOCKING` | — | — | YES (line 29, `throw new Error(REPLACEMENT_MESSAGE)`) | None (pure array `.some()`) | `src/hooks/tasks-todowrite-disabler/hook.ts:15-31` |
 | 13 | oracleMdOnly | `BLOCKING` | `MUTATOR` + `NETWORK` | `output.args.prompt` (line 30); `output.message` (CONCAT, line 72) | YES (line 56, `throw new Error("[…] Oracle can only write/edit .md files…")`) | `getAgentFromSession()` → SDK HTTP call (`findNearestMessageWithFieldsFromSDK`) or filesystem fallback (`readFileSync`/`readdirSync` in `features/hook-message-injector/injector.ts:147,154,166,198,204`) | `src/hooks/oracle-md-only/hook.ts:14-81` |
 | 14 | mouseNotepad | `MUTATOR` | `NETWORK` | `output.args.prompt` (CONCAT prefix, line 36) | NO | `isCallerOrchestrator()` → SDK HTTP call (`findNearestMessageWithFieldsFromSDK`) or filesystem fallback (`session-utils.ts:13-24`) | `src/hooks/mouse-notepad/hook.ts:10-43` |
 | 15 | architectHook | `MUTATOR` | `NETWORK` | `output.message` (CONCAT, line 34); `output.args.prompt` (CONCAT prefix, line 48) | NO | Same `isCallerOrchestrator()` as #14; also writes to `pendingFilePaths` Map (line 31) for `tool.execute.after` | `src/hooks/architect/tool-execute-before.ts:19-54` |
@@ -44,7 +43,7 @@ relevant for parallelization decisions; **Secondary** lists everything else.
 | `READ_ONLY` | 5 | qualityGate, commentChecker, directoryAgentsInjector, rulesInjector (×2 of which are pure no-ops) |
 | `MUTATOR` | 5 | bashFileReadGuard, nonInteractiveEnv, mouseNotepad, architectHook (+ oracleMdOnly when not blocking) |
 | `NETWORK` | 4 | oracleMdOnly, mouseNotepad, architectHook (+ secretLeakGuard as subprocess) |
-| `BLOCKING` | 5 | secretLeakGuard, envFileWriteGuard, writeExistingFileGuard, tasksTodowriteDisabler, oracleMdOnly |
+| `BLOCKING` | 4 | secretLeakGuard, envFileWriteGuard, writeExistingFileGuard, oracleMdOnly |
 
 > The plan's spec asked for "≥ 8 BLOCKING hooks" but the actual code only
 > contains 5 hard-blocking hooks. The plan's count of 8 appears to come from
@@ -96,7 +95,6 @@ await Promise.allSettled([
   hooks.secretLeakGuard?.["tool.execute.before"]?.(input, output),        // bash + git commit/push
   hooks.envFileWriteGuard?.["tool.execute.before"]?.(input, output),     // write/edit + sensitive file
   hooks.writeExistingFileGuard?.["tool.execute.before"]?.(input, output), // write + file exists
-  hooks.tasksTodowriteDisabler?.["tool.execute.before"]?.(input, output),// todowrite + task system
   hooks.oracleMdOnly?.["tool.execute.before"]?.(input, output),      // write/edit + Oracle agent + non-.md
 ])
 ```
@@ -106,7 +104,6 @@ await Promise.allSettled([
 | secretLeakGuard | `tool === "bash"` AND `git commit`/`git push` |
 | envFileWriteGuard | `tool ∈ {write, edit, multiedit}` AND path matches sensitive pattern |
 | writeExistingFileGuard | `tool === "write"` AND `existsSync(path)` |
-| tasksTodowriteDisabler | `tool ∈ BLOCKED_TOOLS` AND `experimental.task_system === true` |
 | oracleMdOnly | agent is Oracle AND `tool ∈ BLOCKED_TOOLS` AND path outside `.matrixx/*.md` |
 
 > **Subprocess cost warning**: `secretLeakGuard` shells out to `gitleaks` (up
@@ -244,7 +241,6 @@ const settled = await Promise.allSettled([
   hooks.secretLeakGuard?.["tool.execute.before"]?.(input, output),
   hooks.envFileWriteGuard?.["tool.execute.before"]?.(input, output),
   hooks.writeExistingFileGuard?.["tool.execute.before"]?.(input, output),
-  hooks.tasksTodowriteDisabler?.["tool.execute.before"]?.(input, output),
   hooks.oracleMdOnly?.["tool.execute.before"]?.(input, output),
 ])
 for (const r of settled) if (r.status === "rejected") throw r.reason

@@ -293,6 +293,7 @@ User confirms the button works as expected.
 - Make assumptions about user's codebase
 - Suggest acceptance criteria requiring user intervention ("user manually tests", "user confirms", "user clicks")
 - Leave QA/acceptance criteria vague or placeholder-heavy
+- Record a capability-gap claim as a settled constraint without verifying it (see VERIFYING PREMISES below)
 
 **ALWAYS**:
 - Classify intent FIRST
@@ -301,6 +302,36 @@ User confirms the button works as expected.
 - Provide actionable directives for Oracle
 - Include QA automation directives in every output
 - Ensure acceptance criteria are agent-executable (commands, not human actions)
+
+---
+
+## VERIFYING PREMISES (capability gaps)
+
+Flagging an assumption is not verifying it. A premise that asserts something is
+**unavailable, absent, not wired, or not in scope** is a claim about the
+codebase, and it is the highest-risk kind: written confidently into a plan's
+"Decisions" section, it reads as settled fact and suppresses the fix for as
+long as nobody re-opens it.
+
+Before accepting any such claim, read the CONSTRUCTION SITE — the factory,
+the caller, the registration function, the module that seeds the value — not
+just the site that consumes it. A value is "not in scope" far more often
+because the author did not thread it than because it does not exist.
+
+Real occurrence: a plan recorded "the enforcer has real config in scope, this
+hook does not" as a constraint, and skipped the fix for a full planning cycle.
+The construction site already held the config; the hook had simply never been
+passed it. The gap was self-inflicted, and the note's authoritative phrasing
+is what kept it alive.
+
+**Rule**: any premise of the form "X is not available / does not exist / is
+not wired here" must be (a) verified at the construction site, or (b) reported
+to the user as an UNVERIFIED CLAIM with the site you checked. Never let it
+reach a plan's Decisions section as fact.
+
+Corollary: if a fix is blocked on a capability gap, prefer the cheapest
+additive plumbing that closes the gap over a plan that documents it. An
+additive optional parameter is rarely more expensive than a wrong premise.
 `
 
 const seraphRestrictions = createAgentToolRestrictions([

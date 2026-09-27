@@ -1,7 +1,8 @@
 
 
 import type { PluginInput } from "@opencode-ai/plugin"
-import type { BackgroundTaskConfig, DcpHandoffCompression, TmuxConfig } from "../../config/schema"
+import type { BackgroundTaskConfig, DcpHandoffCompression, MatrixxConfig, TmuxConfig } from "../../config/schema"
+import { getBackgroundStaleAfterMs } from "../../hooks/task-continuation-enforcer/staleness"
 import { getAgentToolRestrictions, log, normalizeSDKResponse, promptWithModelSuggestionRetry } from "../../shared"
 import { hasPendingQuestionMessage } from "../../shared/awaiting-user"
 import { delay } from "../../shared/delay"
@@ -10,6 +11,7 @@ import { setSessionTemperature, setSessionTools } from "../../shared/session-sta
 import { isInsideTmux } from "../../shared/tmux"
 import { formatWallclockTimeout } from "../../shared/wallclock-outcome"
 import { registerSubagentSession, subagentSessions, unregisterSubagentSession } from "../session-state"
+import { hasIncompleteTasksForSession } from "../task-session-scope"
 import { getTaskToastManager } from "../task-toast-manager"
 import { classifyAdmission } from "./admission"
 import { ConcurrencyManager } from "./concurrency"
@@ -66,7 +68,6 @@ type OpencodeClient = PluginInput["client"]
  */
 const NESTED_RESERVE_ATTEMPT_TIMEOUT_MS = 100
 
-
 interface MessagePartInfo {
   sessionID?: string
   type?: string
@@ -84,13 +85,6 @@ export interface EventProperties {
 interface Event {
   type: string
   properties?: EventProperties
-}
-
-interface Todo {
-  content: string
-  status: string
-  priority: string
-  id: string
 }
 
 interface QueueItem {
@@ -148,6 +142,8 @@ export class BackgroundManager {
   private concurrencyManager: ConcurrencyManager
   private shutdownTriggered = false
   private config?: BackgroundTaskConfig
+  /** Full plugin config — the only source of the `tasks.*` store location. */
+  private pluginConfig?: Partial<MatrixxConfig>
   private tmuxEnabled: boolean
   private onSubagentSessionCreated?: OnSubagentSessionCreated
   private onShutdown?: () => void
@@ -180,6 +176,8 @@ export class BackgroundManager {
       onShutdown?: () => void
       enableParentSessionNotifications?: boolean
       handoffCompression?: DcpHandoffCompression
+      /** Full plugin config — supplies `tasks.*` (store location, stale window) to the gates. */
+      pluginConfig?: Partial<MatrixxConfig>
     }
   ) {
     this.tasks = new Map()
@@ -189,6 +187,7 @@ export class BackgroundManager {
     this.directory = ctx.directory
     this.concurrencyManager = new ConcurrencyManager(config)
     this.config = config
+    this.pluginConfig = options?.pluginConfig
     this.tmuxEnabled = options?.tmuxConfig?.enabled ?? false
     this.onSubagentSessionCreated = options?.onSubagentSessionCreated
     this.onShutdown = options?.onShutdown
@@ -308,7 +307,20 @@ export class BackgroundManager {
   private async reconcileRestoredTask(task: BackgroundTask, handle: BgHandle): Promise<void> {
     let outcome: ReconcileOutcome
     try {
-      outcome = await reconcileHandle(this.client, handle)
+      outcome = await reconcileHandle(this.client, handle, {
+        // The plugin config arrives via `options.pluginConfig`; `resolveTasksConfig`
+        // reads only the `tasks.*` keys from it (store location, stale threshold).
+        hasPendingTaskWork: async (sessionID) =>
+          hasIncompleteTasksForSession({
+            config: this.pluginConfig,
+            directory: this.directory,
+            sessionID,
+            // The gate uses the BACKGROUND window (default 2h), not the enforcer's
+            // `stale_after_hours` (24h): a missed continuation nudge is cheap, but a
+            // handle held `running` by a crashed worker's orphaned task is not.
+            staleAfterMs: getBackgroundStaleAfterMs(this.pluginConfig),
+          }),
+      })
     } catch (error) {
       log("[background-agent] Handle reconciliation failed:", { taskId: handle.taskId, error })
       outcome = { status: "statusUncertain", terminalReason: "uncertain" }
@@ -1175,23 +1187,6 @@ export class BackgroundManager {
     return rows.map((row) => ({ taskId: row.taskId, description: row.description, agent: row.agent, status: row.status, sessionID: row.sessionID, terminalReason: row.terminalReason }))
   }
 
-  private async checkSessionTodos(sessionID: string): Promise<boolean> {
-    try {
-      const response = await this.client.session.todo({
-        path: { id: sessionID },
-      })
-      const todos = normalizeSDKResponse(response, [] as Todo[], { preferResponseOnMissingData: true })
-      if (!todos || todos.length === 0) return false
-
-      const incomplete = todos.filter(
-        (t) => t.status !== "completed" && t.status !== "cancelled"
-      )
-      return incomplete.length > 0
-    } catch {
-      return false
-    }
-  }
-
   handleEvent(event: Event): void {
     const props = event.properties
 
@@ -1320,16 +1315,31 @@ export class BackgroundManager {
           return
         }
 
-        const hasIncompleteTodos = await this.checkSessionTodos(sessionID)
+        // Scope is `task.sessionID` — the child session the worker runs inside —
+        // never `task.parentSessionID` and never a parent-scoped descendant
+        // expansion. `task_create` stamps `threadID: context.sessionID`, so the
+        // worker's own tasks carry the child id. Widening this to "any open project
+        // task" would let an unrelated task hold the worker open forever (livelock).
+        // `tasks.*` (store location, stale threshold) arrives via `options.pluginConfig`.
+        // The threshold here is the BACKGROUND window (default 2h), NOT the enforcer's
+        // `stale_after_hours` (24h). The costs are asymmetric: a missed continuation
+        // nudge is cheap, but a handle left `running` by a crashed worker's orphaned
+        // task wedges a concurrency slot. Do not "unify" these two windows.
+        const hasIncompleteTaskWork = hasIncompleteTasksForSession({
+          config: this.pluginConfig,
+          directory: this.directory,
+          sessionID: task.sessionID ?? sessionID,
+          staleAfterMs: getBackgroundStaleAfterMs(this.pluginConfig),
+        })
 
         // Re-check status after async operation again
         if (task.status !== "running") {
-          log("[background-agent] Task status changed during todo check, skipping:", { taskId: task.id, status: task.status })
+          log("[background-agent] Task status changed during output validation, skipping:", { taskId: task.id, status: task.status })
           return
         }
 
-        if (hasIncompleteTodos) {
-          log("[background-agent] Task has incomplete todos, waiting for todo-continuation:", task.id)
+        if (hasIncompleteTaskWork) {
+          log("[background-agent] Task has incomplete task-store work, waiting for task-continuation:", task.id)
           return
         }
 
@@ -2219,9 +2229,18 @@ export class BackgroundManager {
           // Re-check status after async operation
           if (task.status !== "running") continue
 
-          const hasIncompleteTodos = await this.checkSessionTodos(sessionID)
-          if (hasIncompleteTodos) {
-            log("[background-agent] Task has incomplete todos via polling, waiting:", task.id)
+          // Same predicate, same child-session scope, and the same BACKGROUND window
+          // (default 2h) as the session.idle gate above — a missed continuation nudge
+          // is cheap, a handle wedged `running` by an orphaned task is not. If the two
+          // call sites must diverge, change both.
+          const hasIncompleteTaskWork = hasIncompleteTasksForSession({
+            config: this.pluginConfig,
+            directory: this.directory,
+            sessionID: task.sessionID ?? sessionID,
+            staleAfterMs: getBackgroundStaleAfterMs(this.pluginConfig),
+          })
+          if (hasIncompleteTaskWork) {
+            log("[background-agent] Task has incomplete task-store work via polling, waiting:", task.id)
             continue
           }
 

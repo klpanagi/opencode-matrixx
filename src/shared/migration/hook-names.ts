@@ -9,6 +9,12 @@ export const HOOK_NAME_MAP: Record<string, string | null> = {
   ...LEGACY_HOOK_NAME_MAP,
   "failure-counter": null,
   "hashline-edit-diff-enhancer": null,
+  // Legacy todo system (removed v2.7). `null` = recognized, no surviving target:
+  // the name is stripped from the effective `disabled_hooks` with one warn.
+  "todo-continuation-enforcer": null,
+  "compaction-todo-preserver": null,
+  "tasks-todowrite-disabler": null,
+  "task-notepad": null,
 }
 
 export function migrateHookNames(

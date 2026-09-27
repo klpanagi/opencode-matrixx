@@ -18,16 +18,6 @@ export interface TaskContinuationEnforcer {
   isAwaitingUser: (sessionID: string) => boolean
 }
 
-export type TodoContinuationEnforcerOptions = TaskContinuationEnforcerOptions
-export type TodoContinuationEnforcer = TaskContinuationEnforcer
-
-export interface Todo {
-  content: string
-  status: string
-  priority: string
-  id?: string
-}
-
 export interface SessionState {
   countdownTimer?: ReturnType<typeof setTimeout>
   countdownInterval?: ReturnType<typeof setInterval>

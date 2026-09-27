@@ -62,6 +62,3 @@ export function createTaskContinuationEnforcer(
     isAwaitingUser,
   }
 }
-
-// Back-compat alias
-export const createTodoContinuationEnforcer = createTaskContinuationEnforcer

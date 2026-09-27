@@ -53,12 +53,12 @@ If --dry-run is present or user says "just show me" / "report only":
 ## Step 0.3: Create Initial Todos
 
 \`\`\`
-TodoWrite([
-  {"content": "PHASE 1: Symbol Discovery - enumerate all symbols via LSP", "status": "pending", "priority": "high"},
-  {"content": "PHASE 2: Reference Analysis - find references for each symbol", "status": "pending", "priority": "high"},
-  {"content": "PHASE 3: Dead Code Report - classify and present findings", "status": "pending", "priority": "high"},
-  {"content": "PHASE 4: Safe Removal - remove confirmed dead code with verification", "status": "pending", "priority": "high"},
-  {"content": "PHASE 5: Final Verification - build and test suite", "status": "pending", "priority": "high"}
+task_create([
+  {"subject": "PHASE 1: Symbol Discovery - enumerate all symbols via LSP", "status": "pending", "priority": "high"},
+  {"subject": "PHASE 2: Reference Analysis - find references for each symbol", "status": "pending", "priority": "high"},
+  {"subject": "PHASE 3: Dead Code Report - classify and present findings", "status": "pending", "priority": "high"},
+  {"subject": "PHASE 4: Safe Removal - remove confirmed dead code with verification", "status": "pending", "priority": "high"},
+  {"subject": "PHASE 5: Final Verification - build and test suite", "status": "pending", "priority": "high"}
 ])
 \`\`\`
 

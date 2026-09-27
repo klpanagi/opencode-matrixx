@@ -24,7 +24,7 @@ export interface PlanPersister {
 }
 
 export function createPlanPersister(
-  ctx: PluginInput,
+  _ctx: PluginInput,
   options: PlanPersistenceOptions,
 ): PlanPersister {
   const { directory } = options
@@ -45,22 +45,22 @@ export function createPlanPersister(
     // Foreign sessions never vote; drifted files log as unknown.
     const { todos } = collectLinkedTodos(directory, mission)
 
-    let effective = todos
-    if (effective.length === 0) {
-      try {
-        const response = await ctx.client.session.todo({ path: { id: sessionID } })
-        effective = normalizeTodos(response)
-      } catch (err) {
-        log(`[${HOOK_NAME}] Failed to fetch todos`, { sessionID, error: String(err) })
-        return
-      }
+    // A zero-vote list needs no guard. `syncCheckboxesDetailed` returns every
+    // line verbatim when no todo matches (plan-storage.ts:139-142) and only
+    // ever checks, never unchecks (:143-144), so the unconditional write
+    // refreshes the metadata stamp without touching a single checkbox.
+    if (todos.length === 0) {
+      log(`[${HOOK_NAME}] No mission-linked tasks; stamping plan only`, {
+        sessionID,
+        plan: planPath,
+      })
     }
 
     await applyFilteredSync({
       directory,
       mission,
       planPath,
-      todos: effective,
+      todos,
       actorSessionId: sessionID,
     })
   }
@@ -90,20 +90,4 @@ export function createPlanPersister(
   }
 
   return { capture, event, buildRehydrationContext: buildRehydrationCtx }
-}
-
-/** Normalize OpenCode SDK todo response to our Todo shape */
-function normalizeTodos(response: unknown): Array<{ content: string; status: string }> {
-  try {
-    const data = (response as { data?: unknown }).data ?? response
-    if (Array.isArray(data)) {
-      return data.map((t: Record<string, unknown>) => ({
-        content: String(t.content ?? ""),
-        status: String(t.status ?? "pending"),
-      }))
-    }
-  } catch {
-    // fall through
-  }
-  return []
 }

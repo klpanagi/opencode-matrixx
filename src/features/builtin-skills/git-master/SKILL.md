@@ -462,7 +462,7 @@ EXECUTION_PLAN:
 <execution>
 ### 5.1 Register TODO Items
 
-Use TodoWrite to register each commit as a trackable item:
+Use task_create to register each commit as a trackable item:
 ```
 - [ ] Fixup: <description> -> <target-hash>
 - [ ] New: <description>

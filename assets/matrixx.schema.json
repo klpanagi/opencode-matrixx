@@ -160,7 +160,6 @@
             "type": "string",
             "enum": [
               "task-continuation-enforcer",
-              "todo-continuation-enforcer",
               "context-window-monitor",
               "session-recovery",
               "session-notification",
@@ -184,7 +183,6 @@
               "matrix-loop",
               "category-skill-reminder",
               "compaction-context-injector",
-              "compaction-todo-preserver",
               "auto-slash-command",
               "edit-error-recovery",
               "delegate-task-retry",
@@ -196,7 +194,6 @@
               "unstable-agent-babysitter",
               "task-resume-info",
               "stop-continuation-guard",
-              "tasks-todowrite-disabler",
               "write-existing-file-guard",
               "anthropic-effort",
               "hashline-read-enhancer",
@@ -211,7 +208,6 @@
               "webfetch-redirect-guard",
               "tool-pair-validator",
               "quality-gate",
-              "task-notepad",
               "design-intent-preserver",
               "rtk-bash-rewriter",
               "evolution-watcher",
@@ -227,7 +223,23 @@
               "nudge-loop-breaker"
             ]
           },
-          {}
+          {},
+          {
+            "type": "string",
+            "const": "todo-continuation-enforcer"
+          },
+          {
+            "type": "string",
+            "const": "compaction-todo-preserver"
+          },
+          {
+            "type": "string",
+            "const": "tasks-todowrite-disabler"
+          },
+          {
+            "type": "string",
+            "const": "task-notepad"
+          }
         ]
       }
     },
@@ -3937,7 +3949,6 @@
           "type": "boolean"
         },
         "task_system": {
-          "default": true,
           "type": "boolean"
         },
         "plugin_load_timeout_ms": {
@@ -3961,9 +3972,6 @@
           "type": "boolean"
         }
       },
-      "required": [
-        "task_system"
-      ],
       "additionalProperties": false
     },
     "dcp": {
@@ -4850,10 +4858,15 @@
           "type": "string"
         },
         "stale_after_hours": {
-          "description": "Pending tasks with no file activity for this many hours are considered stale (default: 24). Stale tasks are excluded from task-continuation directives.",
-          "type": "integer",
-          "minimum": 1,
-          "maximum": 9007199254740991
+          "description": "Pending tasks with no file activity for this many hours are considered stale and excluded from task-continuation directives. Accepts fractional hours (minimum 0.25 = 15 minutes); there is no separate minutes companion key. Default 24.",
+          "type": "number",
+          "minimum": 0.25
+        },
+        "background_stale_after_hours": {
+          "description": "Window used only by the background-agent completion gates: a pending/in_progress task with no file activity for this many hours stops blocking completion of its background handle. Separate from stale_after_hours because a missed nudge and a wedged handle are different failures. Accepts fractional hours (min 0.25). Default 2.",
+          "default": 2,
+          "type": "number",
+          "minimum": 0.25
         },
         "session_scoped": {
           "description": "When true, the task-continuation-enforcer only considers tasks created by the current session (or its subagent sessions). When false, all project tasks are considered regardless of session origin.",
@@ -4991,10 +5004,9 @@
               ]
             },
             "stale_after_hours": {
-              "description": "Pending tasks with no file activity for this many hours are considered stale (default: 24). Stale tasks are excluded from task-continuation directives.",
-              "type": "integer",
-              "minimum": 1,
-              "maximum": 9007199254740991
+              "description": "Pending tasks with no file activity for this many hours are considered stale and excluded from task-continuation directives. Accepts fractional hours (minimum 0.25 = 15 minutes); there is no separate minutes companion key. Default 24.",
+              "type": "number",
+              "minimum": 0.25
             },
             "session_scoped": {
               "description": "When true, the task-continuation-enforcer only considers tasks created by the current session (or its subagent sessions). When false, all project tasks are considered regardless of session origin.",

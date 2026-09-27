@@ -1,5 +1,11 @@
 import type { PluginInput } from "@opencode-ai/plugin"
-import { getMainSessionID, subagentSessions } from "../features/session-state"
+import type { MatrixxConfig } from "../config/schema"
+import {
+  getMainSessionID,
+  getSubagentSessionIDs,
+  subagentSessions,
+} from "../features/session-state"
+import { hasIncompleteTasksForSession } from "../features/task-session-scope"
 import { createIdleNotificationScheduler } from "./session-notification-scheduler"
 import {
   detectPlatform,
@@ -10,7 +16,6 @@ import {
 import {
   startBackgroundCheck,
 } from "./session-notification-utils"
-import { hasIncompleteTodos } from "./session-todo-status"
 
 interface SessionNotificationConfig {
   title?: string
@@ -19,14 +24,20 @@ interface SessionNotificationConfig {
   soundPath?: string
   /** Delay in ms before sending notification to confirm session is still idle (default: 1500) */
   idleConfirmationDelay?: number
-  /** Skip notification if there are incomplete todos (default: true) */
+  /** Skip notification if the session (or one of its subagents) still has pending work in the file-backed task store (default: true) */
   skipIfIncompleteTodos?: boolean
   /** Maximum number of sessions to track before cleanup (default: 100) */
   maxTrackedSessions?: number
 }
 export function createSessionNotification(
   ctx: PluginInput,
-  config: SessionNotificationConfig = {}
+  config: SessionNotificationConfig = {},
+  /**
+   * The plugin config is a separate parameter, not part of `SessionNotificationConfig`:
+   * only `tasks.*` is read here, and widening the hook-local config would blur a
+   * presentation-only shape into a carrier for task-storage settings.
+   */
+  pluginConfig?: Partial<MatrixxConfig>
 ) {
   const currentPlatform = detectPlatform()
   const defaultSoundPath = getDefaultSoundPath(currentPlatform)
@@ -44,11 +55,19 @@ export function createSessionNotification(
     ...config,
   }
 
+  const hasIncompleteTaskWork = async (_ctx: PluginInput, sessionID: string): Promise<boolean> =>
+    hasIncompleteTasksForSession({
+      config: pluginConfig,
+      directory: ctx.directory,
+      sessionID,
+      subagentIDs: getSubagentSessionIDs(sessionID),
+    })
+
   const scheduler = createIdleNotificationScheduler({
     ctx,
     platform: currentPlatform,
     config: mergedConfig,
-    hasIncompleteTodos,
+    hasIncompleteTaskWork,
     send: sendSessionNotification,
     playSound: playSessionNotificationSound,
   })

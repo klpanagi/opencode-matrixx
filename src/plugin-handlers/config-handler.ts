@@ -1,6 +1,7 @@
 import type { MatrixxConfig } from "../config";
 import type { ModelCacheState } from "../plugin-state";
 import { log } from "../shared";
+import { bindTaskSystemDeprecationToast } from "../shared/task-system-gating";
 import { applyAgentConfig } from "./agent-config-handler";
 import { applyCommandConfig } from "./command-config-handler";
 import { applyMcpConfig } from "./mcp-config-handler";
@@ -20,6 +21,8 @@ export function createConfigHandler(deps: ConfigHandlerDeps) {
   const { ctx, pluginConfig, modelCacheState } = deps;
 
   return async (config: Record<string, unknown>) => {
+    bindTaskSystemDeprecationToast(ctx.client);
+
     applyProviderConfig({ config, modelCacheState });
 
     const pluginComponents = await loadPluginComponents({ pluginConfig });

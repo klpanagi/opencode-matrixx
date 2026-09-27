@@ -1,5 +1,6 @@
 import type { PluginInput } from "@opencode-ai/plugin"
 import { type ToolDefinition, tool } from "@opencode-ai/plugin/tool"
+import type { MatrixxConfig } from "../../config/schema"
 import {
   SESSION_INFO_DESCRIPTION,
   SESSION_LIST_DESCRIPTION,
@@ -14,7 +15,17 @@ import {
   formatSessionMessages,
   searchInSession,
 } from "./session-formatter"
-import { getAllSessions, getMainSessions, getSessionInfo, readSessionMessages, readSessionTodos, sessionExists, setStorageClient } from "./storage"
+import {
+  getAllSessions,
+  getMainSessions,
+  getSessionInfo,
+  readSessionMessages,
+  readSessionTodos,
+  sessionExists,
+  setStorageClient,
+  setStorageConfig,
+  setStorageDirectory,
+} from "./storage"
 import type { SearchResult, SessionInfoArgs, SessionListArgs, SessionReadArgs, SessionSearchArgs } from "./types"
 
 const SEARCH_TIMEOUT_MS = 60_000
@@ -22,9 +33,14 @@ const MAX_SESSIONS_TO_SCAN = 50
 
 import { withTimeout } from "../../shared/with-timeout"
 
-export function createSessionManagerTools(ctx: PluginInput): Record<string, ToolDefinition> {
+export function createSessionManagerTools(
+  ctx: PluginInput,
+  pluginConfig?: Partial<MatrixxConfig>
+): Record<string, ToolDefinition> {
   // Initialize storage client for SDK-based operations (beta mode)
   setStorageClient(ctx.client)
+  setStorageDirectory(ctx.directory)
+  setStorageConfig(pluginConfig)
 
   const session_list: ToolDefinition = tool({
     description: SESSION_LIST_DESCRIPTION,
@@ -59,7 +75,10 @@ export function createSessionManagerTools(ctx: PluginInput): Record<string, Tool
     description: SESSION_READ_DESCRIPTION,
     args: {
       session_id: tool.schema.string().describe("Session ID to read"),
-      include_todos: tool.schema.boolean().optional().describe("Include todo list if available (default: false)"),
+      include_todos: tool.schema
+        .boolean()
+        .optional()
+        .describe("Include this session's task state from the task store (default: false)"),
       include_transcript: tool.schema.boolean().optional().describe("Include transcript log if available (default: false)"),
       limit: tool.schema.number().optional().describe("Maximum number of messages to return (default: all)"),
     },

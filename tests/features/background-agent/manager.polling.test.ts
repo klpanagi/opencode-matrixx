@@ -1,7 +1,10 @@
 import { describe, expect, mock, spyOn, test } from "bun:test"
+import { mkdirSync, mkdtempSync, rmSync, writeFileSync } from "node:fs"
 import { tmpdir } from "node:os"
+import { join } from "node:path"
 import type { PluginInput } from "@opencode-ai/plugin"
 import { _resetPruneThrottleForTesting, BackgroundManager } from "../../../src/features/background-agent/manager"
+import type { BackgroundTask } from "../../../src/features/background-agent/types"
 
 function createManagerWithStatus(statusImpl: () => Promise<{ data: Record<string, { type: string }> }>): BackgroundManager {
   const client = {
@@ -131,6 +134,161 @@ describe("BackgroundManager polling overlap", () => {
     expect(pruneSpy.mock.calls.length).toBe(1)
 
     pruneSpy.mockRestore()
+    manager.shutdown()
+  })
+})
+
+// ---------------------------------------------------------------------------
+// Completion gate scoping: the gate must consult the file-backed task store,
+// scoped to the CHILD session, and must not be held open by unrelated work.
+//
+// Every test below stubs `client.session.todo()` to report one INCOMPLETE legacy
+// todo. That is deliberate: the only thing allowed to unblock completion is the
+// new task-store predicate, so a test cannot pass merely because the old todo
+// read happened to return an empty list. It also models the real defect — legacy
+// todo state is per-session and persists, so a stale entry would hold the task
+// open forever.
+// ---------------------------------------------------------------------------
+
+interface T5Harness {
+  manager: BackgroundManager
+  directory: string
+  task: BackgroundTask
+}
+
+const SEED_UUID = "11111111-2222-3333-4444-555555555555"
+
+function createCompletionHarness(): T5Harness {
+  const directory = mkdtempSync(join(tmpdir(), "bg-task5-"))
+  const client = {
+    session: {
+      status: async () => ({ data: {} as Record<string, { type: string }> }),
+      prompt: async () => ({}),
+      promptAsync: async () => ({}),
+      abort: async () => ({}),
+      todo: async () => ({
+        data: [{ content: "stale legacy entry", status: "pending", priority: "high", id: "todo-legacy" }],
+      }),
+      messages: async () => ({ data: [] }),
+    },
+  }
+  const manager = new BackgroundManager({ client, directory } as unknown as PluginInput)
+
+  const task: BackgroundTask = {
+    id: "bg-1",
+    sessionID: "ses_child",
+    parentSessionID: "ses_parent",
+    parentMessageID: "msg-1",
+    description: "worker",
+    prompt: "work",
+    agent: "build",
+    status: "running",
+    queuedAt: new Date(Date.now() - 60_000),
+    startedAt: new Date(Date.now() - 30_000),
+  }
+  ;(manager as unknown as { tasks: Map<string, BackgroundTask> }).tasks.set(task.id, task)
+  ;(manager as unknown as { validateSessionHasOutput: (id: string) => Promise<boolean> }).validateSessionHasOutput =
+    async () => true
+
+  return { manager, directory, task }
+}
+
+function writeStoreTask(directory: string, id: string, threadID: string): void {
+  const taskDir = join(directory, ".matrixx", "tasks")
+  mkdirSync(taskDir, { recursive: true })
+  writeFileSync(
+    join(taskDir, `T-${id}.json`),
+    JSON.stringify({
+      id: `T-${id}`,
+      subject: `store task ${id}`,
+      description: "written by the test",
+      status: "pending",
+      blocks: [],
+      blockedBy: [],
+      threadID,
+    })
+  )
+}
+
+async function waitFor(predicate: () => boolean, timeoutMs = 2000): Promise<void> {
+  const deadline = Date.now() + timeoutMs
+  while (Date.now() < deadline) {
+    if (predicate()) return
+    await new Promise((resolve) => setTimeout(resolve, 5))
+  }
+}
+
+describe("BackgroundManager completion gate scoping", () => {
+  test("LIVELOCK: an unrelated project task does not hold a child session open", async () => {
+    //#given
+    const { manager, directory, task } = createCompletionHarness()
+    writeStoreTask(directory, SEED_UUID, "ses_unrelated")
+
+    //#when
+    manager.handleEvent({ type: "session.idle", properties: { sessionID: "ses_child" } })
+    await waitFor(() => task.status !== "running")
+
+    //#then
+    expect(task.status).toBe("completed")
+
+    rmSync(directory, { recursive: true, force: true })
+    manager.shutdown()
+  })
+
+  test("the worker's own pending task does hold completion", async () => {
+    //#given
+    const { manager, directory, task } = createCompletionHarness()
+    writeStoreTask(directory, SEED_UUID, "ses_child")
+
+    //#when
+    manager.handleEvent({ type: "session.idle", properties: { sessionID: "ses_child" } })
+    await new Promise((resolve) => setTimeout(resolve, 150))
+
+    //#then
+    expect(task.status).toBe("running")
+
+    rmSync(directory, { recursive: true, force: true })
+    manager.shutdown()
+  })
+
+  test("the polling path obeys the identical predicate", async () => {
+    //#given
+    const { manager, directory, task } = createCompletionHarness()
+    writeStoreTask(directory, SEED_UUID, "ses_unrelated")
+    ;(manager as unknown as { checkAndInterruptStaleTasks: (s: unknown) => Promise<void> }).checkAndInterruptStaleTasks =
+      async () => {}
+    ;(manager as unknown as { pruneStaleTasksAndNotifications: () => void }).pruneStaleTasksAndNotifications = () => {}
+    const completeSpy = mock(async (_task: BackgroundTask, _source: string) => true)
+    ;(manager as unknown as { tryCompleteTask: (t: BackgroundTask, s: string) => Promise<boolean> }).tryCompleteTask =
+      completeSpy
+    ;(manager as unknown as { client: { session: { status: () => Promise<unknown> } } }).client.session.status = async () => ({
+      data: { ses_child: { type: "idle" } },
+    })
+
+    //#when
+    await (manager as unknown as { pollRunningTasks: () => Promise<void> }).pollRunningTasks()
+
+    //#then
+    expect(completeSpy.mock.calls.length).toBe(1)
+    expect(task.status).toBe("running")
+
+    rmSync(directory, { recursive: true, force: true })
+    manager.shutdown()
+  })
+
+  test("an absent task store lets completion proceed (fail-open)", async () => {
+    //#given
+    const { manager, directory, task } = createCompletionHarness()
+    // No `.matrixx/tasks` directory is created at all.
+
+    //#when
+    manager.handleEvent({ type: "session.idle", properties: { sessionID: "ses_child" } })
+    await waitFor(() => task.status !== "running")
+
+    //#then
+    expect(task.status).toBe("completed")
+
+    rmSync(directory, { recursive: true, force: true })
     manager.shutdown()
   })
 })

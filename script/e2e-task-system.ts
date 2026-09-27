@@ -1,13 +1,15 @@
 /**
- * E2E smoke for task_system=true — file-based Matrixx tasks + task-continuation
+ * E2E smoke for the unconditional file-based Matrixx task system + task-continuation
  * Usage: bun run script/e2e-task-system.ts
- * Verifies: no todowrite sync, task-continuation reads .matrixx/tasks, symmetric deny, blockedBy-aware counting
+ * Verifies: legacy todo tools stay denied, no todo sync layer, task-continuation
+ * reads .matrixx/tasks, blockedBy-aware counting
  */
 
-import { existsSync, mkdirSync, mkdtempSync, readdirSync, rmSync, writeFileSync } from "node:fs"
+import { existsSync, mkdirSync, mkdtempSync, readdirSync, rmSync, unlinkSync, writeFileSync } from "node:fs"
 import { tmpdir } from "node:os"
 import { join } from "node:path"
-import { getTaskDir, readJsonSafe } from "../src/features/task-storage/storage.ts"
+import { generateTaskId, getTaskDir, listTaskFiles, readJsonSafe, writeJsonAtomic } from "../src/features/task-storage/storage.ts"
+import type { TaskObject } from "../src/tools/task/types.ts"
 import { TaskObjectSchema } from "../src/tools/task/types.ts"
 import { getIncompleteTaskCount } from "../src/hooks/task-continuation-enforcer/todo.ts"
 import { isTaskSystemEnabled } from "../src/shared/task-system-gating.ts"
@@ -15,7 +17,7 @@ import { applyToolConfig } from "../src/plugin-handlers/tool-config-handler.ts"
 import type { MatrixxConfig } from "../src/config/schema.ts"
 
 async function main() {
-  console.log("=== E2E Task System (task_system:true) ===")
+  console.log("=== E2E Task System (task system is unconditional) ===")
   let failed = false
   const assert = (cond: boolean, msg: string) => {
     if (!cond) {
@@ -29,18 +31,17 @@ async function main() {
   // 1. isTaskSystemEnabled defaults true
   console.log("\n[1] isTaskSystemEnabled defaults")
   assert(isTaskSystemEnabled(undefined) === true, "undefined => true")
-  assert(isTaskSystemEnabled({ experimental: { task_system: true } } as any) === true, "true => true")
-  assert(isTaskSystemEnabled({ experimental: { task_system: false } } as any) === false, "false => false")
+  assert(isTaskSystemEnabled({ experimental: { task_system: true } }) === true, "true => true")
 
-  // 2. Symmetric deny: task_system:true denies todowrite, allows task_*
-  console.log("\n[2] applyToolConfig symmetric deny (task_system:true)")
+  // 2. Unconditional deny: the legacy todo tools stay denied and task_* is allowed
+  console.log("\n[2] applyToolConfig symmetric deny (unconditional)")
   const configTrue: Record<string, unknown> = { tools: {} }
   const agentResultTrue: Record<string, unknown> = {
     architect: {}, morpheus: {}, oracle: {}, mouse: {}, keymaker: {},
   }
   applyToolConfig({
     config: configTrue,
-    pluginConfig: { experimental: { task_system: true } } as unknown as MatrixxConfig,
+    pluginConfig: {} as unknown as MatrixxConfig,
     agentResult: agentResultTrue,
   })
   const toolsTrue = configTrue.tools as Record<string, unknown>
@@ -124,8 +125,63 @@ async function main() {
   console.log("\n[6] Conditional continuation hooks")
   // We verify via isTaskSystemEnabled that correct hook would be chosen
   // (full createContinuationHooks test requires plugin context, so we test gating only)
-  assert(isTaskSystemEnabled({ experimental: { task_system: true } } as any) === true, "task_system true => task-continuation active")
-  assert(isTaskSystemEnabled({ experimental: { task_system: false } } as any) === false, "task_system false => todo-continuation active")
+  assert(isTaskSystemEnabled({ experimental: { task_system: true } }) === true, "task_system true => task-continuation active")
+
+  // 7. I3 fence: create → update → list → get → cleanup round-trip on .matrixx/tasks/T-{uuid}.json
+  console.log("\n[7] Task storage round-trip (I3 behavior-preservation fence)")
+  const tmpDir3 = mkdtempSync(join(tmpdir(), "e2e-task-roundtrip-"))
+  try {
+    const taskDir = getTaskDir({}, tmpDir3)
+    mkdirSync(taskDir, { recursive: true })
+
+    //#given a fresh project-scoped task directory
+    const id = generateTaskId()
+    assert(/^T-[0-9a-f-]{8,}$/.test(id), `generated id has the T-{uuid} shape (${id})`)
+
+    //#when the task is created via the same atomic writer the tools use
+    const created = TaskObjectSchema.parse({
+      id,
+      subject: "round-trip subject",
+      description: "created",
+      status: "pending",
+      blocks: [],
+      blockedBy: [],
+      threadID: "ses-roundtrip",
+    })
+    writeJsonAtomic(join(taskDir, `${id}.json`), created)
+    assert(existsSync(join(taskDir, `${id}.json`)), "create writes .matrixx/tasks/T-{uuid}.json")
+
+    //#when the task is listed
+    const listed = listTaskFiles({}, tmpDir3)
+    assert(listed.includes(id), "list finds the created task id")
+
+    //#when the task is fetched
+    const fetched = readJsonSafe(join(taskDir, `${id}.json`), TaskObjectSchema)
+    assert(fetched?.subject === "round-trip subject", "get returns the created task")
+
+    //#when the task is updated
+    const updated = TaskObjectSchema.parse({ ...fetched, status: "completed", description: "updated" })
+    writeJsonAtomic(join(taskDir, `${id}.json`), updated)
+    const refetched = readJsonSafe(join(taskDir, `${id}.json`), TaskObjectSchema)
+    assert(refetched?.status === "completed" && refetched?.description === "updated", "update persists in place")
+
+    //#when the completed task is excluded from the incomplete count
+    const all = readdirSync(taskDir)
+      .map(f => readJsonSafe(join(taskDir, f), TaskObjectSchema))
+      .filter((t): t is TaskObject => t !== null)
+    assert(getIncompleteTaskCount(all) === 0, "completed task is not counted as continuable")
+
+    //#and no legacy side-channel mirror files were written alongside it
+    const strays = readdirSync(taskDir).filter(f => !/^T-[0-9a-f-]+\.json$/.test(f))
+    assert(strays.length === 0, `no side-channel files in the task dir (${strays.join(", ") || "none"})`)
+
+    //#when the task is cleaned up
+    unlinkSync(join(taskDir, `${id}.json`))
+    assert(!existsSync(join(taskDir, `${id}.json`)), "cleanup removes the task file")
+    assert(!listTaskFiles({}, tmpDir3).includes(id), "cleanup is visible to list")
+  } finally {
+    rmSync(tmpDir3, { recursive: true, force: true })
+  }
 
   console.log("\n=== RESULT ===")
   if (failed) {

@@ -22,13 +22,13 @@ Generate hierarchical AGENTS.md files. Root + complexity-scored subdirectories.
 4. **Review** - Deduplicate, trim, validate
 
 <critical>
-**TodoWrite ALL phases. Mark in_progress → completed in real-time.**
+**task_create ALL phases. Mark in_progress → completed in real-time.**
 \`\`\`
-TodoWrite([
-  { id: "discovery", content: "Fire explore agents + LSP codemap + read existing", status: "pending", priority: "high" },
-  { id: "scoring", content: "Score directories, determine locations", status: "pending", priority: "high" },
-  { id: "generate", content: "Generate AGENTS.md files (root + subdirs)", status: "pending", priority: "high" },
-  { id: "review", content: "Deduplicate, validate, trim", status: "pending", priority: "medium" }
+task_create([
+  { subject: "discovery", status: "pending", priority: "high", description: "Fire explore agents + LSP codemap + read existing" },
+  { subject: "scoring", status: "pending", priority: "high", description: "Score directories, determine locations" },
+  { subject: "generate", status: "pending", priority: "high", description: "Generate AGENTS.md files (root + subdirs)" },
+  { subject: "review", status: "pending", priority: "medium", description: "Deduplicate, validate, trim" }
 ])
 \`\`\`
 </critical>

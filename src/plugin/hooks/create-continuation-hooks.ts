@@ -4,25 +4,20 @@ import {
   createArchitectHook,
   createBackgroundNotificationHook,
   createCompactionContextInjector,
-  createCompactionTodoPreserverHook,
   createEvolutionCompressorHook,
   createEvolutionHitlHook,
   createNudgeLoopBreakerHook,
   createPlanPersister,
   createStopContinuationGuardHook,
   createTaskContinuationEnforcer,
-  createTodoContinuationEnforcer,
 } from "../../hooks"
 import { safeCreateHook } from "../../shared/safe-create-hook"
-import { isTaskSystemEnabled } from "../../shared/task-system-gating"
 import type { PluginContext } from "../types"
 import { createUnstableAgentBabysitter } from "../unstable-agent-babysitter"
 
 export type ContinuationHooks = {
   stopContinuationGuard: ReturnType<typeof createStopContinuationGuardHook> | null
   compactionContextInjector: ReturnType<typeof createCompactionContextInjector> | null
-  compactionTodoPreserver: ReturnType<typeof createCompactionTodoPreserverHook> | null
-  todoContinuationEnforcer: ReturnType<typeof createTodoContinuationEnforcer> | null
   taskContinuationEnforcer: ReturnType<typeof createTaskContinuationEnforcer> | null
   unstableAgentBabysitter: ReturnType<typeof createUnstableAgentBabysitter> | null
   nudgeLoopBreaker: ReturnType<typeof createNudgeLoopBreakerHook> | null
@@ -78,24 +73,7 @@ export function createContinuationHooks(args: {
     ? safeHook("compaction-context-injector", () => createCompactionContextInjector(backgroundManager))
     : null
 
-  const compactionTodoPreserver = isHookEnabled("compaction-todo-preserver")
-    ? safeHook("compaction-todo-preserver", () => createCompactionTodoPreserverHook(ctx))
-    : null
-
-  const isTaskSystem = isTaskSystemEnabled(pluginConfig)
-
-  const todoContinuationEnforcer = !isTaskSystem && isHookEnabled("todo-continuation-enforcer")
-    ? safeHook("todo-continuation-enforcer", () => {
-        const enforcer = createTodoContinuationEnforcer(ctx, {
-          backgroundManager,
-          isContinuationStopped: stopContinuationGuard?.isStopped,
-        })
-        activeContinuationEnforcer = enforcer
-        return enforcer
-      })
-    : null
-
-  const taskContinuationEnforcer = isTaskSystem && isHookEnabled("task-continuation-enforcer")
+  const taskContinuationEnforcer = isHookEnabled("task-continuation-enforcer")
     ? safeHook("task-continuation-enforcer", () => {
         const enforcer = createTaskContinuationEnforcer(ctx, {
           backgroundManager,
@@ -119,11 +97,6 @@ export function createContinuationHooks(args: {
   if (sessionRecovery) {
     const onAbortCallbacks: Array<(sessionID: string) => void> = []
     const onRecoveryCompleteCallbacks: Array<(sessionID: string) => void> = []
-
-    if (todoContinuationEnforcer) {
-      onAbortCallbacks.push(todoContinuationEnforcer.markRecovering)
-      onRecoveryCompleteCallbacks.push(todoContinuationEnforcer.markRecoveryComplete)
-    }
 
     if (taskContinuationEnforcer) {
       onAbortCallbacks.push(taskContinuationEnforcer.markRecovering)
@@ -174,8 +147,6 @@ export function createContinuationHooks(args: {
   return {
     stopContinuationGuard,
     compactionContextInjector,
-    compactionTodoPreserver,
-    todoContinuationEnforcer,
     taskContinuationEnforcer,
     unstableAgentBabysitter,
     nudgeLoopBreaker,

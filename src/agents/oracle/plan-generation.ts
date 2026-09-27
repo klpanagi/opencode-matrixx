@@ -17,23 +17,23 @@ export const ORACLE_PLAN_GENERATION = `# PHASE 2: PLAN GENERATION (Auto-Transiti
 
 **Either trigger activates plan generation immediately.**
 
-## MANDATORY: Register Todo List IMMEDIATELY (NON-NEGOTIABLE)
+## MANDATORY: Register Task List IMMEDIATELY (NON-NEGOTIABLE)
 
-**The INSTANT you detect a plan generation trigger, you MUST register the following steps as todos using TodoWrite.**
+**The INSTANT you detect a plan generation trigger, you MUST register the following steps as tasks using TaskCreate (task_create).**
 
 **This is not optional. This is your first action upon trigger detection.**
 
 \`\`\`typescript
 // IMMEDIATELY upon trigger detection - NO EXCEPTIONS
-todoWrite([
-  { id: "plan-1", content: "Consult Seraph for gap analysis (auto-proceed)", status: "pending", priority: "high" },
-  { id: "plan-2", content: "Generate work plan via plan_create to .matrixx/plans/{name}.md", status: "pending", priority: "high" },
-  { id: "plan-3", content: "Self-review: classify gaps (critical/minor/ambiguous)", status: "pending", priority: "high" },
-  { id: "plan-4", content: "Present summary with auto-resolved items and decisions needed", status: "pending", priority: "high" },
-  { id: "plan-5", content: "If decisions needed: wait for user, update plan", status: "pending", priority: "high" },
-  { id: "plan-6", content: "Ask user about high accuracy mode (Smith review)", status: "pending", priority: "high" },
-  { id: "plan-7", content: "If high accuracy: Submit to Smith and iterate until OKAY", status: "pending", priority: "medium" },
-  { id: "plan-8", content: "Delete draft file and guide user to /start-work", status: "pending", priority: "medium" }
+task_create([
+  { subject: "plan-1: Consult Seraph for gap analysis (auto-proceed)", status: "pending", priority: "high" },
+  { subject: "plan-2: Generate work plan via plan_create to .matrixx/plans/{name}.md", status: "pending", priority: "high" },
+  { subject: "plan-3: Self-review: classify gaps (critical/minor/ambiguous)", status: "pending", priority: "high" },
+  { subject: "plan-4: Present summary with auto-resolved items and decisions needed", status: "pending", priority: "high" },
+  { subject: "plan-5: If decisions needed: wait for user, update plan", status: "pending", priority: "high" },
+  { subject: "plan-6: Ask user about high accuracy mode (Smith review)", status: "pending", priority: "high" },
+  { subject: "plan-7: If high accuracy: Submit to Smith and iterate until OKAY", status: "pending", priority: "medium" },
+  { subject: "plan-8: Delete draft file and guide user to /start-work", status: "pending", priority: "medium" }
 ])
 \`\`\`
 
@@ -44,15 +44,15 @@ todoWrite([
 - Enables recovery if session is interrupted
 
 **WORKFLOW:**
-1. Trigger detected → **IMMEDIATELY** TodoWrite (plan-1 through plan-8)
+1. Trigger detected → **IMMEDIATELY** TaskCreate (plan-1 through plan-8)
 2. Mark plan-1 as \`in_progress\` → Consult Seraph (auto-proceed, no questions)
 3. Mark plan-2 as \`in_progress\` → Generate plan immediately
 4. Mark plan-3 as \`in_progress\` → Self-review and classify gaps
 5. Mark plan-4 as \`in_progress\` → Present summary (with auto-resolved/defaults/decisions)
 6. Mark plan-5 as \`in_progress\` → If decisions needed, wait for user and update plan
 7. Mark plan-6 as \`in_progress\` → Ask high accuracy question
-8. Continue marking todos as you progress
-9. NEVER skip a todo. NEVER proceed without updating status.
+8. Continue marking tasks as you progress
+9. NEVER skip a task. NEVER proceed without updating status.
 
 ## Pre-Generation: Seraph Consultation (Complexity-Gated)
 

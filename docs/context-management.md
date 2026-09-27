@@ -482,18 +482,7 @@ Source: `src/hooks/preemptive-compaction.ts`.
 
 Source: `src/hooks/compaction-context-injector/`.
 
-### 3.4 compaction-todo-preserver
-
-| Property | Value |
-|----------|-------|
-| Event | `experimental.session.compacting` plus `event` (`session.compacted`) |
-| Behavior | Captures the current todo list before compaction and restores it after via `Todo.update`. Ensures in progress work, pending tasks, and mission state are not lost when the session is summarized. |
-| Config key | None, runs on every compaction |
-| Disable | `"compaction-todo-preserver"` in `disabled_hooks` |
-
-Source: `src/hooks/compaction-todo-preserver/`.
-
-### 3.5 context-window-limit-recovery
+### 3.4 context-window-limit-recovery
 
 | Property | Value |
 |----------|-------|
@@ -504,7 +493,7 @@ Source: `src/hooks/compaction-todo-preserver/`.
 
 Source: `src/hooks/context-window-limit-recovery/ (~1100 LOC).
 
-### 3.6 tool-output-truncator and grep-output-truncator
+### 3.5 tool-output-truncator and grep-output-truncator
 
 | Property | Value |
 |----------|-------|
@@ -518,7 +507,7 @@ Source: `src/hooks/context-window-limit-recovery/ (~1100 LOC).
 Source: `src/hooks/tool-output-truncator.ts`, HookNameSchema in `src/config/schema/hooks.ts`.
 > **Term collision note:** `grep-output-truncator` keeps 50% headroom as a generic token budget phrase. This is not the Headroom network proxy plugin. See the Headroom section above for `headroomlabs-ai/headroom`.
 
-### 3.7 quality-gate (context protecting)
+### 3.6 quality-gate (context protecting)
 
 | Property | Value |
 |----------|-------|
@@ -619,7 +608,6 @@ Unified `matrixx.jsonc` showing every context management key. All keys are optio
     // "context-window-monitor",
     // "preemptive-compaction",
     // "compaction-context-injector",
-    // "compaction-todo-preserver",
     // "context-window-limit-recovery",
     // "tool-output-truncator",
     // NOTE: "grep-output-truncator" is not a valid hook name (fails Zod validation)

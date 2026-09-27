@@ -99,7 +99,7 @@
     />
   </FieldEditor>
 
-  <FieldEditor label="Disabled Tools" description="Tools to disable (e.g., todowrite, todoread)" advanced>
+  <FieldEditor label="Disabled Tools" description="Tools to disable (e.g., webfetch, pdf-extract-figures)" advanced>
     <ArrayEditor
       value={config.disabled_tools ?? []}
       onChange={(v) => update("disabled_tools", v.length > 0 ? v : undefined)}

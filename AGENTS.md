@@ -100,7 +100,7 @@ Matrixx is a **plugin for OpenCode**. You will frequently need to examine OpenCo
 
 ## OVERVIEW
 
-Matrixx is a multi-agent orchestration **plugin for OpenCode**. 14 built-in agents (Morpheus, Sati, Sentinel, Cipher, etc.) via 80 hook entries (63 dirs) and 24 custom tool dirs (conditional registration via `src/plugin/tool-gating.ts`). ~960 TS source files, 246 test files.
+Matrixx is a multi-agent orchestration **plugin for OpenCode**. 14 built-in agents (Morpheus, Sati, Sentinel, Cipher, etc.) via 75 hook entries (59 dirs) and 24 custom tool dirs (conditional registration via `src/plugin/tool-gating.ts`). ~960 TS source files, 246 test files.
 
 | Aspect | Value |
 |---|---|
@@ -121,7 +121,7 @@ matrixx/
 │   ├── plugin-config.ts            # Config load + Zod validation
 │   ├── plugin-state.ts             # Model context-limit cache
 │   ├── agents/   → 14 agents + AGENTS.md
-│   ├── hooks/    → 80 entries (63 dirs + loose .ts; HookNameSchema 66 literals) in 3 tiers
+│   ├── hooks/    → 75 entries (59 dirs + 16 loose .ts; HookNameSchema 62 enum + 5 literals = 67 accepted) in 3 tiers
 │   ├── tools/    → 24 dirs (LSP, AST-grep, delegate-task, bdd-*, handoff, etc.; conditional via tool-gating.ts)
 │   ├── features/ → 19 dirs (background-agent, builtin-skills/commands, task-storage, handoff, knowledge-hub, ...)
 │   ├── shared/   → 80+ utilities (logger → /tmp/matrixx.log)
@@ -166,7 +166,7 @@ Local-dev install: `bun run build`, then add `"plugin": ["file:///abs/path/to/ma
 
 **Dual test layout** — CI discovers tests via `find tests script -name '*.test.ts'`, so files under `tests/**` run in CI while co-located `src/**/*.test.ts` are CI-orphaned (never discovered by the `find` glob). The mock-heavy isolation list has a single source of truth: `script/mock-heavy-list.txt`. Both `.github/workflows/ci.yml` and `publish.yml` read it; `script/run-ci.sh` also reads it for the catch-all exclusion. Never duplicate the list inline in a workflow file.
 
-**Task system is execution substrate** — `experimental.task_system=true` (default since v2.5) uses file-backed `.matrixx/tasks/T-{uuid}.json` (project-scoped via `getTaskDir()`, atomic `tmp+renameSync`, `task-continuation-enforcer` with 30s lock). `todo-continuation-enforcer` is legacy fallback only when `task_system=false`. Never mutate `.matrixx/tasks/` via bash/`sed`; use `task_create/update/get/list/cleanup` tools. `.matrixx/plans/*.md` checkbox `- [ ]`→`- [x]` via `Read`+`Edit` LINE#ID only (blocked by `task-edit-guard` + `compaction-todo-preserver`).
+**Task system is execution substrate** — the file-backed `.matrixx/tasks/T-{uuid}.json` store is unconditional (project-scoped via `getTaskDir()`, atomic `tmp+renameSync`, `task-continuation-enforcer` with 30s lock). Never mutate `.matrixx/tasks/` via bash/`sed`; use `task_create/update/get/list/cleanup` tools. `.matrixx/plans/*.md` checkbox `- [ ]`→`- [x]` via `Read`+`Edit` LINE#ID only (blocked by `task-edit-guard`).
 
 `bunfig.toml` preloads `tests/test-setup.ts` → `_resetForTesting()` before each test.
 
@@ -262,7 +262,7 @@ Never `bun publish` or bump `package.json` version locally.
 
 ## HOTSPOTS
 
-`background-agent/manager.ts` + `background-agent/reconcile.ts` (restart reconciliation) + `background-agent/admission.ts` (nested-admission classifier) + `shared/saturated-outcome.ts` (queue-saturated launch outcome) + `features/task-storage/` + `task-continuation-enforcer/` (file-backed `.matrixx/tasks/T-{uuid}.json`, atomic write, 30s stale lock) · `todo-continuation-enforcer/` (legacy, gated by `experimental.task_system=false`) · `context-window-limit-recovery/` · `architect/` · `matrix-loop/` · `keyword-detector/` · `rules-injector/` · `think-mode/` · `session-recovery/` · `task-edit-guard`
+`background-agent/manager.ts` + `background-agent/reconcile.ts` (restart reconciliation) + `background-agent/admission.ts` (nested-admission classifier) + `shared/saturated-outcome.ts` (queue-saturated launch outcome) + `features/task-storage/` + `task-continuation-enforcer/` (file-backed `.matrixx/tasks/T-{uuid}.json`, atomic write, 30s stale lock) `context-window-limit-recovery/` · `architect/` · `matrix-loop/` · `keyword-detector/` · `rules-injector/` · `think-mode/` · `session-recovery/` · `task-edit-guard`
 
 ## NOTES
 

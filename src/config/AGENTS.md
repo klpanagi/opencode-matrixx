@@ -12,7 +12,7 @@ config/
 │   ├── agent-names.ts         # BuiltinAgentNameSchema (14 agents), BuiltinSkillNameSchema (37 skills)
 │   ├── agent-overrides.ts     # AgentOverrideConfigSchema (model, variant, temp, thinking...)
 │   ├── categories.ts          # 8 categories: construct, source, deep-jack, matrix-bend, bullet-time, ...
-│   ├── hooks.ts               # HookNameSchema (66 literals; 80 hook entries in 63 dirs + loose .ts on disk)
+│   ├── hooks.ts               # HookNameSchema (62 enum + 5 retained literals = 67 accepted; 75 hook entries in 59 dirs + 16 loose .ts on disk)
 │   ├── commands.ts            # BuiltinCommandNameSchema
 │   ├── experimental.ts        # ExperimentalConfigSchema
 │   ├── background-task.ts     # BackgroundTaskConfigSchema
@@ -36,11 +36,11 @@ config/
 
 ## ROOT SCHEMA
 
-`MatrixxConfigSchema` composes: `$schema`, `global_model`/`default_tier`, `experimental.task_system` (replaces legacy `new_task_system_enabled`), `default_run_agent`, `auto_update`, `disabled_{mcps,agents,skills,hooks,commands,tools}`, `agents` (14), `categories` (8), `tdd_enforcer` (`{enabled:true}` fail-closed; opt out via `{enabled:false}`), `assembly`, `security`, `headroom`, `context_mode`, `rtk`, `evolution`, `morpheus`, `morpheus_agent`, `matrix_loop`, `background_task`, `babysitting`, `notification`, `browser_automation_engine`, `websearch`, `tmux`, `dcp`, `_migrations`
+`MatrixxConfigSchema` composes: `$schema`, `global_model`/`default_tier`, `tasks` (unconditional; `enabled` is retained-deprecated and ignored), `default_run_agent`, `auto_update`, `disabled_{mcps,agents,skills,hooks,commands,tools}`, `agents` (14), `categories` (8), `tdd_enforcer` (`{enabled:true}` fail-closed; opt out via `{enabled:false}`), `assembly`, `security`, `headroom`, `context_mode`, `rtk`, `evolution`, `morpheus`, `morpheus_agent`, `matrix_loop`, `background_task`, `babysitting`, `notification`, `browser_automation_engine`, `websearch`, `tmux`, `dcp`, `_migrations`
 
 ## CONFIGURATION HIERARCHY
 
-Project (`.opencode/matrixx.jsonc`) → User (`~/.config/opencode/matrixx.jsonc`) → Defaults — both JSONC (`jsonc-parser.ts`, comments + trailing commas). Legacy `new_task_system_enabled` + old agent/hook names auto-migrated via `shared/migration/`.
+Project (`.opencode/matrixx.jsonc`) → User (`~/.config/opencode/matrixx.jsonc`) → Defaults — both JSONC (`jsonc-parser.ts`, comments + trailing commas). Old agent and hook names auto-migrate via `shared/migration/`; the 4 retired legacy todo hook names map to `null` there so existing `disabled_hooks` lists keep loading. `new_task_system_enabled` and `experimental.task_system` still parse but are ignored, with a one-time deprecation warning (see `docs/legacy-todo-migration.md`).
 
 ## AGENT OVERRIDE FIELDS
 

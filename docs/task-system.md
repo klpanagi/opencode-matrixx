@@ -2,7 +2,7 @@
 
 > **Scope:** Persistent, file-backed task management for Matrixx agent orchestration.
 > **Audience:** Engineers evolving the task system: storage, tools, hooks, scheduling, and agent integration.
-> **Version:** 2.6.10, verified against source. Canonical config now lives in `tasks.*` (`src/config/schema/tasks.ts`); `experimental.task_system` and `morpheus.tasks.*` remain as lower-precedence legacy fallbacks (see §3).
+> **Version:** 2.6.10, verified against source. Canonical config lives in `tasks.*` (`src/config/schema/tasks.ts`); the file-backed task system is **unconditional** and `morpheus.tasks.*` remains a lower-precedence legacy fallback for storage keys (see §3). The legacy todo system is gone: see `docs/legacy-todo-migration.md` for the retired hooks, the config keys that are now accepted no-ops, and why nothing reads session todo state any longer.
 
 Every normative claim below traces to the source path cited beside it. Where behavior belongs to another doc, this spec cross-links instead of duplicating: hook internals → `docs/hooks.md`, orchestration and wave planning flow → `docs/orchestration.md`, command reference → `docs/command-reference.md`.
 
@@ -21,7 +21,7 @@ The Task System replaces OpenCode's ephemeral session-memory todos with **file-b
 | **Additive dependencies** | `addBlocks`/`addBlockedBy` append via `Set`, never replace. Prevents races when two agents update deps concurrently. |
 | **One task, one owner, one transition** | `task_update(in_progress)` immediately before work, `completed` immediately after. No batch completions. Enforced by prompt plus continuation hook. |
 | **Blocked means schedulable** | `task_list` filters `blockedBy` to unresolved entries only. The scheduler can skip blocked tasks without an extra query. |
-| **Graceful degradation** | `tasks.enabled=false` restores `TodoWrite`/`TodoRead` everywhere: tool registry, hooks, and prompts all switch on `isTaskSystemEnabled()`. |
+| **No dual substrate** | There is exactly one task store. The legacy todo system was removed, so no prompt, tool registry, or hook can route work to a second substrate. |
 | **Drop-in upgrade** | Enabling flips tool registry, hooks, agent prompts, and storage without touching agent business logic. |
 
 ---
@@ -30,23 +30,23 @@ The Task System replaces OpenCode's ephemeral session-memory todos with **file-b
 
 ```
 matrixx.jsonc
-  tasks { enabled?, scope?, storage_path?, task_list_id?,
-          stale_after_hours?, session_scoped?, pollTimeoutMs? }   (canonical)
-  experimental.task_system / morpheus.tasks.* / task.pollTimeoutMs (legacy fallback)
+  tasks { scope?, storage_path?, task_list_id?,
+          stale_after_hours?, background_stale_after_hours?,
+          session_scoped?, pollTimeoutMs? }   (canonical)
+  morpheus.tasks.* / task.pollTimeoutMs (legacy fallback for storage keys only)
             │
             ├─── Tool Registry (src/plugin/tool-registry.ts)
-            │     if enabled → register 5 tools:
+            │     always registers 5 tools:
             │       task_create · task_get · task_list · task_update · task_cleanup
             │
             ├─── Hook Wiring (summaries here, internals in docs/hooks.md)
             │     ├─ createContinuationHooks  → taskContinuationEnforcer (event:idle, 2s countdown)
-            │     ├─ createToolGuardHooks     → tasksTodowriteDisabler (tool.execute.before, BLOCKING)
-            │     │                           → taskEditGuard (tool.execute.before, Write/Edit/Read/bash guard)
+            │     ├─ createToolGuardHooks     → taskEditGuard (tool.execute.before, Write/Edit/Read/bash guard)
             │     └─ createSessionHooks       → taskResumeInfo (tool.execute.after, resume hint)
-            │                                 → delegateTaskRetry, taskNotepad, emptyTaskResponseDetector
+            │                                 → delegateTaskRetry, emptyTaskResponseDetector
             │
             ├─── Agent Prompts (dynamic-agent-prompt-builder, morpheus/keymaker/mouse factories)
-            │     enabled → task discipline; disabled → todo discipline
+            │     always task discipline (`task_create` / `task_update`)
             │
             └─── Runtime
                   task_create  → lock → T-{uuid}.json (pending) → unlock
@@ -58,17 +58,16 @@ matrixx.jsonc
 
 ### Component Map
 
-| Component | Path | Disabled (`tasks.enabled=false`) | Enabled (`tasks.enabled=true`, default) |
-|-----------|------|----------------------------------|------------------------------------------|
-| Tool registry | `src/plugin/tool-registry.ts` | 0 task tools (todos only) | 5 task tools registered |
-| `tasks-todowrite-disabler` | `src/hooks/tasks-todowrite-disabler/` | no-op | `tool.execute.before` throws on `TodoWrite`/`TodoRead` |
-| `task-edit-guard` | `src/hooks/task-edit-guard/` | active (own patterns, not gated on task system) | same: blocks generic Write/Edit/Read on `.matrixx/plans`, plus bash mutation patterns on `.matrixx/plans` and `.matrixx/tasks` |
-| Tool config (`tool-config-handler`) | `src/plugin-handlers/tool-config-handler.ts` | default | `todowrite:false`, `todoread:false` global plus per-agent `deny` |
-| Agent prompts | `src/agents/`, `dynamic-agent-prompt-builder` | todo discipline | task discipline (`task_create`/`task_update` workflow) |
-| Storage | `src/features/task-storage/storage.ts` | session memory (OpenCode Todo API) | file system (`.matrixx/tasks/` or global) |
-| Continuation | `src/hooks/task-continuation-enforcer/`, `src/hooks/todo-continuation-enforcer/` | `todo-continuation-enforcer` only | `task-continuation-enforcer` plus `todo-continuation-enforcer` independently |
-| Persistence | none | lost on restart | survives restart, migratable |
-| Plan files | `src/tools/plan/` (plan_create/read/update/list/delete + plan_tasks for manifest) | guarded the same either way | `.matrixx/plans/*.md` edited only via `plan_*` tools with `LINE#ID` anchors (see §9) |
+| Component | Path | Behavior |
+|-----------|------|----------|
+| Tool registry | `src/plugin/tool-registry.ts` | 5 task tools registered |
+| Tool config (`tool-config-handler`) | `src/plugin-handlers/tool-config-handler.ts` | The two legacy todo tools stay denied globally plus per-agent, so nothing re-introduces the retired substrate |
+| `task-edit-guard` | `src/hooks/task-edit-guard/` | Blocks generic Write/Edit/Read on `.matrixx/plans`, plus bash mutation patterns on `.matrixx/plans` and `.matrixx/tasks` |
+| Agent prompts | `src/agents/`, `dynamic-agent-prompt-builder` | task discipline (`task_create`/`task_update` workflow) |
+| Storage | `src/features/task-storage/storage.ts` | file system (`.matrixx/tasks/` or global) |
+| Continuation | `src/hooks/task-continuation-enforcer/` | `event:idle` countdown, unconditional |
+| Persistence | — | survives restart, migratable |
+| Plan files | `src/tools/plan/` (plan_create/read/update/list/delete + plan_tasks for manifest) | `.matrixx/plans/*.md` edited only via `plan_*` tools with `LINE#ID` anchors (see §9) |
 
 ---
 
@@ -76,21 +75,22 @@ matrixx.jsonc
 
 Canonical source: `TasksConfigSchema` in `src/config/schema/tasks.ts`. Resolution: `resolveTasksConfig()` in `src/shared/task-system-gating.ts`. Predicate: `isTaskSystemEnabled()` in the same file.
 
-### 3.1 Master Gate: `tasks.enabled` (canonical)
+### 3.1 No Master Gate: The System Is Unconditional
+
+There is no enable/disable switch. `resolveTasksConfig()` always resolves `enabled: TASK_SYSTEM_DEFAULT` (`true`); the 5 task tools are always registered and the enforcer is always wired. The three config keys that used to toggle the system are still **parsed** so old config files keep loading, but they are **ignored** and produce a single one-time deprecation log plus toast per session (`collectLegacyKeyWarnings` in `src/shared/task-system-gating.ts`). See `docs/legacy-todo-migration.md` for which keys those are.
 
 ```jsonc
-// matrixx.jsonc
+// matrixx.jsonc — no `enabled` field
 {
   "tasks": {
-    "enabled": true // default true since v2.5.x; set false to restore TodoWrite
+    "stale_after_hours": 24
   }
 }
 ```
 
-- **Canonical predicate:** `isTaskSystemEnabled(config)` returns `resolveTasksConfig(config).enabled`. Never read config fields inline; always call this predicate.
-- **Legacy fallbacks** (lower precedence, still parsed): `experimental.task_system`, `new_task_system_enabled`, then `TASK_SYSTEM_DEFAULT` (`true`). Explicit `tasks.enabled` always wins.
-- **First-load migration:** a missing field is auto-set via the `_migrations` marker `task_system_default_true`; no user action needed.
-- **Wiring:** `createContinuationHooks` and `createToolGuardHooks` gate `task-continuation-enforcer` and `tasks-todowrite-disabler` on this predicate. `task-edit-guard` and `task-resume-info` are unconditional (they match on their own path patterns).
+- **Canonical predicate:** `isTaskSystemEnabled(config)` returns `resolveTasksConfig(config).enabled`, which is always `true`. Keep calling the predicate rather than reading config fields, so a future gate has one place to land.
+- **Wiring:** `createContinuationHooks` gates `task-continuation-enforcer` on this predicate. `task-edit-guard` and `task-resume-info` are unconditional (they match on their own path patterns).
+- **First-load migration:** the `_migrations` marker `task_system_default_true` still marks fresh clones; no user action needed.
 
 ### 3.2 Storage and Enforcer Options: `tasks.*`
 
@@ -101,6 +101,7 @@ Canonical source: `TasksConfigSchema` in `src/config/schema/tasks.ts`. Resolutio
     "task_list_id": "my-project",   // explicit list ID, alternative to ULTRAWORK_TASK_LIST_ID
     "scope": "project",             // "project" | "global"
     "stale_after_hours": 24,        // stale-task threshold for task-continuation enforcer
+    "background_stale_after_hours": 2, // background completion-gate staleness window
     "session_scoped": true,         // enforcer sees only current session + live subagents
     "pollTimeoutMs": 600000         // blocking task() poll budget, minimum 60000
   }
@@ -109,16 +110,26 @@ Canonical source: `TasksConfigSchema` in `src/config/schema/tasks.ts`. Resolutio
 
 | Option | Type | Default | Description |
 |--------|------|---------|-------------|
-| `enabled` | `boolean` | `true` | Master switch. When false, `task_*` tools are unregistered and the legacy todo enforcer is used instead. |
+| `enabled` | `boolean` | `true` | **Retained-deprecated.** Parsed but ignored: the system is unconditional. Setting it to `false` logs a one-time deprecation warning. |
 | `storage_path` | `string` | none | Absolute path used verbatim; relative path resolves as `join(cwd, storage_path)`. When set, bypasses `scope`/`listId` resolution. |
 | `task_list_id` | `string` | none | Explicit list ID. Alternative to the `ULTRAWORK_TASK_LIST_ID` env var. Sanitized to `[a-zA-Z0-9_-]`. |
 | `scope` | `"project" \| "global"` | `"project"` | `project` → `.matrixx/tasks` in the project root. `global` → `~/.config/opencode/tasks/{listId}` via `getOpenCodeConfigDir()`. |
-| `stale_after_hours` | `int`, min 1 | `24` | Pending/in_progress tasks with no file activity for this many hours count as stale. Stale-only queues skip the continuation directive; mixed queues annotate stale entries. |
+| `stale_after_hours` | `number`, min `0.25` | `24` | Pending/in_progress tasks with no file activity for this many hours count as stale. Stale-only queues skip the continuation directive; mixed queues annotate stale entries. Fractional hours are accepted (floor 0.25 = 15 minutes), because the background gate's window is too coarse at a 1-hour floor. |
+| `background_stale_after_hours` | `number`, min `0.25` | `2` | Window used only by the background-agent completion gates. A pending/in_progress task with no file activity for this long stops blocking completion of its background handle. |
 | `session_scoped` | `boolean` | `true` | When true, the task-continuation-enforcer only considers tasks created by the current session (or its live subagent sessions). When false, all project tasks count regardless of origin. |
 | `pollTimeoutMs` | `number`, min 60000 | `600000` (10 min) | Poll timeout for blocking `task()` calls. Raise for agents that delegate to subagents with long wall times. |
 | `claude_code_compat` | `boolean` | `false` | Legacy `morpheus.tasks` flag, reserved path-compatibility marker. No behavior is keyed on it in the current tree. |
 
-Legacy mirror: `MorpheusTasksConfigSchema` in `src/config/schema/morpheus.ts` keeps `storage_path`, `task_list_id`, `scope`, `stale_after_hours`, `session_scoped` as fallbacks. Resolution order per key: `tasks.*` → `morpheus.tasks.*` → default. `task.pollTimeoutMs` falls back to `tasks.pollTimeoutMs` the same way.
+Legacy mirror: `MorpheusTasksConfigSchema` in `src/config/schema/morpheus.ts` keeps `storage_path`, `task_list_id`, `scope`, `stale_after_hours`, `session_scoped` as fallbacks. Resolution order per key: `tasks.*` → `morpheus.tasks.*` → default. `task.pollTimeoutMs` falls back to `tasks.pollTimeoutMs` the same way. `background_stale_after_hours` has **no** legacy mirror: it is canonical-only and resolves to its default when the canonical key is absent.
+
+**Two staleness windows.** The two thresholds are independent knobs, resolved by different functions in `src/hooks/task-continuation-enforcer/staleness.ts`, and they exist because their failure costs differ:
+
+| Window | Default | Consumer | Why |
+|--------|---------|----------|-----|
+| `stale_after_hours` | 24 | `task-continuation-enforcer` | A long-running task is normal here, and a missed continuation nudge is cheap. The 24h default stays. |
+| `background_stale_after_hours` | 2 | Background-agent completion gates (`session.idle`, polling, reconcile probe) | A task that stays `pending`/`in_progress` with no file activity while its worker is gone is a wedged handle, not a slow one. Releasing it is what lets the session complete. |
+
+Both read the same basis, the task file's mtime. The wall-clock backstop is a third, separate knob and is unchanged: `background_task.wallClockTimeoutMs`, default `0` (off).
 
 ### 3.3 Directory Resolution
 
@@ -426,7 +437,7 @@ task_cleanup({})                    // delete all completed
 | `validation_error` / `invalid_arguments` | any | Zod parse fails (strict schemas) | Fix the payload |
 | `internal_error` / `unknown_error` | `task_create`, `task_update`, `task_cleanup`, `task_get` | FS error, atomic-write failure, unexpected throw | Check `/tmp/matrixx.log` |
 
-Tool errors return as `{ error, message? }` JSON; they are never thrown to the model. Hooks are the exception: blocking hooks `throw` to stop `TodoWrite` or raw bash edits.
+Tool errors return as `{ error, message? }` JSON; they are never thrown to the model. Hooks are the exception: `task-edit-guard` throws to stop raw bash or generic file edits of `.matrixx/plans` and `.matrixx/tasks`.
 
 ---
 
@@ -491,31 +502,19 @@ One-paragraph summaries here. Full hook internals (state machines, prompts, coun
 
 **Files:** `src/hooks/task-continuation-enforcer/` (`handler.ts`, `idle-event.ts`, `continuation-injection.ts`, `countdown.ts`, `session-state.ts`, `staleness.ts`, `todo.ts`, `abort-detection.ts`, `message-directory.ts`, `non-idle-events.ts`, `types.ts`, `constants.ts`).
 
-**Wiring:** `src/plugin/hooks/create-continuation-hooks.ts`, gated on `isTaskSystemEnabled(config)` plus `isHookEnabled("task-continuation-enforcer")`. **Trigger:** `event:idle` (session idle).
+**Wiring:** `src/plugin/hooks/create-continuation-hooks.ts`, gated on `isTaskSystemEnabled(config)` (always `true`) plus `isHookEnabled("task-continuation-enforcer")`. **Trigger:** `event:idle` (session idle).
 
 **Constants** (`constants.ts`): `HOOK_NAME = "task-continuation-enforcer"`, `DEFAULT_SKIP_AGENTS = ["oracle", "compaction"]`, `COUNTDOWN_SECONDS = 2`, `TOAST_DURATION_MS = 900`, `COUNTDOWN_GRACE_PERIOD_MS = 500`, `ABORT_WINDOW_MS = 3000`, `CONTINUATION_COOLDOWN_MS = 30_000`, `MAX_CONSECUTIVE_FAILURES = 5`, `FAILURE_RESET_WINDOW_MS = 5 * 60 * 1000` (5 min).
 
 **Behavior:** on idle, the handler skips during recovery, right after an abort, while background tasks run, when continuation is stopped, past the failure circuit breaker, or inside cooldown. Otherwise it counts incomplete tasks: zero → done; all stale → skip with a log line; otherwise a 2-second countdown injects the `CONTINUATION_PROMPT` directive (work next pending task, mark `in_progress`/`completed`, respect `blockedBy`). Injection failures increment the consecutive-failure counter.
 
-**Cross-session scope and liveness:** the enforcer reads the project-wide store, so a directive reflects the union of sessions in the project. With `tasks.session_scoped: true` (default), tasks are admitted only when their `threadID` is the current session or a live subagent of it; orphaned tasks from dead sessions are excluded. Pre-migration tasks without `threadID` are always included. Stale handling keys on `tasks.stale_after_hours` (default 24): all-stale queues skip on both the idle path and the post-countdown injection path; mixed queues annotate stale entries with a `(stale: Nh)` suffix plus an orphan-suspect note.
+**Cross-session scope and liveness:** the enforcer reads the project-wide store, so a directive reflects the union of sessions in the project. With `tasks.session_scoped: true` (default), tasks are admitted only when their `threadID` is the current session or a live subagent of it; orphaned tasks from dead sessions are excluded. Pre-migration tasks without `threadID` are always included. Stale handling keys on `tasks.stale_after_hours` (enforcer default 24): all-stale queues skip on both the idle path and the post-countdown injection path; mixed queues annotate stale entries with a `(stale: Nh)` suffix plus an orphan-suspect note.
+
+**Durable ancestry scope (background completion gate).** Session scoping follows the durable `parentID` chain, not just live-session membership. `src/features/task-session-scope/ancestry.ts` walks `parentID` ancestors up to `DEFAULT_ANCESTRY_DEPTH = 3` hops, so a delegated subagent's or grandchild's task still counts toward the gate even when the intermediate session is already gone. The walk stops on a cycle, and only an in-scope ancestor admits a descendant, so an unrelated open task can never wedge a handle. The default applies at every call site; no config key selects the depth. Staleness composes with the expansion rather than bypassing it, so an expanded-but-stale grandchild still drops out — and it drops out on the gate's own window, `tasks.background_stale_after_hours` (default 2), not the enforcer's 24. The two differ because a missed continuation nudge is cheap while a handle held `running` past its worker is not. The wall-clock backstop (`background_task.wallClockTimeoutMs`, default `0`, off) is unchanged.
 
 **Subtask rollup:** a task with `parentID` is a subtask. Subtasks whose parent is `completed`/`deleted` count as resolved and leave the incomplete set (`dropSubtasksWithResolvedParent` in `todo.ts`, applied before session filtering on both paths). A parent with incomplete subtasks stays incomplete through its own status.
 
-### 8.2 `tasks-todowrite-disabler`: Enforce Task System
-
-**Files:** `src/hooks/tasks-todowrite-disabler/` (`hook.ts`, `constants.ts`). **Type:** `tool.execute.before`, **BLOCKING** (throws). **Trigger:** `tool in ["TodoWrite", "TodoRead"]` when `isTaskSystemEnabled(config)`.
-
-**Triple-layer enforcement:**
-
-| Layer | Mechanism | Location |
-|-------|-----------|----------|
-| Hook | `throw` on `TodoWrite`/`TodoRead` | `hooks/tasks-todowrite-disabler/hook.ts` |
-| Global tool config | `todowrite:false`, `todoread:false` | `plugin-handlers/tool-config-handler.ts` |
-| Per-agent config | `todowrite:"deny"`, `todoread:"deny"` on task agents | same handler |
-
-**Error message** (`REPLACEMENT_MESSAGE` in `constants.ts`) teaches the 4-step workflow: `TaskCreate` → `TaskUpdate(in_progress)` → work → `TaskUpdate(completed)`, with "1 task = 1 task" parallelism and "do not retry TodoWrite" instruction.
-
-### 8.3 `task-edit-guard`: Block Raw Edits
+### 8.2 `task-edit-guard`: Block Raw Edits
 
 **Files:** `src/hooks/task-edit-guard/` (`hook.ts`, `constants.ts`). **Type:** `tool.execute.before`. **Unconditional** (not gated on the task system; it matches on its own path patterns).
 
@@ -525,17 +524,15 @@ Three blocks:
 2. Generic `Read` of any path containing `.matrixx/plans` → throw `PLAN_READ_WARN`, directing to `plan_read` (hashline-tagged output) plus `plan_list` for discovery.
 3. `bash` commands matching `BLOCKED_PATTERNS` (`constants.ts`): `sed`, `python3?`, `echo`, `cat >`, `mv`, `rm` (tasks `T-*.json` and plans), `cp`, `tee`, `touch`, `truncate`, `printf`, each scoped to `.matrixx/plans` or `.matrixx/tasks` paths. Pure `grep` reads that hit no pattern pass through via the `isOnlyGrep` fast path.
 
-### 8.4 `task-notepad`, `task-resume-info`, and Siblings
+### 8.3 `task-resume-info` and Siblings
 
 | Hook | Trigger | Behavior |
 |------|---------|----------|
-| `task-notepad` (`src/hooks/task-notepad/`) | session start | Injects a `.matrixx/tasks` context fragment (task counts) into the prompt |
 | `task-resume-info` (`src/hooks/task-resume-info/`) | `tool.execute.after` for delegate targets | Extracts `session_id` via `SESSION_ID_PATTERNS`, appends `to continue: task(session_id="…")` unless present; ignores `Error:` outputs. Always registered (`create-session-hooks.ts`). |
 | `empty-task-response-detector` (`src/hooks/empty-task-response-detector.ts`) | response analysis | Detects an empty assistant message while tasks remain; triggers a re-prompt |
 | `delegate-task-retry` (`src/hooks/delegate-task-retry/`) | `delegate_task` failure | Retries transient LLM failures via pattern matching in `patterns.ts` |
-| `todo-continuation-enforcer` (`src/hooks/todo-continuation-enforcer/`) | session idle (todo mode) | Sibling system for `SessionTodo`: same countdown shape, counts todos not tasks. Both enforcers run independently when enabled. |
 
-### 8.5 `task-toast-manager`: Background-Task Toasts
+### 8.4 `task-toast-manager`: Background-Task Toasts
 
 **Files:** `src/features/task-toast-manager/` (`manager.ts`, `types.ts`, `index.ts`).
 
@@ -545,7 +542,7 @@ Three blocks:
 
 ## 9. Plans: `.matrixx/plans/*.md` Conventions
 
-Plans are markdown files managed **only** through the `plan_*` tools (`src/tools/plan/`: `plan-create.ts`, `plan-read.ts`, `plan-update.ts`, `plan-list.ts`, `plan-delete.ts`). Generic `Read`/`Write`/`Edit` on `.matrixx/plans` is blocked by `task-edit-guard` (see §8.3); raw bash mutation of plans is blocked by the same hook's `BLOCKED_PATTERNS`.
+Plans are markdown files managed **only** through the `plan_*` tools (`src/tools/plan/`: `plan-create.ts`, `plan-read.ts`, `plan-update.ts`, `plan-list.ts`, `plan-delete.ts`). Generic `Read`/`Write`/`Edit` on `.matrixx/plans` is blocked by `task-edit-guard` (see §8.2); raw bash mutation of plans is blocked by the same hook's `BLOCKED_PATTERNS`.
 
 - **Discovery:** `plan_list` lists plan files; `plan_read` returns hashline-tagged output where each line carries a `LINE#ID` anchor.
 - **Edits:** `plan_update` takes hashline edits (`pos`/`end` in `LINE#ID` format; `replace` requires a `pos` anchor). Edits are scoped to the plans dir and validated before write.
@@ -573,18 +570,19 @@ Source: `src/shared/task-system-gating.ts`.
 
 ```typescript
 export const TASK_SYSTEM_DEFAULT = true as const
-export function resolveTasksConfig(config) { /* tasks.* wins; legacy fills gaps */ }
+export function resolveTasksConfig(config) { /* tasks.* wins; legacy fills storage-key gaps; enabled is constant */ }
 export function isTaskSystemEnabled(config): boolean {
   return resolveTasksConfig(config).enabled
 }
 ```
 
-Used by: `create-continuation-hooks`, `create-tool-guard-hooks`, `tasks-todowrite-disabler`, `tool-registry`. Never read `config.experimental.task_system` or `config.tasks.enabled` directly; always go through `isTaskSystemEnabled` (enablement) or `resolveTasksConfig` (full options).
+Used by: `create-continuation-hooks`, `tool-registry`. Never read `config.tasks` fields directly; always go through `isTaskSystemEnabled` (enablement) or `resolveTasksConfig` (full options).
 
 ### 11.2 Compatibility Notes
 
 - **Claude Code alignment:** field names (`subject`, `blockedBy`, `blocks`) follow Claude Code's Task tool shape. Matrixx's `TaskObject` is a superset (adds `activeForm`, `repoURL`, `parentID`, atomic storage, additive deps, metadata merge, `task_cleanup`).
-- **No `morpheus.tasks.enabled`:** the legacy `MorpheusTasksConfigSchema` has no `enabled` field. The switch is `tasks.enabled` (canonical) with `experimental.task_system` / `new_task_system_enabled` as fallbacks. Do not add `enabled` under `morpheus.tasks`.
+- **No master switch:** `tasks.enabled` no longer gates anything. The file-backed store is the only substrate. See §3.1 and `docs/legacy-todo-migration.md`.
+- **No `morpheus.tasks.enabled`:** the legacy `MorpheusTasksConfigSchema` has no `enabled` field, and it no longer needs one. Do not add `enabled` under `morpheus.tasks`.
 - **Removed `todo-sync.ts` dual-write:** bulk Task→Todo mirroring (`syncAllTasksToTodos` / `syncTaskTodoUpdate`, formerly `src/tools/task/todo-sync.ts`) was removed when the enforcers decoupled. Do not reintroduce dual-write without revisiting that rationale.
 
 ---
@@ -608,19 +606,15 @@ Used by: `create-continuation-hooks`, `create-tool-guard-hooks`, `tasks-todowrit
 | `src/features/task-toast-manager/types.ts` | `TrackedTask`, `TaskStatus` (`running\|queued\|completed\|error`), `TaskToastOptions` |
 | `src/tools/plan/plan-read.ts`, `plan-update.ts` | `plan_read` (hashline output), `plan_update` (`LINE#ID` edits) |
 | `src/hooks/task-continuation-enforcer/` | Enforcer factory, idle handler, injection, countdown, staleness, session filter |
-| `src/hooks/tasks-todowrite-disabler/` | BLOCKING hook on `TodoWrite`/`TodoRead` + `REPLACEMENT_MESSAGE` |
 | `src/hooks/task-edit-guard/` | Write/Edit/Read + bash guard for `.matrixx/plans` and `.matrixx/tasks` |
-| `src/hooks/task-notepad/` | Task context fragment injection |
 | `src/hooks/task-resume-info/` | Resume hint `task(session_id="…")` |
-| `src/hooks/todo-continuation-enforcer/` | Sibling Todo enforcer (independent) |
 | `src/tools/delegate-task/sync-task-deps.ts` | Bidirectional dep sync |
 | `src/config/schema/tasks.ts` | Canonical `TasksConfigSchema` |
 | `src/config/schema/morpheus.ts` | Legacy `MorpheusTasksConfigSchema` fallback |
-| `src/config/schema/experimental.ts` | Legacy `task_system` fallback |
-| `src/config/schema/hooks.ts` | `HookNameSchema` (includes `task-continuation-enforcer`, `tasks-todowrite-disabler`, `task-edit-guard`, etc.) |
-| `src/plugin/tool-registry.ts` | Conditional registration of the 5 task tools |
+| `src/config/schema/hooks.ts` | `HookNameSchema` (includes `task-continuation-enforcer`, `task-edit-guard`, etc., plus 4 retained-deprecated legacy literals) |
+| `src/shared/migration/hook-names.ts` | `HOOK_NAME_MAP` — maps the 4 retired legacy hook names to `null` so old `disabled_hooks` lists strip cleanly |
+| `src/plugin/tool-registry.ts` | Registration of the 5 task tools |
 | `src/plugin/hooks/create-continuation-hooks.ts` | Gates `taskContinuationEnforcer` |
-| `src/plugin/hooks/create-tool-guard-hooks.ts` | Gates `tasksTodowriteDisabler` |
 | `src/plugin/hooks/create-session-hooks.ts` | Registers `taskResumeInfo` (always) |
 | `src/shared/task-system-gating.ts` | `resolveTasksConfig`, `isTaskSystemEnabled`, `TASK_SYSTEM_DEFAULT` |
 | `src/features/builtin-commands/templates/task-list.ts` | `/task-list` command |
@@ -677,12 +671,13 @@ Used by: `create-continuation-hooks`, `create-tool-guard-hooks`, `tasks-todowrit
 | `0682bce` isolation suite (11 tests) | Verify project isolation | n/a |
 | `d16dc27` `task-edit-guard` | Block raw bash on `.matrixx/tasks` and `.matrixx/plans` | Prevent bypass of locking and validation |
 | `3d44108` hide completed from TUI | TUI shows only active tasks | Reduce noise |
-| `d8ca206` decouple `task-continuation-enforcer` from `todo-continuation-enforcer` | Dedicated enforcer per system; remove `todo-sync.ts` dual-write | Enforcers independent; no coupling debt |
+| `d8ca206` decouple the two continuation enforcers | Dedicated enforcer per system; remove `todo-sync.ts` dual-write | Enforcers independent; no coupling debt |
 | `62e7061` wire enforcer to event bus and correct injection | `handleSessionIdle` via `onAbort`/`onRecoveryComplete` callbacks | Abort-aware, background-task-aware continuation |
-| `5459ef9` merge `feat/task-system-no-todowrite` | Remove stale specs, repair compaction | n/a |
+| `5459ef9` merge the no-todo-tools branch | Remove stale specs, repair compaction | n/a |
 | `75fedac` default `task_system=true` + canonical gating | `isTaskSystemEnabled` + `_migrations` marker | Zero-config for fresh clones |
 | `8509b84` to `82f9f38` `/task-list` and `/cleanup-tasks` search-mode fixes | Ignore global `search-mode` | Commands must not leak into global search |
-| task config consolidation (2.6.x) | Canonical `tasks.*` section; `experimental.task_system`, `morpheus.tasks.*`, `task.pollTimeoutMs` become fallbacks via `resolveTasksConfig()` | One home for task config; keeps old files parsing |
+| task config consolidation (2.6.x) | Canonical `tasks.*` section; `morpheus.tasks.*` and `task.pollTimeoutMs` become fallbacks via `resolveTasksConfig()` | One home for task config; keeps old files parsing |
+| legacy todo system removed (v2.7) | The 4 legacy todo hooks, the dual `useTaskSystem` prompt fork, and the master gate are gone; `tasks.*` is unconditional | One substrate, no split-brain todos. History and retained no-ops: `docs/legacy-todo-migration.md` |
 
 **Known tech debt:**
 
@@ -690,4 +685,4 @@ Used by: `create-continuation-hooks`, `create-tool-guard-hooks`, `tasks-todowrit
 
 ---
 
-*End of Task System Engineering Specification. For hook internals see `docs/hooks.md`; for orchestration see `docs/orchestration.md`; for commands see `docs/command-reference.md`; for config reference see `docs/configurations.md`.*
+*End of Task System Engineering Specification. For hook internals see `docs/hooks.md`; for orchestration see `docs/orchestration.md`; for commands see `docs/command-reference.md`; for config reference see `docs/configurations.md`; for the removed legacy todo system see `docs/legacy-todo-migration.md`.*

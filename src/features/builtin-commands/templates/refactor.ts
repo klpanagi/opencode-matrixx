@@ -79,13 +79,13 @@ Should I proceed with [recommendation], or would you prefer differently?
 **IMMEDIATELY after understanding the request, create todos:**
 
 \`\`\`
-TodoWrite([
-  {"id": "phase-1", "content": "PHASE 1: Codebase Analysis - launch parallel explore agents", "status": "pending", "priority": "high"},
-  {"id": "phase-2", "content": "PHASE 2: Build Codemap - map dependencies and impact zones", "status": "pending", "priority": "high"},
-  {"id": "phase-3", "content": "PHASE 3: Test Assessment - analyze test coverage and verification strategy", "status": "pending", "priority": "high"},
-  {"id": "phase-4", "content": "PHASE 4: Plan Generation - invoke Plan agent for detailed refactoring plan", "status": "pending", "priority": "high"},
-  {"id": "phase-5", "content": "PHASE 5: Execute Refactoring - step-by-step with continuous verification", "status": "pending", "priority": "high"},
-  {"id": "phase-6", "content": "PHASE 6: Final Verification - full test suite and regression check", "status": "pending", "priority": "high"}
+task_create([
+  {"subject": "PHASE 1: Codebase Analysis - launch parallel explore agents", "status": "pending", "priority": "high"},
+  {"subject": "PHASE 2: Build Codemap - map dependencies and impact zones", "status": "pending", "priority": "high"},
+  {"subject": "PHASE 3: Test Assessment - analyze test coverage and verification strategy", "status": "pending", "priority": "high"},
+  {"subject": "PHASE 4: Plan Generation - invoke Plan agent for detailed refactoring plan", "status": "pending", "priority": "high"},
+  {"subject": "PHASE 5: Execute Refactoring - step-by-step with continuous verification", "status": "pending", "priority": "high"},
+  {"subject": "PHASE 6: Final Verification - full test suite and regression check", "status": "pending", "priority": "high"}
 ])
 \`\`\`
 
@@ -387,12 +387,12 @@ After receiving plan from Plan agent:
 Convert Plan agent output into granular todos:
 
 \`\`\`
-TodoWrite([
-  // Each step from the plan becomes a todo
-  {"id": "refactor-1", "content": "Step 1: [description]", "status": "pending", "priority": "high"},
-  {"id": "verify-1", "content": "Verify Step 1: run tests", "status": "pending", "priority": "high"},
-  {"id": "refactor-2", "content": "Step 2: [description]", "status": "pending", "priority": "medium"},
-  {"id": "verify-2", "content": "Verify Step 2: run tests", "status": "pending", "priority": "medium"},
+task_create([
+  // Each step from the plan becomes a task
+  {"subject": "Step 1: [description]", "status": "pending", "priority": "high"},
+  {"subject": "Verify Step 1: run tests", "status": "pending", "priority": "high"},
+  {"subject": "Step 2: [description]", "status": "pending", "priority": "medium"},
+  {"subject": "Verify Step 2: run tests", "status": "pending", "priority": "medium"},
   // ... continue for all steps
 ])
 \`\`\`

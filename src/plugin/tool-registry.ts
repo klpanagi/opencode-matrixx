@@ -183,7 +183,7 @@ export function createToolRegistry(args: {
     ...createGithubSearchTools(ctx),
     ...createGlobTools(ctx),
     ...createAstGrepTools(ctx),
-    ...createSessionManagerTools(ctx),
+    ...createSessionManagerTools(ctx, pluginConfig),
     ...createHandoffTools(ctx),
     ...(knowledgeHubConfirmEnabled ? { knowledge_hub_confirm: createKnowledgeHubConfirmTool(ctx) } : {}),
     ...pdfFiguresRecord,

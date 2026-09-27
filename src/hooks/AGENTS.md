@@ -2,7 +2,7 @@
 
 ## OVERVIEW
 
-80 hook entries (63 dirs + loose files) intercepting/modifying agent behavior across 7 event types. Three-tier registration: Core (session ~21 + tool-guard ~24 + transform 8) → Continuation (11) → Skill (2). HookNameSchema holds 66 literals (incl. 1 duplicate + 1 legacy alias).
+75 hook entries (59 dirs + 16 loose `.ts` files) intercepting/modifying agent behavior across 7 event types. Three-tier registration: Core (session ~21 + tool-guard ~24 + transform 8) → Continuation (11) → Skill (2). `HookNameSchema` holds 62 enum members plus 5 retained literals (1 duplicate alias + 4 legacy todo no-ops) = 67 accepted values.
 
 ## STRUCTURE
 ```
@@ -17,7 +17,6 @@ hooks/
 ├── category-skill-reminder/      # Category+skill delegation reminders (597 lines)
 ├── comment-checker/              # Prevents AI slop comments (710 lines)
 ├── compaction-context-injector/  # Injects context on compaction (128 lines)
-├── compaction-todo-preserver/    # Preserves todos during compaction (203 lines)
 ├── context-window-monitor.ts     # Reminds of headroom at 70% (99 lines)
 ├── delegate-task-retry/          # Retries failed delegations (266 lines)
 ├── design-intent-preserver/      # Preserves design intent across edits
@@ -39,12 +38,9 @@ hooks/
 ├── start-work/                   # Morpheus work session starter (648 lines)
 ├── stop-continuation-guard/      # Guards stop continuation (214 lines)
 ├── subagent-question-blocker/    # Blocks subagent questions (112 lines)
-├── task-notepad/                 # Task-scoped notepad persistence
 ├── task-resume-info/             # Resume info for cancelled tasks (39 lines)
-├── tasks-todowrite-disabler/     # Disables TodoWrite when tasks active (202 lines)
 ├── think-mode/                   # Dynamic thinking budget (1365 lines)
 ├── thinking-block-validator/     # Validates thinking blocks (169 lines)
-├── todo-continuation-enforcer/   # Force TODO completion — mission mechanism (2061 lines)
 ├── tool-output-truncator.ts      # Prevents context bloat (62 lines)
 ├── unstable-agent-babysitter/    # Monitors unstable behavior (451 lines)
 ├── task-edit-guard/               # Blocks raw bash edits to .matrixx/plans and .matrixx/tasks — enforces plan_*/task_* tools; BLOCKs generic Write/Edit to plans (tool.execute.before)
@@ -72,7 +68,6 @@ hooks/
 | non-interactive-env | tool.execute.before | Interactive command in non-TTY |
 | oracle-md-only | tool.execute.before | Write outside .morpheus/*.md |
 | subagent-question-blocker | tool.execute.before | Question tool in subagent |
-| tasks-todowrite-disabler | tool.execute.before | TodoWrite with task system |
 | task-edit-guard | tool.execute.before | Raw bash mutation of `.matrixx/plans/*.md` or `.matrixx/tasks/T-*.json` — use `plan_*` or `task_*` tools; generic Write/Edit to plans BLOCKED with plan_* hint |
 | write-existing-file-guard | tool.execute.before | Write to existing file |
 

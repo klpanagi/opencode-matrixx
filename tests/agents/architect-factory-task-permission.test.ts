@@ -35,17 +35,18 @@ describe("architect handler fill-only semantics (issue #111 option b)", () => {
     expect(permission["teammate"]).toBe("allow")
   })
 
-  test("taskSystem=false keeps legacy todos path", () => {
-    //#given
+  test("tasks.enabled=false no longer selects the legacy todos path", () => {
+    //#given the legacy switch is pinned off
     const agentResult: Record<string, unknown> = { architect: { permission: {} } }
 
-    //#when
+    //#when the tool config is applied
     applyToolConfig({ config: {}, pluginConfig: { tasks: { enabled: false } }, agentResult })
 
-    //#then
+    //#then the todo tools are denied just like with tasks.enabled=true
     const permission = (agentResult["architect"] as { permission: Record<string, unknown> }).permission
-    expect(permission["todowrite"]).toBe("allow")
-    expect(permission["todoread"]).toBe("allow")
+    expect(permission["todowrite"]).toBe("deny")
+    expect(permission["todoread"]).toBe("deny")
+    expect(permission["task"]).toBe("allow")
   })
 
   test("fill-only preserves explicit factory deny (user override wins)", () => {

@@ -1,7 +1,7 @@
 export const STOP_CONTINUATION_TEMPLATE = `Stop all continuation mechanisms for the current session.
 
 This command will:
-1. Stop the todo-continuation-enforcer from automatically continuing incomplete tasks
+1. Stop the task-continuation-enforcer from automatically continuing incomplete tasks
 2. Cancel any active Matrix Loop
 3. Clear the mission state for the current project
 

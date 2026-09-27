@@ -92,30 +92,30 @@ ${buildVerificationReminder(sessionId)}
 
 **STEP 5: CHECK YOUR PROGRESS DIRECTLY (EVERY TIME — NO EXCEPTIONS)**
 
-Do NOT rely on memory or cached state. Run \`todoread\` NOW to see exact current state.
+Do NOT rely on memory or cached state. Run \`task_list\` NOW to see exact current state.
 Count pending vs completed tasks. This is your ground truth for what comes next.
 
-**STEP 6: UPDATE TODO STATUS (IMMEDIATELY)**
+**STEP 6: UPDATE TASK STATUS (IMMEDIATELY)**
 
 RIGHT NOW - Do not delay. Verification passed → Mark IMMEDIATELY.
 
-1. Run \`todoread\` to see your todo list
-2. Mark the completed task as \`completed\` using \`todowrite\`
+1. Run \`task_list\` to see your task list
+2. Mark the completed task as \`completed\` using \`task_update\`
 
 **DO THIS BEFORE ANYTHING ELSE. Unmarked = Untracked = Lost progress.**
 
 **STEP 7: EXECUTE QA TASKS (IF ANY)**
 
-If QA tasks exist in your todo list:
+If QA tasks exist in your task list:
 - Execute them BEFORE proceeding
 - Mark each QA task complete after successful verification
 
 **STEP 8: PROCEED TO NEXT PENDING TASK**
 
-- Run \`todoread\` AGAIN to identify the next \`pending\` task
+- Run \`task_list\` AGAIN to identify the next \`pending\` task
 - Start immediately - DO NOT STOP
 
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
-**NO TODO = NO TRACKING = INCOMPLETE WORK. Use todowrite aggressively.**`
+**NO TASKS = NO TRACKING = INCOMPLETE WORK. Use task_create / task_update aggressively.**`
 }

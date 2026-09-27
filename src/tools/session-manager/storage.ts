@@ -2,10 +2,12 @@ import { existsSync } from "node:fs"
 import { readdir, readFile } from "node:fs/promises"
 import { join } from "node:path"
 import type { PluginInput } from "@opencode-ai/plugin"
+import type { MatrixxConfig } from "../../config/schema"
+import { readSessionTasks } from "../../features/task-session-scope"
 import { normalizeSDKResponse } from "../../shared"
 import { getMessageDir } from "../../shared/opencode-message-dir"
 import { isSqliteBackend } from "../../shared/opencode-storage-detection"
-import { MESSAGE_STORAGE, PART_STORAGE, SESSION_STORAGE, TODO_DIR, TRANSCRIPT_DIR } from "./constants"
+import { MESSAGE_STORAGE, PART_STORAGE, SESSION_STORAGE, TRANSCRIPT_DIR } from "./constants"
 import type { SessionInfo, SessionMessage, SessionMetadata, TodoItem } from "./types"
 
 interface GetMainSessionsOptions {
@@ -15,12 +17,43 @@ interface GetMainSessionsOptions {
 // SDK client reference for beta mode
 let sdkClient: PluginInput["client"] | null = null
 
+let storageDirectory: string | undefined
+
+let pluginConfig: Partial<MatrixxConfig> | undefined
+
 export function setStorageClient(client: PluginInput["client"]): void {
   sdkClient = client
 }
 
 export function resetStorageClient(): void {
   sdkClient = null
+}
+
+/**
+ * Thread `ctx.directory` into the storage layer. `createSessionManagerTools` is the
+ * single construction point of this module, so the directory is held in a module
+ * setter for the same reason the SDK client is: `getSessionInfo` is a second
+ * consumer of the task read and has no directory of its own, so an explicit
+ * parameter would have to be threaded through both public signatures. Passing no
+ * directory makes the task store resolve to its global default, matching
+ * `getTaskDir`'s own contract when `directory` is omitted; this function needs a
+ * concrete string, so an unset directory falls back to `process.cwd()` exactly as
+ * `getTaskDir` does for a relative `storage_path`.
+ */
+export function setStorageDirectory(directory: string | undefined): void {
+  storageDirectory = directory
+}
+
+/**
+ * Thread the plugin config into the task read, for the same reason as the directory:
+ * `getSessionInfo` is a second consumer of `readSessionTodos` and carries neither a
+ * config nor a directory of its own. Without it the read always resolves the
+ * `process.cwd()`-relative project store, which silently returns nothing for a user
+ * who configured `tasks.storage_path` or `tasks.scope: "global"` — the `include_todos`
+ * diagnostic would be permanently empty for exactly those users.
+ */
+export function setStorageConfig(config: Partial<MatrixxConfig> | undefined): void {
+  pluginConfig = config
 }
 
 export async function getMainSessions(options: GetMainSessionsOptions): Promise<SessionMetadata[]> {
@@ -247,55 +280,48 @@ async function readParts(messageID: string): Promise<Array<{ id: string; type: s
   return parts.sort((a, b) => a.id.localeCompare(b.id))
 }
 
+/**
+ * Task status -> todo status. `TaskStatusSchema` spells the terminal removal state
+ * `deleted`; `TodoItem` spells it `cancelled`. The two are not assignable, so the
+ * value is translated here rather than bridged with a cast or a widened type.
+ */
+function toTodoStatus(status: "pending" | "in_progress" | "completed" | "deleted"): TodoItem["status"] {
+  return status === "deleted" ? "cancelled" : status
+}
+
+/**
+ * Read the file-backed task store for one session. Replaces the legacy read of
+ * OpenCode's own todo state, which had two branches: the SDK endpoint and a "stable
+ * mode" scan of OpenCode's on-disk todo directory. Both are gone.
+ *
+ * There is deliberately no `isSqliteBackend()` split here, unlike the message and
+ * session readers in this file. That distinction exists because those endpoints
+ * differ per backend; the task store is a plugin-owned local directory, so it is
+ * backend-independent and one read covers both. Do not "restore" the branch.
+ *
+ * Fails open via `readSessionTasks`: a missing store or an unreadable file yields
+ * `[]` rather than throwing, matching the contract of the reads it replaces.
+ *
+ * `excludeStale: false` is an explicit local opt-out, not a change of default.
+ * `SessionTaskQuery.excludeStale` stays `true` so a completion gate cannot leak a
+ * pending handle forever; that bound belongs to the gates, not to this read. This
+ * is the `include_todos` / `SessionInfo.todos` diagnostic, and the native list it
+ * replaced applied no staleness filter at all, so inheriting the default silently
+ * dropped an untouched-but-unfinished task from the view a user inspects when
+ * asking "what is this session carrying?" — which is why a session could report
+ * `has_todos: true` and render an empty list.
+ */
 export async function readSessionTodos(sessionID: string): Promise<TodoItem[]> {
-  // Beta mode: use SDK
-  if (isSqliteBackend() && sdkClient) {
-    try {
-      const response = await sdkClient.session.todo({ path: { id: sessionID } })
-      const data = normalizeSDKResponse(response, [] as Array<{
-        id?: string
-        content?: string
-        status?: string
-        priority?: string
-      }>)
-      return data.map((item) => ({
-        id: item.id || "",
-        content: item.content || "",
-        status: (item.status as TodoItem["status"]) || "pending",
-        priority: item.priority,
-      }))
-    } catch {
-      return []
-    }
-  }
-
-  // Stable mode: use JSON files
-  if (!existsSync(TODO_DIR)) return []
-
-  try {
-    const allFiles = await readdir(TODO_DIR)
-    const todoFiles = allFiles.filter((f) => f.includes(sessionID) && f.endsWith(".json"))
-
-    for (const file of todoFiles) {
-      try {
-        const content = await readFile(join(TODO_DIR, file), "utf-8")
-        const data = JSON.parse(content)
-        if (Array.isArray(data)) {
-          return data.map((item) => ({
-            id: item.id || "",
-            content: item.content || "",
-            status: item.status || "pending",
-            priority: item.priority,
-          }))
-        }
-      } catch {
-      }
-    }
-  } catch {
-    return []
-  }
-
-  return []
+  return readSessionTasks({
+    config: pluginConfig,
+    directory: storageDirectory ?? process.cwd(),
+    sessionID,
+    excludeStale: false,
+  }).map((task) => ({
+    id: task.id,
+    content: task.subject,
+    status: toTodoStatus(task.status),
+  }))
 }
 
  async function readSessionTranscript(sessionID: string): Promise<number> {

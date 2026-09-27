@@ -19,8 +19,6 @@ import {
   createRulesInjectorHook,
   createSecretLeakGuardHook,
   createTaskEditGuardHook,
-  createTaskNotepadHook,
-  createTasksTodowriteDisablerHook,
   createToolOutputTruncatorHook,
   createWebFetchRedirectGuardHook,
   createWriteExistingFileGuardHook,
@@ -41,7 +39,6 @@ export type ToolGuardHooks = {
   directoryAgentsInjector: ReturnType<typeof createDirectoryAgentsInjectorHook> | null
   emptyTaskResponseDetector: ReturnType<typeof createEmptyTaskResponseDetectorHook> | null
   rulesInjector: ReturnType<typeof createRulesInjectorHook> | null
-  tasksTodowriteDisabler: ReturnType<typeof createTasksTodowriteDisablerHook> | null
   writeExistingFileGuard: ReturnType<typeof createWriteExistingFileGuardHook> | null
   hashlineReadEnhancer: ReturnType<typeof createHashlineReadEnhancerHook> | null
   secretLeakGuard: ReturnType<typeof createSecretLeakGuardHook> | null
@@ -52,7 +49,6 @@ export type ToolGuardHooks = {
   readImageResizer: ReturnType<typeof createReadImageResizerHook> | null
   webfetchRedirectGuard: ReturnType<typeof createWebFetchRedirectGuardHook> | null
   qualityGate: ReturnType<typeof createQualityGateHook> | null
-  taskNotepad: ReturnType<typeof createTaskNotepadHook> | null
   taskEditGuard: ReturnType<typeof createTaskEditGuardHook> | null
   documentReaderGuard: ReturnType<typeof createDocumentReaderGuardHook> | null
   knowledgeHubGuard: ReturnType<typeof createKnowledgeHubGuardHook> | null
@@ -108,11 +104,6 @@ export function createToolGuardHooks(args: {
     ? safeHook("rules-injector", () => createRulesInjectorHook(ctx))
     : null
 
-  const tasksTodowriteDisabler = isHookEnabled("tasks-todowrite-disabler")
-    ? safeHook("tasks-todowrite-disabler", () =>
-        createTasksTodowriteDisablerHook({ experimental: pluginConfig.experimental }))
-    : null
-
   const writeExistingFileGuard = isHookEnabled("write-existing-file-guard")
     ? safeHook("write-existing-file-guard", () => createWriteExistingFileGuardHook(ctx))
     : null
@@ -153,10 +144,6 @@ export function createToolGuardHooks(args: {
     ? safeHook("quality-gate", () => createQualityGateHook())
     : null
 
-  const taskNotepad = isHookEnabled("task-notepad")
-    ? safeHook("task-notepad", () => createTaskNotepadHook(ctx))
-    : null
-
   const taskEditGuard = isHookEnabled("task-edit-guard")
     ? safeHook("task-edit-guard", () => createTaskEditGuardHook(ctx))
     : null
@@ -190,7 +177,6 @@ export function createToolGuardHooks(args: {
     directoryAgentsInjector,
     emptyTaskResponseDetector,
     rulesInjector,
-    tasksTodowriteDisabler,
     writeExistingFileGuard,
     hashlineReadEnhancer,
     secretLeakGuard,
@@ -201,7 +187,6 @@ export function createToolGuardHooks(args: {
     readImageResizer,
     webfetchRedirectGuard,
     qualityGate,
-    taskNotepad,
     taskEditGuard,
     documentReaderGuard,
     knowledgeHubGuard,
