@@ -1,15 +1,16 @@
 /// <reference types="bun-types" />
-import { afterEach, beforeEach, describe, expect, test } from "bun:test"
-import { existsSync, mkdirSync, readdirSync, rmSync, statSync, writeFileSync } from "node:fs"
+import { afterEach, beforeEach, describe, expect, mock, test } from "bun:test"
+import { existsSync, mkdirSync, readdirSync, rmSync, writeFileSync } from "node:fs"
 import { tmpdir } from "node:os"
 import { join } from "node:path"
-import { createTaskCreateTool } from "../../../src/tools/task/task-create"
+import * as loggerModule from "../../../src/shared/logger"
 import { TaskCreateBatchInputSchema, TaskCreateInputSchema } from "../../../src/tools/task/types"
+
+type TaskCreateModule = typeof import("../../../src/tools/task/task-create")
 
 const TEST_STORAGE = "store"
 const TEST_SESSION_ID = "batch-session-456"
 const TEST_LIST_ID = "batch-test"
-const LOG_FILE = join(tmpdir(), "matrixx.log")
 const ORIGINAL_CONFIG_DIR = process.env.OPENCODE_CONFIG_DIR
 
 const TEST_CONTEXT = {
@@ -45,12 +46,28 @@ describe("task_create batch support", () => {
   let testDir: string
   let configDir: string
   let storagePath: string
-  let tool: ReturnType<typeof createTaskCreateTool>
+  let tool: ReturnType<TaskCreateModule["createTaskCreateTool"]>
+  let logCalls: Array<{ msg: string; data?: unknown }>
   let testConfig: {
     morpheus: { tasks: { storage_path: string; task_list_id: string } }
   }
 
-  beforeEach(() => {
+  beforeEach(async () => {
+    mock.restore()
+    logCalls = []
+
+    mock.module("../../../src/shared/logger", () => ({
+      ...loggerModule,
+      log: (msg: string, data?: unknown) => {
+        logCalls.push({ msg, data })
+      },
+    }))
+
+    const cacheBuster = `${Date.now()}-${Math.random()}`
+    const taskCreateModule: TaskCreateModule = await import(
+      `../../../src/tools/task/task-create?test=${cacheBuster}`
+    )
+
     testDir = join(
       tmpdir(),
       `task-create-batch-${Date.now()}-${Math.random().toString(36).slice(2)}`,
@@ -65,7 +82,7 @@ describe("task_create batch support", () => {
         tasks: { storage_path: storagePath, task_list_id: TEST_LIST_ID },
       },
     }
-    tool = createTaskCreateTool(testConfig)
+    tool = taskCreateModule.createTaskCreateTool(testConfig)
     TEST_CONTEXT.directory = testDir
   })
 
@@ -78,6 +95,7 @@ describe("task_create batch support", () => {
     if (existsSync(testDir)) {
       rmSync(testDir, { recursive: true, force: true })
     }
+    mock.restore()
   })
 
   describe("single task (unchanged behaviour, one envelope)", () => {
@@ -338,18 +356,20 @@ describe("task_create batch support", () => {
       //#given .matrixx exists as a file, so creating the project task dir throws ENOTDIR
       seedLegacyTask()
       writeFileSync(join(testDir, ".matrixx"), "not a directory")
-      const logOffset = existsSync(LOG_FILE) ? statSync(LOG_FILE).size : 0
 
       //#when
       const result = JSON.parse(await tool.execute({ subject: "Survives migration failure" }, TEST_CONTEXT))
 
-      //#then creation continued and the failure was logged
+      //#then creation continued and the failure was logged rather than swallowed
       expect(result.tasks).toHaveLength(1)
       expect(result.tasks[0].subject).toBe("Survives migration failure")
       expect(countTaskFiles(storagePath)).toBe(1)
-      const tail = await Bun.file(LOG_FILE).slice(logOffset).text()
-      expect(tail).toContain("[task-create]")
-      expect(tail).toContain("Legacy task migration failed")
+
+      const migrationLogs = logCalls.filter((entry) =>
+        entry.msg.includes("[task-create]") && entry.msg.includes("Legacy task migration failed"),
+      )
+      expect(migrationLogs).toHaveLength(1)
+      expect(JSON.stringify(migrationLogs[0].data)).toContain("ENOTDIR")
     })
   })
 })
