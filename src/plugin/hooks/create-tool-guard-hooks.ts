@@ -19,6 +19,7 @@ import {
   createRulesInjectorHook,
   createSecretLeakGuardHook,
   createTaskEditGuardHook,
+  createTaskNotepadWriterHook,
   createToolOutputTruncatorHook,
   createWebFetchRedirectGuardHook,
   createWriteExistingFileGuardHook,
@@ -50,6 +51,7 @@ export type ToolGuardHooks = {
   webfetchRedirectGuard: ReturnType<typeof createWebFetchRedirectGuardHook> | null
   qualityGate: ReturnType<typeof createQualityGateHook> | null
   taskEditGuard: ReturnType<typeof createTaskEditGuardHook> | null
+  taskNotepadWriter: ReturnType<typeof createTaskNotepadWriterHook> | null
   documentReaderGuard: ReturnType<typeof createDocumentReaderGuardHook> | null
   knowledgeHubGuard: ReturnType<typeof createKnowledgeHubGuardHook> | null
   knowledgeHubSearchNudge: ReturnType<typeof createKnowledgeHubSearchNudgeHook> | null
@@ -148,6 +150,10 @@ export function createToolGuardHooks(args: {
     ? safeHook("task-edit-guard", () => createTaskEditGuardHook(ctx))
     : null
 
+  const taskNotepadWriter = isHookEnabled("task-notepad-writer")
+    ? safeHook("task-notepad-writer", () => createTaskNotepadWriterHook({ ...ctx, config: pluginConfig }))
+    : null
+
   const documentReaderGuard = isHookEnabled("document-reader-guard")
     ? safeHook("document-reader-guard", () => createDocumentReaderGuardHook(ctx))
     : null
@@ -188,6 +194,7 @@ export function createToolGuardHooks(args: {
     webfetchRedirectGuard,
     qualityGate,
     taskEditGuard,
+    taskNotepadWriter,
     documentReaderGuard,
     knowledgeHubGuard,
     knowledgeHubSearchNudge,
