@@ -4,7 +4,11 @@ import type { PluginInput } from "@opencode-ai/plugin"
 import { type ToolDefinition, tool } from "@opencode-ai/plugin/tool"
 import type { MatrixxConfig } from "../../config/schema"
 import { getTaskDir } from "../../features/task-storage/storage"
+import { getStaleAfterMs, isTaskStale } from "../../hooks/task-continuation-enforcer/staleness"
 import { log } from "../../shared/logger"
+
+const TERMINAL_STATUSES = new Set(["completed", "deleted"])
+const ACTIVE_STATUSES = new Set(["pending", "in_progress"])
 
 function parseOlderThan(value: string): number | null {
   const match = value.trim().match(/^(\d+)(d|h|m)$/)
@@ -44,14 +48,22 @@ export function createTaskCleanupTool(
 ): ToolDefinition {
   return tool({
     description: `[TRACKING — local progress records only. Spawns nothing, executes nothing.]
-Delete completed task files from storage.
+Delete reclaimable task files from storage.
 
-Scans getTaskDir()/*.json, filters status==="completed" and optionally olderThan.
+Scans getTaskDir()/*.json and deletes terminal tasks (status "completed" or "deleted"),
+optionally restricted to those olderThan.
 olderThan supports "7d", "24h", "30m" format (regex ^(\\d+)(d|h|m)$).
+
+Set stale=true to ALSO reclaim abandoned active tasks (status "pending" or "in_progress")
+whose file mtime is older than the threshold. Threshold = olderThan when given, else
+tasks.stale_after_hours (default 24h). Staleness uses file mtime; olderThan on terminal
+tasks uses the record's own timestamp. Active tasks are never reclaimed without stale=true.
+
 Returns counts: {deleted, remaining, deletedIds}`,
     args: {
-      olderThan: tool.schema.string().optional().describe('Only delete completed tasks older than duration (e.g. "7d", "24h", "30m")'),
-      all: tool.schema.boolean().optional().describe("Delete all completed tasks (default true when olderThan not set)"),
+      olderThan: tool.schema.string().optional().describe('Only delete tasks older than duration (e.g. "7d", "24h", "30m"). For terminal tasks this uses the record timestamp; in stale mode it sets the mtime threshold.'),
+      all: tool.schema.boolean().optional().describe("Delete all reclaimable tasks (default true when olderThan not set)"),
+      stale: tool.schema.boolean().optional().describe("Also reclaim abandoned pending/in_progress tasks older than the threshold (default false)"),
     },
     execute: async (args: Record<string, unknown>, context?: { sessionID: string }): Promise<string> => {
       try {
@@ -82,6 +94,8 @@ Returns counts: {deleted, remaining, deletedIds}`,
         const files = readdirSync(taskDir).filter((f) => f.endsWith(".json") && f.startsWith("T-"))
         const total = files.length
         const deletedIds: string[] = []
+        const reclaimStale = args.stale === true
+        const staleThresholdMs = reclaimStale ? (olderThanMs ?? getStaleAfterMs(config)) : null
 
         for (const file of files) {
           const filePath = join(taskDir, file)
@@ -92,13 +106,18 @@ Returns counts: {deleted, remaining, deletedIds}`,
           } catch {
             continue
           }
-          if (raw.status !== "completed") continue
+          const status = typeof raw.status === "string" ? raw.status : ""
           const id = typeof raw.id === "string" ? raw.id : file.replace(".json", "")
 
-          if (olderThanMs !== null) {
-            const ts = getTaskTimestamp(raw)
-            const age = Date.now() - ts
-            if (age <= olderThanMs) continue
+          if (TERMINAL_STATUSES.has(status)) {
+            if (olderThanMs !== null) {
+              const ts = getTaskTimestamp(raw)
+              if (Date.now() - ts <= olderThanMs) continue
+            }
+          } else if (reclaimStale && ACTIVE_STATUSES.has(status) && staleThresholdMs !== null) {
+            if (!isTaskStale(filePath, staleThresholdMs)) continue
+          } else {
+            continue
           }
 
           try {

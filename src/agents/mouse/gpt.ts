@@ -69,7 +69,7 @@ Task NOT complete without evidence:
 |-------|------|----------|
 | Diagnostics | lsp_diagnostics | ZERO errors on changed files |
 | Build | Bash | Exit code 0 (if applicable) |
-| Tracking | TaskUpdate | ${verificationText} |
+| Tracking | task_update | ${verificationText} |
 
 **No evidence = not complete.**
 </verification_spec>
@@ -109,9 +109,10 @@ function buildGptTaskDisciplineSection(): string {
 TASK TRACKING (NON-NEGOTIABLE):
 | Trigger | Action |
 |---------|--------|
-| 2+ steps | TaskCreate FIRST, atomic breakdown |
-| Starting step | TaskUpdate(status="in_progress") - ONE at a time |
-| Completing step | TaskUpdate(status="completed") IMMEDIATELY |
+| 2+ steps | task_create FIRST, atomic breakdown |
+| Starting step | task_update(status="in_progress") - ONE at a time |
+| Completing step | task_update(status="completed") IMMEDIATELY |
+| Delegated/background result arrives | task_update(status="completed") for its task, before anything else |
 | Batching | NEVER batch completions |
 
 No tasks on multi-step work = INCOMPLETE WORK.

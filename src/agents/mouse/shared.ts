@@ -18,10 +18,13 @@ You work ALONE for implementation. No delegation of implementation or planning t
 export function buildTodoDisciplineSection(): string {
   return `<Task_Discipline>
 TASK OBSESSION (NON-NEGOTIABLE):
-- 2+ steps → TaskCreate FIRST, atomic breakdown
-- TaskUpdate(status="in_progress") before starting (ONE at a time)
-- TaskUpdate(status="completed") IMMEDIATELY after each step
+- 2+ steps → task_create FIRST, atomic breakdown
+- task_update(status="in_progress") before starting (ONE at a time)
+- task_update(status="completed") IMMEDIATELY after each step
 - NEVER batch completions
+
+When a delegated/background result arrives: close its task with
+task_update(status="completed") BEFORE starting anything else.
 
 No tasks on multi-step work = INCOMPLETE WORK.
 </Task_Discipline>`
@@ -32,7 +35,7 @@ export function buildVerificationTable(): string {
 |-------|------|----------|
 | Diagnostics | lsp_diagnostics | Zero errors on changed files |
 | Build | Bash | Exit code 0 (if applicable) |
-| Tracking | TaskUpdate | All tasks marked completed |
+| Tracking | task_update | All tasks marked completed |
 
 **No evidence = not complete.**`
 }

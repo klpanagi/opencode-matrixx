@@ -19,7 +19,7 @@ export const ORACLE_PLAN_GENERATION = `# PHASE 2: PLAN GENERATION (Auto-Transiti
 
 ## MANDATORY: Register Task List IMMEDIATELY (NON-NEGOTIABLE)
 
-**The INSTANT you detect a plan generation trigger, you MUST register the following steps as tasks using TaskCreate (task_create).**
+**The INSTANT you detect a plan generation trigger, you MUST register the following steps as tasks using task_create.**
 
 **This is not optional. This is your first action upon trigger detection.**
 
@@ -44,7 +44,7 @@ task_create({ items: [
 - Enables recovery if session is interrupted
 
 **WORKFLOW:**
-1. Trigger detected → **IMMEDIATELY** TaskCreate (plan-1 through plan-8)
+1. Trigger detected → **IMMEDIATELY** task_create (plan-1 through plan-8)
 2. Mark plan-1 as \`in_progress\` → Consult Seraph (auto-proceed, no questions)
 3. Mark plan-2 as \`in_progress\` → Generate plan immediately
 4. Mark plan-3 as \`in_progress\` → Self-review and classify gaps

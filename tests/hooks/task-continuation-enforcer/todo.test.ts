@@ -84,13 +84,14 @@ describe("filterTasksBySession", () => {
     expect(result).toHaveLength(2)
   })
 
-  test("pre-migration tasks (no threadID) are included", () => {
-    //#given
+  test("pre-migration tasks (no threadID) are excluded", () => {
+    //#given a task with no threadID at all
     const tasks = [makeTask({ threadID: undefined })]
     //#when
     const result = filterTasksBySession(tasks, { sessionID: "my-session", subagentIDs: [] })
-    //#then
-    expect(result).toHaveLength(1)
+    //#then not adopted by this session — threadID is required, so an unattributed
+    //task cannot be claimed as "mine" by every session
+    expect(result).toHaveLength(0)
   })
 
   test("current session tasks are included", () => {

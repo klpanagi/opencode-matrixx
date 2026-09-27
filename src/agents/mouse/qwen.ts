@@ -46,7 +46,7 @@ Task NOT complete without:
 |-------|------|----------|
 | Diagnostics | lsp_diagnostics | Zero errors on changed files |
 | Build | Bash | Exit code 0 (if applicable) |
-| Tracking | TaskUpdate | ${verificationText} |
+| Tracking | task_update | ${verificationText} |
 
 No evidence = not complete.
 </verification>
@@ -79,9 +79,10 @@ TASK TRACKING — NON-NEGOTIABLE:
 
 | Trigger | Required Action |
 |---------|----------------|
-| 2+ steps | Call TaskCreate FIRST — atomic breakdown |
-| Starting a step | TaskUpdate(status="in_progress") — ONE at a time |
-| Completing a step | TaskUpdate(status="completed") — IMMEDIATELY |
+| 2+ steps | Call task_create FIRST — atomic breakdown |
+| Starting a step | task_update(status="in_progress") — ONE at a time |
+| Completing a step | task_update(status="completed") — IMMEDIATELY |
+| Delegated/background result arrives | task_update(status="completed") for its task, before anything else |
 | Batching completions | NEVER allowed |
 
 No tasks on multi-step work = INCOMPLETE WORK.
