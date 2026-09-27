@@ -55,6 +55,7 @@ export { createStartWorkHook } from "./start-work";
 export { createStopContinuationGuardHook, type StopContinuationGuard } from "./stop-continuation-guard";
 export { createTaskContinuationEnforcer, type TaskContinuationEnforcer } from "./task-continuation-enforcer";
 export { createTaskEditGuardHook } from "./task-edit-guard";
+export { createTaskNotepadWriterHook } from "./task-notepad-writer";
 export { createTaskResumeInfoHook } from "./task-resume-info";
 export { createThinkModeHook } from "./think-mode";
 export { createThinkingBlockValidatorHook } from "./thinking-block-validator";

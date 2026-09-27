@@ -30,6 +30,7 @@
 | `configurations.md` | Operators | Full `matrixx.jsonc` reference (generated from `src/config/schema/`) |
 | `hooks.md` | Users + engineers | Every hook: what it does, why it exists, when it fires, how to disable it |
 | `task-system.md` | Users (Part A) + engineers (Part B) | Using tasks; the file-backed `.matrixx/tasks/` substrate spec |
+| `task-notepad-writer.md` | Users + engineers running multi-step work | The automatic markdown notepad per task: two-bucket layout, worked examples, how to disable |
 | `context-management.md` | Operators + engineers | The 5 context layers (RTK, context-mode, DCP, headroom, hooks); install/verify/config |
 | `cli-guide.md` | Operators | The `opencode-matrixx` binary: install, doctor, setup, version |
 | `config-studio.md` | Operators | Pointer to the Config Studio app docs (`apps/matrixx-config/README.md`) |

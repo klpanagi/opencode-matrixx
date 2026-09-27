@@ -12,7 +12,7 @@ config/
 │   ├── agent-names.ts         # BuiltinAgentNameSchema (14 agents), BuiltinSkillNameSchema (37 skills)
 │   ├── agent-overrides.ts     # AgentOverrideConfigSchema (model, variant, temp, thinking...)
 │   ├── categories.ts          # 8 categories: construct, source, deep-jack, matrix-bend, bullet-time, ...
-│   ├── hooks.ts               # HookNameSchema (62 enum + 5 retained literals = 67 accepted; 75 hook entries in 59 dirs + 16 loose .ts on disk)
+│   ├── hooks.ts               # HookNameSchema (63 enum + 5 retained literals = 68 accepted; 76 hook entries in 60 dirs + 16 loose .ts on disk)
 │   ├── commands.ts            # BuiltinCommandNameSchema
 │   ├── experimental.ts        # ExperimentalConfigSchema
 │   ├── background-task.ts     # BackgroundTaskConfigSchema

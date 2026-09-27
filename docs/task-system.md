@@ -569,6 +569,34 @@ Three blocks:
 
 `TaskToastManager` tracks **delegated background agent tasks** (the `delegate_task` background path), not file-backed `T-*.json` rows. Entries are `TrackedTask` records: `{ id, description, agent, status, startedAt, isBackground, category?, skills?, modelInfo? }` with status in `running | queued | completed | error` (`types.ts`). Lifecycle: `addTask()` on launch (shows a toast), `updateTask()` on status change, `removeTask()` when a task completes or errors, `getRunningTasks()` / `getQueuedTasks()` for TUI surfacing. Toast display options are `TaskToastOptions` (`title`, `message`, `variant`, `duration?`).
 
+### 8.5 `task-notepad-writer`: Automatic Notepads Per Task
+
+**Files:** `src/hooks/task-notepad-writer/` (`hook.ts`, `notepad-path.ts`, `constants.ts`).
+
+Alongside the task store sits a second, write-mostly artefact: a plain-markdown notepad per task under
+`.matrixx/notepads/`. `task-notepad-writer` is a `tool.execute.after` hook that maintains them. It never blocks
+and never rewrites tool output; every failure is a log line.
+
+It fires in two places. After a non-deduplicated `task_create` it writes a scaffolded file, and after a
+`task_update` whose `status` is `completed` it appends a `## Completion` stamp. Any other status, or any other
+tool, writes nothing.
+
+The scaffold routes to one of two buckets. A task goes to `.matrixx/notepads/<planName>/` only when
+`metadata.planName` is set **and** `.matrixx/plans/<planName>.md` exists; everything else falls back to
+`.matrixx/notepads/adhoc/`. There is no recency scan, so a dangling `planName` never gets attached to a
+guessed plan. Files are flat and named `<n>-<slug>.md`, which is a hard requirement rather than a style choice:
+the architect reads notepads with the non-recursive glob `.matrixx/notepads/{plan-name}/*.md`, so a
+subdirectory would be invisible to it.
+
+Idempotency comes from markers in the file, not from cached state: the scaffold is keyed on its
+`**Task ID**` line and the stamp on the existing `**Status**: completed` heading, so retries and restarts
+neither duplicate a file nor a stamp.
+
+This hook replaces `task-notepad`, which was removed in commit `f8de08cfb` because `session.todo()` is
+permanently unavailable. The old name survives only as a retained legacy schema literal and must not be
+reused. See [task-notepad-writer.md](./task-notepad-writer.md) for the full layout rules, the exact scaffold and
+stamp literals, and worked examples captured from the running hook.
+
 ---
 
 ## 9. Plans: `.matrixx/plans/*.md` Conventions

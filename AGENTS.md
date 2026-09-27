@@ -100,7 +100,7 @@ Matrixx is a **plugin for OpenCode**. You will frequently need to examine OpenCo
 
 ## OVERVIEW
 
-Matrixx is a multi-agent orchestration **plugin for OpenCode**. 14 built-in agents (Morpheus, Sati, Sentinel, Cipher, etc.) via 75 hook entries (59 dirs) and 24 custom tool dirs (conditional registration via `src/plugin/tool-gating.ts`). ~960 TS source files, 246 test files.
+Matrixx is a multi-agent orchestration **plugin for OpenCode**. 14 built-in agents (Morpheus, Sati, Sentinel, Cipher, etc.) via 76 hook entries (60 dirs) and 24 custom tool dirs (conditional registration via `src/plugin/tool-gating.ts`). ~960 TS source files, 246 test files.
 
 | Aspect | Value |
 |---|---|
@@ -121,7 +121,7 @@ matrixx/
 │   ├── plugin-config.ts            # Config load + Zod validation
 │   ├── plugin-state.ts             # Model context-limit cache
 │   ├── agents/   → 14 agents + AGENTS.md
-│   ├── hooks/    → 75 entries (59 dirs + 16 loose .ts; HookNameSchema 62 enum + 5 literals = 67 accepted) in 3 tiers
+│   ├── hooks/    → 76 entries (60 dirs + 16 loose .ts; HookNameSchema 63 enum + 5 literals = 68 accepted) in 3 tiers
 │   ├── tools/    → 24 dirs (LSP, AST-grep, delegate-task, bdd-*, handoff, etc.; conditional via tool-gating.ts)
 │   ├── features/ → 21 dirs (background-agent, builtin-skills/commands, task-storage, handoff, knowledge-hub, ...)
 │   ├── shared/   → 80+ utilities (logger → /tmp/matrixx.log)

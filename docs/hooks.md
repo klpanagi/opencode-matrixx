@@ -131,8 +131,8 @@ toolOutputTruncator (always first)
         -> rulesInjector -> emptyTaskResponseDetector -> agentUsageReminder
         -> categorySkillReminder -> interactiveBashSession -> editErrorRecovery
         -> delegateTaskRetry -> architectHook -> taskResumeInfo
-        -> hashlineReadEnhancer -> jsonErrorRecovery -> readImageResizer
-        -> taskNotepad
+        -> taskNotepadWriter -> hashlineReadEnhancer
+        -> jsonErrorRecovery -> readImageResizer
     ])
 ```
 
@@ -204,6 +204,7 @@ effective condition (many hooks are idle unless their condition holds).
 | `hashline-read-enhancer` | Adds hash-anchor enrichment to reads. Exists to give edits stable `LINE#ID` anchors. | After reads, when `experimental.hashline_edit` is on. |
 | `json-error-recovery` | Injects action guidance on JSON parse errors. Exists to fix malformed tool arguments. | On JSON errors; otherwise idle. |
 | `read-image-resizer` | Downscales images past token limits. Exists to keep image reads inside context budgets. | After image reads over the limit. |
+| `task-notepad-writer` | Writes a scaffolded markdown notepad per task, into `.matrixx/notepads/<planName>/` or `adhoc/`, and appends a `## Completion` stamp on completion. Exists so findings survive compaction and restarts. Keyed on a `**Task ID**` marker in the file, so it is idempotent with no in-memory state. | After a non-deduplicated `task_create`, and after a `task_update` whose `status` is `completed`; never blocks or rewrites output. |
 
 Evidence: `src/hooks/tool-output-truncator.ts`, `src/hooks/preemptive-compaction.ts:59-112`, `src/hooks/quality-gate/hook.ts`, `src/hooks/comment-checker/hook.ts`, `src/hooks/context-window-monitor.ts:87-125`, `src/plugin/hooks/create-tool-guard-hooks.ts`, `src/hooks/rules-injector/hook.ts:63-85`, `src/hooks/empty-task-response-detector.ts`, `src/hooks/agent-usage-reminder/hook.ts`, `src/hooks/category-skill-reminder/hook.ts:119-140`, `src/hooks/interactive-bash-session/hook.ts:129`, `src/hooks/edit-error-recovery/hook.ts`, `src/hooks/delegate-task-retry/hook.ts`, `src/hooks/architect/architect-hook.ts:23`, `src/hooks/task-resume-info/hook.ts`, `src/hooks/hashline-read-enhancer/hook.ts:167`, `src/hooks/json-error-recovery/hook.ts`, `src/hooks/read-image-resizer/hook.ts:124`.
 
