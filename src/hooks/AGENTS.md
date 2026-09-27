@@ -37,7 +37,6 @@ hooks/
 ├── mouse-notepad/      # Junior notepad directive (76 lines)
 ├── start-work/                   # Morpheus work session starter (648 lines)
 ├── stop-continuation-guard/      # Guards stop continuation (214 lines)
-├── subagent-question-blocker/    # Blocks subagent questions (112 lines)
 ├── task-resume-info/             # Resume info for cancelled tasks (39 lines)
 ├── think-mode/                   # Dynamic thinking budget (1365 lines)
 ├── thinking-block-validator/     # Validates thinking blocks (169 lines)
@@ -67,7 +66,6 @@ hooks/
 | keyword-detector | chat.message | Keyword injection fails |
 | non-interactive-env | tool.execute.before | Interactive command in non-TTY |
 | oracle-md-only | tool.execute.before | Write outside .morpheus/*.md |
-| subagent-question-blocker | tool.execute.before | Question tool in subagent |
 | task-edit-guard | tool.execute.before | Raw bash mutation of `.matrixx/plans/*.md` or `.matrixx/tasks/T-*.json` — use `plan_*` or `task_*` tools; generic Write/Edit to plans BLOCKED with plan_* hint |
 | write-existing-file-guard | tool.execute.before | Write to existing file |
 
