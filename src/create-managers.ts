@@ -31,6 +31,7 @@ export function createManagers(args: {
     {
       tmuxConfig,
       handoffCompression: pluginConfig.dcp?.handoffCompression,
+      pluginConfig,
 		onSubagentSessionCreated: async (event: SubagentSessionCreatedEvent) => {
 			log("[index] onSubagentSessionCreated callback received", {
 				sessionID: event.sessionID,

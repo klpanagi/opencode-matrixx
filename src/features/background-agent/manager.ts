@@ -1,7 +1,7 @@
 
 
 import type { PluginInput } from "@opencode-ai/plugin"
-import type { BackgroundTaskConfig, DcpHandoffCompression, TmuxConfig } from "../../config/schema"
+import type { BackgroundTaskConfig, DcpHandoffCompression, MatrixxConfig, TmuxConfig } from "../../config/schema"
 import { getAgentToolRestrictions, log, normalizeSDKResponse, promptWithModelSuggestionRetry } from "../../shared"
 import { hasPendingQuestionMessage } from "../../shared/awaiting-user"
 import { delay } from "../../shared/delay"
@@ -141,6 +141,8 @@ export class BackgroundManager {
   private concurrencyManager: ConcurrencyManager
   private shutdownTriggered = false
   private config?: BackgroundTaskConfig
+  /** Full plugin config — the only source of the `tasks.*` store location. */
+  private pluginConfig?: Partial<MatrixxConfig>
   private tmuxEnabled: boolean
   private onSubagentSessionCreated?: OnSubagentSessionCreated
   private onShutdown?: () => void
@@ -173,6 +175,8 @@ export class BackgroundManager {
       onShutdown?: () => void
       enableParentSessionNotifications?: boolean
       handoffCompression?: DcpHandoffCompression
+      /** Full plugin config — supplies `tasks.*` (store location, stale window) to the gates. */
+      pluginConfig?: Partial<MatrixxConfig>
     }
   ) {
     this.tasks = new Map()
@@ -182,6 +186,7 @@ export class BackgroundManager {
     this.directory = ctx.directory
     this.concurrencyManager = new ConcurrencyManager(config)
     this.config = config
+    this.pluginConfig = options?.pluginConfig
     this.tmuxEnabled = options?.tmuxConfig?.enabled ?? false
     this.onSubagentSessionCreated = options?.onSubagentSessionCreated
     this.onShutdown = options?.onShutdown
@@ -302,10 +307,10 @@ export class BackgroundManager {
     let outcome: ReconcileOutcome
     try {
       outcome = await reconcileHandle(this.client, handle, {
-        // `this.config` is BackgroundTaskConfig, which carries no `tasks.*` keys, and the
-        // probe only ever reads `tasks.*` for the store location and the stale threshold.
+        // The plugin config arrives via `options.pluginConfig`; `resolveTasksConfig`
+        // reads only the `tasks.*` keys from it (store location, stale threshold).
         hasPendingTaskWork: async (sessionID) =>
-          hasIncompleteTasksForSession({ directory: this.directory, sessionID }),
+          hasIncompleteTasksForSession({ config: this.pluginConfig, directory: this.directory, sessionID }),
       })
     } catch (error) {
       log("[background-agent] Handle reconciliation failed:", { taskId: handle.taskId, error })
@@ -1306,10 +1311,9 @@ export class BackgroundManager {
         // expansion. `task_create` stamps `threadID: context.sessionID`, so the
         // worker's own tasks carry the child id. Widening this to "any open project
         // task" would let an unrelated task hold the worker open forever (livelock).
-        // `this.config` is BackgroundTaskConfig (concurrency/circuit-breaker/
-        // wallclock only) and carries no `tasks.*` keys; the predicate resolves the
-        // store location and stale threshold through its own defaults.
+        // `tasks.*` (store location, stale threshold) arrives via `options.pluginConfig`.
         const hasIncompleteTaskWork = hasIncompleteTasksForSession({
+          config: this.pluginConfig,
           directory: this.directory,
           sessionID: task.sessionID ?? sessionID,
         })
@@ -2214,6 +2218,7 @@ export class BackgroundManager {
           // Same predicate and same child-session scope as the session.idle path
           // above, so the two call sites cannot diverge.
           const hasIncompleteTaskWork = hasIncompleteTasksForSession({
+            config: this.pluginConfig,
             directory: this.directory,
             sessionID: task.sessionID ?? sessionID,
           })
