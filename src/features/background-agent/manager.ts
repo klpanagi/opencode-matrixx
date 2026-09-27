@@ -11,6 +11,7 @@ import { setSessionTemperature, setSessionTools } from "../../shared/session-sta
 import { isInsideTmux } from "../../shared/tmux"
 import { formatWallclockTimeout } from "../../shared/wallclock-outcome"
 import { registerSubagentSession, subagentSessions, unregisterSubagentSession } from "../session-state"
+import { hasIncompleteTasksForSession } from "../task-session-scope"
 import { getTaskToastManager } from "../task-toast-manager"
 import { classifyAdmission } from "./admission"
 import { ConcurrencyManager } from "./concurrency"
@@ -327,7 +328,12 @@ export class BackgroundManager {
   private async reconcileRestoredTask(task: BackgroundTask, handle: BgHandle): Promise<void> {
     let outcome: ReconcileOutcome
     try {
-      outcome = await reconcileHandle(this.client, handle)
+      outcome = await reconcileHandle(this.client, handle, {
+        // `this.config` is BackgroundTaskConfig, which carries no `tasks.*` keys, and the
+        // probe only ever reads `tasks.*` for the store location and the stale threshold.
+        hasPendingTaskWork: async (sessionID) =>
+          hasIncompleteTasksForSession({ directory: this.directory, sessionID }),
+      })
     } catch (error) {
       log("[background-agent] Handle reconciliation failed:", { taskId: handle.taskId, error })
       outcome = { status: "statusUncertain", terminalReason: "uncertain" }

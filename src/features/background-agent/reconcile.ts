@@ -1,4 +1,4 @@
-import { normalizeSDKResponse } from "../../shared"
+import { log, normalizeSDKResponse } from "../../shared"
 import { hasPendingQuestionMessage } from "../../shared/awaiting-user"
 import { RECONCILE_CONFIRMATION_GRACE_MS } from "./constants"
 import type { BgHandle } from "./handle-index"
@@ -25,10 +25,15 @@ export interface ReconcileProbeClient {
 export interface ReconcileDeps {
   validateOutput?: (sessionID: string) => Promise<boolean>
   sleep?: (ms: number) => Promise<void>
+  /**
+   * Does this session still have pending work in the file-backed task store?
+   * Strictly session-scoped: an unrelated session's open task must not keep a
+   * restored handle running. Optional — absent means "no pending work".
+   */
+  hasPendingTaskWork?: (sessionID: string) => Promise<boolean>
 }
 
 type StatusMap = Record<string, { type?: string }>
-type TodoEntry = { status?: string }
 
 function uncertain(): ReconcileOutcome {
   return { status: "statusUncertain", terminalReason: "uncertain" }
@@ -49,13 +54,23 @@ async function statusesOrThrow(client: ReconcileProbeClient): Promise<StatusMap>
   return normalizeSDKResponse(response, {} as StatusMap)
 }
 
-async function hasIncompleteTodos(client: ReconcileProbeClient, sessionID: string): Promise<boolean> {
+/**
+ * Consult the injected pending-work probe. Absent probe, a rejected promise, or a
+ * synchronous throw all resolve to `false` — the same fail-open direction the old
+ * host todo read used, so an unreadable task store can never block completion.
+ */
+async function probeHasPendingTaskWork(
+  deps: ReconcileDeps | undefined,
+  sessionID: string,
+): Promise<boolean> {
+  if (!deps?.hasPendingTaskWork) return false
   try {
-    const response = await client.session.todo({ path: { id: sessionID } })
-    const todos = normalizeSDKResponse(response, [] as TodoEntry[], { preferResponseOnMissingData: true })
-    if (!todos || todos.length === 0) return false
-    return todos.some((t) => t.status !== "completed" && t.status !== "cancelled")
-  } catch {
+    return (await deps.hasPendingTaskWork(sessionID)) === true
+  } catch (error) {
+    log("[background-agent] Pending-work probe failed, treating as no pending work", {
+      sessionID,
+      error: String(error),
+    })
     return false
   }
 }
@@ -65,7 +80,8 @@ async function hasIncompleteTodos(client: ReconcileProbeClient, sessionID: strin
  *
  * Deterministic order: unprobeable → uncertain; non-idle → running; recorded
  * error → error; awaiting-user → running; no output → stopped; output with
- * incomplete todos → running; otherwise completed. Never throws.
+ * pending task-store work in this session → running; otherwise completed.
+ * Never throws.
  */
 export async function reconcileHandle(
   client: ReconcileProbeClient,
@@ -91,7 +107,7 @@ export async function reconcileHandle(
       return await confirmStopped(client, sessionID, deps)
     }
 
-    if (await hasIncompleteTodos(client, sessionID)) return { status: "running" }
+    if (await probeHasPendingTaskWork(deps, sessionID)) return { status: "running" }
     return { status: "completed" }
   } catch {
     return uncertain()

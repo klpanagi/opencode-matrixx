@@ -4751,3 +4751,148 @@ describe("waitForAllDescendants", () => {
     manager.shutdown()
   })
 })
+
+// ----- T6 / Site 3: injected pending-work probe replaces the legacy todo read -----
+//
+// `reconcileHandle` no longer asks the host for its own todo list. The final
+// classification step consults an injected `hasPendingTaskWork` probe which the
+// manager wires to the file-backed task store, scoped to the handle's own session.
+
+describe("reconcileHandle - injected pending-work probe (T6)", () => {
+  let todoCalls = 0
+
+  beforeEach(() => {
+    todoCalls = 0
+  })
+
+  function makeIdleFinishedClient() {
+    return {
+      session: {
+        status: async () => ({ data: { ses_child: { type: "idle" } } }),
+        messages: async () => ({ data: [ASSISTANT_TEXT_MESSAGE] }),
+        todo: async () => {
+          todoCalls++
+          return { data: [{ content: "stale legacy todo", status: "pending" }] }
+        },
+      },
+    }
+  }
+
+  function makeProbeHandle() {
+    return {
+      taskId: "bg_probe",
+      parentSessionID: "ses_parent",
+      parentMessageID: "msg_parent",
+      description: "probe",
+      agent: "explore",
+      status: "running" as const,
+      sessionID: "ses_child",
+      startedAt: Date.now(),
+    }
+  }
+
+  test("a probe reporting pending work keeps the handle running", async () => {
+    //#given a finished idle session and a probe that reports pending work
+    const client = makeIdleFinishedClient()
+
+    //#when reconcile consults the injected probe
+    const outcome = await reconcileHandle(client, makeProbeHandle(), {
+      hasPendingTaskWork: async () => true,
+    })
+
+    //#then the handle stays running
+    expect(outcome.status).toBe("running")
+    //#and the legacy host todo read is never consulted
+    expect(todoCalls).toBe(0)
+  })
+
+  test("a probe reporting no pending work completes the handle", async () => {
+    //#given a finished idle session and a probe that reports no pending work
+    const client = makeIdleFinishedClient()
+
+    //#when reconcile consults the injected probe
+    const outcome = await reconcileHandle(client, makeProbeHandle(), {
+      hasPendingTaskWork: async () => false,
+    })
+
+    //#then the handle is completed
+    expect(outcome.status).toBe("completed")
+  })
+
+  test("an absent probe behaves exactly like no pending work and never throws", async () => {
+    //#given a finished idle session and NO probe at all
+    const client = makeIdleFinishedClient()
+
+    //#when reconcile runs with no deps
+    const outcome = await reconcileHandle(client, makeProbeHandle())
+
+    //#then the handle completes, matching today's behaviour when the old SDK probe threw
+    expect(outcome.status).toBe("completed")
+    expect(todoCalls).toBe(0)
+  })
+
+  test("a rejecting probe never throws out of reconcileHandle", async () => {
+    //#given a probe that rejects
+    const client = makeIdleFinishedClient()
+
+    //#when reconcile consults it
+    const outcome = await reconcileHandle(client, makeProbeHandle(), {
+      hasPendingTaskWork: async () => {
+        throw new Error("probe boom")
+      },
+    })
+
+    //#then the call resolves with an outcome instead of propagating the rejection
+    expect(outcome.status).toBeDefined()
+    expect(["completed", "statusUncertain"]).toContain(outcome.status)
+  })
+
+  test("LIVELOCK FENCE: an unrelated session's pending task does not keep a restored handle running", async () => {
+    //#given a project whose task store holds a pending task for a DIFFERENT session
+    const dir = mkdtempSync(join(tmpdir(), "matrixx-bg-probe-"))
+    const manager = new BackgroundManager({
+      client: makeIdleFinishedClient(),
+      directory: dir,
+    } as unknown as PluginInput)
+    try {
+      mkdirSync(join(dir, ".matrixx", "tasks"), { recursive: true })
+      writeFileSync(
+        join(dir, ".matrixx", "tasks", "T-33333333-3333-3333-3333-333333333333.json"),
+        JSON.stringify({
+          id: "T-33333333-3333-3333-3333-333333333333",
+          subject: "unrelated work",
+          description: "belongs to another session",
+          status: "pending",
+          blocks: [],
+          blockedBy: [],
+          threadID: "ses_someone_else",
+        })
+      )
+      const task: BackgroundTask = {
+        id: `bg_${randomUUID().slice(0, 8)}`,
+        parentSessionID: "ses_parent",
+        parentMessageID: "msg_parent",
+        description: "reconcile task",
+        prompt: "",
+        agent: "explore",
+        status: "running",
+        sessionID: "ses_child",
+        startedAt: new Date(),
+      }
+      writeHandle(dir, task)
+
+      //#when a fresh manager restores the handle
+      await manager.restoreHandles()
+
+      //#then the handle completes — the open task belongs to another session
+      expect(manager.getTask(task.id)?.status).toBe("completed")
+    } finally {
+      try {
+        manager.shutdown()
+      } catch {
+        // best-effort cleanup between tests
+      }
+      rmSync(dir, { recursive: true, force: true })
+    }
+  })
+})
