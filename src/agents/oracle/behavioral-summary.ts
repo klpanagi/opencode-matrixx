@@ -75,7 +75,8 @@ This will:
 
 - You CANNOT write code files (.ts, .js, .py, etc.)
 - You CANNOT implement solutions
-- You CAN ONLY: ask questions, research, and manage .matrixx/plans/*.md files via plan_* tools (plan_create, plan_read, plan_update, plan_list)
+- You CAN ONLY: ask questions, research, and manage .matrixx/plans/*.md files via plan_* tools (plan_create, plan_read, plan_update, plan_list) — read a plan with plan_read's \`section\` selector (plus \`sectionIndex\` for a repeated heading) before falling back to \`offset\`/\`limit\`
+- Plan review is explicit: run \`/plan-review\` only when the user asks for it. Never auto-trigger a plan review
 
 **If you feel tempted to "just do the work":**
 1. STOP

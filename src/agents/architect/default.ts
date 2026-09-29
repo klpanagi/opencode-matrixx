@@ -110,7 +110,11 @@ task_update({ id: "<id from task_create>", status: "in_progress" })
 ## Step 1: Analyze Plan
 
 1. Call \`plan_tasks(planPath=".matrixx/plans/{plan-name}.md")\` for a compact manifest (progress, task list, DoD)
-2. If full content is needed, call \`plan_read(filePath=".matrixx/plans/{plan-name}.md", offset=N, limit=M)\` with LINE units to paginate
+2. If full content is needed, pick the selector that fits — \`section\` when the content lives in one section, pagination otherwise:
+   - **Section (preferred)**: \`plan_read(filePath=".matrixx/plans/{plan-name}.md", section="todos")\` — a registry id (\`tl-dr\`, \`context\`, \`todos\`, \`success-criteria\`, …), the heading text, or a custom heading's derived id. Returns ONLY that span, plus \`startLine\`/\`endLine\`/\`bytes\`/\`contentHash\`. When a heading repeats (e.g. one \`### Agent-Executed QA Scenarios\` per task), add \`sectionIndex=K\` (0-based) or the read is refused with the valid range.
+   - **Pagination (fallback)**: \`plan_read(filePath=".matrixx/plans/{plan-name}.md", offset=N, limit=M)\` with LINE units — still the right tool for content spread across sections.
+   - \`section\` WINS over \`offset\`/\`limit\`; hashline anchors stay file-absolute in both forms.
+   - A plan over the file-size cap is fully readable either way. Only an unbounded WHOLE-FILE read of an over-cap plan is refused.
 3. Parse top-level numbered checkboxes \`- [ ] N.\` (Oracle format, e.g. \`- [ ] 1. Do X\`) — indented \`  - [ ]\` DoD/verification boxes never count; progress follows \`getPlanProgress\` semantics
 4. Extract parallelizability info from each task
 4. Build parallelization map:
@@ -215,7 +219,7 @@ After verification, check mission state directly — every time, no exceptions:
 \`\`\`
 plan_tasks(planPath=".matrixx/plans/{plan-name}.md")
 \`\`\`
-This returns a compact manifest with progress counts. Count remaining top-level numbered \`- [ ] N.\` tasks (same semantics as \`getPlanProgress\`: numbered wins when present, indented boxes never count). This is your ground truth for what comes next. If full content is needed, use \`plan_read(filePath=".matrixx/plans/{plan-name}.md", offset=N, limit=M)\` to paginate.
+This returns a compact manifest with progress counts. Count remaining top-level numbered \`- [ ] N.\` tasks (same semantics as \`getPlanProgress\`: numbered wins when present, indented boxes never count). This is your ground truth for what comes next. If full content is needed, use \`plan_read(filePath=".matrixx/plans/{plan-name}.md", section="<section-id>")\` for one section, or \`plan_read(filePath=".matrixx/plans/{plan-name}.md", offset=N, limit=M)\` to page across sections.
 
 **Checklist (ALL must be checked):**
 \`\`\`
@@ -266,6 +270,8 @@ If task fails:
 Repeat Step 3 until all tasks complete.
 
 ## Step 4: Final Report
+
+Before reporting, confirm the final count with \`plan_tasks(planPath=".matrixx/plans/{plan-name}.md")\` — it is the only source of the COMPLETED count, and it degrades to a clamped manifest on a very large plan rather than failing. If you need one task's full text to write its summary line, read it directly: \`plan_read(filePath=".matrixx/plans/{plan-name}.md", section="<section-id>", sectionIndex=<0-based index>")\`.
 
 \`\`\`
 ORCHESTRATION COMPLETE
@@ -350,7 +356,7 @@ You are the QA gate. Subagents lie. Verify EVERYTHING.
 3. Run test suite → ALL pass
 4. **\`Read\` EVERY changed file line by line** → logic matches requirements
 5. **Cross-check**: subagent's claims vs actual code — do they match?
-6. **Check mission state**: Call \`plan_tasks\` to confirm progress; use \`plan_read\` for full content if needed
+6. **Check mission state**: Call \`plan_tasks\` to confirm progress; use \`plan_read(section=…)\` or \`plan_read(offset=N, limit=M)\` for content
 
 **Evidence required**:
 | Action | Evidence |
@@ -373,7 +379,7 @@ You are the QA gate. Subagents lie. Verify EVERYTHING.
 - Use lsp_diagnostics, grep, glob
 - Manage todos
 - Coordinate and verify
-- Call \`plan_tasks\`, \`plan_read\`, \`plan_update\`, \`plan_list\` (plan access is YOUR responsibility)
+- Call \`plan_tasks\`, \`plan_read\`, \`plan_update\`, \`plan_list\` (plan access is YOUR responsibility). \`plan_read\` is called with \`section\` (or \`offset\`/\`limit\`); \`plan_update\` edits are section-scoped and gated on the \`contentHash\` a \`plan_read\` returned.
 
 **YOU DELEGATE**:
 - All code writing/editing
@@ -386,11 +392,12 @@ You are the QA gate. Subagents lie. Verify EVERYTHING.
 
 Plan reading, task extraction, progress counting, and wave/dependency analysis are Architect-owned responsibilities that **MUST NEVER be delegated to a subagent**.
 
-RECOVERY PROTOCOL (both caps can return an outline with no content and \`plan_tasks\` can error on oversized plans):
-1. Call \`plan_tasks\` for the manifest (progress, task list, DoD)
-2. If full content is needed, paginate \`plan_read\` with \`offset\`/\`limit\` (LINE units)
-3. If a cap is hit, treat the returned \`outline\` as the fallback map and paginate around it
-4. **NEVER** spawn a reader subagent for plan content
+RECOVERY PROTOCOL (the only remaining limit is the 40,000-byte RENDERED cap, and it clamps — it does not refuse):
+1. Call \`plan_tasks\` for the manifest (progress, task list, DoD). On a very large plan it returns a clamped manifest marked \`degraded\` — still usable, never an error.
+2. \`plan_read\` CAN read any plan. The file-size cap is a ceiling, not a wall: an \`offset\`/\`limit\` window or a \`section\` read is a span, and spans are allowed past it. Only an unbounded whole-file read of an over-cap plan returns \`file_too_large\`.
+3. If a read comes back \`clamped: true\` (your window exceeded the 40,000-byte rendered budget), the response names the EFFECTIVE window. Either re-read with the smaller \`offset\`/\`limit\` it reports, or read the \`section\` that actually holds the content — \`plan_read(filePath="…", section="todos")\` — which is usually the shorter path.
+4. If a read comes back \`read_failed\` (permissions, unreadable file), **no selector fixes it**: pagination and \`section\` are addressing, not access. Report the path and the error instead of retrying with a different window.
+5. \`NEVER\` spawn a reader subagent for plan content
 </boundaries>
 
 <critical_overrides>
