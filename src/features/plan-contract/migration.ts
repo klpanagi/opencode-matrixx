@@ -23,6 +23,32 @@ import { parsePlanFrontMatter } from "./front-matter"
  * Grandfathered plans never emit a front-matter warning and are exempt from any
  * future FAIL-mode front-matter requirement. The exemption clears as soon as
  * the plan gains a front-matter block.
+ *
+ * WHY THE ARCHIVED `p2.*` ENTRIES STAY (deliberate, not tidiness):
+ * `p2.1-trim-hooks`, `p2.2-generic-recovery-refactor` and `p2.3-evolution-gating`
+ * were MOVED to `.matrixx/plans/_archive/`, but they are NOT removed. Three
+ * code-grounded reasons to keep the keys:
+ *
+ * 1. The lookup is by BASENAME (`basename(filePath, ".md")` in `isGrandfathered`,
+ *    and `classifyPlanLifecycle` in `lifecycle.ts`), not by directory. Archival
+ *    relocates the file but does not change its id, so the key is still the
+ *    correct key for that plan wherever it lives.
+ * 2. The exemption is a property of the plan's HISTORY (it predates the
+ *    front-matter requirement), not of its current location. Archival is a
+ *    storage decision; it does not retroactively make a plan "new".
+ * 3. `src/tools/plan/types.ts` rejects subdirectory paths, so `_archive/` is
+ *    outside the plan-tool surface entirely — a key that resolves to an archived
+ *    file can never be reached through a tool call, and `lifecycle.ts` rule 5
+ *    states the registry deliberately does NOT special-case `_archive/`. Pruning
+ *    would therefore change NO reachable lifecycle state: it would only risk a
+ *    future un-archive (or a `reconcile.ts` archival move that a human later
+ *    reverses) silently demoting a legacy plan from `grandfathered` to
+ *    `legacy_renamed`.
+ *
+ * The list stays at its captured 23 ids. The known hazard is unchanged and
+ * documented in `lifecycle.ts`: a RENAME falls off this list silently and is
+ * surfaced as the advisory `legacy_plan_renamed_off_allowlist` rather than
+ * auto-re-adopted.
  */
 export const GRANDFATHER_ALLOWLIST: readonly string[] = Object.freeze([
   "add-commandcode-reasoning-variants",

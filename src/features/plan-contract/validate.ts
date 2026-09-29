@@ -1,42 +1,32 @@
 /**
  * Plan Contract — Validator (content-string only; no file I/O).
  *
- * "warn" (DEFAULT) reports drift as advisory warnings; `ok` is true unless
- * hard `errors` exist. "fail" is OPT-IN ONLY and is NOT enabled by default.
+ * Always warn-only: drift is reported as advisory warnings and `ok` stays true
+ * unless a hard `error` exists. There is no fail mode — see validatePlanContract.
  * Task-line regexes come from mission-state (never re-declared).
+ *
+ * PARSING LIVES IN `./parse`. This file is the ADVISORY POLICY over the facts
+ * the parser produces; it is the only place allowed to decide `ok` is false.
  */
-import {
-  MAX_PLAN_FILE_BYTES,
-  NUMBERED_CHECKED_RE,
-  NUMBERED_UNCHECKED_RE,
-  TOP_CHECKED_RE,
-  TOP_UNCHECKED_RE,
-} from "../../features/mission-state/constants"
+import { MAX_PLAN_FILE_BYTES, measurePlanBytes } from "../../features/mission-state/constants"
 import { countPlanProgressFromContent } from "../../features/mission-state/storage"
-import { computeLineHash } from "../../tools/hashline-edit/hash-computation"
 import { findAppendixStart } from "./appendix"
 import { CANONICAL_SECTIONS, REQUIRED_TASK_SUBFIELDS } from "./constants"
-import type { PlanContract } from "./schema"
+import {
+  collectHeadings,
+  type Heading,
+  isApproachingSizeCap,
+  largestSection,
+  normalizeSectionTitle,
+  parsePlanContract,
+  parsePlanTasks,
+} from "./parse"
+import { PlanContractSchema } from "./schema"
 import type { PlanContractResult, PlanContractWarning, PlanTask } from "./types"
 
-const H2_RE = /^##\s+(.+)$/
-const DOD_HEADING_RE = /^#{2,4}\s+Definition of Done\s*$/i
-const MANDATORY_SUFFIX_RE = /\s*\(MANDATORY\)\s*$/i
-const TASK_NUMBER_RE = /\d+/
-const SIZE_CAP_RATIO = 0.9
-
-/** Optional caller-supplied LINE#ID anchors keyed by 1-based line number. */
-export type HashlineAnchors = ReadonlyMap<number, string> | Readonly<Record<number, string>>
-
-interface Heading {
-  normalized: string
-  line: number
-  index: number
-}
-
-function normalizeSectionTitle(title: string): string {
-  return title.trim().replace(MANDATORY_SUFFIX_RE, "").trim()
-}
+export type { HashlineAnchors, Heading } from "./parse"
+// Re-exported so this module's public surface is unchanged by the extraction.
+export { collectHeadings, normalizeSectionTitle, parsePlanContract, parsePlanTasks } from "./parse"
 
 /** Tolerant `**<Label>**` + optional `(...)` + optional closing `**:` matcher. */
 function buildSubfieldRe(label: string): RegExp {
@@ -44,67 +34,6 @@ function buildSubfieldRe(label: string): RegExp {
   return new RegExp(`^\\s*\\*\\*\\s*${escaped}(?:\\s*\\([^)]*\\))?\\s*\\*?\\*?\\s*:?`, "i")
 }
 
-function resolveAnchor(line: number, raw: string, anchors?: HashlineAnchors): string {
-  if (anchors) {
-    const map = anchors as ReadonlyMap<number, string>
-    const supplied = typeof map.get === "function" ? map.get(line) : (anchors as Record<number, string>)[line]
-    if (supplied) return supplied
-  }
-  return `${line}#${computeLineHash(line, raw)}`
-}
-
-export function parsePlanTasks(content: string, hashlineAnchors?: HashlineAnchors): PlanTask[] {
-  const tasks: PlanTask[] = []
-  const lines = content.split("\n")
-  for (let index = 0; index < lines.length; index++) {
-    const raw = lines[index] ?? ""
-    const checked = raw.match(NUMBERED_CHECKED_RE)
-    const prefix = checked?.[0] ?? raw.match(NUMBERED_UNCHECKED_RE)?.[0]
-    if (!prefix) continue
-    const numberText = TASK_NUMBER_RE.exec(prefix)?.[0]
-    if (!numberText) continue
-    const line = index + 1
-    tasks.push({
-      n: Number.parseInt(numberText, 10),
-      title: raw.slice(prefix.length).trim(),
-      checked: checked !== null,
-      line,
-      anchor: resolveAnchor(line, raw, hashlineAnchors),
-    })
-  }
-  return tasks
-}
-function collectHeadings(lines: string[]): Heading[] {
-  const headings: Heading[] = []
-  for (let index = 0; index < lines.length; index++) {
-    const match = H2_RE.exec(lines[index] ?? "")
-    if (match) headings.push({ normalized: normalizeSectionTitle(match[1]), line: index + 1, index })
-  }
-  return headings
-}
-function parseDefinitionOfDone(lines: string[]): string[] {
-  const dod: string[] = []
-  let inside = false
-  for (const line of lines) {
-    if (DOD_HEADING_RE.test(line)) {
-      inside = true
-      continue
-    }
-    if (inside && /^#{1,4}\s/.test(line)) break
-    if (!inside) continue
-    const match = line.match(TOP_CHECKED_RE) ?? line.match(TOP_UNCHECKED_RE)
-    if (match) dod.push(line.slice(match[0].length).trim())
-  }
-  return dod
-}
-export function parsePlanContract(content: string): PlanContract {
-  const lines = content.split("\n")
-  return {
-    sections: collectHeadings(lines).map((heading) => heading.normalized),
-    tasks: parsePlanTasks(content),
-    dod: parseDefinitionOfDone(lines),
-  }
-}
 function appendMissingSubfieldWarnings(
   lines: string[],
   tasks: PlanTask[],
@@ -134,11 +63,50 @@ function appendMissingSubfieldWarnings(
   }
 }
 
-export function validatePlanContract(
-  content: string,
-  options: { mode?: "warn" | "fail" } = {},
-): PlanContractResult {
-  const mode = options.mode ?? "warn"
+/**
+ * A `PlanContractSchema` mismatch is ADVISORY. The schema describes what the
+ * parser produces; a mismatch is a diagnostic about this code, never grounds
+ * for rejecting a plan a user wrote. `ok` is computed from `errors` alone.
+ */
+function pushSchemaWarnings(content: string, warnings: PlanContractWarning[]): void {
+  const result = PlanContractSchema.safeParse(parsePlanContract(content))
+  if (result.success) return
+  for (const issue of result.error.issues) {
+    warnings.push({
+      code: "contract_schema_mismatch",
+      message: `Parsed contract violates PlanContractSchema at ${issue.path.join(".") || "<root>"}: ${issue.message}`,
+    })
+  }
+}
+
+/**
+ * The size advisory, attributed to the section to trim.
+ *
+ * A bare byte total says "too big"; the per-section breakdown says WHICH
+ * section. `largestSection` walks the same `collectNamedRegions` primitive the
+ * section index uses, so the two cannot disagree about where a section ends.
+ */
+function buildSizeCapWarning(content: string): PlanContractWarning {
+  const planBytes = measurePlanBytes(content)
+  const largest = largestSection(content)
+  const attribution = largest
+    ? ` Largest top-level section: "## ${largest.text}" (${largest.bytes} bytes).`
+    : ""
+  return {
+    code: "approaching_size_cap",
+    message: `Plan is at ${planBytes}/${MAX_PLAN_FILE_BYTES} bytes (advisory).${attribution}`,
+  }
+}
+
+/**
+ * Validate plan content against the canonical section contract.
+ *
+ * PERMANENTLY ADVISORY: section findings are warnings and never block. A
+ * hard-fail mode was removed deliberately — it would turn authoring guidance
+ * into a rejection and invite edit-retry loops over plans that were never
+ * wrong. Do not reintroduce it; `errors` is reserved for empty content.
+ */
+export function validatePlanContract(content: string): PlanContractResult {
   const warnings: PlanContractWarning[] = []
   const errors: string[] = []
   if (content.trim().length === 0) errors.push("Plan content is empty")
@@ -183,16 +151,11 @@ export function validatePlanContract(
   }
   appendMissingSubfieldWarnings(lines, tasks, headings, warnings)
 
-  if (content.length > MAX_PLAN_FILE_BYTES * SIZE_CAP_RATIO) {
-    warnings.push({
-      code: "approaching_size_cap",
-      message: `Plan is at ${content.length}/${MAX_PLAN_FILE_BYTES} bytes (advisory)`,
-    })
-  }
 
-  if (mode === "fail") {
-    const promoted = warnings.map((warning) => `${warning.code}: ${warning.message}`)
-    return { ok: errors.length === 0 && promoted.length === 0, warnings: [], errors: [...errors, ...promoted] }
+  if (isApproachingSizeCap(content)) {
+    warnings.push(buildSizeCapWarning(content))
   }
+  pushSchemaWarnings(content, warnings)
+
   return { ok: errors.length === 0, warnings, errors }
 }

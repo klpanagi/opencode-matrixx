@@ -5,16 +5,14 @@
  * Reuses the write-temp-then-rename pattern from handoff/storage.ts.
  */
 
-import {
-  existsSync,
-  mkdirSync,
-  readFileSync,
-  renameSync,
-  writeFileSync,
-} from "node:fs"
+import { mkdirSync } from "node:fs"
 import { join } from "node:path"
-import { MAX_PLAN_FILE_BYTES, META_TAG_PREFIX, META_TAG_SUFFIX, PLANS_DIR } from "./constants"
+import { atomicWrite } from "./atomic-write"
+import { META_TAG_PREFIX, META_TAG_SUFFIX, PLANS_DIR } from "./constants"
 import type { PlanMeta } from "./types"
+
+export { atomicWrite } from "./atomic-write"
+export { readPlanFile, readPlanFileSpan } from "./plan-file-read"
 
 /**
  * Ensure the .matrixx/plans directory exists under the project root.
@@ -22,36 +20,6 @@ import type { PlanMeta } from "./types"
 export function ensurePlanDir(directory: string): boolean {
   try {
     mkdirSync(join(directory, PLANS_DIR), { recursive: true })
-    return true
-  } catch {
-    return false
-  }
-}
-
-/**
- * Read a plan file's content.
- * Returns null if the file does not exist, is too large, or cannot be read.
- */
-export function readPlanFile(planPath: string): string | null {
-  try {
-    if (!existsSync(planPath)) return null
-    const content = readFileSync(planPath, "utf-8")
-    if (content.length > MAX_PLAN_FILE_BYTES) return null
-    return content
-  } catch {
-    return null
-  }
-}
-
-/**
- * Atomic write: write to a .tmp.{pid} file, then rename over the target.
- * Prevents partial/corrupt files on crash mid-write.
- */
-export function atomicWrite(filePath: string, content: string): boolean {
-  try {
-    const tmpPath = `${filePath}.tmp.${process.pid}`
-    writeFileSync(tmpPath, content, "utf-8")
-    renameSync(tmpPath, filePath)
     return true
   } catch {
     return false

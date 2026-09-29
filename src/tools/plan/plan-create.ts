@@ -2,10 +2,12 @@ import { existsSync } from "node:fs"
 import { basename } from "node:path"
 import { type ToolDefinition, tool } from "@opencode-ai/plugin/tool"
 import { countPlanProgressFromContent } from "../../features/mission-state"
+import { measurePlanBytes } from "../../features/mission-state/constants"
 import { atomicWrite, ensurePlanDir, upsertMetadataComment } from "../../features/mission-state/plan-storage"
 import { validatePlanContract } from "../../features/plan-contract"
 import type { PluginContext } from "../../plugin/types"
 import { MAX_PLAN_FILE_BYTES } from "./constants"
+import { planSizeExceededFields } from "./error-codes"
 import { resolveDirectory, validatePlanFilePath } from "./types"
 
 export function createPlanCreateTool(ctx?: PluginContext): ToolDefinition {
@@ -51,12 +53,11 @@ export function createPlanCreateTool(ctx?: PluginContext): ToolDefinition {
           todoCompleted: completed,
         }
         const contentWithMeta = upsertMetadataComment(content, meta)
-        const byteLength = Buffer.byteLength(contentWithMeta, "utf8")
+        const byteLength = measurePlanBytes(contentWithMeta)
         if (byteLength > MAX_PLAN_FILE_BYTES) {
           return JSON.stringify({
             error: "size_exceeded",
-            message: `Plan exceeds 102400 bytes — split the plan into smaller plans (${byteLength}/${MAX_PLAN_FILE_BYTES} bytes)`,
-            hint: "Reduce the plan below 102,400 bytes or split it into multiple .matrixx/plans/*.md files.",
+            ...planSizeExceededFields(byteLength),
           })
         }
         const ok = atomicWrite(resolved, contentWithMeta)
