@@ -41,7 +41,7 @@ describe("plan_create validation + size cap", () => {
     }
   })
 
-  test("rejects content over the 102400-byte cap with size_exceeded", async () => {
+  test(`rejects content over the ${MAX_PLAN_FILE_BYTES}-byte cap with size_exceeded`, async () => {
     //#given content larger than the hard cap
     const content = `# T\n\n${"x".repeat(MAX_PLAN_FILE_BYTES + 100)}`
     const createTool = createPlanCreateTool()

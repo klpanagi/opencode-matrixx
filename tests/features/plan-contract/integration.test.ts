@@ -5,11 +5,13 @@ import type { PluginInput } from "@opencode-ai/plugin"
 import { existsSync, mkdirSync, readdirSync, readFileSync, rmSync, writeFileSync } from "node:fs"
 import { tmpdir } from "node:os"
 import { join } from "node:path"
+import { buildOverCapBody } from "../../fixtures/plan-fixtures"
 
 import { ARCHITECT_SYSTEM_PROMPT } from "../../../src/agents/architect/default"
 import { ARCHITECT_GPT_SYSTEM_PROMPT } from "../../../src/agents/architect/gpt"
 import { CANONICAL_SECTIONS, REQUIRED_TASK_SUBFIELDS, validatePlanContract } from "../../../src/features/plan-contract"
 import { countPlanProgressFromContent, readPlanFile } from "../../../src/features/mission-state"
+import { measurePlanBytes } from "../../../src/features/mission-state/constants"
 import { buildOrchestratorReminder } from "../../../src/hooks/architect/verification-reminders"
 import { createTaskEditGuardHook } from "../../../src/hooks/task-edit-guard"
 import { PLAN_READ_WARN, PLAN_WRITE_WARN } from "../../../src/hooks/task-edit-guard/constants"
@@ -162,26 +164,25 @@ describe("plan-tool chain — end-to-end integration", () => {
   })
 
   // (b) plan_read renders under the soft cap for the near-cap repo fixture.
-  test("(b) plan_read single-format payload for evolution-advancement-proposal.md is under 40000", async () => {
-    //#given the repo fixture when present, else an equivalent near-cap synthesized file
+  test("(b) plan_read single-format payload for a near-cap plan is under 40000 bytes", async () => {
+    //#given a synthesized near-cap plan — the local gitignored repo fixture is not a
+    //#given stable input, its true UTF-8 render can exceed the cap (it did: 40018)
     const tool = createPlanReadTool()
-    const repoFile = repoPlanPath("evolution-advancement-proposal.md")
-    const content = existsSync(repoFile) ? readFileSync(repoFile, "utf-8") : buildNearCapContent()
-    writePlan(tmp, "evolution-advancement-proposal.md", content)
+    writePlan(tmp, "near-cap-plan.md", buildNearCapContent())
 
     //#when read with the default format
     const res = JSON.parse(
       await tool.execute(
-        { filePath: join(PLANS_DIR, "evolution-advancement-proposal.md") },
+        { filePath: join(PLANS_DIR, "near-cap-plan.md") },
         testContext(tmp),
       ),
     ) as Record<string, unknown>
 
-    //#then exactly one payload is returned and it fits the soft cap
+    //#then exactly one payload is returned and it fits the soft cap in true bytes
     expect(res.truncated).toBeUndefined()
     expect("hashline" in res).toBe(true)
     expect("content" in res).toBe(false)
-    expect(JSON.stringify(res).length).toBeLessThan(MAX_PLAN_READ_RENDERED_BYTES)
+    expect(measurePlanBytes(JSON.stringify(res))).toBeLessThan(MAX_PLAN_READ_RENDERED_BYTES)
   })
 
   // (c) truncation path: an over-soft-cap plan returns outline + hint, no payload.
@@ -210,14 +211,14 @@ describe("plan-tool chain — end-to-end integration", () => {
   })
 
   // (d) plan_create rejects content over the hard cap.
-  test("(d) plan_create over 102400 bytes returns size_exceeded and writes nothing", async () => {
+  test(`(d) plan_create over ${MAX_PLAN_FILE_BYTES} bytes returns size_exceeded and writes nothing`, async () => {
     //#given an oversized plan payload
     const tool = createPlanCreateTool()
     const filePath = join(PLANS_DIR, "oversized-plan.md")
 
     //#when created
     const res = JSON.parse(
-      await tool.execute({ filePath, content: "x".repeat(MAX_PLAN_FILE_BYTES + 1) }, testContext(tmp)),
+      await tool.execute({ filePath, content: buildOverCapBody(1) }, testContext(tmp)),
     ) as { error?: string }
 
     //#then the size guard rejects it and nothing is persisted

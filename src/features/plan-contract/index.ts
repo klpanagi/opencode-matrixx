@@ -5,7 +5,14 @@
  * and the Zod schema for the structured plan view.
  */
 
-export { findAppendixStart } from "./appendix"
+export {
+  collectNamedRegions,
+  findAppendixStart,
+  findNamedRegion,
+  type NamedRegion,
+  type RegionStart,
+  type RegionStartPredicate,
+} from "./appendix"
 export {
   CANONICAL_SECTIONS,
   NUMBERED_CHECKED_RE,
@@ -17,9 +24,43 @@ export {
   TOP_UNCHECKED_RE,
 } from "./constants"
 export { parsePlanFrontMatter, serializePlanFrontMatter } from "./front-matter"
+export {
+  classifyPlanLifecycle,
+  PLAN_LIFECYCLE_CODES,
+  type PlanLifecycleCode,
+  type PlanLifecycleReport,
+  type PlanLifecycleState,
+  type PlanSectionLifecycleResolution,
+  resolveLifecycleSection,
+} from "./lifecycle"
 export { isGrandfathered, shouldMigrate } from "./migration"
+export {
+  collectHeadings,
+  type HashlineAnchors,
+  type Heading,
+  normalizeSectionTitle,
+  parsePlanContract,
+  parsePlanTasks,
+} from "./parse"
 export { type PlanContract, PlanContractSchema } from "./schema"
+export {
+  buildSectionRegistry,
+  CONSENSUS_H3_SEEDS,
+  extractHeadingLevel,
+  extractHeadingText,
+  H3_SECTION_REGISTRY,
+  normalizeSectionKey,
+  PLAN_SECTION_REGISTRY,
+  resolveSectionSelector,
+  SECTION_REGISTRY,
+  type SectionLevel,
+  type SectionRegistryEntry,
+  type SectionRegistrySeed,
+  type SectionResolution,
+  type SectionResolutionKind,
+} from "./section-registry"
 export { renderPlanSkeleton } from "./skeleton"
+
 export type {
   PlanContractResult,
   PlanContractWarning,
@@ -28,4 +69,4 @@ export type {
   PlanTask,
 } from "./types"
 
-export { parsePlanContract, parsePlanTasks, validatePlanContract } from "./validate"
+export { validatePlanContract } from "./validate"

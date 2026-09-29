@@ -29,6 +29,18 @@ export const META_TAG_SUFFIX = "-->"
 export const MAX_PLAN_FILE_BYTES = 102_400
 
 /**
+ * The single byte ruler for plan content.
+ *
+ * Every plan size limit compared against this value (`MAX_PLAN_FILE_BYTES`,
+ * `MAX_PLAN_READ_RENDERED_BYTES`, the plan-contract size cap) is a TRUE UTF-8
+ * byte limit — never a UTF-16 code-unit (`.length`) count. A `.length` ruler
+ * undercounts CJK/emoji content by up to 3x and silently reports compliance.
+ */
+export function measurePlanBytes(content: string): number {
+  return Buffer.byteLength(content, "utf8")
+}
+
+/**
  * Plan Checkbox Patterns
  *
  * Single source of truth for plan progress counting (see getPlanProgress).

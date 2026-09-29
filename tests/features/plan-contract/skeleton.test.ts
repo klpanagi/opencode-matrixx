@@ -1,4 +1,5 @@
 /// <reference types="bun-types" />
+import { createHash } from "node:crypto"
 import { describe, expect, test } from "bun:test"
 import { ORACLE_PLAN_TEMPLATE } from "../../../src/agents/oracle/plan-template"
 import {
@@ -7,6 +8,35 @@ import {
   REQUIRED_TASK_SUBFIELDS,
   validatePlanContract,
 } from "../../../src/features/plan-contract"
+import {
+  type SectionResolution,
+  resolveSectionSelector,
+} from "../../../src/features/plan-contract/section-registry"
+
+/** Heading lines the skeleton renders OUTSIDE fenced code blocks, in order. */
+function skeletonHeadings(skeleton: string): string[] {
+  const headings: string[] = []
+  let inFence = false
+  for (const line of skeleton.split("\n")) {
+    if (line.startsWith("```")) {
+      inFence = !inFence
+      continue
+    }
+    if (inFence) continue
+    if (/^#{2,3}\s/.test(line)) headings.push(line)
+  }
+  return headings
+}
+
+/** The two skeleton H3s Plan A deliberately left out of the registry. */
+const SKELETON_CUSTOM_H3 = [
+  "### If TDD Enabled",
+  "### Agent-Executed QA Scenarios (MANDATORY — ALL tasks)",
+]
+
+function resolutionOf(heading: string): SectionResolution {
+  return resolveSectionSelector(heading)
+}
 
 describe("renderPlanSkeleton", () => {
   test("emits every canonical section as an `## <section>` heading", () => {
@@ -95,5 +125,119 @@ describe("ORACLE_PLAN_TEMPLATE", () => {
     for (const label of REQUIRED_TASK_SUBFIELDS) {
       expect(ORACLE_PLAN_TEMPLATE).toContain(`**${label}**:`)
     }
+  })
+})
+
+describe("skeleton ↔ section-registry consistency guard", () => {
+  test("every H2 the skeleton emits resolves to its canonical registry id", () => {
+    //#given the rendered skeleton
+    const skeleton = renderPlanSkeleton()
+
+    //#when each H2 line is resolved against the section registry
+    const h2 = skeletonHeadings(skeleton).filter((line) => line.startsWith("## "))
+
+    //#then all 8 resolve to the derived id of their canonical heading, in order
+    expect(h2).toEqual(CANONICAL_SECTIONS.map((section) => `## ${section}`))
+    const resolutions = h2.map((line) => resolutionOf(line))
+    for (const resolution of resolutions) expect(resolution.kind).toBe("resolved")
+    expect(resolutions.map((r) => (r.kind === "resolved" ? r.entry.id : null))).toEqual([
+      "tl-dr",
+      "context",
+      "work-objectives",
+      "verification-strategy",
+      "execution-strategy",
+      "todos",
+      "commit-strategy",
+      "success-criteria",
+    ])
+  })
+
+  test("the skeleton emits exactly 16 distinct H3s: 14 registry ids + 2 custom", () => {
+    //#given the rendered skeleton
+    const skeleton = renderPlanSkeleton()
+
+    //#when the non-fenced H3 lines are collected
+    const h3 = [...new Set(skeletonHeadings(skeleton).filter((l) => l.startsWith("### ")))]
+
+    //#then the count is asserted, not assumed
+    expect(h3).toHaveLength(16)
+
+    //#and 14 of them resolve to a registry id
+    expect(h3.filter((line) => resolutionOf(line).kind === "resolved")).toHaveLength(14)
+
+    //#and the remaining 2 are the documented escape-hatch headings
+    const custom = h3.filter((line) => resolutionOf(line).kind === "custom")
+    expect(custom).toEqual(SKELETON_CUSTOM_H3)
+  })
+
+  test("the 2 escape-hatch H3s resolve to kind:custom, never ambiguous and never resolved", () => {
+    //#given the two deliberately-unregistered skeleton headings
+    //#when each is resolved
+    const kinds = SKELETON_CUSTOM_H3.map((line) => resolutionOf(line))
+
+    //#then both are custom (the escape hatch PASSES — it is not a warning)
+    for (const resolution of kinds) expect(resolution.kind).toBe("custom")
+
+    //#and each custom resolution carries a derived id but no `message` key
+    expect(
+      kinds.map((resolution) => (resolution.kind === "custom" ? resolution.id : null))
+    ).toEqual(["if-tdd-enabled", "agent-executed-qa-scenarios-mandatory-all-tasks"])
+    for (const resolution of kinds) expect("message" in resolution).toBe(false)
+  })
+
+  test("the parenthesised-suffix H3 keeps its suffix after normalization", () => {
+    //#given the parenthesised H3 the skeleton emits at skeleton.ts:21
+    const heading = "### Agent-Executed QA Scenarios (MANDATORY — ALL tasks)"
+
+    //#when resolved
+    const resolution = resolutionOf(heading)
+
+    //#then it does NOT collapse onto the bare `agent-executed-qa-scenarios` id
+    expect(resolution.kind).toBe("custom")
+    if (resolution.kind !== "custom") throw new Error("expected custom resolution")
+    expect(resolution.id).not.toBe("agent-executed-qa-scenarios")
+  })
+
+  test("no heading the skeleton emits is ambiguous (the only real defect)", () => {
+    //#given every heading the skeleton renders
+    const headings = skeletonHeadings(renderPlanSkeleton())
+
+    //#when each is resolved
+    const offenders = headings
+      .map((line) => resolutionOf(line))
+      .filter((resolution) => resolution.kind === "ambiguous")
+
+    //#then multi-match is absent. `custom` is a legitimate escape hatch, not a
+    //#failure — the guard is NOT a demand that every heading be registered.
+    expect(offenders.map((r) => (r.kind === "ambiguous" ? r.message : ""))).toEqual([])
+    expect(headings).toHaveLength(24)
+  })
+
+  test("renderPlanSkeleton output is byte-identical to its pre-guard snapshot", () => {
+    //#given the frozen pre-task skeleton bytes
+    const expectedSha = "d39bcefbaac6bdda9d423be31d206cd9fc4dd5e7685bd92e3eb817b2994a2c40"
+
+    //#when the skeleton is rendered now
+    const skeleton = renderPlanSkeleton()
+
+    //#then the digest is unchanged — this task added a guard, not a template edit
+    expect(createHash("sha256").update(skeleton).digest("hex")).toBe(expectedSha)
+    expect(skeleton).toHaveLength(14487)
+  })
+
+  test("the guard is load-bearing: a near-miss heading does not resolve to the registry", () => {
+    //#given a heading that differs from the canonical one only by an extra
+    //#parenthesised suffix — the same shape as the real `If TDD Enabled` case
+    const nearMiss = "### Verification Strategy (MANDATORY — ALL tasks)"
+
+    //#when it is resolved
+    const resolution = resolutionOf(nearMiss)
+
+    //#then it is NOT silently accepted as the canonical `verification-strategy` id,
+    //#so a drifting skeleton heading can never be mistaken for a registered one
+    expect(resolution.kind).not.toBe("resolved")
+    expect(resolution.kind === "resolved" ? resolution.entry.id : resolution.kind).not.toBe(
+      "verification-strategy"
+    )
   })
 })

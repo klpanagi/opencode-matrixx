@@ -243,20 +243,17 @@ describe("validatePlanContract", () => {
     expect(result.ok).toBe(true)
   })
 
-  test("promotes warnings to errors in fail mode", () => {
+  test("keeps section findings advisory: warnings never become errors", () => {
     //#given content missing a canonical section
     const content = "## TL;DR\n\n- [ ] 1. T\n"
 
-    //#when validating in warn mode and in fail mode
-    const warned = validatePlanContract(content)
-    const failed = validatePlanContract(content, { mode: "fail" })
+    //#when validating
+    const result = validatePlanContract(content)
 
-    //#then warn mode stays ok and fail mode hard-fails
-    expect(warned.ok).toBe(true)
-    expect(warned.warnings.length).toBeGreaterThan(0)
-    expect(failed.ok).toBe(false)
-    expect(failed.errors.length).toBeGreaterThan(0)
-    expect(failed.warnings).toEqual([])
+    //#then the contract is warn-only: ok stays true, errors stay empty
+    expect(result.ok).toBe(true)
+    expect(result.warnings.length).toBeGreaterThan(0)
+    expect(result.errors).toEqual([])
   })
 
   test("reports an error for empty content", () => {

@@ -476,8 +476,8 @@ export function fallbackCompactDiscipline(hasGrepGlob: boolean, dcpMode: DcpComp
     ? "| Search | ctx_search FIRST (indexed KB) → grep/glob fallback (raw FS) |"
     : "| Search | ctx_search FIRST (indexed KB) → ctx_batch_execute / ctx_execute (rg) or LSP/ast_grep fallback |"
   const note = hasGrepGlob
-    ? "Edits need prior read for LINE#ID — read→edit chain exempt (non-plan paths; .matrixx/plans/*.md must use plan_read/plan_update). MUST use ctx_* when available — raw grep/read is forbidden for analysis."
-    : "Edits need prior read for LINE#ID — read→edit chain exempt (non-plan paths; .matrixx/plans/*.md must use plan_read/plan_update). MUST use ctx_* when available — raw read for analysis is forbidden."
+    ? "Edits need prior read for LINE#ID — read→edit chain exempt (non-plan paths; .matrixx/plans/*.md must use plan_read(section)/plan_update). MUST use ctx_* when available — raw grep/read is forbidden for analysis."
+    : "Edits need prior read for LINE#ID — read→edit chain exempt (non-plan paths; .matrixx/plans/*.md must use plan_read(section)/plan_update). MUST use ctx_* when available — raw read for analysis is forbidden."
   const compression = compressionRow(dcpMode)
   return `### Context Discipline (when ctx_* available)
 

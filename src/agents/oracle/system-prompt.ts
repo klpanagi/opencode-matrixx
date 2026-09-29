@@ -18,11 +18,15 @@ ${ORACLE_BEHAVIORAL_SUMMARY}`
 
 /**
  * Oracle planner permission configuration.
- * Plan files are modified ONLY via plan_update (never generic Edit/Write).
+ * Plan files are modified ONLY via plan_update (never generic Edit/Write); they
+ * are CREATED once via plan_create. Both authoring tools are granted
+ * explicitly: the DECISION TREE in identity-constraints.ts routes all three
+ * branches through plan_create, so an implicit grant would break silently.
  * Question permission allows agent to ask user questions via OpenCode's QuestionTool.
  */
 export const ORACLE_PERMISSION = {
   edit: "deny" as const,
+  plan_create: "allow" as const,
   plan_update: "allow" as const,
   bash: "allow" as const,
   webfetch: "allow" as const,

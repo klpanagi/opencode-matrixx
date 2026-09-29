@@ -174,33 +174,64 @@ unblocking maximum parallelism in subsequent waves.
 **MANDATORY PROTOCOL:**
 1. **Prepare ENTIRE plan content in memory FIRST**
 2. **Create ONCE with plan_create (atomic write — complete content)**
-3. **NEVER split into multiple plan_create calls**
+3. **NEVER split into multiple plan_create calls** — one path, one plan_create, ever
 
-**IF plan is too large for single output:**
-1. First plan_create: Create file with initial sections (TL;DR through first TODOs)
-2. Subsequent: Use **plan_update** to APPEND remaining sections
-   - Target the END of the file via LINE#ID anchors
-   - plan_update is anchored (LINE#ID), so it never overwrites existing content
+## DECISION TREE — HOW TO HANDLE A PLAN TOO BIG FOR ONE CALL
+
+This is the ONLY place plan splitting is decided. Take the FIRST branch that matches; do not read ahead.
+
+**Branch 1 — single atomic create (the default)**
+The whole plan fits one tool call, and it will stay under the cap.
+→ One plan_create with the complete document. Nothing follows. DONE.
+
+**Branch 2 — three-phase append (OK when the split is purely a TRANSPORT concern)**
+The plan's own content WOULD fit one file and stay under the cap, but it genuinely exceeds a single tool call. The seam is arbitrary — you are working around transport, not around structure.
+→ OK: one plan_create for the opening sections, then plan_update to append the remainder. plan_update is anchored, so it never overwrites, and it rolls back any edit that would push the file over the cap.
+→ On later passes prefer the section-scoped form: plan_read the target section to obtain its contentHash, then plan_update naming \`section\` + that hash. A stale hash is refused as section_stale (re-read, then retry); a renamed heading invalidates the old id (section_not_found).
+
+**Branch 3 — cutover companion (when the plan is structurally too large for one file)**
+The plan's content does not fit the cap no matter how it is transported. Two files, each naming the other: the cutover carries a phase range, the main carries the rest.
+→ A companion is a NEW file via \`plan_create\`, not a modification — so "plan files are managed ONLY via plan_* tools" is satisfied. Each file is created once and thereafter amended only with plan_update.
+→ Canonical example in this repo: \`skill-native-handover.md\` (TL;DR … Phases 0–3) paired with \`skill-native-handover-cutover.md\` (Phases 4–6), which opens by declaring itself part 2 of 2, states its phase range in a table, and says "Read part 1 first."
+
+**The cap is a ceiling, not a wall.** An over-cap plan stays fully readable — plan_read with offset/limit or a section selector is allowed past it, and only an unbounded whole-file read is refused. So "the plan is large" is NOT by itself a reason to split. If Branch 2's finished size would exceed the cap, that is a Branch 3 plan, not a bigger Branch 2.
+
+**NEVER, in any branch:**
+- Two plan_create calls on the same path — the second is refused as file_exists
+- Generic Write/Edit on a plan file — blocked; plan_create once, then plan_update
+
+**CORRECT (preserves content):**
+
+✅ single atomic create:
+\`\`\`
+plan_create(".matrixx/plans/x.md", "# Complete plan content...")  // whole plan, one call, done
+\`\`\`
+
+✅ three-phase append (transport concern only):
+\`\`\`
+plan_create(".matrixx/plans/x.md", "# Plan\n## TL;DR\n...")                          // first chunk
+plan_update(".matrixx/plans/x.md", append at LINE#ID anchor, "# More TODOs\n...")     // remainder
+\`\`\`
+
+✅ cutover companion (structurally too large) — two distinct paths, each names the other:
+\`\`\`
+plan_create(".matrixx/plans/y.md", "# Part 1 ... Phases 0-3")
+plan_create(".matrixx/plans/y-cutover.md", "# Part 2 of 2 ... Phases 4-6")
+\`\`\`
 
 **FORBIDDEN (causes content loss):**
 \`\`\`
-❌ Write(".matrixx/plans/x.md", "# Part 1...")
-❌ Write(".matrixx/plans/x.md", "# Part 2...")  // Part 1 is GONE!
-❌ Edit(".matrixx/plans/x.md", ...)  // Generic Edit on plans is blocked
-\`\`\`
-
-**CORRECT (preserves content):**
-\`\`\`
-✅ plan_create(".matrixx/plans/x.md", "# Complete plan content...")  // Single atomic create
-
-// OR if too large:
-✅ plan_create(".matrixx/plans/x.md", "# Plan\n## TL;DR\n...")  // First chunk
-✅ plan_update(".matrixx/plans/x.md", append at LINE#ID anchor, "# More TODOs\n...")  // Append via plan_update
+❌ plan_create(".matrixx/plans/z.md", "# Part 1...") then plan_create(".matrixx/plans/z.md", "# Part 2...")  // second refused: file_exists
+❌ Write(".matrixx/plans/x.md", "# Part 1...")  // generic Write on plans is blocked
+❌ Edit(".matrixx/plans/x.md", ...)  // generic Edit on plans is blocked
+❌ Write(".matrixx/plans/x.md", "# Part 1...") then Write(".matrixx/plans/x.md", "# Part 2...")  // Part 1 is GONE!
 \`\`\`
 
 **SELF-CHECK before creating:**
 - [ ] Is this the FIRST creation of this file? → plan_create is OK
 - [ ] File already exists with my content? → Use plan_update to append, NOT plan_create
+- [ ] Will the plan still be ONE file if I could send it in one call? → Branch 1, do not split
+- [ ] Does the plan split across two files? → Both are first creations, so both are plan_create; that is Branch 3, and the split must be structural, not a transport workaround
 </write_protocol>
 
 ### 7. DRAFT AS WORKING MEMORY (MANDATORY)

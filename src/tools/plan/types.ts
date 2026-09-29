@@ -50,6 +50,25 @@ export interface PlanOutlineEntry {
   anchor: string
 }
 
+/**
+ * One row of the byte-accounted section index (see `section-index.ts`).
+ * `endLine` is EXCLUSIVE — the section owns `[startLine, endLine)`.
+ */
+export interface PlanSectionIndexEntry {
+  /** Kebab-case id, `normalizeSectionKey(headingText)`. */
+  id: string
+  level: 2 | 3
+  /** Heading text exactly as it appears in the plan. */
+  headingText: string
+  startLine: number
+  /** Exclusive: next heading of level <= this one, else lines.length + 1. */
+  endLine: number
+  /** UTF-8 byte length of the section's original text span (single byte ruler). */
+  bytes: number
+  /** 64-bit position-sensitive hash over `id + startLine + span text`. */
+  contentHash: string
+}
+
 export interface PlanReadArgs {
   filePath: string
   format?: PlanReadFormat
