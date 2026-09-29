@@ -11,6 +11,8 @@ import {
 import type { PluginContext } from "../../plugin/types"
 import { executeHashlineEditTool } from "../hashline-edit/hashline-edit-executor"
 import { MAX_PLAN_FILE_BYTES } from "./constants"
+import { enforcePlanCap, type PostApplyHook } from "./plan-write-guard"
+import { type RawSectionEdit, resolveSectionScopedEdits, sectionWritePayload } from "./section-edit"
 import { resolveDirectory, validatePlanFilePath } from "./types"
 
 const DEFAULT_FRONT_MATTER: PlanFrontMatter = { status: "pending", revision: 1 }
@@ -35,31 +37,24 @@ function editTouchesCanonicalRegion(edits: Array<Record<string, unknown>>, origi
   })
 }
 
-/** Mirror of `plan_create`'s hard cap rejection payload. */
-function sizeExceededPayload(resolved: string, length: number): string {
-  return JSON.stringify({
-    error: "size_exceeded",
-    message: `Plan exceeds 102400 bytes — split the plan into smaller plans (${length}/${MAX_PLAN_FILE_BYTES} bytes)`,
-    hint: "Reduce the plan below 102,400 bytes or split it into multiple .matrixx/plans/*.md files.",
-    filePath: resolved,
-  })
-}
-
-export function createPlanUpdateTool(ctx?: PluginContext): ToolDefinition {
+export function createPlanUpdateTool(ctx?: PluginContext, postApply?: PostApplyHook): ToolDefinition {
   return tool({
-    description: `Update a plan file under .matrixx/plans/*.md via hashline edits. Delegates to executeHashlineEditTool scoped to PLANS_DIR. Requires LINE#ID anchors, validates file exists. Re-validates the contract after the edit (WARN-first warnings), rejects edits that push the file past ${MAX_PLAN_FILE_BYTES} bytes without persisting, and injects front-matter once when absent.`,
+    description: `Update a plan file under .matrixx/plans/*.md via hashline edits. Delegates to executeHashlineEditTool scoped to PLANS_DIR. Requires LINE#ID anchors, validates file exists. Re-validates the contract after the edit (WARN-first warnings), rejects edits that push the file past ${MAX_PLAN_FILE_BYTES} bytes without persisting, and injects front-matter once when absent. SECTION-SCOPED: an edit may name \`section\` instead of hand-computing line numbers — the target's line range is re-derived from a fresh parse at write time (no line number is ever persisted), and the supplied \`contentHash\` from plan_read gates the section as a whole. A changed section is refused with section_stale naming both hashes; an unknown or renamed id is section_not_found listing the ids this plan has; a repeated section needs sectionIndex.`,
     args: {
       filePath: tool.schema.string().describe("Absolute path to the file to edit (must be inside .matrixx/plans, kebab-case .md)"),
       edits: tool.schema
         .array(
           tool.schema.object({
             op: tool.schema.union([tool.schema.literal("replace"), tool.schema.literal("append"), tool.schema.literal("prepend")]).describe("Hashline edit operation mode"),
-            pos: tool.schema.string().optional().describe("Primary anchor in LINE#ID format"),
-            end: tool.schema.string().optional().describe("Range end anchor in LINE#ID format"),
+            pos: tool.schema.string().optional().describe("Primary anchor in LINE#ID format. REQUIRED for replace. For a section-scoped edit it must be an absolute anchor of a line INSIDE that section — an anchor outside it is a validation_error. Omitted on a section-scoped append/prepend, the anchor defaults to the section's end (append: after its last non-blank line, so a trailing blank separator survives) or its start (prepend: directly under the heading)"),
+            end: tool.schema.string().optional().describe("Range end anchor in LINE#ID format; on a section-scoped edit it must also be inside the section"),
             lines: tool.schema.union([tool.schema.array(tool.schema.string()), tool.schema.string(), tool.schema.null()]).describe("Replacement or inserted lines"),
+            section: tool.schema.string().optional().describe("Edit inside this section only: a registry id (e.g. 'todos', 'tl-dr'), heading text, or a custom heading's derived id. PRECEDENCE: when section is present it defines the target span, and the span is re-derived from a FRESH parse at write time — pos is then interpreted relative to that span and must fall inside it"),
+            sectionIndex: tool.schema.number().optional().describe("0-based occurrence index, required ONLY when the named section appears more than once in this plan (repeated H3s). Missing or out of range is a fail-closed validation_error naming the valid range — never a silent first match"),
+            contentHash: tool.schema.string().optional().describe("The section's contentHash from plan_read(section). Gates the section as a whole: the writer recomputes it from the current text and refuses with section_stale (naming both hashes, writing nothing) on a mismatch. Omit to edit without the gate. It does NOT harden the 1-char per-line anchor check INSIDE the section"),
           }),
         )
-        .describe("Array of edit operations to apply"),
+        .describe("Array of edit operations to apply. After a section-scoped write the response carries `section` (the first targeted section's recomputed id/level/headingText/startLine/endLine/bytes/contentHash) and `sections` (every section's recomputed startLine/endLine/contentHash)"),
     },
     execute: async (args, context) => {
       try {
@@ -95,31 +90,53 @@ export function createPlanUpdateTool(ctx?: PluginContext): ToolDefinition {
           return JSON.stringify({ error: "file_not_found", message: `File not found: ${resolved}` })
         }
         const originalContent = readFileSync(resolved, "utf-8")
-        const result = await executeHashlineEditTool({ filePath: resolved, edits: edits as never }, context as never, ctx)
+        // Section-scoped writes resolve their span from the file as it is RIGHT
+        // NOW — a fresh parse per call, never a persisted line number.
+        const scoped = resolveSectionScopedEdits(originalContent, edits as RawSectionEdit[])
+        if (scoped.kind === "error") return JSON.stringify(scoped.body)
+        const effectiveEdits = scoped.edits
+        const result = await executeHashlineEditTool({ filePath: resolved, edits: effectiveEdits as never }, context as never, ctx)
         if (!result.startsWith("Updated")) {
           return result
         }
-        const postEditContent = readFileSync(resolved, "utf-8")
-        const frontMatterInjected = shouldMigrate(postEditContent) && editTouchesCanonicalRegion(edits, originalContent)
-        const finalContent = frontMatterInjected
-          ? `${serializePlanFrontMatter(DEFAULT_FRONT_MATTER)}${postEditContent}`
-          : postEditContent
-        const finalByteLength = Buffer.byteLength(finalContent, "utf8")
-        if (finalByteLength > MAX_PLAN_FILE_BYTES) {
-          atomicWrite(resolved, originalContent)
-          return sizeExceededPayload(resolved, finalByteLength)
+        // The edit is on disk but the cap has not been checked yet. Everything
+        // from here to the persist is inside the guard: a throw in this window
+        // would otherwise leave an over-cap (and under pre-T15, unreadable)
+        // plan behind. `settled` is the commit flag — it is set on EVERY path
+        // that has already reached a decision, so the `finally` restores only
+        // an UNDECIDED write and never a committed one.
+        let settled = false
+        try {
+          postApply?.()
+          const postEditContent = readFileSync(resolved, "utf-8")
+          const frontMatterInjected = shouldMigrate(postEditContent) && editTouchesCanonicalRegion(edits, originalContent)
+          const finalContent = frontMatterInjected
+            ? `${serializePlanFrontMatter(DEFAULT_FRONT_MATTER)}${postEditContent}`
+            : postEditContent
+          // The ONLY cap check and the ONLY rollback on the write path; the
+          // hashline and section-scoped modes both arrive here.
+          const verdict = enforcePlanCap(resolved, originalContent, finalContent)
+          if (verdict.kind === "rolled-back") {
+            settled = true
+            return verdict.payload
+          }
+          if (finalContent !== postEditContent) {
+            atomicWrite(resolved, finalContent)
+          }
+          const { warnings } = validatePlanContract(finalContent)
+          settled = true
+          return JSON.stringify({
+            success: true,
+            filePath: resolved,
+            message: `Updated ${resolved}`,
+            warnings,
+            frontMatterInjected,
+            // Every section hash is RECOMPUTED from the persisted text.
+            ...(scoped.sectionIds.length === 0 ? {} : sectionWritePayload(finalContent, scoped.sectionIds)),
+          })
+        } finally {
+          if (!settled) atomicWrite(resolved, originalContent)
         }
-        if (finalContent !== postEditContent) {
-          atomicWrite(resolved, finalContent)
-        }
-        const { warnings } = validatePlanContract(finalContent)
-        return JSON.stringify({
-          success: true,
-          filePath: resolved,
-          message: `Updated ${resolved}`,
-          warnings,
-          frontMatterInjected,
-        })
       } catch (error) {
         const message = error instanceof Error ? error.message : String(error)
         return JSON.stringify({ error: "internal_error", message })
