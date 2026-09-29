@@ -6,15 +6,17 @@ import {
   type PlanProgress,
   readPlanFile,
 } from "../../features/mission-state"
+import { MAX_PLAN_FILE_BYTES } from "../../features/mission-state/constants"
 import type { PluginContext } from "../../plugin/types"
 import { PLAN_FILENAME_KEBAB_REGEX, PLANS_DIR } from "./constants"
+import { formatPlanCap } from "./error-codes"
 import { resolveDirectory } from "./types"
 
 type PlanListProgress = PlanProgress | { unreadable: true }
 
 export function createPlanListTool(ctx?: PluginContext): ToolDefinition {
   return tool({
-    description: `List plan files under .matrixx/plans/*.md. Filters *.md with kebab-case, sorts by mtime.`,
+    description: `List plan files under .matrixx/plans/*.md. Filters *.md with kebab-case, sorts by mtime. Each entry carries \`size\` (bytes) and \`overCap\`. An over-cap plan is still listed — never skipped, never an error — because it is the plan that needs repair: read it with plan_read \`offset\`/\`limit\` or a \`section\` selector, then shrink it with plan_update. The cap is ${formatPlanCap()} bytes.`,
     args: {},
     execute: async (_args, context) => {
       try {
@@ -41,6 +43,7 @@ export function createPlanListTool(ctx?: PluginContext): ToolDefinition {
                 mtime: stat.mtime.toISOString(),
                 mtimeMs: stat.mtimeMs,
                 size: stat.size,
+                overCap: stat.size > MAX_PLAN_FILE_BYTES,
                 progress,
               }
             } catch {

@@ -49,6 +49,7 @@ interface ManifestResult {
   error?: string
   hint?: string
   size?: number
+  degraded?: { reason: string; size: number; cap: number; message: string }
 }
 
 describe("plan_tasks compact manifest", () => {
@@ -138,18 +139,20 @@ describe("plan_tasks compact manifest", () => {
     expect(res.tasks.length).toBe(0)
   })
 
-  test("valid-kebab oversized file returns file_too_large with a split hint", async () => {
+  test("valid-kebab oversized file degrades to a manifest instead of refusing", async () => {
     //#given a valid-kebab plan whose content exceeds the hard cap
     writePlan(testDir, "huge-plan.md", "x".repeat(MAX_PLAN_FILE_BYTES + 100))
     //#when requested
     const res = JSON.parse(
       await tool.execute({ filePath: ".matrixx/plans/huge-plan.md" }, testContext(testDir)),
     ) as ManifestResult
-    //#then the hard-cap error carries a hint and the observed size
-    expect(res.error).toBe("file_too_large")
-    expect(typeof res.hint).toBe("string")
-    expect(res.hint?.length).toBeGreaterThan(0)
-    expect(res.size).toBeGreaterThan(MAX_PLAN_FILE_BYTES)
+    //#then (Task 16 inverted the prior expectation: the cap is a ceiling on what is
+    // handed back, not on what may be read, and this tool never emits the body.)
+    // A large plan must stay inspectable — refusing made it unplannable.
+    expect(res.error).toBeUndefined()
+    expect(res.degraded).toBeDefined()
+    expect(res.degraded?.reason).toBe("file_over_cap")
+    expect(res.degraded?.size).toBeGreaterThan(MAX_PLAN_FILE_BYTES)
   })
 
   test("dotted filename is rejected first as invalid_file_path, never file_too_large", async () => {

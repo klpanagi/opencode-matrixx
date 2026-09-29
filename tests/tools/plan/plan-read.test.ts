@@ -5,6 +5,7 @@ import { existsSync, mkdirSync, readFileSync, rmSync, writeFileSync } from "node
 import { tmpdir } from "node:os"
 import { join } from "node:path"
 import { MAX_PLAN_FILE_BYTES, MAX_PLAN_READ_RENDERED_BYTES } from "../../../src/tools/plan/constants"
+import { measurePlanBytes } from "../../../src/features/mission-state/constants"
 import { createPlanReadTool } from "../../../src/tools/plan/plan-read"
 
 const TEST_ABORT = new AbortController()
@@ -85,20 +86,18 @@ describe("plan_read single-format contract", () => {
     expect(res.content).toContain("# Title")
   })
 
-  test("repo fixture evolution-advancement-proposal.md renders under the soft cap", async () => {
-    //#given the repo-local near-cap fixture when present, else an equivalent synthesized file
-    const repoFixture = join(process.cwd(), ".matrixx/plans/evolution-advancement-proposal.md")
-    const content = existsSync(repoFixture) ? readFileSync(repoFixture, "utf-8") : buildNearCapContent()
-    writePlan(testDir, "evolution-advancement-proposal.md", content)
+  test("near-cap plan renders under the soft cap", async () => {
+    //#given a synthesized near-cap plan, not the local gitignored fixture (unstable input)
+    writePlan(testDir, "near-cap-plan.md", buildNearCapContent())
     //#when read with the default format
     const res = JSON.parse(
-      await tool.execute({ filePath: ".matrixx/plans/evolution-advancement-proposal.md" }, testContext(testDir)),
+      await tool.execute({ filePath: ".matrixx/plans/near-cap-plan.md" }, testContext(testDir)),
     )
-    //#then the selected format key is present and the rendered payload fits
+    //#then the selected format key is present and the rendered payload fits in true bytes
     expect(res.truncated).toBeUndefined()
     expect("hashline" in res).toBe(true)
     expect("content" in res).toBe(false)
-    expect(JSON.stringify(res).length).toBeLessThan(MAX_PLAN_READ_RENDERED_BYTES)
+    expect(measurePlanBytes(JSON.stringify(res))).toBeLessThan(MAX_PLAN_READ_RENDERED_BYTES)
   })
 
   test("selected-format payload over the soft cap returns truncated + outline + hint", async () => {
