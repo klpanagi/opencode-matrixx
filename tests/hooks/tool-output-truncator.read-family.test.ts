@@ -9,8 +9,8 @@ import { createToolOutputTruncatorHook } from "../../src/hooks/tool-output-trunc
 // Rationale for deferring lsp_symbols: symbol listings are small structured
 // results with no observed dumps; revisit if dumps appear.
 function bigReadOutput(lines = 3000): string {
-  const header = ["1#AA|// header line one", "2#BB|// header line two", "3#CC|// header line three"]
-  const body = Array.from({ length: lines }, (_, i) => `${i + 4}#ZZ|export type T${i} = string | number | boolean;`)
+  const header = ["1#ZZPM|// header line one", "2#ZZQM|// header line two", "3#ZZVR|// header line three"]
+  const body = Array.from({ length: lines }, (_, i) => `${i + 4}#ZZWS|export type T${i} = string | number | boolean;`)
   return [...header, ...body].join("\n")
 }
 
@@ -28,8 +28,8 @@ describe("read-family truncation", () => {
       //#then tail cut with marker, header + LINE#ID anchors intact
       expect(output.output.length).toBeLessThan(raw.length)
       expect(output.output).toContain("truncated due to context window limit")
-      expect(output.output).toContain("1#AA|// header line one")
-      expect(output.output).toContain("2#BB|// header line two")
+      expect(output.output).toContain("1#ZZPM|// header line one")
+      expect(output.output).toContain("2#ZZQM|// header line two")
     })
   }
 
@@ -37,11 +37,11 @@ describe("read-family truncation", () => {
     //#given small read output
     const hook = createToolOutputTruncatorHook({} as never)
     const input = { tool: "read", sessionID: "todo4", callID: "c2" }
-    const output = { title: "Result", output: "1#AA|const x = 1;\n", metadata: {} }
+    const output = { title: "Result", output: "1#ZZPM|const x = 1;\n", metadata: {} }
     //#when post-tool hook runs
     await hook["tool.execute.after"](input, output)
     //#then unchanged, no marker
-    expect(output.output).toBe("1#AA|const x = 1;\n")
+    expect(output.output).toBe("1#ZZPM|const x = 1;\n")
   })
 
   test("lsp_symbols deferred — not truncated", async () => {

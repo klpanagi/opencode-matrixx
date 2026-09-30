@@ -1,5 +1,13 @@
-import { HASHLINE_REF_PATTERN } from "./constants"
-import { computeLegacyLineHash, computeLineHash } from "./hash-computation"
+import {
+  HASHLINE_HASH_PATTERN,
+  HASHLINE_ID_LENGTH,
+  HASHLINE_REF_PATTERN,
+  HASHLINE_TRAILING_HASH_PATTERN,
+  LEGACY_HASHLINE_ID_LENGTH,
+  LEGACY_HASHLINE_REF_PATTERN,
+  NIBBLE_CHARSET,
+} from "./constants"
+import { computeLegacyLineHash, computeLegacyWidthLineHash, computeLineHash } from "./hash-computation"
 
 export interface LineRef {
   line: number
@@ -13,10 +21,13 @@ interface HashMismatch {
 
 const MISMATCH_CONTEXT = 2
 
-const LINE_REF_EXTRACT_PATTERN = /([0-9]+#[ZPMQVRWSNKTXJBYH]{2})/
+const LINE_REF_EXTRACT_PATTERN = new RegExp(`([0-9]+#[${NIBBLE_CHARSET}]{${LEGACY_HASHLINE_ID_LENGTH},${HASHLINE_ID_LENGTH}})`)
 
 function isCompatibleLineHash(line: number, content: string, hash: string): boolean {
-  return computeLineHash(line, content) === hash || computeLegacyLineHash(line, content) === hash
+  if (computeLineHash(line, content) === hash || computeLegacyLineHash(line, content) === hash) {
+    return true
+  }
+  return hash.length === LEGACY_HASHLINE_ID_LENGTH && computeLegacyWidthLineHash(line, content) === hash
 }
 
 export function normalizeLineRef(ref: string): string {
@@ -41,7 +52,10 @@ export function normalizeLineRef(ref: string): string {
 
 export function parseLineRef(ref: string): LineRef {
   const normalized = normalizeLineRef(ref)
-  const match = normalized.match(HASHLINE_REF_PATTERN)
+  // The LEGACY alternative is deprecated: it only exists so an anchor quoted
+  // from a read made before the 32-bit widening is not hard-failed. It is still
+  // validated in isCompatibleLineHash, just with 8 bits of strength instead of 32.
+  const match = normalized.match(HASHLINE_REF_PATTERN) ?? normalized.match(LEGACY_HASHLINE_REF_PATTERN)
   if (match) {
     return {
       line: Number.parseInt(match[1], 10),
@@ -52,7 +66,7 @@ export function parseLineRef(ref: string): LineRef {
   if (hashIdx > 0) {
     const prefix = normalized.slice(0, hashIdx)
     const suffix = normalized.slice(hashIdx + 1)
-    if (!/^\d+$/.test(prefix) && /^[ZPMQVRWSNKTXJBYH]{2}$/.test(suffix)) {
+    if (!/^\d+$/.test(prefix) && HASHLINE_HASH_PATTERN.test(suffix)) {
       throw new Error(
         `Invalid line reference: "${ref}". "${prefix}" is not a line number. ` +
           `Use the actual line number from the read output.`
@@ -137,7 +151,7 @@ export class HashlineMismatchError extends Error {
 }
 
 function suggestLineForHash(ref: string, lines: string[]): string | null {
-  const hashMatch = ref.trim().match(/#([ZPMQVRWSNKTXJBYH]{2})$/)
+  const hashMatch = ref.trim().match(HASHLINE_TRAILING_HASH_PATTERN)
   if (!hashMatch) return null
   const hash = hashMatch[1]
   for (let i = 0; i < lines.length; i++) {

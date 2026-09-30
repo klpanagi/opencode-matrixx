@@ -94,7 +94,7 @@ describe("toHashlineContent", () => {
     const result = toHashlineContent(content)
 
     //#then
-    expect(result).toMatch(/^1#[ZPMQVRWSNKTXJBYH]{2}\|hello\n2#[ZPMQVRWSNKTXJBYH]{2}\|world$/)
+    expect(result).toBe("1#SSHK|hello\n2#WMXQ|world")
   })
 
   it("preserves trailing newline", () => {

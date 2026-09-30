@@ -4,6 +4,7 @@ import { afterEach, beforeEach, describe, expect, test } from "bun:test"
 import { existsSync, mkdirSync, rmSync, writeFileSync } from "node:fs"
 import { tmpdir } from "node:os"
 import { join } from "node:path"
+import { computeLineHash } from "../../../src/tools/hashline-edit/hash-computation"
 import { createPlanReadTool } from "../../../src/tools/plan/plan-read"
 
 const TEST_ABORT = new AbortController()
@@ -117,9 +118,10 @@ describe("plan_read strict offset/limit arguments", () => {
     //#then the whole file is returned as hashline with no error
     expect(res.error).toBeUndefined()
     expect(res.filePath).toContain("strict-plan.md")
-    expect(res.hashline).toBe(
-      ["1#VQ|# H1", "2#XM|line2", "3#NQ|line3", "4#RH|line4", "5#XH|line5", "6#SY|"].join("\n"),
-    )
+    const expected = PLAN_BODY.split("\n")
+      .map((line, index) => `${index + 1}#${computeLineHash(index + 1, line)}|${line}`)
+      .join("\n")
+    expect(res.hashline).toBe(expected)
   })
 
   test("valid offset and limit still paginate unchanged", async () => {

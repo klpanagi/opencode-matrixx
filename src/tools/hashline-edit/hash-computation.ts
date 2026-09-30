@@ -1,4 +1,4 @@
-import { HASHLINE_DICT } from "./constants"
+import { HASHLINE_DICT, HASHLINE_DICT_SIZE, LEGACY_HASHLINE_DICT } from "./constants"
 import { createHashlineChunkFormatter } from "./hashline-chunk-formatter"
 
 const RE_SIGNIFICANT = /[\p{L}\p{N}]/u
@@ -7,8 +7,7 @@ function computeNormalizedLineHash(lineNumber: number, normalizedContent: string
   const stripped = normalizedContent
   const seed = RE_SIGNIFICANT.test(stripped) ? 0 : lineNumber
   const hash = Bun.hash.xxHash32(stripped, seed)
-  const index = hash % 256
-  return HASHLINE_DICT[index]
+  return HASHLINE_DICT[hash % HASHLINE_DICT_SIZE]
 }
 
 export function computeLineHash(lineNumber: number, content: string): string {
@@ -17,6 +16,16 @@ export function computeLineHash(lineNumber: number, content: string): string {
 
 export function computeLegacyLineHash(lineNumber: number, content: string): string {
   return computeNormalizedLineHash(lineNumber, content.replace(/\r/g, "").replace(/\s+/g, ""))
+}
+
+/**
+ * @deprecated Recomputes the pre-widening 8-bit anchor so a 2-character ref
+ * from an older read is still checked rather than silently accepted.
+ */
+export function computeLegacyWidthLineHash(lineNumber: number, content: string): string {
+  const stripped = content.replace(/\r/g, "").trimEnd()
+  const seed = RE_SIGNIFICANT.test(stripped) ? 0 : lineNumber
+  return LEGACY_HASHLINE_DICT[Bun.hash.xxHash32(stripped, seed) % 256]
 }
 
 export function formatHashLine(lineNumber: number, content: string): string {

@@ -1,4 +1,8 @@
-const HASHLINE_PREFIX_RE = /^\s*(?:>>>|>>)?\s*\d+\s*#\s*[ZPMQVRWSNKTXJBYH]{2}\|/
+import { HASHLINE_ID_LENGTH, LEGACY_HASHLINE_ID_LENGTH, NIBBLE_CHARSET } from "./constants"
+
+const HASHLINE_PREFIX_RE = new RegExp(
+  `^\\s*(?:>>>|>>)?\\s*\\d+\\s*#\\s*[${NIBBLE_CHARSET}]{${LEGACY_HASHLINE_ID_LENGTH},${HASHLINE_ID_LENGTH}}\\|`,
+)
 const DIFF_PLUS_RE = /^[+](?![+])/
 
 function equalsIgnoringWhitespace(a: string, b: string): boolean {
