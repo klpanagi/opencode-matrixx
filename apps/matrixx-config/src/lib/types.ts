@@ -119,6 +119,10 @@ export interface ExperimentalConfig {
 }
 
 export interface DcpCompressOverride {
+  mode?: "range" | "message";
+  permission?: "ask" | "allow" | "deny";
+  showCompression?: boolean;
+  summaryBuffer?: boolean;
   maxContextLimit?: number | string;
   minContextLimit?: number | string;
   nudgeFrequency?: number;
@@ -140,10 +144,16 @@ export interface DcpExperimental {
 
 export interface DcpProfileSettings {
   pruneNotification?: "off" | "minimal" | "detailed";
+  pruneNotificationType?: "chat" | "toast";
+  autoUpdate?: boolean;
+  debug?: boolean;
   compress?: DcpCompressOverride;
   turnProtection?: DcpTurnProtection;
   experimental?: DcpExperimental;
-  strategies?: { purgeErrors?: { turns?: number } };
+  strategies?: { deduplication?: { enabled?: boolean; protectedTools?: string[] }; purgeErrors?: { enabled?: boolean; turns?: number; protectedTools?: string[] } };
+  commands?: { enabled?: boolean; protectedTools?: string[] };
+  manualMode?: { enabled?: boolean; automaticStrategies?: boolean };
+  protectedFilePatterns?: string[];
 }
 
 export type DcpProfileDefinition = DcpProfileSettings;
@@ -158,7 +168,6 @@ export interface DcpConfig {
     keepFirst?: number;
     keepLast?: number;
   };
-  base?: Record<string, unknown>;
 }
 
 export interface HeadroomConfig {

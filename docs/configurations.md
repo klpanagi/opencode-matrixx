@@ -1396,8 +1396,7 @@ Dynamic Context Pruning — tiered pruning (`economy`/`balanced`/`performance`/`
   "dcp": {
     "enabled": true,
     "default_profile": "balanced",   // economy | balanced | performance | ultimate
-    "profiles": { /* 4 built-in; override per tier */ },
-    "base": { "pruneNotificationType": "chat", "autoUpdate": false }
+    "profiles": { /* builtin tiers; override per tier by profile name as key */ }
   }
 }
 ```
@@ -1406,8 +1405,7 @@ Dynamic Context Pruning — tiered pruning (`economy`/`balanced`/`performance`/`
 |--------|------|---------|-------------|
 | `enabled` | `boolean` | `true` | Enable DCP plugin bridge. Requires `@tarquinen/opencode-dcp` installed. |
 | `default_profile` | `string` | — | Default DCP tier. |
-| `profiles` | `object` | 4 built-in (`economy`/`balanced`/`performance`/`ultimate`) | Per-tier overrides for `compress`/`strategies`/`commands`/`manualMode`. |
-| `base` | `object` | — | Base overrides (`pruneNotificationType`, `autoUpdate`, `debug`, `compress`, `strategies`, `commands`, `manualMode`, `protectedFilePatterns`). |
+| `profiles` | `object` | 4 built-in (`economy`/`balanced`/`performance`/`ultimate`) | Per-tier overrides keyed by profile name (`compress`/`strategies`/`commands`/`manualMode`/`pruneNotificationType`/`autoUpdate`/`debug`/`protectedFilePatterns`). |
 
 > Schema: `src/config/schema/dcp.ts` (~9.5k). Switch: set `dcp.default_profile` (applied on startup by `src/shared/dcp-switch-profile.ts`). Docs: [Context Management](./context-management.md).
 

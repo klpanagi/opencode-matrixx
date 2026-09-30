@@ -99,6 +99,7 @@
           "construct",
           "seraph",
           "smith",
+          "auditor",
           "architect",
           "cipher",
           "sentinel",
@@ -160,7 +161,6 @@
             "type": "string",
             "enum": [
               "task-continuation-enforcer",
-              "todo-continuation-enforcer",
               "context-window-monitor",
               "session-recovery",
               "session-notification",
@@ -184,7 +184,6 @@
               "matrix-loop",
               "category-skill-reminder",
               "compaction-context-injector",
-              "compaction-todo-preserver",
               "auto-slash-command",
               "edit-error-recovery",
               "delegate-task-retry",
@@ -196,7 +195,6 @@
               "unstable-agent-babysitter",
               "task-resume-info",
               "stop-continuation-guard",
-              "tasks-todowrite-disabler",
               "write-existing-file-guard",
               "anthropic-effort",
               "hashline-read-enhancer",
@@ -211,7 +209,6 @@
               "webfetch-redirect-guard",
               "tool-pair-validator",
               "quality-gate",
-              "task-notepad",
               "design-intent-preserver",
               "rtk-bash-rewriter",
               "evolution-watcher",
@@ -222,10 +219,29 @@
               "document-reader-guard",
               "knowledge-hub-guard",
               "knowledge-hub-injector",
-              "knowledge-hub-search-nudge"
+              "knowledge-hub-search-nudge",
+              "dcp-nudge-sanitizer",
+              "nudge-loop-breaker",
+              "task-notepad-writer"
             ]
           },
-          {}
+          {},
+          {
+            "type": "string",
+            "const": "todo-continuation-enforcer"
+          },
+          {
+            "type": "string",
+            "const": "compaction-todo-preserver"
+          },
+          {
+            "type": "string",
+            "const": "tasks-todowrite-disabler"
+          },
+          {
+            "type": "string",
+            "const": "task-notepad"
+          }
         ]
       }
     },
@@ -247,7 +263,8 @@
           "research",
           "assembly",
           "ultrawork",
-          "bdd-pipeline"
+          "bdd-pipeline",
+          "plan-review"
         ]
       }
     },
@@ -1917,6 +1934,213 @@
           "additionalProperties": false
         },
         "smith": {
+          "type": "object",
+          "properties": {
+            "model": {
+              "type": "string"
+            },
+            "variant": {
+              "type": "string"
+            },
+            "category": {
+              "type": "string"
+            },
+            "skills": {
+              "type": "array",
+              "items": {
+                "type": "string"
+              }
+            },
+            "temperature": {
+              "type": "number",
+              "minimum": 0,
+              "maximum": 2
+            },
+            "top_p": {
+              "type": "number",
+              "minimum": 0,
+              "maximum": 1
+            },
+            "prompt": {
+              "type": "string"
+            },
+            "prompt_append": {
+              "type": "string"
+            },
+            "tools": {
+              "type": "object",
+              "propertyNames": {
+                "type": "string"
+              },
+              "additionalProperties": {
+                "type": "boolean"
+              }
+            },
+            "disable": {
+              "type": "boolean"
+            },
+            "description": {
+              "type": "string"
+            },
+            "mode": {
+              "type": "string",
+              "enum": [
+                "subagent",
+                "primary",
+                "all"
+              ]
+            },
+            "color": {
+              "type": "string",
+              "pattern": "^#[0-9A-Fa-f]{6}$"
+            },
+            "permission": {
+              "type": "object",
+              "properties": {
+                "edit": {
+                  "type": "string",
+                  "enum": [
+                    "ask",
+                    "allow",
+                    "deny"
+                  ]
+                },
+                "bash": {
+                  "anyOf": [
+                    {
+                      "type": "string",
+                      "enum": [
+                        "ask",
+                        "allow",
+                        "deny"
+                      ]
+                    },
+                    {
+                      "type": "object",
+                      "propertyNames": {
+                        "type": "string"
+                      },
+                      "additionalProperties": {
+                        "type": "string",
+                        "enum": [
+                          "ask",
+                          "allow",
+                          "deny"
+                        ]
+                      }
+                    }
+                  ]
+                },
+                "webfetch": {
+                  "type": "string",
+                  "enum": [
+                    "ask",
+                    "allow",
+                    "deny"
+                  ]
+                },
+                "task": {
+                  "type": "string",
+                  "enum": [
+                    "ask",
+                    "allow",
+                    "deny"
+                  ]
+                },
+                "doom_loop": {
+                  "type": "string",
+                  "enum": [
+                    "ask",
+                    "allow",
+                    "deny"
+                  ]
+                },
+                "external_directory": {
+                  "type": "string",
+                  "enum": [
+                    "ask",
+                    "allow",
+                    "deny"
+                  ]
+                }
+              },
+              "additionalProperties": false
+            },
+            "maxTokens": {
+              "type": "number"
+            },
+            "thinking": {
+              "type": "object",
+              "properties": {
+                "type": {
+                  "type": "string",
+                  "enum": [
+                    "enabled",
+                    "disabled"
+                  ]
+                },
+                "budgetTokens": {
+                  "type": "number"
+                }
+              },
+              "required": [
+                "type"
+              ],
+              "additionalProperties": false
+            },
+            "reasoningEffort": {
+              "type": "string",
+              "enum": [
+                "low",
+                "medium",
+                "high",
+                "xhigh"
+              ]
+            },
+            "textVerbosity": {
+              "type": "string",
+              "enum": [
+                "low",
+                "medium",
+                "high"
+              ]
+            },
+            "providerOptions": {
+              "type": "object",
+              "propertyNames": {
+                "type": "string"
+              },
+              "additionalProperties": {}
+            },
+            "fallbackChain": {
+              "type": "array",
+              "items": {
+                "type": "object",
+                "properties": {
+                  "providers": {
+                    "type": "array",
+                    "items": {
+                      "type": "string"
+                    }
+                  },
+                  "model": {
+                    "type": "string"
+                  },
+                  "variant": {
+                    "type": "string"
+                  }
+                },
+                "required": [
+                  "providers",
+                  "model"
+                ],
+                "additionalProperties": false
+              }
+            }
+          },
+          "additionalProperties": false
+        },
+        "auditor": {
           "type": "object",
           "properties": {
             "model": {
@@ -3935,7 +4159,6 @@
           "type": "boolean"
         },
         "task_system": {
-          "default": true,
           "type": "boolean"
         },
         "plugin_load_timeout_ms": {
@@ -3959,9 +4182,6 @@
           "type": "boolean"
         }
       },
-      "required": [
-        "task_system"
-      ],
       "additionalProperties": false
     },
     "dcp": {
@@ -3988,9 +4208,43 @@
                   "detailed"
                 ]
               },
+              "pruneNotificationType": {
+                "type": "string",
+                "enum": [
+                  "chat",
+                  "toast"
+                ]
+              },
+              "autoUpdate": {
+                "type": "boolean"
+              },
+              "debug": {
+                "type": "boolean"
+              },
               "compress": {
                 "type": "object",
                 "properties": {
+                  "mode": {
+                    "type": "string",
+                    "enum": [
+                      "range",
+                      "message"
+                    ]
+                  },
+                  "permission": {
+                    "type": "string",
+                    "enum": [
+                      "ask",
+                      "allow",
+                      "deny"
+                    ]
+                  },
+                  "showCompression": {
+                    "type": "boolean"
+                  },
+                  "summaryBuffer": {
+                    "type": "boolean"
+                  },
                   "maxContextLimit": {
                     "anyOf": [
                       {
@@ -4012,6 +4266,42 @@
                         "pattern": "^\\d+%$"
                       }
                     ]
+                  },
+                  "modelMaxLimits": {
+                    "type": "object",
+                    "propertyNames": {
+                      "type": "string",
+                      "pattern": "^[^/]+\\/[^/]+$"
+                    },
+                    "additionalProperties": {
+                      "anyOf": [
+                        {
+                          "type": "number"
+                        },
+                        {
+                          "type": "string",
+                          "pattern": "^\\d+%$"
+                        }
+                      ]
+                    }
+                  },
+                  "modelMinLimits": {
+                    "type": "object",
+                    "propertyNames": {
+                      "type": "string",
+                      "pattern": "^[^/]+\\/[^/]+$"
+                    },
+                    "additionalProperties": {
+                      "anyOf": [
+                        {
+                          "type": "number"
+                        },
+                        {
+                          "type": "string",
+                          "pattern": "^\\d+%$"
+                        }
+                      ]
+                    }
                   },
                   "nudgeFrequency": {
                     "type": "integer",
@@ -4071,19 +4361,76 @@
               "strategies": {
                 "type": "object",
                 "properties": {
+                  "deduplication": {
+                    "type": "object",
+                    "properties": {
+                      "enabled": {
+                        "type": "boolean"
+                      },
+                      "protectedTools": {
+                        "type": "array",
+                        "items": {
+                          "type": "string"
+                        }
+                      }
+                    },
+                    "additionalProperties": false
+                  },
                   "purgeErrors": {
                     "type": "object",
                     "properties": {
+                      "enabled": {
+                        "type": "boolean"
+                      },
                       "turns": {
                         "type": "integer",
                         "minimum": 1,
                         "maximum": 9007199254740991
+                      },
+                      "protectedTools": {
+                        "type": "array",
+                        "items": {
+                          "type": "string"
+                        }
                       }
                     },
                     "additionalProperties": false
                   }
                 },
                 "additionalProperties": false
+              },
+              "commands": {
+                "type": "object",
+                "properties": {
+                  "enabled": {
+                    "type": "boolean"
+                  },
+                  "protectedTools": {
+                    "type": "array",
+                    "items": {
+                      "type": "string"
+                    }
+                  }
+                },
+                "additionalProperties": false
+              },
+              "manualMode": {
+                "type": "object",
+                "properties": {
+                  "enabled": {
+                    "type": "boolean"
+                  },
+                  "automaticStrategies": {
+                    "type": "boolean"
+                  }
+                },
+                "additionalProperties": false
+              },
+              "protectedFilePatterns": {
+                "type": "array",
+                "items": {
+                  "type": "string"
+                }
               }
             },
             "additionalProperties": false
@@ -4131,295 +4478,12 @@
             "keepLast"
           ],
           "additionalProperties": false
-        },
-        "base": {
-          "default": {
-            "autoUpdate": false,
-            "debug": false,
-            "pruneNotificationType": "chat",
-            "compress": {
-              "mode": "range",
-              "permission": "allow",
-              "showCompression": true,
-              "summaryBuffer": true,
-              "nudgeForce": "strong",
-              "iterationNudgeThreshold": 5,
-              "protectedTools": [],
-              "protectUserMessages": false
-            },
-            "strategies": {
-              "deduplication": {
-                "enabled": true,
-                "protectedTools": []
-              },
-              "purgeErrors": {
-                "enabled": true,
-                "protectedTools": []
-              }
-            },
-            "commands": {
-              "enabled": true,
-              "protectedTools": []
-            },
-            "manualMode": {
-              "enabled": false,
-              "automaticStrategies": true
-            },
-            "protectedFilePatterns": [],
-            "experimental": {
-              "allowSubAgents": true
-            }
-          },
-          "type": "object",
-          "properties": {
-            "autoUpdate": {
-              "default": false,
-              "type": "boolean"
-            },
-            "debug": {
-              "default": false,
-              "type": "boolean"
-            },
-            "pruneNotificationType": {
-              "default": "chat",
-              "type": "string",
-              "enum": [
-                "chat",
-                "toast"
-              ]
-            },
-            "compress": {
-              "default": {
-                "mode": "range",
-                "permission": "allow",
-                "showCompression": true,
-                "summaryBuffer": true,
-                "nudgeForce": "strong",
-                "iterationNudgeThreshold": 5,
-                "protectedTools": [],
-                "protectUserMessages": false
-              },
-              "type": "object",
-              "properties": {
-                "mode": {
-                  "default": "range",
-                  "type": "string",
-                  "enum": [
-                    "range",
-                    "message"
-                  ]
-                },
-                "permission": {
-                  "default": "allow",
-                  "type": "string",
-                  "enum": [
-                    "ask",
-                    "allow",
-                    "deny"
-                  ]
-                },
-                "showCompression": {
-                  "default": true,
-                  "type": "boolean"
-                },
-                "summaryBuffer": {
-                  "default": true,
-                  "type": "boolean"
-                },
-                "nudgeForce": {
-                  "default": "strong",
-                  "type": "string",
-                  "enum": [
-                    "strong",
-                    "soft"
-                  ]
-                },
-                "iterationNudgeThreshold": {
-                  "default": 5,
-                  "type": "integer",
-                  "minimum": 1,
-                  "maximum": 9007199254740991
-                },
-                "protectedTools": {
-                  "default": [],
-                  "type": "array",
-                  "items": {
-                    "type": "string"
-                  }
-                },
-                "protectUserMessages": {
-                  "default": false,
-                  "type": "boolean"
-                }
-              },
-              "required": [
-                "mode",
-                "permission",
-                "showCompression",
-                "summaryBuffer",
-                "nudgeForce",
-                "iterationNudgeThreshold",
-                "protectedTools",
-                "protectUserMessages"
-              ],
-              "additionalProperties": false
-            },
-            "strategies": {
-              "default": {
-                "deduplication": {
-                  "enabled": true,
-                  "protectedTools": []
-                },
-                "purgeErrors": {
-                  "enabled": true,
-                  "protectedTools": []
-                }
-              },
-              "type": "object",
-              "properties": {
-                "deduplication": {
-                  "default": {
-                    "enabled": true,
-                    "protectedTools": []
-                  },
-                  "type": "object",
-                  "properties": {
-                    "enabled": {
-                      "default": true,
-                      "type": "boolean"
-                    },
-                    "protectedTools": {
-                      "default": [],
-                      "type": "array",
-                      "items": {
-                        "type": "string"
-                      }
-                    }
-                  },
-                  "required": [
-                    "enabled",
-                    "protectedTools"
-                  ],
-                  "additionalProperties": false
-                },
-                "purgeErrors": {
-                  "default": {
-                    "enabled": true,
-                    "protectedTools": []
-                  },
-                  "type": "object",
-                  "properties": {
-                    "enabled": {
-                      "default": true,
-                      "type": "boolean"
-                    },
-                    "protectedTools": {
-                      "default": [],
-                      "type": "array",
-                      "items": {
-                        "type": "string"
-                      }
-                    }
-                  },
-                  "required": [
-                    "enabled",
-                    "protectedTools"
-                  ],
-                  "additionalProperties": false
-                }
-              },
-              "required": [
-                "deduplication",
-                "purgeErrors"
-              ],
-              "additionalProperties": false
-            },
-            "commands": {
-              "default": {
-                "enabled": true,
-                "protectedTools": []
-              },
-              "type": "object",
-              "properties": {
-                "enabled": {
-                  "default": true,
-                  "type": "boolean"
-                },
-                "protectedTools": {
-                  "default": [],
-                  "type": "array",
-                  "items": {
-                    "type": "string"
-                  }
-                }
-              },
-              "required": [
-                "enabled",
-                "protectedTools"
-              ],
-              "additionalProperties": false
-            },
-            "manualMode": {
-              "default": {
-                "enabled": false,
-                "automaticStrategies": true
-              },
-              "type": "object",
-              "properties": {
-                "enabled": {
-                  "default": false,
-                  "type": "boolean"
-                },
-                "automaticStrategies": {
-                  "default": true,
-                  "type": "boolean"
-                }
-              },
-              "required": [
-                "enabled",
-                "automaticStrategies"
-              ],
-              "additionalProperties": false
-            },
-            "protectedFilePatterns": {
-              "default": [],
-              "type": "array",
-              "items": {
-                "type": "string"
-              }
-            },
-            "experimental": {
-              "default": {
-                "allowSubAgents": true
-              },
-              "type": "object",
-              "properties": {
-                "allowSubAgents": {
-                  "type": "boolean"
-                }
-              },
-              "additionalProperties": false
-            }
-          },
-          "required": [
-            "autoUpdate",
-            "debug",
-            "pruneNotificationType",
-            "compress",
-            "strategies",
-            "commands",
-            "manualMode",
-            "protectedFilePatterns",
-            "experimental"
-          ],
-          "additionalProperties": false
         }
       },
       "required": [
         "enabled",
         "profiles",
-        "handoffCompression",
-        "base"
+        "handoffCompression"
       ],
       "additionalProperties": false
     },
@@ -4812,10 +4876,15 @@
           "type": "string"
         },
         "stale_after_hours": {
-          "description": "Pending tasks with no file activity for this many hours are considered stale (default: 24). Stale tasks are excluded from task-continuation directives.",
-          "type": "integer",
-          "minimum": 1,
-          "maximum": 9007199254740991
+          "description": "Pending tasks with no file activity for this many hours are considered stale and excluded from task-continuation directives. Accepts fractional hours (minimum 0.25 = 15 minutes); there is no separate minutes companion key. Default 24.",
+          "type": "number",
+          "minimum": 0.25
+        },
+        "background_stale_after_hours": {
+          "description": "Window used only by the background-agent completion gates: a pending/in_progress task with no file activity for this many hours stops blocking completion of its background handle. Separate from stale_after_hours because a missed nudge and a wedged handle are different failures. Accepts fractional hours (min 0.25). Default 2.",
+          "default": 2,
+          "type": "number",
+          "minimum": 0.25
         },
         "session_scoped": {
           "description": "When true, the task-continuation-enforcer only considers tasks created by the current session (or its subagent sessions). When false, all project tasks are considered regardless of session origin.",
@@ -4953,10 +5022,9 @@
               ]
             },
             "stale_after_hours": {
-              "description": "Pending tasks with no file activity for this many hours are considered stale (default: 24). Stale tasks are excluded from task-continuation directives.",
-              "type": "integer",
-              "minimum": 1,
-              "maximum": 9007199254740991
+              "description": "Pending tasks with no file activity for this many hours are considered stale and excluded from task-continuation directives. Accepts fractional hours (minimum 0.25 = 15 minutes); there is no separate minutes companion key. Default 24.",
+              "type": "number",
+              "minimum": 0.25
             },
             "session_scoped": {
               "description": "When true, the task-continuation-enforcer only considers tasks created by the current session (or its subagent sessions). When false, all project tasks are considered regardless of session origin.",
