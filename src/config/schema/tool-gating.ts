@@ -10,6 +10,8 @@ export const ToolGatingConfigSchema = z.object({
   look_at: z.boolean().optional(),
   /** Model preset tool (preset). Default false; set true to restore registration. The /preset slashcommand remains the supported path. */
   preset_tools: z.boolean().default(false),
+  /** Session cleanup tool (session_cleanup). Destructive and rarely needed, so it is opt-in: undefined or false keeps it unregistered. Set true to expose it, then call it with apply=true. */
+  session_cleanup: z.boolean().optional(),
 })
 
 export type ToolGatingConfig = z.infer<typeof ToolGatingConfigSchema>

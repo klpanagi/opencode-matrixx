@@ -33,6 +33,7 @@ import {
   createPlanReadTool,
   createPlanUpdateTool,
   createPresetTool,
+  createSessionCleanupTool,
   createSessionManagerTools,
   createSkillTool,
   createSlashcommandTool,
@@ -54,6 +55,7 @@ import {
   shouldEnableLookAt,
   shouldEnablePdfFigures,
   shouldEnablePresetTools,
+  shouldEnableSessionCleanup,
 } from "./tool-gating"
 import type { PluginContext, ToolsRecord } from "./types"
 
@@ -96,6 +98,11 @@ export function createToolRegistry(args: {
     : {}
   const presetRecord: Record<string, ToolDefinition> = presetToolsEnabled
     ? { ...createPresetTool({ pluginConfig, directory: ctx.directory }) }
+    : {}
+  const sessionCleanupRecord: Record<string, ToolDefinition> = shouldEnableSessionCleanup(
+    toolGating?.session_cleanup,
+  )
+    ? { session_cleanup: createSessionCleanupTool(ctx) }
     : {}
 
   const delegateTask = createDelegateTask({
@@ -188,6 +195,7 @@ export function createToolRegistry(args: {
     ...(knowledgeHubConfirmEnabled ? { knowledge_hub_confirm: createKnowledgeHubConfirmTool(ctx) } : {}),
     ...pdfFiguresRecord,
     ...presetRecord,
+    ...sessionCleanupRecord,
     ...backgroundTools,
     ...(lookAt ? { look_at: lookAt } : {}),
     task: delegateTask,
