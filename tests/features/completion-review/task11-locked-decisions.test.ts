@@ -29,9 +29,10 @@
  * The correct invariant is ONE definition with an unchanged VALUE, which is
  * what this file asserts. See the comment at the cap test for the full note.
  */
-import { describe, expect, test } from "bun:test"
-import { readFileSync, readdirSync } from "node:fs"
+import { afterAll, beforeAll, describe, expect, test } from "bun:test"
+import { mkdirSync, mkdtempSync, readFileSync, readdirSync, rmSync } from "node:fs"
 import { createHash } from "node:crypto"
+import { tmpdir } from "node:os"
 import { join, relative, resolve } from "node:path"
 
 import { MAX_PLAN_FILE_BYTES } from "../../../src/features/mission-state/constants"
@@ -217,6 +218,26 @@ describe("locked decision #5 — the plan contract stays permanently advisory", 
 })
 
 describe("locked decision #6 — a low score is advisory, never a block", () => {
+  // `writeReviewReport` resolves `.matrixx/reviews` against CWD, and that path
+  // is gitignored — a fresh CI checkout has no such directory and `atomicWrite`
+  // does not create one. Writing into a scratch CWD keeps the assertion
+  // environment-independent; the original CWD is restored in `afterAll` so the
+  // change cannot leak into another test file.
+  let originalCwd = ""
+  let sandbox = ""
+
+  beforeAll(() => {
+    originalCwd = process.cwd()
+    sandbox = mkdtempSync(join(tmpdir(), "completion-review-task11-"))
+    mkdirSync(join(sandbox, ".matrixx", "reviews"), { recursive: true })
+    process.chdir(sandbox)
+  })
+
+  afterAll(() => {
+    process.chdir(originalCwd)
+    rmSync(sandbox, { recursive: true, force: true })
+  })
+
   test("a 0.1 score still writes a report and returns no error", () => {
     //#given a fully-scored review carrying a very low headline score
     const lowScore = input({

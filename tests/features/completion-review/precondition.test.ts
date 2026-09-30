@@ -25,18 +25,21 @@ import { createPlanReadTool } from "../../../src/tools/plan/plan-read"
 import { buildSectionIndex } from "../../../src/tools/plan/section-index"
 import {
   gateFailures,
-  measureCorpus,
   MIN_CORPUS_RESOLUTIONS,
   RUBRIC_H3_IDS,
   RUBRIC_H3_SELECTORS,
 } from "./precondition-gate"
+import { measurePlans } from "./precondition-corpus"
+import { FIXTURE_PLAN_COUNT, fixtureCorpus } from "../../fixtures/completion-review/corpus-plans"
 
 const REPO_ROOT = resolve(import.meta.dir, "../../..")
-const PLANS_DIR = join(REPO_ROOT, ".matrixx/plans")
 const VALIDATE_TS = join(REPO_ROOT, "src/features/plan-contract/validate.ts")
 const TEST_ABORT = new AbortController()
 
-const corpus = measureCorpus(PLANS_DIR)
+// The corpus is COMMITTED FIXTURES, not `.matrixx/plans/`: that directory is
+// gitignored, so measuring it made this gate green only on the machine that
+// wrote it and red on every CI checkout.
+const corpus = measurePlans(fixtureCorpus())
 
 let fixtureDir = ""
 const FIXTURE_PLAN = [
@@ -199,24 +202,46 @@ describe("Preconditions 2-5 — the registry resolves the three rubric H3s acros
     expect(h3).toBeGreaterThan(h2)
   })
 
-  test("each rubric H3 resolves to a NON-EMPTY body in at least 20 of the live plans", () => {
-    // Live corpus (36 plans), measured by RESOLVED ID, not by heading text:
-    // must-not-have-guardrails 31, concrete-deliverables 28, test-decision 27 —
-    // all `resolved`, zero `custom`, zero `ambiguous`. The heading spellings
-    // differ across plans ("Must NOT Have (Guardrails)" / "(guardrails)" / "Must
-    // NOT have (guardrails)"), and the registry normalizer is case-insensitive
-    // so all 31 resolve to the same id. An earlier text-keyed version of this
-    // gate under-counted 29/27/26 and silently ignored that drift tolerance.
-    // Asserted against a floor of 20 rather than exact equality: the plan text's
-    // "30/35 / 26/35 / 25/35" figures are stale, and archiving a plan must not
-    // fail the build. See MIN_CORPUS_RESOLUTIONS for the full derivation.
+  test("each rubric H3 resolves to a NON-EMPTY body in at least MIN_CORPUS_RESOLUTIONS of the corpus", () => {
+    // Measured by RESOLVED ID, not by heading text: the guardrails heading is
+    // spelled three ways across the fixture corpus and the registry normalizer
+    // is case-insensitive, so all spellings land on one id. A text-keyed gate
+    // would under-count exactly the drift tolerance the registry provides.
+    // Asserted against a floor rather than exact equality so a fixture can be
+    // pruned without failing for a reason unrelated to the section surface.
     for (const id of RUBRIC_H3_IDS) {
       const bucket = corpus.bySelector[id]
       expect(bucket.resolvedPlans).toBe(bucket.resolvedNonEmpty)
       expect(bucket.resolvedNonEmpty).toBeGreaterThanOrEqual(MIN_CORPUS_RESOLUTIONS)
       expect(bucket.ambiguous).toBe(0)
     }
-    expect(corpus.planCount).toBeGreaterThanOrEqual(30)
+    expect(corpus.planCount).toBe(FIXTURE_PLAN_COUNT)
+  })
+
+  test("the committed corpus is large enough for the floor to be a real constraint", () => {
+    //#given the floor and the committed corpus size
+    //#then the corpus clears the floor with headroom, so lowering the floor
+    //     could not be what makes this gate pass
+    expect(FIXTURE_PLAN_COUNT).toBeGreaterThan(MIN_CORPUS_RESOLUTIONS)
+    for (const id of RUBRIC_H3_IDS) {
+      expect(corpus.bySelector[id].resolvedNonEmpty).toBe(FIXTURE_PLAN_COUNT)
+    }
+  })
+
+  test("the gate FAILS when the registry stops resolving — the negative scenario", () => {
+    //#given the same committed corpus measured against an EMPTY registry,
+    //     which is how a missing/absent registry is simulated
+    const withoutRegistry = measurePlans(fixtureCorpus(), [])
+    //#when the same gate predicate runs
+    const failures = gateFailures(withoutRegistry)
+    //#then the gate refuses to pass, and names every rubric H3
+    expect(failures.length).toBeGreaterThan(0)
+    expect(failures).toEqual(
+      expect.arrayContaining(RUBRIC_H3_IDS.map((id) => expect.stringContaining(id))),
+    )
+    for (const id of RUBRIC_H3_IDS) {
+      expect(withoutRegistry.bySelector[id].resolvedNonEmpty).toBe(0)
+    }
   })
 
   test("the registry resolves case-variant spellings to the same rubric id", () => {
