@@ -62,7 +62,12 @@ export function createEvolutionCompressorHook(a?: PluginContext | EvolutionConfi
       const minTraces = config.compressor?.minTraces ?? 5
       if (effective.length < minTraces) return null
       const input: CompressionInput = { sessionID, traces: effective }
-      const result = await runEvolutionPipeline(input, config, hostLlmCall)
+      const parentID = sessionID && sessionID !== "unknown" ? sessionID : undefined
+      const llmCall =
+        ctx?.client && parentID
+          ? createHostLlmCall({ client: ctx.client, directory: ctx.directory, model: config?.compressor?.model, parentID })
+          : hostLlmCall
+      const result = await runEvolutionPipeline(input, config, llmCall)
       if (!result.staged && !result.promoted) return null
       const state = await traceStore.getState()
       await traceStore.updateState({ lastCompressionAt: new Date().toISOString(), totalCompressions: (state.totalCompressions ?? 0) + 1 })

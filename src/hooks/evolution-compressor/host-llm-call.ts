@@ -3,6 +3,7 @@ import type { LlmUsage } from "../../features/evolution/compressor/interface"
 import { log } from "../../shared/logger"
 import { normalizeSDKResponse } from "../../shared/normalize-sdk-response"
 import { isRecord } from "../../shared/record-type-guard"
+import { withEphemeralSession } from "../../shared/with-ephemeral-session"
 import { parseModelString } from "../../tools/delegate-task/model-string-parser"
 
 type Client = ReturnType<typeof createOpencodeClient>
@@ -35,34 +36,37 @@ export function createHostLlmCall(options: {
   directory: string
   agent?: string
   model?: string
+  parentID?: string
 }): (prompt: string, model?: string) => Promise<{ text: string; usage?: LlmUsage }> {
-  const { client, directory, agent, model: defaultModel } = options
+  const { client, directory, agent, model: defaultModel, parentID } = options
   return async (prompt: string, model?: string) => {
     const effectiveModel = model ?? defaultModel
     const parsed = parseModelOverride(effectiveModel)
-    const created = await client.session.create({
-      body: { title: "evolution-compressor" },
-      query: { directory },
+    return withEphemeralSession({
+      client,
+      directory,
+      title: "evolution-compressor",
+      ...(parentID ? { parentID } : {}),
+      body: async (sessionID: string) => {
+        try {
+          await client.session.prompt({
+            path: { id: sessionID },
+            body: {
+              ...(agent ? { agent } : {}),
+              ...(parsed ? { model: parsed } : {}),
+              parts: [{ type: "text", text: prompt }],
+            },
+            query: { directory },
+          })
+        } catch (error) {
+          log("[evolution-compressor] host prompt failed", { error: String(error) })
+          throw error instanceof Error ? error : new Error(String(error))
+        }
+        const messages = await client.session.messages({ path: { id: sessionID } })
+        const text = latestAssistantText(messages)
+        if (!text) throw new Error("evolution-compressor: host returned no assistant text")
+        return { text }
+      },
     })
-    const session = normalizeSDKResponse<{ id: string }>(created, { id: "" })
-    if (!session.id) throw new Error("evolution-compressor: host session create failed")
-    try {
-      await client.session.prompt({
-        path: { id: session.id },
-        body: {
-          ...(agent ? { agent } : {}),
-          ...(parsed ? { model: parsed } : {}),
-          parts: [{ type: "text", text: prompt }],
-        },
-        query: { directory },
-      })
-    } catch (error) {
-      log("[evolution-compressor] host prompt failed", { error: String(error) })
-      throw error instanceof Error ? error : new Error(String(error))
-    }
-    const messages = await client.session.messages({ path: { id: session.id } })
-    const text = latestAssistantText(messages)
-    if (!text) throw new Error("evolution-compressor: host returned no assistant text")
-    return { text }
   }
 }
