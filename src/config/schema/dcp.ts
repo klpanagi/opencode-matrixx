@@ -118,11 +118,9 @@ export const BUILTIN_DCP_PROFILES = {
     compress: {
       maxContextLimit: "20%",
       minContextLimit: "10%",
-      nudgeFrequency: 3,
-      nudgeForce: "soft" as const,
+      nudgeFrequency: 2,
+      nudgeForce: "strong" as const,
       iterationNudgeThreshold: 6,
-      modelMaxLimits: { "deepseek/deepseek-v4.1-flash": "95%" },
-      modelMinLimits: { "deepseek/deepseek-v4.1-flash": "90%" },
     },
     turnProtection: { enabled: false },
     experimental: { allowSubAgents: false },
