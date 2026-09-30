@@ -11,11 +11,14 @@ import {
 import type { PluginContext } from "../../plugin/types"
 import { executeHashlineEditTool } from "../hashline-edit/hashline-edit-executor"
 import { MAX_PLAN_FILE_BYTES } from "./constants"
+import { PLAN_ERROR_CODES } from "./error-codes"
 import { enforcePlanCap, type PostApplyHook } from "./plan-write-guard"
 import { type RawSectionEdit, resolveSectionScopedEdits, sectionWritePayload } from "./section-edit"
 import { resolveDirectory, validatePlanFilePath } from "./types"
 
 const DEFAULT_FRONT_MATTER: PlanFrontMatter = { status: "pending", revision: 1 }
+
+const MISPLACED_SECTION_FIELDS = ["section", "sectionIndex", "contentHash"] as const
 
 function parseAnchorLine(anchor: string): number | null {
   const match = /^(\d+)#/.exec(anchor)
@@ -62,6 +65,17 @@ export function createPlanUpdateTool(ctx?: PluginContext, postApply?: PostApplyH
         const edits = args.edits as Array<Record<string, unknown>>
         if (!Array.isArray(edits) || edits.length === 0) {
           return JSON.stringify({ error: "validation_error", message: "edits must be a non-empty array" })
+        }
+        // `section` / `sectionIndex` / `contentHash` are PER-EDIT fields only. A
+        // caller that puts them at the top level would otherwise get a successful
+        // but UNGATED write — the contentHash gate never consulted — so the
+        // misplacement is refused here, before any file is read or edited.
+        const misplaced = MISPLACED_SECTION_FIELDS.filter((f) => (args as Record<string, unknown>)[f] !== undefined)
+        if (misplaced.length > 0) {
+          return JSON.stringify({
+            error: PLAN_ERROR_CODES.validationError,
+            message: `${misplaced.join(" / ")} must be supplied INSIDE an edit object in edits[], not as top-level arguments. Example: edits: [{ op: "replace", pos: "10#AB", lines: [...], section: "todos", contentHash: "<from plan_read(section)>" }]`,
+          })
         }
         for (const e of edits) {
           const op = (e as { op?: string }).op
