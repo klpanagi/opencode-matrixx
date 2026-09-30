@@ -10,7 +10,7 @@ import { MAX_PLAN_FILE_BYTES } from "./constants"
 import { planSizeExceededFields } from "./error-codes"
 import { resolveDirectory, validatePlanFilePath } from "./types"
 
-export function createPlanCreateTool(ctx?: PluginContext): ToolDefinition {
+export function createPlanCreateTool(ctx?: PluginContext, cap: number = MAX_PLAN_FILE_BYTES): ToolDefinition {
   return tool({
     description: `Create a new plan file under .matrixx/plans/*.md.\nValidated via isAllowedFile(join(directory,PLANS_DIR), filePath) + .md + kebab-case.\nUses atomicWrite (.tmp.pid+rename) + upsertMetadataComment. Warns if file already exists.`,
     args: {
@@ -41,7 +41,7 @@ export function createPlanCreateTool(ctx?: PluginContext): ToolDefinition {
             filePath: resolved,
           })
         }
-        const contract = validatePlanContract(content)
+        const contract = validatePlanContract(content, cap)
         const id = basename(resolved, ".md")
         const sessionId = (context as Record<string, unknown>)?.sessionID as string | undefined ?? "unknown"
         const { total, completed } = countPlanProgressFromContent(content)
@@ -54,10 +54,10 @@ export function createPlanCreateTool(ctx?: PluginContext): ToolDefinition {
         }
         const contentWithMeta = upsertMetadataComment(content, meta)
         const byteLength = measurePlanBytes(contentWithMeta)
-        if (byteLength > MAX_PLAN_FILE_BYTES) {
+        if (byteLength > cap) {
           return JSON.stringify({
             error: "size_exceeded",
-            ...planSizeExceededFields(byteLength),
+            ...planSizeExceededFields(byteLength, cap),
           })
         }
         const ok = atomicWrite(resolved, contentWithMeta)

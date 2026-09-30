@@ -26,9 +26,9 @@ function renderHashline(lines: string[], startIndex: number): string {
   return lines.map((line, index) => formatHashLine(startIndex + index + 1, line)).join("\n")
 }
 
-export function createPlanReadTool(ctx?: PluginContext): ToolDefinition {
+export function createPlanReadTool(ctx?: PluginContext, cap: number = MAX_PLAN_FILE_BYTES): ToolDefinition {
   return tool({
-    description: `Read a plan file from .matrixx/plans/*.md, returning EXACTLY ONE payload for the selected format: 'hashline' (default; 1#AB|content anchors for plan_update) or 'content' (raw lines) — never both. Paginate with offset (1-based start line, inclusive) and limit (line count); returned anchors stay absolute. PRECEDENCE: section WINS over offset/limit — when both are supplied the section defines the base span and the response reports precedence:"section" plus the effective absolute startLine/endLine. section reads one plan section (registry id or heading text) and return ONLY that span alongside its metadata (id, level, startLine, endLine, bytes, contentHash); a section that appears more than once (e.g. repeated H3s) needs sectionIndex (0-based) or the read is a fail-closed validation_error listing the valid range, and an unknown id is a section_not_found listing the ids this plan has. A single section over the rendered cap degrades to {truncated, outline-within-section, hint} — never a failure, never an empty payload. If the selected format's rendered payload exceeds ${MAX_PLAN_READ_RENDERED_BYTES} bytes, returns {truncated, outline, hint} with no payload — use plan_tasks for the manifest, or paginate with offset/limit. SIZE CEILING, not a wall: the ${MAX_PLAN_FILE_BYTES}-byte cap is refused (file_too_large) for an unbounded WHOLE-FILE read only. Supply offset/limit or a section and the read is allowed past the cap, because a span is bounded by your own window; an over-large window is clamped to the ${MAX_PLAN_READ_RENDERED_BYTES}-byte rendered budget and answered with {clamped:true, limit:<effective line count>, hint} naming the effective window.`,
+    description: `Read a plan file from .matrixx/plans/*.md, returning EXACTLY ONE payload for the selected format: 'hashline' (default; 1#AB|content anchors for plan_update) or 'content' (raw lines) — never both. Paginate with offset (1-based start line, inclusive) and limit (line count); returned anchors stay absolute. PRECEDENCE: section WINS over offset/limit — when both are supplied the section defines the base span and the response reports precedence:"section" plus the effective absolute startLine/endLine, so the conflict is never silent. Omit for a whole-file read. A single section over the rendered cap degrades to {truncated, outline-within-section, hint} — never a failure, never an empty payload. If the selected format's rendered payload exceeds ${MAX_PLAN_READ_RENDERED_BYTES} bytes, returns {truncated, outline, hint} with no payload — use plan_tasks for the manifest, or paginate with offset/limit. SIZE CEILING, not a wall: the ${cap}-byte cap is refused (file_too_large) for an unbounded WHOLE-FILE read only. Supply offset/limit or a section and the read is allowed past the cap, because a span is bounded by your own window; an over-large window is clamped to the ${MAX_PLAN_READ_RENDERED_BYTES}-byte rendered budget and answered with {clamped:true, limit:<effective line count>, hint} naming the effective window.`,
     args: {
       filePath: tool.schema
         .string()
@@ -87,25 +87,25 @@ export function createPlanReadTool(ctx?: PluginContext): ToolDefinition {
         let readErrno: string | null = null
         try {
           const stat = statSync(resolved)
-          if (stat.size > MAX_PLAN_FILE_BYTES) sizeOverCap = stat.size
+          if (stat.size > cap) sizeOverCap = stat.size
         } catch (error) {
           readErrno = (error as NodeJS.ErrnoException).code ?? "EUNKNOWN"
         }
         if (sizeOverCap !== null && !spanRead) {
-          return fileTooLargePayload(resolved, sizeOverCap, MAX_PLAN_FILE_BYTES)
+          return fileTooLargePayload(resolved, sizeOverCap, cap)
         }
-        const content = spanRead ? readPlanFileSpan(resolved) : readPlanFile(resolved)
+        const content = spanRead ? readPlanFileSpan(resolved) : readPlanFile(resolved, cap)
         if (content === null) {
           let defensiveSize: number | null = null
           try {
             const stat = statSync(resolved)
-            if (stat.size > MAX_PLAN_FILE_BYTES) defensiveSize = stat.size
+            if (stat.size > cap) defensiveSize = stat.size
           } catch (error) {
             readErrno = (error as NodeJS.ErrnoException).code ?? "EUNKNOWN"
           }
           const refusal = classifyReadRefusal({ sizeOverCap: defensiveSize, errno: readErrno })
           return refusal === PLAN_ERROR_CODES.fileTooLarge && defensiveSize !== null
-            ? fileTooLargePayload(resolved, defensiveSize, MAX_PLAN_FILE_BYTES)
+            ? fileTooLargePayload(resolved, defensiveSize, cap)
             : readFailedPayload(resolved, readErrno ?? undefined)
         }
         const format: PlanReadFormat = args.format === "content" ? "content" : "hashline"

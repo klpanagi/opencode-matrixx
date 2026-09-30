@@ -14,11 +14,11 @@ import { MAX_PLAN_FILE_BYTES, measurePlanBytes } from "./constants"
  * Read a plan file's content.
  * Returns null if the file does not exist, is too large, or cannot be read.
  */
-export function readPlanFile(planPath: string): string | null {
+export function readPlanFile(planPath: string, cap: number = MAX_PLAN_FILE_BYTES): string | null {
   try {
     if (!existsSync(planPath)) return null
     const content = readFileSync(planPath, "utf-8")
-    if (measurePlanBytes(content) > MAX_PLAN_FILE_BYTES) return null
+    if (measurePlanBytes(content) > cap) return null
     return content
   } catch {
     return null

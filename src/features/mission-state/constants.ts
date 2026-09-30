@@ -29,6 +29,15 @@ export const META_TAG_SUFFIX = "-->"
 export const MAX_PLAN_FILE_BYTES = 102_400
 
 /**
+ * Resolve the effective plan file cap from plugin config, falling back to
+ * `MAX_PLAN_FILE_BYTES` when unset. Mirrors the
+ * `cfg?.detection?.max_scan_bytes ?? 64*1024` fallback pattern.
+ */
+export function resolvePlanCap(config?: { plans?: { max_plan_file_bytes?: number } } | undefined): number {
+  return config?.plans?.max_plan_file_bytes ?? MAX_PLAN_FILE_BYTES
+}
+
+/**
  * The single byte ruler for plan content.
  *
  * Every plan size limit compared against this value (`MAX_PLAN_FILE_BYTES`,
