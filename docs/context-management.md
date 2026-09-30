@@ -253,13 +253,13 @@ Four built-in tiers:
 
 #### How It Works
 
-`BUILTIN_DCP_PROFILES` in `src/config/schema/dcp.ts` defines each tier. The `base` config applies across all tiers:
+`BUILTIN_DCP_PROFILES` in `src/config/schema/dcp.ts` defines each tier. Override any setting per profile by using the profile name as key under `dcp.profiles`:
 
-- `base.compress`: `mode` (`range` or `message`, default `range`), `permission` (`ask`, `allow`, `deny`, default `allow`), `nudgeForce`, `iterationNudgeThreshold`, `protectedTools`, `protectUserMessages`.
-- `base.strategies`: `deduplication` and `purgeErrors`, each with `enabled` and `protectedTools`.
-- `base.commands`, `base.manualMode`, `base.protectedFilePatterns`, `base.pruneNotificationType`, `base.autoUpdate`, `base.debug`.
+- `profiles.<name>.compress`: `mode` (`range` or `message`, default `range`), `permission` (`ask`, `allow`, `deny`, default `allow`), `nudgeForce`, `iterationNudgeThreshold`, `protectedTools`, `protectUserMessages`, plus per-profile limits.
+- `profiles.<name>.strategies`: `deduplication` and `purgeErrors`, each with `enabled` and `protectedTools`.
+- `profiles.<name>.commands`, `profiles.<name>.manualMode`, `profiles.<name>.protectedFilePatterns`, `profiles.<name>.pruneNotificationType`, `profiles.<name>.autoUpdate`, `profiles.<name>.debug`.
 
-Set `dcp.default_profile` in `matrixx.jsonc` to switch tiers; on next startup the plugin writes an inline `dcp.jsonc` to `~/.config/opencode/dcp.jsonc` with the selected profile plus `base`. Matrixx bridge overhead stays below 10ms.
+Set `dcp.default_profile` in `matrixx.jsonc` to switch tiers; on next startup the plugin writes an inline `dcp.jsonc` to `~/.config/opencode/dcp.jsonc` with the selected profile. Matrixx bridge overhead stays below 10ms.
 
 #### Performance Impact
 

@@ -4208,9 +4208,43 @@
                   "detailed"
                 ]
               },
+              "pruneNotificationType": {
+                "type": "string",
+                "enum": [
+                  "chat",
+                  "toast"
+                ]
+              },
+              "autoUpdate": {
+                "type": "boolean"
+              },
+              "debug": {
+                "type": "boolean"
+              },
               "compress": {
                 "type": "object",
                 "properties": {
+                  "mode": {
+                    "type": "string",
+                    "enum": [
+                      "range",
+                      "message"
+                    ]
+                  },
+                  "permission": {
+                    "type": "string",
+                    "enum": [
+                      "ask",
+                      "allow",
+                      "deny"
+                    ]
+                  },
+                  "showCompression": {
+                    "type": "boolean"
+                  },
+                  "summaryBuffer": {
+                    "type": "boolean"
+                  },
                   "maxContextLimit": {
                     "anyOf": [
                       {
@@ -4327,19 +4361,76 @@
               "strategies": {
                 "type": "object",
                 "properties": {
+                  "deduplication": {
+                    "type": "object",
+                    "properties": {
+                      "enabled": {
+                        "type": "boolean"
+                      },
+                      "protectedTools": {
+                        "type": "array",
+                        "items": {
+                          "type": "string"
+                        }
+                      }
+                    },
+                    "additionalProperties": false
+                  },
                   "purgeErrors": {
                     "type": "object",
                     "properties": {
+                      "enabled": {
+                        "type": "boolean"
+                      },
                       "turns": {
                         "type": "integer",
                         "minimum": 1,
                         "maximum": 9007199254740991
+                      },
+                      "protectedTools": {
+                        "type": "array",
+                        "items": {
+                          "type": "string"
+                        }
                       }
                     },
                     "additionalProperties": false
                   }
                 },
                 "additionalProperties": false
+              },
+              "commands": {
+                "type": "object",
+                "properties": {
+                  "enabled": {
+                    "type": "boolean"
+                  },
+                  "protectedTools": {
+                    "type": "array",
+                    "items": {
+                      "type": "string"
+                    }
+                  }
+                },
+                "additionalProperties": false
+              },
+              "manualMode": {
+                "type": "object",
+                "properties": {
+                  "enabled": {
+                    "type": "boolean"
+                  },
+                  "automaticStrategies": {
+                    "type": "boolean"
+                  }
+                },
+                "additionalProperties": false
+              },
+              "protectedFilePatterns": {
+                "type": "array",
+                "items": {
+                  "type": "string"
+                }
               }
             },
             "additionalProperties": false
@@ -4387,295 +4478,12 @@
             "keepLast"
           ],
           "additionalProperties": false
-        },
-        "base": {
-          "default": {
-            "autoUpdate": false,
-            "debug": false,
-            "pruneNotificationType": "chat",
-            "compress": {
-              "mode": "range",
-              "permission": "allow",
-              "showCompression": true,
-              "summaryBuffer": true,
-              "nudgeForce": "strong",
-              "iterationNudgeThreshold": 5,
-              "protectedTools": [],
-              "protectUserMessages": false
-            },
-            "strategies": {
-              "deduplication": {
-                "enabled": true,
-                "protectedTools": []
-              },
-              "purgeErrors": {
-                "enabled": true,
-                "protectedTools": []
-              }
-            },
-            "commands": {
-              "enabled": true,
-              "protectedTools": []
-            },
-            "manualMode": {
-              "enabled": false,
-              "automaticStrategies": true
-            },
-            "protectedFilePatterns": [],
-            "experimental": {
-              "allowSubAgents": true
-            }
-          },
-          "type": "object",
-          "properties": {
-            "autoUpdate": {
-              "default": false,
-              "type": "boolean"
-            },
-            "debug": {
-              "default": false,
-              "type": "boolean"
-            },
-            "pruneNotificationType": {
-              "default": "chat",
-              "type": "string",
-              "enum": [
-                "chat",
-                "toast"
-              ]
-            },
-            "compress": {
-              "default": {
-                "mode": "range",
-                "permission": "allow",
-                "showCompression": true,
-                "summaryBuffer": true,
-                "nudgeForce": "strong",
-                "iterationNudgeThreshold": 5,
-                "protectedTools": [],
-                "protectUserMessages": false
-              },
-              "type": "object",
-              "properties": {
-                "mode": {
-                  "default": "range",
-                  "type": "string",
-                  "enum": [
-                    "range",
-                    "message"
-                  ]
-                },
-                "permission": {
-                  "default": "allow",
-                  "type": "string",
-                  "enum": [
-                    "ask",
-                    "allow",
-                    "deny"
-                  ]
-                },
-                "showCompression": {
-                  "default": true,
-                  "type": "boolean"
-                },
-                "summaryBuffer": {
-                  "default": true,
-                  "type": "boolean"
-                },
-                "nudgeForce": {
-                  "default": "strong",
-                  "type": "string",
-                  "enum": [
-                    "strong",
-                    "soft"
-                  ]
-                },
-                "iterationNudgeThreshold": {
-                  "default": 5,
-                  "type": "integer",
-                  "minimum": 1,
-                  "maximum": 9007199254740991
-                },
-                "protectedTools": {
-                  "default": [],
-                  "type": "array",
-                  "items": {
-                    "type": "string"
-                  }
-                },
-                "protectUserMessages": {
-                  "default": false,
-                  "type": "boolean"
-                }
-              },
-              "required": [
-                "mode",
-                "permission",
-                "showCompression",
-                "summaryBuffer",
-                "nudgeForce",
-                "iterationNudgeThreshold",
-                "protectedTools",
-                "protectUserMessages"
-              ],
-              "additionalProperties": false
-            },
-            "strategies": {
-              "default": {
-                "deduplication": {
-                  "enabled": true,
-                  "protectedTools": []
-                },
-                "purgeErrors": {
-                  "enabled": true,
-                  "protectedTools": []
-                }
-              },
-              "type": "object",
-              "properties": {
-                "deduplication": {
-                  "default": {
-                    "enabled": true,
-                    "protectedTools": []
-                  },
-                  "type": "object",
-                  "properties": {
-                    "enabled": {
-                      "default": true,
-                      "type": "boolean"
-                    },
-                    "protectedTools": {
-                      "default": [],
-                      "type": "array",
-                      "items": {
-                        "type": "string"
-                      }
-                    }
-                  },
-                  "required": [
-                    "enabled",
-                    "protectedTools"
-                  ],
-                  "additionalProperties": false
-                },
-                "purgeErrors": {
-                  "default": {
-                    "enabled": true,
-                    "protectedTools": []
-                  },
-                  "type": "object",
-                  "properties": {
-                    "enabled": {
-                      "default": true,
-                      "type": "boolean"
-                    },
-                    "protectedTools": {
-                      "default": [],
-                      "type": "array",
-                      "items": {
-                        "type": "string"
-                      }
-                    }
-                  },
-                  "required": [
-                    "enabled",
-                    "protectedTools"
-                  ],
-                  "additionalProperties": false
-                }
-              },
-              "required": [
-                "deduplication",
-                "purgeErrors"
-              ],
-              "additionalProperties": false
-            },
-            "commands": {
-              "default": {
-                "enabled": true,
-                "protectedTools": []
-              },
-              "type": "object",
-              "properties": {
-                "enabled": {
-                  "default": true,
-                  "type": "boolean"
-                },
-                "protectedTools": {
-                  "default": [],
-                  "type": "array",
-                  "items": {
-                    "type": "string"
-                  }
-                }
-              },
-              "required": [
-                "enabled",
-                "protectedTools"
-              ],
-              "additionalProperties": false
-            },
-            "manualMode": {
-              "default": {
-                "enabled": false,
-                "automaticStrategies": true
-              },
-              "type": "object",
-              "properties": {
-                "enabled": {
-                  "default": false,
-                  "type": "boolean"
-                },
-                "automaticStrategies": {
-                  "default": true,
-                  "type": "boolean"
-                }
-              },
-              "required": [
-                "enabled",
-                "automaticStrategies"
-              ],
-              "additionalProperties": false
-            },
-            "protectedFilePatterns": {
-              "default": [],
-              "type": "array",
-              "items": {
-                "type": "string"
-              }
-            },
-            "experimental": {
-              "default": {
-                "allowSubAgents": true
-              },
-              "type": "object",
-              "properties": {
-                "allowSubAgents": {
-                  "type": "boolean"
-                }
-              },
-              "additionalProperties": false
-            }
-          },
-          "required": [
-            "autoUpdate",
-            "debug",
-            "pruneNotificationType",
-            "compress",
-            "strategies",
-            "commands",
-            "manualMode",
-            "protectedFilePatterns",
-            "experimental"
-          ],
-          "additionalProperties": false
         }
       },
       "required": [
         "enabled",
         "profiles",
-        "handoffCompression",
-        "base"
+        "handoffCompression"
       ],
       "additionalProperties": false
     },

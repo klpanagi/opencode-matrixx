@@ -276,51 +276,51 @@ describe("switchProfile", () => {
     })
   })
 
-  // ── Base config overrides ───────────────────────────────────────────
-
-  describe("base config overrides", () => {
-    test("base.debug is applied to output when set", async () => {
-      const dcp = DcpConfigSchema.parse({ base: { debug: true } })
+  describe("per-profile overrides (profile name as key)", () => {
+    test("profiles.balanced.debug is applied to output when set", async () => {
+      const dcp = DcpConfigSchema.parse({ profiles: { balanced: { debug: true } } })
       await switchProfile("balanced", { pluginConfig: { dcp } })
       expect(extractWrittenConfig()!.debug).toBe(true)
     })
 
-    test("base.pruneNotificationType is applied", async () => {
-      const dcp = DcpConfigSchema.parse({ base: { pruneNotificationType: "toast" } })
+    test("profiles.balanced.pruneNotificationType is applied", async () => {
+      const dcp = DcpConfigSchema.parse({ profiles: { balanced: { pruneNotificationType: "toast" } } })
       await switchProfile("balanced", { pluginConfig: { dcp } })
       expect(extractWrittenConfig()!.pruneNotificationType).toBe("toast")
     })
 
-    test("base.autoUpdate is applied when true", async () => {
-      const dcp = DcpConfigSchema.parse({ base: { autoUpdate: true } })
+    test("profiles.balanced.autoUpdate is applied when true", async () => {
+      const dcp = DcpConfigSchema.parse({ profiles: { balanced: { autoUpdate: true } } })
       await switchProfile("balanced", { pluginConfig: { dcp } })
       expect(extractWrittenConfig()!.autoUpdate).toBe(true)
     })
 
-    test("base.protectedFilePatterns flows through", async () => {
-      const dcp = DcpConfigSchema.parse({ base: { protectedFilePatterns: ["*.secret", "*.key"] } })
+    test("profiles.balanced.protectedFilePatterns flows through", async () => {
+      const dcp = DcpConfigSchema.parse({ profiles: { balanced: { protectedFilePatterns: ["*.secret", "*.key"] } } })
       await switchProfile("balanced", { pluginConfig: { dcp } })
       expect(extractWrittenConfig()!.protectedFilePatterns).toEqual(["*.secret", "*.key"])
     })
 
-    test("base.compress.mode overrides default", async () => {
-      const dcp = DcpConfigSchema.parse({ base: { compress: { mode: "message" } } })
+    test("profiles.balanced.compress.mode overrides default", async () => {
+      const dcp = DcpConfigSchema.parse({ profiles: { balanced: { compress: { mode: "message" } } } })
       await switchProfile("balanced", { pluginConfig: { dcp } })
       const c = extractWrittenConfig()!.compress as AnyRecord
       expect(c.mode).toBe("message")
     })
 
-    test("base.commands.enabled can be disabled", async () => {
-      const dcp = DcpConfigSchema.parse({ base: { commands: { enabled: false } } })
+    test("profiles.balanced.commands.enabled can be disabled", async () => {
+      const dcp = DcpConfigSchema.parse({ profiles: { balanced: { commands: { enabled: false } } } })
       await switchProfile("balanced", { pluginConfig: { dcp } })
       const cmds = extractWrittenConfig()!.commands as AnyRecord
       expect(cmds.enabled).toBe(false)
     })
 
-    test("base manualMode shares base with turnProtection disabled", async () => {
+    test("profiles.balanced manualMode override", async () => {
       const dcp = DcpConfigSchema.parse({
-        base: {
-          manualMode: { enabled: true, automaticStrategies: false },
+        profiles: {
+          balanced: {
+            manualMode: { enabled: true, automaticStrategies: false },
+          },
         },
       })
       await switchProfile("balanced", { pluginConfig: { dcp } })
@@ -329,18 +329,17 @@ describe("switchProfile", () => {
       expect(mm.automaticStrategies).toBe(false)
     })
 
-    test("base.experimental.allowSubAgents applies when profile omits it", async () => {
+    test("profiles.economy.experimental.allowSubAgents false wins over builtin", async () => {
       const dcp = DcpConfigSchema.parse({
-        base: { experimental: { allowSubAgents: false } },
+        profiles: { economy: { experimental: { allowSubAgents: false } } },
       })
       await switchProfile("economy", { pluginConfig: { dcp } })
       const exp = extractWrittenConfig()!.experimental as AnyRecord
       expect(exp.allowSubAgents).toBe(false)
     })
 
-    test("profile experimental.allowSubAgents overrides base", async () => {
+    test("profile experimental.allowSubAgents overrides builtin", async () => {
       const dcp = DcpConfigSchema.parse({
-        base: { experimental: { allowSubAgents: false } },
         profiles: {
           brutal: { experimental: { allowSubAgents: true } },
         },
@@ -350,36 +349,26 @@ describe("switchProfile", () => {
       expect(exp.allowSubAgents).toBe(true)
     })
 
-    //#given base sets allowSubAgents true and brutal builtin defaults false with no profile override
-    //#when switching to brutal
-    //#then base wins over the builtin default
-    test("base.experimental.allowSubAgents true applies to brutal without profile override", async () => {
+    test("profiles.brutal.experimental.allowSubAgents true applies without other overrides", async () => {
       const dcp = DcpConfigSchema.parse({
-        base: { experimental: { allowSubAgents: true } },
+        profiles: { brutal: { experimental: { allowSubAgents: true } } },
       })
       await switchProfile("brutal", { pluginConfig: { dcp } })
       const exp = extractWrittenConfig()!.experimental as AnyRecord
       expect(exp.allowSubAgents).toBe(true)
     })
 
-    //#given base sets allowSubAgents true and economy builtin defaults false with no profile override
-    //#when switching to economy
-    //#then base wins over the builtin default
-    test("base.experimental.allowSubAgents true applies to economy without profile override", async () => {
+    test("profiles.economy.experimental.allowSubAgents true overrides builtin false", async () => {
       const dcp = DcpConfigSchema.parse({
-        base: { experimental: { allowSubAgents: true } },
+        profiles: { economy: { experimental: { allowSubAgents: true } } },
       })
       await switchProfile("economy", { pluginConfig: { dcp } })
       const exp = extractWrittenConfig()!.experimental as AnyRecord
       expect(exp.allowSubAgents).toBe(true)
     })
 
-    //#given base sets allowSubAgents true but profiles.brutal explicitly sets false
-    //#when switching to brutal
-    //#then the explicit profile override wins over base
-    test("explicit profiles.brutal.experimental.allowSubAgents false wins over base true", async () => {
+    test("explicit profiles.brutal.experimental.allowSubAgents false wins over builtin", async () => {
       const dcp = DcpConfigSchema.parse({
-        base: { experimental: { allowSubAgents: true } },
         profiles: {
           brutal: { experimental: { allowSubAgents: false } },
         },
@@ -389,7 +378,7 @@ describe("switchProfile", () => {
       expect(exp.allowSubAgents).toBe(false)
     })
 
-    test("base.experimental defaults to allowSubAgents: true when unset", async () => {
+    test("experimental defaults to allowSubAgents: true when unset", async () => {
       const dcp = DcpConfigSchema.parse({})
       await switchProfile("balanced", { pluginConfig: { dcp } })
       const exp = extractWrittenConfig()!.experimental as AnyRecord

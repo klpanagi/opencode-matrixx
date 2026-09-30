@@ -50,7 +50,7 @@
 
 <div class="section">
   <h2 class="section-title">DCP</h2>
-  <p class="section-desc">Dynamic Context Pruning profiles, handoff compression, and base config.</p>
+  <p class="section-desc">Dynamic Context Pruning profiles and handoff compression. Override any profile by using its name as key under profiles.</p>
 
   <FieldEditor label="Enabled">
     <BooleanEditor value={config.dcp?.enabled ?? true} onChange={(v) => configStore.updateConfig((c) => ({ ...c, dcp: { ...c.dcp, enabled: v } }))} label="DCP enabled" />
@@ -129,25 +129,6 @@
         {/if}
       </div>
     {/each}
-  </FieldEditor>
-
-  <FieldEditor label="Base Config (JSON)" description="Shared base config across profiles" advanced>
-    <StringEditor
-      value={config.dcp?.base ? JSON.stringify(config.dcp.base, null, 2) : ""}
-      onChange={(v) => {
-        if (!v.trim()) {
-          configStore.updateConfig((c) => ({ ...c, dcp: { ...c.dcp, base: undefined } }))
-          return
-        }
-        try {
-          const parsed = JSON.parse(v)
-          configStore.updateConfig((c) => ({ ...c, dcp: { ...c.dcp, base: parsed } }))
-        } catch { /* keep draft */ }
-      }}
-      label="Base JSON"
-      multiline
-      monospace
-    />
   </FieldEditor>
 </div>
 

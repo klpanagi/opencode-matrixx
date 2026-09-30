@@ -232,28 +232,8 @@
   //       "strategies": { "purgeErrors": { "turns": 4 } }
   //     }
   //   },
-  //   "base": {                             // shared base config applied across all profiles
-  //     "autoUpdate": false,                // auto-update DCP when new version available (default: false)
-  //     "debug": false,                     // enable debug logging for DCP (default: false)
-  //     "pruneNotificationType": "chat",    // "chat" | "toast" — how to deliver prune notifications (default: "chat")
-  //     "compress": {
-  //       "mode": "range",                  // "range" (compress range of messages) | "message" (individual) (default: "range")
-  //       "permission": "allow",            // "ask" (prompt) | "allow" (auto) | "deny" (disable) (default: "allow")
-  //       "showCompression": true,          // show compression summary in chat (default: true)
-  //       "summaryBuffer": true,            // keep summary buffer for continuity (default: true)
-  //       "nudgeForce": "strong",           // "strong" | "soft" (default: "strong")
-  //       "iterationNudgeThreshold": 5,     // consecutive iteration messages before nudge (default: 5)
-  //       "protectedTools": [],             // tools whose outputs are protected from compression
-  //       "protectUserMessages": false      // protect user messages from compression (default: false)
-  //     },
-  //     "strategies": {
-  //       "deduplication": { "enabled": true, "protectedTools": [] },
-  //       "purgeErrors": { "enabled": true, "protectedTools": [] }
-  //     },
-  //     "commands": { "enabled": true, "protectedTools": [] },
-  //     "manualMode": { "enabled": false, "automaticStrategies": true },
-  //     "protectedFilePatterns": []         // glob patterns for files protected from compression
-  //   }
+  //   To overwrite any shared default, use the profile name as key under
+  //   "profiles", e.g. "profiles": { "balanced": { "compress": { "mode": "message" } } }
   // },
 
   // ─────────────────────────────────────────────────────────────────────────
