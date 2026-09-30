@@ -20,7 +20,7 @@ WORKFLOW:
 LINE#ID FORMAT:
   Each line reference must be in "{line_number}#{hash_id}" format where:
   {line_number}: 1-based line number
-  {hash_id}: Two CID letters from the set ZPMQVRWSNKTXJBYH
+  {hash_id}: Four CID letters from the set ZPMQVRWSNKTXJBYH
 
 OPERATION CHOICE:
   replace with pos only -> replace one line at pos

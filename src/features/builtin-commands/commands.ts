@@ -8,6 +8,7 @@ import { HANDOFF_TEMPLATE } from "./templates/handoff"
 import { INIT_DEEP_TEMPLATE } from "./templates/init-deep"
 import { CANCEL_LOOP_TEMPLATE, MATRIX_LOOP_TEMPLATE } from "./templates/matrix-loop"
 import { PICKUP_TEMPLATE } from "./templates/pickup"
+import { PLAN_REVIEW_TEMPLATE } from "./templates/plan-review"
 import { PRESET_TEMPLATE } from "./templates/preset"
 import { REFACTOR_TEMPLATE } from "./templates/refactor"
 import { REMOVE_DEADCODE_TEMPLATE } from "./templates/remove-deadcode"
@@ -65,6 +66,17 @@ ${CANCEL_LOOP_TEMPLATE}
 ${REFACTOR_TEMPLATE}
 </command-instruction>`,
     argumentHint: "<refactoring-target> [--scope=<file|module|project>] [--strategy=<safe|aggressive>]",
+  },
+  "plan-review": {
+    description: "(builtin) Post-execution completion review of a finished plan (explicit only)",
+    template: `<command-instruction>
+${PLAN_REVIEW_TEMPLATE}
+</command-instruction>
+
+<user-request>
+$ARGUMENTS
+</user-request>`,
+    argumentHint: "<plan-name>",
   },
   "start-work": {
     description: "(builtin) Start Morpheus work session from Oracle plan",

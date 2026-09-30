@@ -17,7 +17,7 @@ describe("buildInlineConfig", () => {
 })
 
 describe("buildInlineConfig profile compression", () => {
-  test("emits softened brutal nudge values", () => {
+  test("emits the brutal nudge values", () => {
     //#given
     const compress = compressOf("brutal")
 
@@ -25,9 +25,9 @@ describe("buildInlineConfig profile compression", () => {
     const { nudgeFrequency, iterationNudgeThreshold, nudgeForce } = compress
 
     //#then
-    expect(nudgeFrequency).toBe(3)
+    expect(nudgeFrequency).toBe(2)
     expect(iterationNudgeThreshold).toBe(6)
-    expect(nudgeForce).toBe("soft")
+    expect(nudgeForce).toBe("strong")
   })
 
   test("leaves other builtin profiles unchanged", () => {
@@ -64,7 +64,7 @@ function compressOf(profile: string): Record<string, unknown> {
 }
 
 describe("buildInlineConfig model limits", () => {
-  test("propagates builtin brutal per-model limits", () => {
+  test("emits no per-model limits when the builtin profile has none", () => {
     //#given
     const compress = compressOf("brutal")
 
@@ -73,8 +73,8 @@ describe("buildInlineConfig model limits", () => {
     const modelMinLimits = compress.modelMinLimits
 
     //#then
-    expect(modelMaxLimits).toEqual({ "deepseek/deepseek-v4.1-flash": "95%" })
-    expect(modelMinLimits).toEqual({ "deepseek/deepseek-v4.1-flash": "90%" })
+    expect(modelMaxLimits).toBeUndefined()
+    expect(modelMinLimits).toBeUndefined()
   })
 
   test("lets a user profile override win", () => {

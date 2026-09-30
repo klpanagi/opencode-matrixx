@@ -2,7 +2,9 @@
 
 ## OVERVIEW
 
-14 AI agents with factory functions, fallback chains, and model-specific prompt variants. Each agent has metadata (category, cost, triggers) and configurable tool restrictions.
+15 AI agents with factory functions, fallback chains, and model-specific prompt variants. Each agent has metadata (category, cost, triggers) and configurable tool restrictions.
+
+`Smith` is the **pre-execution** reviewer (binary `[OKAY]`/`[REJECT]`, max 3 blockers). `Auditor` is the **post-execution** reviewer (Summary / Score / Complexity / Required Effort), invoked **only** by the explicit `/plan-review` command — never automatically, and never on a hook, idle, or completion trigger.
 
 ## STRUCTURE
 ```
@@ -27,7 +29,8 @@ agents/
 ├── cipher.ts                    # DSL engineering specialist
 ├── sentinel.ts                 # Security auditor (220 lines)
 ├── merovingian.ts              # High-IQ consultation
-├── smith.ts                    # Plan validator (244 lines)
+├── smith.ts                    # Plan validator (244 lines) — pre-execution reviewer
+├── auditor.ts                  # Post-execution plan auditor (147 lines) — /plan-review only
 ├── construct.ts        # Media analyzer (58 lines)
 ├── sati.ts                     # Frontend specialist
 ├── trinity.ts                  # Codebase search
@@ -39,7 +42,7 @@ agents/
 │   └── index.ts
 ├── agent-builder.ts            # Agent builder utility
 ├── dynamic-agent-prompt-builder.ts  # Dynamic prompt generation (431 lines)
-├── builtin-agents/             # Agent registry (10 files)
+├── builtin-agents.ts          # Agent registry (factories + metadata maps)
 ├── utils.ts                    # Agent creation, model fallback resolution (571 lines)
 ├── types.ts                    # AgentModelConfig, AgentPromptMetadata
 └── index.ts                    # Exports
@@ -58,6 +61,7 @@ agents/
 | Sentinel | <provider>/<model> | 0.1 | <provider>/<model> → <provider>/<model> → <provider>/<model> → <provider>/<model> | EXPENSIVE |
 | Merovingian | <provider>/<model> | 0.1 | <provider>/<model> → <provider>/<model> | EXPENSIVE |
 | Smith | <provider>/<model> | 0.1 | <provider>/<model> → <provider>/<model> | EXPENSIVE |
+| Auditor | <provider>/<model> | 0.1 | <provider>/<model> → <provider>/<model> | EXPENSIVE |
 | Construct | <provider>/<model> | 0.1 | <provider>/<model> → <provider>/<model> → <provider>/<model> → <provider>/<model> | EXPENSIVE |
 | Sati | <provider>/<model> | 0.1 | <provider>/<model> → <provider>/<model> | EXPENSIVE |
 | Mouse | <provider>/<model> | 0.1 | (user-configurable via tier) | EXPENSIVE |
@@ -80,6 +84,7 @@ An agent receives `task_*` iff `MODE ∈ {primary, all}` and its work is multi-s
 | Cipher | all | — | `task_*`, teammate — delegates per target language |
 | Keymaker | primary | — | `task_*`, teammate |
 | Bdd-contract | all | — | `task_*`, teammate |
+| Auditor | subagent | write, edit, task | Read-only post-execution measurement; reports go to `.matrixx/reviews/`, never into the plan |
 
 ## THINKING / REASONING
 
@@ -90,15 +95,22 @@ An agent receives `task_*` iff `MODE ∈ {primary, all}` and its work is multi-s
 | Oracle | 32k budget tokens | reasoningEffort: "medium" |
 | Seraph | 32k budget tokens | — |
 | Smith | 32k budget tokens | reasoningEffort: "medium" |
+| Auditor | 32k budget tokens | reasoningEffort: "medium" |
 | Sentinel | 32k budget tokens | reasoningEffort: "medium" |
 | Mouse | 32k budget tokens | reasoningEffort: "medium" |
 
 ## HOW TO ADD
 
 1. Create `src/agents/my-agent.ts` exporting factory + metadata
-2. Add to `agentSources` in `src/agents/builtin-agents/`
-3. Update `AgentNameSchema` in `src/config/schema/agent-names.ts`
-4. Register in `src/plugin-handlers/agent-config-handler.ts`
+2. Add to `agentSources` **and** the metadata map in `src/agents/builtin-agents.ts` (a FILE, not a directory)
+3. Re-export from `src/agents/index.ts`; add the name to `AgentName` in `src/agents/types.ts`
+4. Add the name to `BuiltinAgentNameSchema` in `src/config/schema/agent-names.ts`
+5. Add the entry to `AgentOverridesSchema` in `src/config/schema/agent-overrides.ts`
+6. Add the name to the explore-agent set in `src/plugin-handlers/agent-config-handler.ts`
+7. Add the name to `src/hooks/runtime-fallback/agent-resolver.ts`
+8. Add tool restrictions in `src/shared/agent-tool-restrictions.ts`
+9. Add model requirements in `src/shared/model-requirements.ts`
+10. Add the display name in `src/shared/agent-display-names.ts`
 
 ## KEY PATTERNS
 

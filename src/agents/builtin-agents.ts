@@ -9,6 +9,7 @@ import {
 import { mergeCategories } from "../shared/merge-categories"
 import { CATEGORY_DESCRIPTIONS } from "../tools/delegate-task/constants"
 import { architectPromptMetadata, createArchitectAgent } from "./architect"
+import { AUDITOR_PROMPT_METADATA, createAuditorAgent } from "./auditor"
 import { BDD_CONTRACT_PROMPT_METADATA, createBddContractAgent } from "./bdd-contract"
 import { maybeCreateArchitectConfig } from "./builtin-agents/architect-agent"
 import { buildAvailableSkills } from "./builtin-agents/available-skills"
@@ -42,6 +43,7 @@ const agentSources: Partial<Record<BuiltinAgentName, AgentSource>> = {
   construct: createConstructAgent,
   seraph: createSeraphAgent,
   smith: createSmithAgent,
+  auditor: createAuditorAgent,
   architect: createArchitectAgent as AgentFactory,
   cipher: createCipherAgent,
   sentinel: createSentinelAgent,
@@ -61,6 +63,7 @@ const agentMetadata: Partial<Record<BuiltinAgentName, AgentPromptMetadata>> = {
   construct: CONSTRUCT_PROMPT_METADATA,
   seraph: seraphPromptMetadata,
   smith: smithPromptMetadata,
+  auditor: AUDITOR_PROMPT_METADATA,
   architect: architectPromptMetadata,
   cipher: CIPHER_PROMPT_METADATA,
   sentinel: SENTINEL_PROMPT_METADATA,

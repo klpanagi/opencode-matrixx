@@ -2,6 +2,7 @@
 
 import { afterEach, beforeEach, describe, expect, test } from "bun:test"
 import { PLAN_ERROR_CODES } from "../../../src/tools/plan/error-codes"
+import { computeLineHash } from "../../../src/tools/hashline-edit/hash-computation"
 import { createPlanReadTool } from "../../../src/tools/plan/plan-read"
 import { buildSectionIndex } from "../../../src/tools/plan/section-index"
 import {
@@ -96,7 +97,8 @@ describe("plan_read section span and anchors", () => {
       sourceLines.slice(entry.startLine - 1, entry.endLine - 1).map((_line, index) => entry.startLine + index),
     )
     expect(anchors[0]).toBe(entry.startLine)
-    expect(res.hashline.split("\n")[0]).toMatch(new RegExp(`^${entry.startLine}#[A-Z]{2}\\|`))
+    const expectedId = computeLineHash(entry.startLine, sourceLines[entry.startLine - 1])
+    expect(res.hashline.split("\n")[0]).toBe(`${entry.startLine}#${expectedId}|${sourceLines[entry.startLine - 1]}`)
     expect(res.hashline.split("\n")[0]).toContain(sourceLines[entry.startLine - 1])
   })
 

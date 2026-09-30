@@ -1,11 +1,13 @@
 import { describe, expect, it } from "bun:test"
+import { HASHLINE_ID_LENGTH, NIBBLE_CHARSET } from "../../../src/tools/hashline-edit/constants"
 import { computeLineHash, formatHashLine, formatHashLines } from "../../../src/tools/hashline-edit/hash-computation"
 
-const NIBBLE_CHARS = "ZPMQVRWSNKTXJBYH"
-const HASH_ID_PATTERN = new RegExp(`^[${NIBBLE_CHARS}]{2}$`)
+// Derived from the production constants so the pattern cannot drift from the
+// width and alphabet the implementation actually emits.
+const HASH_ID_PATTERN = new RegExp(`^[${NIBBLE_CHARSET}]{${HASHLINE_ID_LENGTH}}$`)
 
 describe("computeLineHash", () => {
-  it("returns consistent 2-char NIBBLE ID for same input", () => {
+  it("returns consistent 4-char NIBBLE ID for same input", () => {
     //#given
     const lineNumber = 1
     const content = "function hello() {"
@@ -17,6 +19,8 @@ describe("computeLineHash", () => {
     //#then
     expect(hash1).toBe(hash2)
     expect(hash1).toMatch(HASH_ID_PATTERN)
+    expect(hash1).toHaveLength(4)
+    expect(hash1).toBe("VRRM")
   })
 
   it("trims trailing whitespace before hashing (not all whitespace)", () => {
@@ -57,8 +61,9 @@ describe("computeLineHash", () => {
 
     //#then
     expect(hash).toMatch(HASH_ID_PATTERN)
+    expect(hash).toHaveLength(4)
+    expect(hash).toBe("XSKM")
   })
-
   it("returns different hashes for different content", () => {
     //#given
     const lineNumber = 1
@@ -80,8 +85,10 @@ describe("computeLineHash", () => {
     //#when
     const hash = computeLineHash(1, content)
 
-    //#then — hash uses NIBBLE_STR (ZPMQVRWSNKTXJBYH), must be 2 chars from that set
-    expect(hash).toMatch(/^[ZPMQVRWSNKTXJBYH]{2}$/)
+    //#then — hash uses NIBBLE_STR (ZPMQVRWSNKTXJBYH), must be 4 chars from that set
+    expect(hash).toMatch(HASH_ID_PATTERN)
+    expect(hash).toHaveLength(4)
+    expect(hash).toBe("XSKM")
   })
 })
 
@@ -95,7 +102,7 @@ describe("formatHashLine", () => {
     const result = formatHashLine(lineNumber, content)
 
     //#then
-    expect(result).toMatch(new RegExp(`^42#[${NIBBLE_CHARS}]{2}\\|function hello\\(\\) \\{$`))
+    expect(result).toBe("42#VRRM|function hello() {")
   })
 
   it("uses # separator not : separator", () => {
@@ -124,9 +131,9 @@ describe("formatHashLines", () => {
     //#then
     const lines = result.split("\n")
     expect(lines).toHaveLength(3)
-    expect(lines[0]).toMatch(new RegExp(`^1#[${NIBBLE_CHARS}]{2}\\|`))
-    expect(lines[1]).toMatch(new RegExp(`^2#[${NIBBLE_CHARS}]{2}\\|`))
-    expect(lines[2]).toMatch(new RegExp(`^3#[${NIBBLE_CHARS}]{2}\\|`))
+    expect(lines[0]).toBe("1#VRRM|function hello() {")
+    expect(lines[1]).toBe("2#XHZN|  return 42")
+    expect(lines[2]).toBe("3#NHRZ|}")
   })
 
   it("handles empty file", () => {
@@ -148,6 +155,6 @@ describe("formatHashLines", () => {
     const result = formatHashLines(content)
 
     //#then
-    expect(result).toMatch(new RegExp(`^1#[${NIBBLE_CHARS}]{2}\\|const x = 42$`))
+    expect(result).toBe("1#PVXV|const x = 42")
   })
 })

@@ -1,4 +1,9 @@
 export { architectPromptMetadata, createArchitectAgent } from "./architect"
+export {
+  AUDITOR_PROMPT_METADATA,
+  AUDITOR_SYSTEM_PROMPT,
+  createAuditorAgent,
+} from "./auditor"
 export { createBuiltinAgents } from "./builtin-agents"
 export { CONSTRUCT_PROMPT_METADATA, createConstructAgent } from "./construct"
 export type { AvailableAgent, AvailableCategory, AvailableSkill } from "./dynamic-agent-prompt-builder"
