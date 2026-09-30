@@ -5099,6 +5099,9 @@
         "preset_tools": {
           "default": false,
           "type": "boolean"
+        },
+        "session_cleanup": {
+          "type": "boolean"
         }
       },
       "required": [

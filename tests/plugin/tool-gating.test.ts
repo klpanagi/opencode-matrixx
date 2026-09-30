@@ -11,6 +11,7 @@ import {
   shouldEnableLookAt,
   shouldEnablePdfFigures,
   shouldEnablePresetTools,
+  shouldEnableSessionCleanup,
 } from "../../src/plugin/tool-gating"
 
 describe("tool-gating", () => {
@@ -358,6 +359,41 @@ describe("tool-gating", () => {
 
       //#when
       const result = shouldEnablePresetTools(override)
+
+      //#then
+      expect(result).toBe(false)
+    })
+  })
+
+  describe("shouldEnableSessionCleanup", () => {
+    test("defaults to false when override is undefined", () => {
+      //#given
+      const override = undefined
+
+      //#when
+      const result = shouldEnableSessionCleanup(override)
+
+      //#then
+      expect(result).toBe(false)
+    })
+
+    test("registers when explicitly enabled", () => {
+      //#given
+      const override = true
+
+      //#when
+      const result = shouldEnableSessionCleanup(override)
+
+      //#then
+      expect(result).toBe(true)
+    })
+
+    test("skips when explicitly disabled", () => {
+      //#given
+      const override = false
+
+      //#when
+      const result = shouldEnableSessionCleanup(override)
 
       //#then
       expect(result).toBe(false)
