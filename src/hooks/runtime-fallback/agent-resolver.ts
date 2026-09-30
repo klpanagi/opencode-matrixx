@@ -11,6 +11,7 @@ const AGENT_NAMES = [
   "construct",
   "seraph",
   "smith",
+  "auditor",
   "cipher",
   "mouse",
   "sentinel",

@@ -31,7 +31,7 @@ export function injectContextDiscipline(
   const hasHeadroom = availableToolNames.some((n) => n.startsWith("headroom_"));
   if (!(hasContextMode || hasHeadroom)) return;
   const hasGrepGlob = resolveGrepGlobUsable(availableToolNames, contextMode ?? getContextModeForPrompts());
-  const exploreAgents = new Set(["trinity", "operator", "seraph", "smith", "merovingian", "construct", "bdd-contract"]);
+  const exploreAgents = new Set(["trinity", "operator", "seraph", "smith", "auditor", "merovingian", "construct", "bdd-contract"]);
   for (const [name, cfg] of Object.entries(agents)) {
     if (name === "morpheus" || name === "keymaker") continue;
     if (!cfg || typeof cfg.prompt !== "string") continue;
