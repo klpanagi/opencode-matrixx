@@ -3,7 +3,7 @@ import { describe, expect, test } from "bun:test"
 import { BUILTIN_DCP_PROFILES, DcpCompressOverrideSchema } from "../../../src/config/schema/dcp"
 
 describe("BUILTIN_DCP_PROFILES.brutal", () => {
-  test("does not nudge every turn", () => {
+  test("nudges every 2 turns with strong force", () => {
     //#given
     const compress = BUILTIN_DCP_PROFILES.brutal.compress
 
@@ -11,22 +11,22 @@ describe("BUILTIN_DCP_PROFILES.brutal", () => {
     const { nudgeFrequency, iterationNudgeThreshold, nudgeForce } = compress
 
     //#then
-    expect(nudgeFrequency).toBeGreaterThanOrEqual(3)
-    expect(iterationNudgeThreshold).toBeGreaterThanOrEqual(6)
-    expect(nudgeForce).toBe("soft")
+    // Pinned exactly, not as a lower bound: a bound is what previously let the
+    // cadence drift from 3 to 2 without this test failing.
+    expect(nudgeFrequency).toBe(2)
+    expect(iterationNudgeThreshold).toBe(6)
+    expect(nudgeForce).toBe("strong")
   })
 
-  test("carries DeepSeek per-model context limits", () => {
+  test("carries no builtin per-model context limits", () => {
     //#given
     const compress = BUILTIN_DCP_PROFILES.brutal.compress
 
-    //#when
-    const max = compress.modelMaxLimits
-    const min = compress.modelMinLimits
-
     //#then
-    expect(max?.["deepseek/deepseek-v4.1-flash"]).toBe("95%")
-    expect(min?.["deepseek/deepseek-v4.1-flash"]).toBe("90%")
+    // Keyed on absence rather than `toBeUndefined`: the preset is a `const`
+    // literal, so the keys genuinely do not exist on its type.
+    expect("modelMaxLimits" in compress).toBe(false)
+    expect("modelMinLimits" in compress).toBe(false)
   })
 })
 
