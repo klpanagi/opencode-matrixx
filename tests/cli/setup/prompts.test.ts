@@ -1,5 +1,6 @@
 import { describe, expect, test } from "bun:test";
 import { runSetupPrompts } from "../../../src/cli/setup/prompts";
+import { repoPath } from "../../helpers/repo-root"
 
 describe("runSetupPrompts --yes", () => {
   test("returns defaults without prompts", async () => {
@@ -20,7 +21,7 @@ describe("runSetupPrompts --yes", () => {
 
 describe("prompts content", () => {
   test("prompts.ts contains required system prompts", async () => {
-    const content = await Bun.file("src/cli/setup/prompts.ts").text();
+    const content = await Bun.file(repoPath("src/cli/setup/prompts.ts")).text();
     expect(content).toContain("tasks.enabled");
     expect(content).toContain("Headroom");
     expect(content).toContain("RTK");

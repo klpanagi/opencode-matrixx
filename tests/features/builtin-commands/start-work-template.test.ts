@@ -1,5 +1,6 @@
 import { describe, expect, test } from "bun:test"
 import { START_WORK_TEMPLATE } from "../../../src/features/builtin-commands/templates/start-work"
+import { repoPath } from "../../helpers/repo-root"
 
 describe("start-work template", () => {
   test("should export a non-empty template string", () => {
@@ -109,7 +110,7 @@ describe("start-work template", () => {
     // given - the orchestration docs
 
     // when - we read the file
-    const content = await Bun.file("docs/orchestration.md").text()
+    const content = await Bun.file(repoPath("docs/orchestration.md")).text()
 
     // then - it should reference plan_tasks
     expect(content).toContain("plan_tasks")
@@ -119,7 +120,7 @@ describe("start-work template", () => {
     // given - the configurations docs
 
     // when - we read the file
-    const content = await Bun.file("docs/configurations.md").text()
+    const content = await Bun.file(repoPath("docs/configurations.md")).text()
 
     // then - it should reference plan_tasks
     expect(content).toContain("plan_tasks")
@@ -129,7 +130,7 @@ describe("start-work template", () => {
     // given - the task-system docs
 
     // when - we read the file
-    const content = await Bun.file("docs/task-system.md").text()
+    const content = await Bun.file(repoPath("docs/task-system.md")).text()
 
     // then - it should reference plan_tasks
     expect(content).toContain("plan_tasks")
@@ -139,7 +140,7 @@ describe("start-work template", () => {
     // given - the orchestration docs
 
     // when - we read the file
-    const content = await Bun.file("docs/orchestration.md").text()
+    const content = await Bun.file(repoPath("docs/orchestration.md")).text()
 
     // then - it should document the plan read soft cap
     expect(content).toContain("40,000 rendered bytes")

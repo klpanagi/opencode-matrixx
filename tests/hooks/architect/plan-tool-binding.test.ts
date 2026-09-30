@@ -9,6 +9,7 @@ import {
   createPlanReadTool,
   createPlanTasksTool,
 } from "../../../src/tools/plan"
+import { repoPath } from "../../helpers/repo-root"
 
 // ── Prohibited patterns (call form + prose form) ─────────────────────
 const PROHIBITED_CALL_FORM = /Read\(["']\.matrixx\/plans/
@@ -138,7 +139,7 @@ describe("plan-tool binding — tool registry presence", () => {
   test("planToolsRecord in tool-registry includes plan_read and plan_tasks", () => {
     //#given — read the tool-registry source and verify the record construction
     const registrySource = readFileSync(
-      "src/plugin/tool-registry.ts",
+      repoPath("src/plugin/tool-registry.ts"),
       "utf8",
     )
 
