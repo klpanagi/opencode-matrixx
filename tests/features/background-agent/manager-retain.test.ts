@@ -139,7 +139,7 @@ describe("Retention invariant", () => {
 
       const dir = join(TMP_ROOT, ".matrixx", BG_HANDLE_DIR_NAME)
       mkdirSync(dir, { recursive: true })
-      writeHandle(dir, task)
+      writeHandle(TMP_ROOT, task)
 
       //#when
       const result = await mgr.cancelTask(task.id)
@@ -172,7 +172,7 @@ describe("Retention invariant", () => {
 
       const dir = join(TMP_ROOT, ".matrixx", BG_HANDLE_DIR_NAME)
       mkdirSync(dir, { recursive: true })
-      writeHandle(dir, task)
+      writeHandle(TMP_ROOT, task)
 
       //#when
       await mgr.cancelTask(task.id)
@@ -205,7 +205,7 @@ describe("Retention invariant", () => {
 
       const dir = join(TMP_ROOT, ".matrixx", BG_HANDLE_DIR_NAME)
       mkdirSync(dir, { recursive: true })
-      writeHandle(dir, task)
+      writeHandle(TMP_ROOT, task)
 
       // Access private method via bracket notation
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -222,8 +222,8 @@ describe("Retention invariant", () => {
     })
   })
 
-  describe("prune — stale removal keeps handle on disk", () => {
-    test("pruning a stale running task deletes from memory but handle remains with terminal error status", async () => {
+  describe("prune — running tasks are never prune-killed", () => {
+    test("pruning leaves a stale running task in memory and on disk untouched", async () => {
       //#given
       const ctx = makeMockClient({
         sessionStatuses: { "sess_prune01": { type: "idle" } },
@@ -248,7 +248,7 @@ describe("Retention invariant", () => {
 
       const dir = join(TMP_ROOT, ".matrixx", BG_HANDLE_DIR_NAME)
       mkdirSync(dir, { recursive: true })
-      writeHandle(dir, task)
+      writeHandle(TMP_ROOT, task)
 
       // Disarm prune throttle so prune runs immediately
       ;(mgr as unknown as { lastPruneAt: number }).lastPruneAt = 0
@@ -258,21 +258,21 @@ describe("Retention invariant", () => {
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
       ;(mgr as any).pruneStaleTasksAndNotifications()
 
-      //#then — task removed from in-memory map
-      expect(mgr["tasks"].has(task.id)).toBe(false)
+      //#then — running task stays in memory, untouched
+      expect(mgr["tasks"].has(task.id)).toBe(true)
+      expect(mgr["tasks"].get(task.id)?.status).toBe("running")
 
-      // Handle file still on disk with terminal error status
+      // Handle file still on disk with running status (no prune overwrite)
       const filePath = join(dir, `${task.id}.json`)
       const raw = JSON.parse(readFileSync(filePath, "utf-8"))
-      expect(raw.status).toBe("error")
-      expect(typeof raw.completedAt).toBe("number")
+      expect(raw.status).toBe("running")
 
       // Re-read via readHandles proves persistence survives
       const handles = readHandles(TMP_ROOT)
       expect(handles.length).toBeGreaterThanOrEqual(1)
       const reap = handles.find((h) => h.taskId === task.id)
       expect(reap).toBeDefined()
-      expect(reap!.status).toBe("error")
+      expect(reap!.status).toBe("running")
       expect(reap!.terminalReason).toBe(undefined)
     })
   })

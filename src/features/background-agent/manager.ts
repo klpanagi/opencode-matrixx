@@ -1061,7 +1061,7 @@ export class BackgroundManager {
       log("[background-agent] Revive skipped - task already running:", { taskId: task.id, sessionID: task.sessionID })
       return task
     }
-    const guidance: Record<ReviveBlockReason, string> = { active: `Task ${id} is still active; use background_output to inspect it.`, uncertain: `Task ${id} has unknown liveness; re-run with force: true to acknowledge this.`, "no-session": `Task ${id} has no session to revive (it never produced one, e.g. it was queue-saturated).`, "unknown-task": `Task ${id} is not revivable (unrecognised state).`, expired: `Task ${id} is not revivable (unrecognised state).` }
+    const guidance: Record<ReviveBlockReason, string> = { active: `Task ${id} is still active; use background_output to inspect it.`, uncertain: `Task ${id} has unknown liveness; re-run with force: true to acknowledge this.`, "no-session": `Task ${id} has no session to revive (it never produced one, e.g. it was queue-saturated).`, "unknown-task": `Task ${id} is not revivable (unrecognised state).`, expired: `Task ${id} expired: its handle was removed after the 30-minute retention window.` }
     if (!task) {
       const handle = findRevivableHandle(readHandles(this.directory), { taskId: input.taskId, sessionId: input.sessionId })
       if (!handle) throw new Error(`Task not found for revive: ${id}. It may have expired (handles are retained 30 minutes) or never existed.`)
@@ -2012,24 +2012,46 @@ export class BackgroundManager {
     const now = Date.now()
 
     for (const [taskId, task] of this.tasks.entries()) {
+      // Running tasks are never prune-killed: execution bounds belong to the
+      // stale reaper (checkAndInterruptStaleTasks) and the wall-clock
+      // supervisor. The TTL below is retention, not an execution limit.
+      if (task.status === "running") {
+        continue
+      }
       const wasPending = task.status === "pending"
-      const timestamp = task.status === "pending" 
-        ? task.queuedAt?.getTime() 
-        : task.startedAt?.getTime()
-      
+      // Terminal tasks age from completion so a long run keeps its full
+      // 30-minute revive window; pending tasks age from queue time.
+      const timestamp = wasPending
+        ? task.queuedAt?.getTime()
+        : (task.completedAt?.getTime() ?? task.startedAt?.getTime() ?? task.queuedAt?.getTime())
+
       if (!timestamp) {
         continue
       }
-      
+
       const age = now - timestamp
       if (age > TASK_TTL_MS) {
-        const errorMessage = task.status === "pending"
-          ? "Task timed out while queued (30 minutes)"
-          : "Task timed out after 30 minutes"
-        
+        // Terminal tasks are simply evicted from memory; the persisted handle
+        // on disk remains the revive path until sweepStaleHandles removes it.
+        if (!wasPending) {
+          log("[background-agent] Evicting expired terminal task from memory:", { taskId, status: task.status, age: `${Math.round(age / 1000)}s` })
+          this.clearNotificationsForTask(taskId)
+          const toastManager = getTaskToastManager()
+          if (toastManager) {
+            toastManager.removeTask(taskId)
+          }
+          this.tasks.delete(taskId)
+          if (task.sessionID) {
+            unregisterSubagentSession(task.sessionID)
+          }
+          continue
+        }
+        const errorMessage = "Task timed out while queued (30 minutes)"
+
         log("[background-agent] Pruning stale task:", { taskId, status: task.status, age: `${Math.round(age / 1000)}s` })
         task.status = "error"
         task.error = errorMessage
+        task.terminalReason = "expired"
         task.completedAt = new Date()
         this.persistHandle(task)
         this.disarmWallclock(task.id)
@@ -2073,8 +2095,9 @@ export class BackgroundManager {
         continue
       }
       const validNotifications = notifications.filter((task) => {
-        if (!task.startedAt) return false
-        const age = now - task.startedAt.getTime()
+        const ts = task.completedAt ?? task.startedAt
+        if (!ts) return false
+        const age = now - ts.getTime()
         return age <= TASK_TTL_MS
       })
       if (validNotifications.length === 0) {

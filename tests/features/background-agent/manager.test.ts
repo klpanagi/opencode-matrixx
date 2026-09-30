@@ -3294,12 +3294,14 @@ describe("BackgroundManager.pruneStaleTasksAndNotifications - removes pruned tas
     //#given
     const { removeTaskCalls, resetToastManager } = createToastRemoveTaskTracker()
     const manager = createBackgroundManager()
+    const staleDate = new Date(Date.now() - 31 * 60 * 1000)
     const staleTask = createMockTask({
       id: "task-stale-toast",
       sessionID: "session-stale-toast",
       parentSessionID: "parent-session",
-      status: "running",
-      startedAt: new Date(Date.now() - 31 * 60 * 1000),
+      status: "completed",
+      startedAt: staleDate,
+      completedAt: staleDate,
     })
     getTaskMap(manager).set(staleTask.id, staleTask)
 

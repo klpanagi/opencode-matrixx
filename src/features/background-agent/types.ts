@@ -17,6 +17,7 @@ export type BackgroundTerminalReason =
   | "stale"
   | "nested-depth-exceeded"
   | "wall-clock-timeout"
+  | "expired"
 
 export interface ToolCallWindow {
   lastSignature: string
