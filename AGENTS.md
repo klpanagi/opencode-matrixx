@@ -218,7 +218,7 @@ Mandatory when `tdd_enforcer.enabled=true` (now enabled in `~/.config/opencode/m
 - **Build** — `bun build` (ESM, target bun) + `tsc --emitDeclarationOnly` + `build:schema`.
 - **Exports** — barrel via `index.ts`, type-only re-exports preferred.
 - **Naming** — kebab-case dirs, `createXXXHook` / `createXXXTool` factories.
-- **File size** — 200 LOC hard limit (prompt strings exempt).
+- **File size** — keep `src/` modules small: split a file rather than growing it past a few hundred lines. Not a hard limit, and not CI-enforced — `src/features/background-agent/manager.ts` is ~2400 LOC and `tests/` legitimately reaches ~4900. Prefer kebab-case one-concern modules (`index.ts` / `types.ts` / `constants.ts` / `tools.ts`); treat 200 LOC as a prompt to split, not a ceiling.
 - **Temperature** — 0.1 for code agents, max 0.3.
 - **Parallelism** — never sequential `task()` calls; use `run_in_background=true` and collect via `background_output`.
 - **Git** — no `git add -i`, `rebase -i`, `--no-verify`, no force push without request.
