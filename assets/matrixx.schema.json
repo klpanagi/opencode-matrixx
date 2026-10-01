@@ -4840,6 +4840,19 @@
       },
       "additionalProperties": false
     },
+    "plans": {
+      "type": "object",
+      "properties": {
+        "max_plan_file_bytes": {
+          "description": "Max bytes for a single plan file (default: 100KB, min: 10KB, max: 512KB)",
+          "default": 102400,
+          "type": "integer",
+          "minimum": 10240,
+          "maximum": 524288
+        }
+      },
+      "additionalProperties": false
+    },
     "babysitting": {
       "type": "object",
       "properties": {

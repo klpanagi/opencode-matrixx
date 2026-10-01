@@ -34,18 +34,18 @@ import { MAX_PLAN_FILE_BYTES } from "../../features/mission-state/constants"
  * Always derived from the single constant — never a hand-written literal — so the
  * message and the hint cannot drift from the value the guard actually enforces.
  */
-export function formatPlanCap(): string {
-  return MAX_PLAN_FILE_BYTES.toLocaleString("en-US")
+export function formatPlanCap(cap: number = MAX_PLAN_FILE_BYTES): string {
+  return cap.toLocaleString("en-US")
 }
 
 /**
  * Shared `message` + `hint` for `size_exceeded`. `plan_create` and `plan_update`
  * reject on mirrored conditions, so both build this from the same function.
  */
-export function planSizeExceededFields(actual: number): { message: string; hint: string } {
+export function planSizeExceededFields(actual: number, cap: number = MAX_PLAN_FILE_BYTES): { message: string; hint: string } {
   return {
-    message: `Plan exceeds ${MAX_PLAN_FILE_BYTES} bytes — split the plan into smaller plans (${actual}/${MAX_PLAN_FILE_BYTES} bytes)`,
-    hint: `Reduce the plan below ${formatPlanCap()} bytes or split it into multiple .matrixx/plans/*.md files.`,
+    message: `Plan exceeds ${cap} bytes — split the plan into smaller plans (${actual}/${cap} bytes)`,
+    hint: `Reduce the plan below ${cap.toLocaleString("en-US")} bytes or split it into multiple .matrixx/plans/*.md files.`,
   }
 }
 

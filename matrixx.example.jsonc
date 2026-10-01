@@ -368,6 +368,13 @@
   // },
 
   // ─────────────────────────────────────────────────────────────────────────
+  // Plans — work plan file size cap (Oracle plans under .matrixx/plans/)
+  // ─────────────────────────────────────────────────────────────────────────
+  // "plans": {
+  //   "max_plan_file_bytes": 102400         // (default: 102400 = 100KB, min: 10240, max: 524288)
+  // },
+
+  // ─────────────────────────────────────────────────────────────────────────
   // TDD enforcer — fail → implement → pass → refactor (default: true, fail-closed)
   // To opt out explicitly: "tdd_enforcer": { "enabled": false }
   // See docs/quality.md Part B for the RED-GREEN-REFACTOR workflow.

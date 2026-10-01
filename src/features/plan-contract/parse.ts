@@ -145,6 +145,6 @@ export function largestSection(content: string): { text: string; bytes: number }
 }
 
 /** True when `content` is at or beyond the advisory size threshold. */
-export function isApproachingSizeCap(content: string): boolean {
-  return measurePlanBytes(content) > MAX_PLAN_FILE_BYTES * SIZE_CAP_RATIO
+export function isApproachingSizeCap(content: string, cap: number = MAX_PLAN_FILE_BYTES): boolean {
+  return measurePlanBytes(content) > cap * SIZE_CAP_RATIO
 }

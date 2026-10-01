@@ -14,10 +14,10 @@ import { resolveDirectory, validatePlanFilePath } from "./types"
  * errno when stat itself failed. The errno is what separates a genuine
  * `read_failed` from a degraded manifest.
  */
-function sizeOverHardCap(path: string): { size: number | null; errno: string | null } {
+function sizeOverHardCap(path: string, cap: number): { size: number | null; errno: string | null } {
   try {
     const size = statSync(path).size
-    return { size: size > MAX_PLAN_FILE_BYTES ? size : null, errno: null }
+    return { size: size > cap ? size : null, errno: null }
   } catch (error) {
     return { size: null, errno: (error as NodeJS.ErrnoException).code ?? "EUNKNOWN" }
   }
@@ -27,9 +27,9 @@ function truncationHint(shown: number, total: number): string {
   return `Showing the first ${shown} of ${total} tasks to fit the ${MAX_PLAN_READ_RENDERED_BYTES}-byte rendered budget — read the rest with plan_read using a section selector (e.g. section: 'todos')`
 }
 
-export function createPlanTasksTool(ctx?: PluginContext): ToolDefinition {
+export function createPlanTasksTool(ctx?: PluginContext, cap: number = MAX_PLAN_FILE_BYTES): ToolDefinition {
   return tool({
-    description: `Return a compact manifest for a plan file: filePath, progress (total/completed/remaining/isComplete/needsTriage), numbered tasks (n, title, checked, line, LINE#ID anchor) and definition-of-done lines. Does NOT emit the plan body — use plan_read for content. A plan over the ${MAX_PLAN_FILE_BYTES}-byte cap still yields a manifest, marked degraded:true, because this tool never reads the body into your context; the manifest itself is clamped to ${MAX_PLAN_READ_RENDERED_BYTES} bytes and reports what it dropped. The cap is still enforced on every write.`,
+    description: `Return a compact manifest for a plan file: filePath, progress (total/completed/remaining/isComplete/needsTriage), numbered tasks (n, title, checked, line, LINE#ID anchor) and definition-of-done lines. Does NOT emit the plan body — use plan_read for content. A plan over the ${cap}-byte cap still yields a manifest, marked degraded:true, because this tool never reads the body into your context; the manifest itself is clamped to ${MAX_PLAN_READ_RENDERED_BYTES} bytes and reports what it dropped. The cap is still enforced on every write.`,
     args: {
       filePath: tool.schema
         .string()
@@ -50,20 +50,20 @@ export function createPlanTasksTool(ctx?: PluginContext): ToolDefinition {
         if (!existsSync(resolved)) {
           return JSON.stringify({ error: "file_not_found", message: `File not found: ${resolved}` })
         }
-        const probe = sizeOverHardCap(resolved)
+        const probe = sizeOverHardCap(resolved, cap)
         // The cap is a CEILING on what is HANDED BACK, never on what may be read.
         // An over-cap plan is still parsed (span reader) and still yields a manifest,
         // marked degraded — refusing it made a merely-large plan unplannable.
         const overCap = probe.size !== null
-        const content = overCap ? readPlanFileSpan(resolved) : readPlanFile(resolved)
+        const content = overCap ? readPlanFileSpan(resolved) : readPlanFile(resolved, cap)
         if (content === null) {
           // Over the cap, the stat already succeeded, so a null span read can only be
           // a real read failure (stat needs no read permission) — never a size refusal.
           if (overCap) return readFailedPayload(resolved)
-          const defensive = sizeOverHardCap(resolved)
+          const defensive = sizeOverHardCap(resolved, cap)
           const refusal = classifyReadRefusal({ sizeOverCap: defensive.size, errno: defensive.errno })
           return refusal === "file_too_large" && defensive.size !== null
-            ? fileTooLargePayload(resolved, defensive.size, MAX_PLAN_FILE_BYTES)
+            ? fileTooLargePayload(resolved, defensive.size, cap)
             : readFailedPayload(resolved, defensive.errno ?? undefined)
         }
         const progress = countPlanProgressFromContent(content)
@@ -86,8 +86,8 @@ export function createPlanTasksTool(ctx?: PluginContext): ToolDefinition {
         const degraded = {
           reason: "file_over_cap",
           size: probe.size,
-          cap: MAX_PLAN_FILE_BYTES,
-          message: `Plan is ${probe.size} bytes, over the ${MAX_PLAN_FILE_BYTES}-byte cap. The manifest is returned anyway (this tool never emits the body); the cap still blocks every write.`,
+          cap,
+          message: `Plan is ${probe.size} bytes, over the ${cap}-byte cap. The manifest is returned anyway (this tool never emits the body); the cap still blocks every write.`,
         }
         const { payload } = clampManifestToRenderedBudget(
           contract.tasks,

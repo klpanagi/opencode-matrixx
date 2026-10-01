@@ -5,6 +5,7 @@ import type {
 } from "../agents/dynamic-agent-prompt-builder"
 import type { MatrixxConfig } from "../config"
 import type { Managers } from "../create-managers"
+import { resolvePlanCap } from "../features/mission-state/constants"
 import { log } from "../shared"
 import { filterDisabledTools } from "../shared/disabled-tools"
 import { isTaskSystemEnabled } from "../shared/task-system-gating"
@@ -167,13 +168,14 @@ export function createToolRegistry(args: {
     ? { edit: createHashlineEditTool(ctx) }
     : {}
 
+  const planCap = resolvePlanCap(pluginConfig)
   const planToolsRecord: Record<string, ToolDefinition> = {
-    plan_create: createPlanCreateTool(ctx),
-    plan_read: createPlanReadTool(ctx),
-    plan_list: createPlanListTool(ctx),
-    plan_update: createPlanUpdateTool(ctx),
+    plan_create: createPlanCreateTool(ctx, planCap),
+    plan_read: createPlanReadTool(ctx, planCap),
+    plan_list: createPlanListTool(ctx, planCap),
+    plan_update: createPlanUpdateTool(ctx, undefined, planCap),
     plan_delete: createPlanDeleteTool(ctx),
-    plan_tasks: createPlanTasksTool(ctx),
+    plan_tasks: createPlanTasksTool(ctx, planCap),
   }
 
   const assemblyEnabled = pluginConfig.assembly?.enabled !== false

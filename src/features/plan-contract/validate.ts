@@ -86,7 +86,7 @@ function pushSchemaWarnings(content: string, warnings: PlanContractWarning[]): v
  * section. `largestSection` walks the same `collectNamedRegions` primitive the
  * section index uses, so the two cannot disagree about where a section ends.
  */
-function buildSizeCapWarning(content: string): PlanContractWarning {
+function buildSizeCapWarning(content: string, cap: number = MAX_PLAN_FILE_BYTES): PlanContractWarning {
   const planBytes = measurePlanBytes(content)
   const largest = largestSection(content)
   const attribution = largest
@@ -94,7 +94,7 @@ function buildSizeCapWarning(content: string): PlanContractWarning {
     : ""
   return {
     code: "approaching_size_cap",
-    message: `Plan is at ${planBytes}/${MAX_PLAN_FILE_BYTES} bytes (advisory).${attribution}`,
+    message: `Plan is at ${planBytes}/${cap} bytes (advisory).${attribution}`,
   }
 }
 
@@ -106,7 +106,7 @@ function buildSizeCapWarning(content: string): PlanContractWarning {
  * into a rejection and invite edit-retry loops over plans that were never
  * wrong. Do not reintroduce it; `errors` is reserved for empty content.
  */
-export function validatePlanContract(content: string): PlanContractResult {
+export function validatePlanContract(content: string, cap: number = MAX_PLAN_FILE_BYTES): PlanContractResult {
   const warnings: PlanContractWarning[] = []
   const errors: string[] = []
   if (content.trim().length === 0) errors.push("Plan content is empty")
@@ -152,8 +152,8 @@ export function validatePlanContract(content: string): PlanContractResult {
   appendMissingSubfieldWarnings(lines, tasks, headings, warnings)
 
 
-  if (isApproachingSizeCap(content)) {
-    warnings.push(buildSizeCapWarning(content))
+  if (isApproachingSizeCap(content, cap)) {
+    warnings.push(buildSizeCapWarning(content, cap))
   }
   pushSchemaWarnings(content, warnings)
 
