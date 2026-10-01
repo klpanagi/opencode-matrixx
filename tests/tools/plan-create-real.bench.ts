@@ -1,3 +1,11 @@
+// Real-world plan_create latency bench (committed file, run via `bun tests/tools/plan-create-real.bench.ts`).
+//
+// Ad-hoc alternative (issue #158): after `bun run build:tools`,
+//   const { createPlanCreateTool } = await import("<repo>/dist/tools.js");
+// from `ctx_execute` (language: javascript) or any ESM script. Do NOT
+// `require()` `dist/index.js` — it is the OpenCode plugin bundle (ESM, ~4 MB,
+// plugin-only exports) and aborts the sandbox. `dist/tools.js` is the
+// side-effect-free entry (see src/tool-entry.ts).
 import { mkdirSync, rmSync } from "node:fs"
 import { join } from "node:path"
 import { createPlanCreateTool } from "../../src/tools/plan/plan-create"

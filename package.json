@@ -17,11 +17,16 @@
       "types": "./dist/index.d.ts",
       "import": "./dist/index.js"
     },
-    "./schema.json": "./dist/matrixx.schema.json"
+    "./schema.json": "./dist/matrixx.schema.json",
+    "./tools": {
+      "types": "./dist/tool-entry.d.ts",
+      "import": "./dist/tools.js"
+    }
   },
   "scripts": {
-    "build": "bun run build:plugin && bun run build:cli && tsc --emitDeclarationOnly && bun run build:schema",
+    "build": "bun run build:plugin && bun run build:tools && bun run build:cli && tsc --emitDeclarationOnly && bun run build:schema",
     "build:plugin": "bun build src/index.ts --outdir dist --target bun --format esm --external @ast-grep/napi --external \"opencode/*\" --external \"@opencode-ai/core/*\" --external effect --external \"effect/*\"",
+    "build:tools": "bun build src/tool-entry.ts --outfile dist/tools.js --target bun --format esm --external @ast-grep/napi --external \"opencode/*\" --external \"@opencode-ai/core/*\" --external effect --external \"effect/*\"",
     "build:cli": "bun build src/cli/index.ts --outfile dist/cli.js --target bun --format esm && chmod +x dist/cli.js",
     "build:schema": "bun run script/build-schema.ts",
     "clean": "rm -rf dist",
