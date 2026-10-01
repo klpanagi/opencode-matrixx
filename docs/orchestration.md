@@ -107,7 +107,34 @@ plan against four criteria: clarity (where to find implementation details),
 verification (concrete, measurable acceptance criteria), context (enough to
 proceed without guessing about business logic), and big picture (purpose and
 workflow clear). Smith answers OKAY or REJECTED. On rejection, Oracle fixes
-the issues and resubmits. There is no retry limit.
+the issues and resubmits. The loop exits on one of four conditions:
+
+| Exit | Meaning |
+|------|---------|
+| `OKAY` | Plan approved. Best case. |
+| `CONVERGED` | A round surfaced no NEW issue category — the remaining blockers are not shrinking, so shipping now is correct, not a failure. |
+| `STALL` | The identical category set twice in a row. Author and reviewer are disagreeing, not converging — stop and ask the user which constraint wins. |
+| `CEILING` | Round budget exhausted. Every unresolved blocker is recorded under the plan's "Unresolved Smith Blockers" heading and named in the reply; an un-reviewed revision is never presented as passed. |
+
+The author classifies each of Smith's free-text blocking issues into one of three
+buckets — `reference`, `executability`, or `blocker` — which are Smith's own three
+checks. Those buckets are what make convergence detectable: a round that introduces
+a new bucket is still making progress, a round that repeats the same set is not.
+Smith itself is unchanged and reports plain free text.
+
+#### `plans.smith_max_review_rounds`
+
+```jsonc
+// "plans": {
+//   "smith_max_review_rounds": 8,  // (default: 8, min: 2, max: 20)
+// }
+```
+
+The ceiling on Smith review rounds. It is **burn control only** — not the
+stopping rule. The loop normally exits well before it on convergence; the
+ceiling bounds the pathological case where every round introduces a new issue
+category. Raise it when reviews genuinely need more rounds; lower it to cap
+agent burn on large plans.
 
 ## Layer 2: Execution (Architect)
 

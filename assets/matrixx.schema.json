@@ -4849,6 +4849,13 @@
           "type": "integer",
           "minimum": 10240,
           "maximum": 524288
+        },
+        "smith_max_review_rounds": {
+          "description": "Ceiling on Smith review rounds in Oracle high-accuracy mode. Burn control only — the loop normally exits earlier on convergence (default: 8, min: 2, max: 20)",
+          "default": 8,
+          "type": "integer",
+          "minimum": 2,
+          "maximum": 20
         }
       },
       "additionalProperties": false

@@ -1,5 +1,5 @@
 import { resolvePromptAppend } from "../agents/builtin-agents/resolve-file-uri";
-import { ORACLE_PERMISSION, ORACLE_SYSTEM_PROMPT } from "../agents/oracle";
+import { createOracleSystemPrompt, ORACLE_PERMISSION } from "../agents/oracle";
 import type { CategoryConfig, ModelRequirements } from "../config/schema";
 import {
   fetchAvailableModels,
@@ -29,6 +29,7 @@ export async function buildOracleAgentConfig(params: {
   currentModel: string | undefined;
   globalOverrideModel?: string;
   modelRequirements?: ModelRequirements;
+  pluginConfig?: { plans?: { smith_max_review_rounds?: number } };
 }): Promise<Record<string, unknown>> {
   const categoryConfig = params.pluginOracleOverride?.category
     ? resolveCategoryConfig(params.pluginOracleOverride.category, params.userCategories)
@@ -74,7 +75,7 @@ export async function buildOracleAgentConfig(params: {
     ...(resolvedModel ? { model: resolvedModel } : {}),
     ...(variantToUse ? { variant: variantToUse } : {}),
     mode: "all",
-    prompt: ORACLE_SYSTEM_PROMPT,
+    prompt: createOracleSystemPrompt(params.pluginConfig),
     permission: ORACLE_PERMISSION,
     description: `${(params.configAgentPlan?.description as string) ?? "Plan agent"} (Oracle - Matrixx)`,
     color: (params.configAgentPlan?.color as string) ?? "#FF5722",
