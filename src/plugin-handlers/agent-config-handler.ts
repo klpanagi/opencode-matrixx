@@ -154,6 +154,7 @@ export async function applyAgentConfig(params: {
         currentModel,
         globalOverrideModel: params.pluginConfig.global_model,
         modelRequirements: params.pluginConfig.modelRequirements,
+        pluginConfig: params.pluginConfig,
       });
     }
 

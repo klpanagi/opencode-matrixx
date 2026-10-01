@@ -166,7 +166,7 @@ describe("locked decision #4 — the plan-file cap is defined once, with its val
     const hits: string[] = []
     for (const file of walk(SRC)) {
       const source = readFileSync(file, "utf-8")
-      if (/102[,_]?400/.test(source)) hits.push(relative(SRC, file))
+      if (/140[,_]?000/.test(source)) hits.push(relative(SRC, file))
     }
 
     //#then only the owning module mentions it — no second definition crept back
@@ -180,10 +180,10 @@ describe("locked decision #4 — the plan-file cap is defined once, with its val
     const barrel = readFileSync(join(SRC, "tools/plan/constants.ts"), "utf-8")
 
     //#then the value is the one the cap was locked at, from a single definition
-    expect(MAX_PLAN_FILE_BYTES).toBe(102_400)
-    expect(owner).toMatch(/export const MAX_PLAN_FILE_BYTES = 102_400/)
+    expect(MAX_PLAN_FILE_BYTES).toBe(140_000)
+    expect(owner).toMatch(/export const MAX_PLAN_FILE_BYTES = 140_000/)
     //#then the barrel re-exports rather than re-declares
-    expect(planConstants.MAX_PLAN_FILE_BYTES).toBe(102_400)
+    expect(planConstants.MAX_PLAN_FILE_BYTES).toBe(140_000)
     expect(barrel).not.toMatch(/(const|let|var)\s+MAX_PLAN_FILE_BYTES/)
   })
 })

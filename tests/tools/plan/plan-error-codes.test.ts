@@ -49,7 +49,7 @@ describe("plan error-code taxonomy", () => {
     )
 
     //#then
-    expect(codes.length).toBe(9)
+    expect(codes.length).toBe(10)
     expect(missing).toEqual([])
   })
 
@@ -78,7 +78,7 @@ describe("plan error-code taxonomy", () => {
     //#then
     expect(reserved).toEqual(["section_stale", "section_not_found", "section_ambiguous"])
     for (const code of reserved) {
-      expect(keys.length).toBe(9)
+      expect(keys.length).toBe(10)
       expect(PLAN_ERROR_MEANINGS[code]).toBeTruthy()
       expect(Object.values(PLAN_ERROR_CODES)).toContain(code)
     }

@@ -26,7 +26,7 @@ export const META_TAG_PREFIX = "<!-- plan-persister:"
 export const META_TAG_SUFFIX = "-->"
 
 /** Safety cap: max bytes for a single plan file read */
-export const MAX_PLAN_FILE_BYTES = 102_400
+export const MAX_PLAN_FILE_BYTES = 140_000
 
 /**
  * Resolve the effective plan file cap from plugin config, falling back to

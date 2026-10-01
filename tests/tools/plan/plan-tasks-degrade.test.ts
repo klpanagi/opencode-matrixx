@@ -81,11 +81,11 @@ describe("plan_tasks degrades over the cap instead of refusing (Task 16)", () =>
     if (existsSync(testDir)) rmSync(testDir, { recursive: true, force: true })
   })
 
-  test("a 120,000-byte plan returns a usable manifest with a degradation marker and no error", async () => {
+  test("a 150,000-byte plan returns a usable manifest with a degradation marker and no error", async () => {
     //#given a plan well over the hard cap but with parseable tasks
-    const content = buildOverCapTaskPlan(120_000, 200)
+    const content = buildOverCapTaskPlan(150_000, 200)
     writePlan(testDir, "over-cap-plan.md", content)
-    expect(Buffer.byteLength(content, "utf8")).toBe(120_000)
+    expect(Buffer.byteLength(content, "utf8")).toBe(150_000)
     expect(Buffer.byteLength(content, "utf8")).toBeGreaterThan(MAX_PLAN_FILE_BYTES)
 
     //#when the manifest is requested
@@ -96,7 +96,7 @@ describe("plan_tasks degrades over the cap instead of refusing (Task 16)", () =>
     expect(res.error).toBeUndefined()
     expect(res.degraded).toBeDefined()
     expect(res.degraded?.reason).toBe("file_over_cap")
-    expect(res.degraded?.size).toBe(120_000)
+    expect(res.degraded?.size).toBe(150_000)
     expect(res.degraded?.cap).toBe(MAX_PLAN_FILE_BYTES)
     //#then the manifest itself is intact and derived from the authoritative parsers
     expect(res.filePath.endsWith("over-cap-plan.md")).toBe(true)
@@ -153,7 +153,7 @@ describe("plan_tasks degrades over the cap instead of refusing (Task 16)", () =>
   test("an over-cap but unreadable file is read_failed, never a degraded manifest (errno wins)", async () => {
     //#given an over-cap file with permissions removed
     const target = join(testDir, ".matrixx/plans", "locked-over-cap.md")
-    writePlan(testDir, "locked-over-cap.md", buildOverCapTaskPlan(120_000, 200))
+    writePlan(testDir, "locked-over-cap.md", buildOverCapTaskPlan(150_000, 200))
     chmodSync(target, 0o000)
 
     //#when the manifest is requested

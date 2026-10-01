@@ -19,6 +19,7 @@ import { MAX_PLAN_FILE_BYTES } from "../../features/mission-state/constants"
  * | `section_not_found` | selector resolves to nothing | no |
  * | `section_ambiguous` | selector matches >1 candidate | no — disambiguate |
  * | `size_exceeded` | a write would exceed the cap | no — shrink |
+ * | `trim_required` | consecutive growing writes refused; same content will keep failing | no same-content — retry only with trimmed/deferred content |
  *
  * RESERVED — declared here, produced by a later task:
  * - `section_stale`, `section_not_found`, `section_ambiguous` — Task 10/15
@@ -49,6 +50,35 @@ export function planSizeExceededFields(actual: number, cap: number = MAX_PLAN_FI
   }
 }
 
+/**
+ * Recovery hint for `trim_required`: names concrete trim/defer actions, never
+ * a bare byte total. Same-content retry is NOT retryable; a retry with smaller
+ * (trimmed or deferred) content IS.
+ */
+export const TRIM_REQUIRED_HINT =
+  "Trim required: remove completed phases into the plan's out-of-scope table as deferrals, delete verbose evidence blocks, or move a phase range to a cutover companion; then retry with smaller content. Shrinking writes are still accepted."
+
+/**
+ * Shared `message` + `hint` + diagnostics for `trim_required`: `actual` is the
+ * refused byte size, `cap` is the enforced cap, `overBy` is how far over the
+ * write landed, and `headroom` is the remaining room measured from the
+ * pre-write content (negative when the file is already over the cap).
+ */
+export function planTrimRequiredFields(
+  actual: number,
+  originalBytes: number,
+  cap: number = MAX_PLAN_FILE_BYTES,
+): { message: string; hint: string; actual: number; cap: number; overBy: number; headroom: number } {
+  return {
+    message: `Plan write refused after repeated size refusals — trim or defer scope before retrying (${actual}/${cap} bytes)`,
+    hint: TRIM_REQUIRED_HINT,
+    actual,
+    cap,
+    overBy: actual - cap,
+    headroom: cap - originalBytes,
+  }
+}
+
 export const PLAN_ERROR_CODES = {
   fileNotFound: "file_not_found",
   invalidFilePath: "invalid_file_path",
@@ -59,6 +89,7 @@ export const PLAN_ERROR_CODES = {
   sectionNotFound: "section_not_found",
   sectionAmbiguous: "section_ambiguous",
   sizeExceeded: "size_exceeded",
+  trimRequired: "trim_required",
 } as const
 
 export type PlanErrorCode = (typeof PLAN_ERROR_CODES)[keyof typeof PLAN_ERROR_CODES]
@@ -73,6 +104,8 @@ export const PLAN_ERROR_MEANINGS: Record<PlanErrorCode, string> = {
   section_not_found: "Section selector resolved to no matching region.",
   section_ambiguous: "Section selector matched more than one candidate region.",
   size_exceeded: "The resulting write would exceed MAX_PLAN_FILE_BYTES; the write was not persisted.",
+  trim_required:
+    "Consecutive growing writes to this path were refused for size; retrying the same content will keep failing. Retry only with smaller content (trimmed or deferred).",
 }
 
 export const PLAN_ERROR_RETRYABLE: Record<PlanErrorCode, boolean> = {
@@ -85,6 +118,7 @@ export const PLAN_ERROR_RETRYABLE: Record<PlanErrorCode, boolean> = {
   section_not_found: false,
   section_ambiguous: false,
   size_exceeded: false,
+  trim_required: false,
 }
 
 /** Recovery hint for `file_too_large`: name a concrete next call, not "split the file". */

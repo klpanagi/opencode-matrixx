@@ -1,6 +1,6 @@
 import { MAX_PLAN_FILE_BYTES, measurePlanBytes } from "../../features/mission-state/constants"
 import { atomicWrite } from "../../features/mission-state/plan-storage"
-import { PLAN_ERROR_CODES, planSizeExceededFields } from "./error-codes"
+import { PLAN_ERROR_CODES, planSizeExceededFields, planTrimRequiredFields } from "./error-codes"
 
 /**
  * The plan write path's cap guard — the ONLY place a write is measured against
@@ -27,6 +27,14 @@ export interface PlanCapExceeded {
 
 export type PlanCapVerdict = PlanCapKept | PlanCapExceeded
 
+export const TRIM_REQUIRED_AFTER_CONSECUTIVE_REFUSALS = 2
+
+const consecutiveSizeRefusals = new Map<string, number>()
+
+export function resetPlanWriteGuardForTesting(): void {
+  consecutiveSizeRefusals.clear()
+}
+
 /**
  * Runs between "the edit is on disk" and "the cap is enforced" so a fault in
  * that window can be injected. Production passes nothing; the parameter exists
@@ -44,8 +52,26 @@ export type PostApplyHook = () => void
  */
 export function enforcePlanCap(resolved: string, originalContent: string, appliedContent: string, cap: number = MAX_PLAN_FILE_BYTES): PlanCapVerdict {
   const bytes = measurePlanBytes(appliedContent)
-  if (bytes <= cap) return { kind: "keep", bytes }
+  const originalBytes = measurePlanBytes(originalContent)
+  if (bytes <= cap) {
+    consecutiveSizeRefusals.delete(resolved)
+    return { kind: "keep", bytes }
+  }
+  if (bytes < originalBytes) {
+    consecutiveSizeRefusals.delete(resolved)
+    return { kind: "keep", bytes }
+  }
+  const count = (consecutiveSizeRefusals.get(resolved) ?? 0) + 1
+  consecutiveSizeRefusals.set(resolved, count)
   atomicWrite(resolved, originalContent)
+  if (count > TRIM_REQUIRED_AFTER_CONSECUTIVE_REFUSALS) {
+    const payload = JSON.stringify({
+      error: PLAN_ERROR_CODES.trimRequired,
+      ...planTrimRequiredFields(bytes, originalBytes, cap),
+      filePath: resolved,
+    })
+    return { kind: "rolled-back", bytes, payload }
+  }
   const payload = JSON.stringify({
     error: PLAN_ERROR_CODES.sizeExceeded,
     ...planSizeExceededFields(bytes, cap),
