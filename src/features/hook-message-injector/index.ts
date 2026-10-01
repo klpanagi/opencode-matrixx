@@ -8,4 +8,5 @@ export {
   injectHookMessage,
   resolveMessageContext,
 } from "./injector"
+export { invalidateSdkMessageCache } from "./sdk-message-cache"
 export type { MessageMeta, OriginalMessageContext, TextPart, ToolPermission } from "./types"

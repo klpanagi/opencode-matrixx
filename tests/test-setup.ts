@@ -13,9 +13,11 @@ import { _resetMessagesTransformCacheForTesting } from "../src/plugin/messages-t
 import { _resetDisciplineCacheForTesting } from "../src/agents/dynamic-agent-prompt-builder"
 import { _resetContextModeEnforcementForTesting } from "../src/shared/context-mode-enforcement"
 import { _resetDcpGuidanceForTesting } from "../src/shared/dcp-guidance"
+import { _resetSdkMessageCache } from "../src/features/hook-message-injector/sdk-message-cache"
 
 beforeEach(() => {
   _resetForTesting()
+  _resetSdkMessageCache()
   _resetAssemblyStateForTesting()
   _resetPruneThrottleForTesting()
   _resetMessageDirCacheForTesting()

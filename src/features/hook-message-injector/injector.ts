@@ -5,6 +5,7 @@ import { normalizeSDKResponse } from "../../shared"
 import { log } from "../../shared/logger"
 import { isSqliteBackend } from "../../shared/opencode-storage-detection"
 import { MESSAGE_STORAGE, PART_STORAGE } from "./constants"
+import { getCachedSdkMessages, setCachedSdkMessages } from "./sdk-message-cache"
 import type { MessageMeta, OriginalMessageContext, TextPart, ToolPermission } from "./types"
 
 export interface StoredMessage {
@@ -59,11 +60,20 @@ function convertSDKMessageToStoredMessage(msg: SDKMessage): StoredMessage | null
  * Finds the nearest message with required fields using SDK (for beta/SQLite backend).
  * Uses client.session.messages() to fetch message data from SQLite.
  */
-export async function findNearestMessageWithFieldsFromSDK(
+/**
+ * Single choke point for `client.session.messages()` in this feature.
+ * Returns an array SHARED with the cache — callers must not mutate it.
+ */
+async function fetchSdkMessages(
   client: OpencodeClient,
   sessionID: string,
-  timeoutMs = 5000
-): Promise<StoredMessage | null> {
+  timeoutMs: number
+): Promise<SDKMessage[] | null> {
+  const cached = getCachedSdkMessages(sessionID)
+  if (cached) {
+    return cached as SDKMessage[]
+  }
+
   try {
     const response = await Promise.race([
       client.session.messages({ path: { id: sessionID } }),
@@ -72,7 +82,26 @@ export async function findNearestMessageWithFieldsFromSDK(
       ),
     ])
     const messages = normalizeSDKResponse(response, [] as SDKMessage[], { preferResponseOnMissingData: true })
+    setCachedSdkMessages(sessionID, messages)
+    return messages
+  } catch (error) {
+    log("[hook-message-injector] SDK message fetch failed", {
+      sessionID,
+      error: String(error),
+    })
+    return null
+  }
+}
 
+export async function findNearestMessageWithFieldsFromSDK(
+  client: OpencodeClient,
+  sessionID: string,
+  timeoutMs = 5000
+): Promise<StoredMessage | null> {
+  const messages = await fetchSdkMessages(client, sessionID, timeoutMs)
+  if (!messages) return null
+
+  try {
     for (let i = messages.length - 1; i >= 0; i--) {
       const stored = convertSDKMessageToStoredMessage(messages[i])
       if (stored?.agent && stored.model?.providerID && stored.model?.modelID) {
@@ -103,15 +132,10 @@ export async function findFirstMessageWithAgentFromSDK(
   sessionID: string,
   timeoutMs = 5000
 ): Promise<string | null> {
-  try {
-    const response = await Promise.race([
-      client.session.messages({ path: { id: sessionID } }),
-      new Promise<never>((_, reject) =>
-        setTimeout(() => reject(new Error(`SDK messages timeout after ${timeoutMs}ms`)), timeoutMs)
-      ),
-    ])
-    const messages = normalizeSDKResponse(response, [] as SDKMessage[], { preferResponseOnMissingData: true })
+  const messages = await fetchSdkMessages(client, sessionID, timeoutMs)
+  if (!messages) return null
 
+  try {
     for (const msg of messages) {
       const stored = convertSDKMessageToStoredMessage(msg)
       if (stored?.agent) {
@@ -119,7 +143,7 @@ export async function findFirstMessageWithAgentFromSDK(
       }
     }
   } catch (error) {
-    log("[hook-message-injector] SDK agent fetch failed", {
+    log("[hook-message-injector] SDK agent scan failed", {
       sessionID,
       error: String(error),
     })
