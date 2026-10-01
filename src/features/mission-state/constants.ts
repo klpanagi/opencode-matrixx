@@ -41,6 +41,16 @@ export function measurePlanBytes(content: string): number {
 }
 
 /**
+ * Effective plan cap resolver. Today the cap is the single constant above;
+ * the optional override parameter is the seam a future config value drops
+ * into (follow-up: plumb the configured cap through here, defaulting to
+ * MAX_PLAN_FILE_BYTES when unset).
+ */
+export function resolvePlanCap(override?: number): number {
+  return override ?? MAX_PLAN_FILE_BYTES
+}
+
+/**
  * Plan Checkbox Patterns
  *
  * Single source of truth for plan progress counting (see getPlanProgress).

@@ -194,6 +194,12 @@ The plan's content does not fit the cap no matter how it is transported. Two fil
 → A companion is a NEW file via \`plan_create\`, not a modification — so "plan files are managed ONLY via plan_* tools" is satisfied. Each file is created once and thereafter amended only with plan_update.
 → Canonical example in this repo: \`skill-native-handover.md\` (TL;DR … Phases 0–3) paired with \`skill-native-handover-cutover.md\` (Phases 4–6), which opens by declaring itself part 2 of 2, states its phase range in a table, and says "Read part 1 first."
 
+**Pre-write byte estimate (do this BEFORE any plan_create or plan_update)**
+Estimate the finished file as task count × ~2KB plus ~15KB for the skeleton. If the estimate exceeds 80% of the effective cap (resolvePlanCap() in mission-state constants, owned by MAX_PLAN_FILE_BYTES), trim or defer scope BEFORE writing: cut verbose detail, record deferred phases in the plan's out-of-scope table — never in a second file. A companion stays the rare Branch 3 exception, self-justified in the plan.
+
+**trim_required (the write guard's escalation)**
+After consecutive growing writes are refused with size_exceeded, the guard escalates to trim_required: retrying the same content will keep failing. On trim_required, only removals or deferrals (recorded in the out-of-scope table) — never additions — until the file is back under the cap. Shrinking writes are still accepted, and any successful write resets the guard's counter.
+
 **The cap is a ceiling, not a wall.** An over-cap plan stays fully readable — plan_read with offset/limit or a section selector is allowed past it, and only an unbounded whole-file read is refused. So "the plan is large" is NOT by itself a reason to split. If Branch 2's finished size would exceed the cap, that is a Branch 3 plan, not a bigger Branch 2.
 
 **NEVER, in any branch:**

@@ -4,6 +4,8 @@
  * Phase 3: Smith review loop for rigorous plan validation.
  */
 
+export const SMITH_LOOP_MAX_ITERATIONS = 3
+
 export const ORACLE_HIGH_ACCURACY_MODE = `# PHASE 3: PLAN GENERATION
 
 ## High Accuracy Mode (If User Requested) - MANDATORY LOOP
@@ -14,7 +16,7 @@ export const ORACLE_HIGH_ACCURACY_MODE = `# PHASE 3: PLAN GENERATION
 
 \`\`\`typescript
 // After generating initial plan
-while (true) {
+for (let round = 1; round <= SMITH_LOOP_MAX_ITERATIONS; round++) {
   // Fire Smith in background (never a blocking nested call), then collect its verdict.
   const smithTask = task(
     subagent_type="smith",
@@ -48,11 +50,14 @@ while (true) {
    - Smith says 5 issues → Fix all 5
    - Partial fixes → Smith will reject again
 
-3. **KEEP LOOPING**: There is no maximum retry limit.
+3. **KEEP LOOPING (BOUNDED)**: Resubmit until "OKAY", user cancellation, or SMITH_LOOP_MAX_ITERATIONS (default 3) rounds.
    - First rejection → Fix and resubmit
    - Second rejection → Fix and resubmit
-   - Tenth rejection → Fix and resubmit
-   - Loop until "OKAY" or user explicitly cancels
+   - Third rejection → Fix and resubmit, then stop adding: past the cap the loop trims or defers instead of looping again
+   - Loop until "OKAY", user cancellation, or the iteration cap — never loop forever adding content
+
+### SIZE GATE (90% of the effective cap)
+When the plan file exceeds 90% of the effective cap, Smith verdicts and your revisions may only demand removals or deferrals — never additions. Record every deferral in the plan's out-of-scope table. A revision that grows the file past this gate is a failed revision: revert it and trim instead.
 
 4. **QUALITY IS NON-NEGOTIABLE**: User asked for high accuracy.
    - They are trusting you to deliver a bulletproof plan

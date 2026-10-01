@@ -11,7 +11,7 @@
 import { MAX_PLAN_FILE_BYTES, measurePlanBytes } from "../../features/mission-state/constants"
 import { countPlanProgressFromContent } from "../../features/mission-state/storage"
 import { findAppendixStart } from "./appendix"
-import { CANONICAL_SECTIONS, REQUIRED_TASK_SUBFIELDS } from "./constants"
+import { CANONICAL_SECTIONS, OPTIONAL_TASK_SUBFIELDS, REQUIRED_TASK_SUBFIELDS } from "./constants"
 import {
   collectHeadings,
   type Heading,
@@ -50,7 +50,9 @@ function appendMissingSubfieldWarnings(
     const nextHeading = headings.find((heading) => heading.index > start)
     if (nextHeading) end = Math.min(end, nextHeading.index)
     const body = lines.slice(start + 1, end)
+    const optional = new Set<string>([...OPTIONAL_TASK_SUBFIELDS])
     for (const label of REQUIRED_TASK_SUBFIELDS) {
+      if (optional.has(label)) continue
       const re = buildSubfieldRe(label)
       if (!body.some((line) => re.test(line))) {
         warnings.push({

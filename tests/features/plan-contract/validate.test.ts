@@ -169,8 +169,8 @@ describe("validatePlanContract", () => {
   })
 
   test("reports a missing bold subfield on a numbered task", () => {
-    //#given the fixture with the Must NOT do label removed
-    const content = FIXTURE.replace("  **Must NOT do**:\n", "")
+    //#given the fixture with a still-required label removed
+    const content = FIXTURE.replace("  **What to do**:", "")
 
     //#when validating
     const result = validatePlanContract(content)
@@ -178,8 +178,24 @@ describe("validatePlanContract", () => {
     //#then missing_subfield names the task number and the label
     const warning = result.warnings.find((w) => w.code === "missing_subfield")
     expect(warning).toBeDefined()
-    expect(warning?.message).toContain("Must NOT do")
+    expect(warning?.message).toContain("What to do")
     expect(warning?.message).toContain("1")
+  })
+
+  test("does not warn when optional subfields are absent", () => {
+    //#given the fixture with both optional labels removed
+    const content = FIXTURE.replace("  **Must NOT do**:\n", "").replace(
+      "  **Parallelization**:",
+      "",
+    )
+
+    //#when validating
+    const result = validatePlanContract(content)
+
+    //#then no missing_subfield warning names an optional label
+    const missing = result.warnings.filter((w) => w.code === "missing_subfield")
+    expect(missing.some((w) => w.message.includes("Must NOT do"))).toBe(false)
+    expect(missing.some((w) => w.message.includes("Parallelization"))).toBe(false)
   })
 
   test("matches bold subfields written with a trailing parenthetical", () => {

@@ -36,6 +36,9 @@ export const REQUIRED_TASK_SUBFIELDS = [
   "Agent-Executed QA Scenarios",
 ] as const
 
+/** Subfields the validator treats as optional: absence never warns. */
+export const OPTIONAL_TASK_SUBFIELDS = ["Must NOT do", "Parallelization"] as const
+
 /** Canonical section title union derived from {@link CANONICAL_SECTIONS}. */
 export type PlanSection = (typeof CANONICAL_SECTIONS)[number]
 
