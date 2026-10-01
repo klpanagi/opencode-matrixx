@@ -9,7 +9,6 @@ import {
 import { MAX_PLAN_FILE_BYTES } from "../../features/mission-state/constants"
 import type { PluginContext } from "../../plugin/types"
 import { PLAN_FILENAME_KEBAB_REGEX, PLANS_DIR } from "./constants"
-import { formatPlanCap } from "./error-codes"
 import { resolveDirectory } from "./types"
 
 type PlanListProgress = PlanProgress | { unreadable: true }
@@ -19,9 +18,9 @@ interface SkippedPlan {
   reason: string
 }
 
-export function createPlanListTool(ctx?: PluginContext): ToolDefinition {
+export function createPlanListTool(ctx?: PluginContext, cap: number = MAX_PLAN_FILE_BYTES): ToolDefinition {
   return tool({
-    description: `List plan files under .matrixx/plans/*.md. Filters *.md with kebab-case, sorts by mtime. Each entry carries \`size\` (bytes) and \`overCap\`. An over-cap plan is still listed — never skipped, never an error — because it is the plan that needs repair: read it with plan_read \`offset\`/\`limit\` or a \`section\` selector, then shrink it with plan_update. The cap is ${formatPlanCap()} bytes. A \`.md\` file whose filename is not kebab-case is not counted; when that happens the response gains \`skipped\`, a list of \`{ name, reason }\` naming the offending file and the rule it broke. The key is absent when nothing is skipped.`,
+    description: `List plan files under .matrixx/plans/*.md. Filters *.md with kebab-case, sorts by mtime. Each entry carries \`size\` (bytes) and \`overCap\`. An over-cap plan is still listed — never skipped, never an error — because it is the plan that needs repair: read it with plan_read \`offset\`/\`limit\` or a \`section\` selector, then shrink it with plan_update. The cap is ${cap.toLocaleString("en-US")} bytes. A \`.md\` file whose filename is not kebab-case is not counted; when that happens the response gains \`skipped\`, a list of \`{ name, reason }\` naming the offending file and the rule it broke. The key is absent when nothing is skipped.`,
     args: {},
     execute: async (_args, context) => {
       try {
@@ -53,7 +52,7 @@ export function createPlanListTool(ctx?: PluginContext): ToolDefinition {
             const filePath = join(plansDir, fileName)
             try {
               const stat = statSync(filePath)
-              const content = readPlanFile(filePath)
+              const content = readPlanFile(filePath, cap)
               const progress: PlanListProgress =
                 content === null ? { unreadable: true } : countPlanProgressFromContent(content)
               return {
@@ -62,7 +61,7 @@ export function createPlanListTool(ctx?: PluginContext): ToolDefinition {
                 mtime: stat.mtime.toISOString(),
                 mtimeMs: stat.mtimeMs,
                 size: stat.size,
-                overCap: stat.size > MAX_PLAN_FILE_BYTES,
+                overCap: stat.size > cap,
                 progress,
               }
             } catch {

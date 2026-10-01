@@ -50,10 +50,10 @@ export type PostApplyHook = () => void
  * crash mid-restore cannot truncate the plan: the target is never written in
  * place, only ever replaced by rename.
  */
-export function enforcePlanCap(resolved: string, originalContent: string, appliedContent: string): PlanCapVerdict {
+export function enforcePlanCap(resolved: string, originalContent: string, appliedContent: string, cap: number = MAX_PLAN_FILE_BYTES): PlanCapVerdict {
   const bytes = measurePlanBytes(appliedContent)
   const originalBytes = measurePlanBytes(originalContent)
-  if (bytes <= MAX_PLAN_FILE_BYTES) {
+  if (bytes <= cap) {
     consecutiveSizeRefusals.delete(resolved)
     return { kind: "keep", bytes }
   }
@@ -67,14 +67,14 @@ export function enforcePlanCap(resolved: string, originalContent: string, applie
   if (count > TRIM_REQUIRED_AFTER_CONSECUTIVE_REFUSALS) {
     const payload = JSON.stringify({
       error: PLAN_ERROR_CODES.trimRequired,
-      ...planTrimRequiredFields(bytes, originalBytes),
+      ...planTrimRequiredFields(bytes, originalBytes, cap),
       filePath: resolved,
     })
     return { kind: "rolled-back", bytes, payload }
   }
   const payload = JSON.stringify({
     error: PLAN_ERROR_CODES.sizeExceeded,
-    ...planSizeExceededFields(bytes),
+    ...planSizeExceededFields(bytes, cap),
     filePath: resolved,
   })
   return { kind: "rolled-back", bytes, payload }

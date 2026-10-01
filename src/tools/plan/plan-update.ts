@@ -40,9 +40,9 @@ function editTouchesCanonicalRegion(edits: Array<Record<string, unknown>>, origi
   })
 }
 
-export function createPlanUpdateTool(ctx?: PluginContext, postApply?: PostApplyHook): ToolDefinition {
+export function createPlanUpdateTool(ctx?: PluginContext, postApply?: PostApplyHook, cap: number = MAX_PLAN_FILE_BYTES): ToolDefinition {
   return tool({
-    description: `Update a plan file under .matrixx/plans/*.md via hashline edits. Delegates to executeHashlineEditTool scoped to PLANS_DIR. Requires LINE#ID anchors, validates file exists. Re-validates the contract after the edit (WARN-first warnings), rejects edits that push the file past ${MAX_PLAN_FILE_BYTES} bytes without persisting, and injects front-matter once when absent. SECTION-SCOPED: an edit may name \`section\` instead of hand-computing line numbers — the target's line range is re-derived from a fresh parse at write time (no line number is ever persisted), and the supplied \`contentHash\` from plan_read gates the section as a whole. A changed section is refused with section_stale naming both hashes; an unknown or renamed id is section_not_found listing the ids this plan has; a repeated section needs sectionIndex.`,
+    description: `Update a plan file under .matrixx/plans/*.md via hashline edits. Delegates to executeHashlineEditTool scoped to PLANS_DIR. Requires LINE#ID anchors, validates file exists. Re-validates the contract after the edit (WARN-first warnings), rejects edits that push the file past ${cap} bytes without persisting, and injects front-matter once when absent. SECTION-SCOPED: an edit may name \`section\` instead of hand-computing line numbers — the target's line range is re-derived from a fresh parse at write time (no line number is ever persisted), and the supplied \`contentHash\` from plan_read gates the section as a whole. A changed section is refused with section_stale naming both hashes; an unknown or renamed id is section_not_found listing the ids this plan has; a repeated section needs sectionIndex.`,
     args: {
       filePath: tool.schema.string().describe("Absolute path to the file to edit (must be inside .matrixx/plans, kebab-case .md)"),
       edits: tool.schema
@@ -129,7 +129,7 @@ export function createPlanUpdateTool(ctx?: PluginContext, postApply?: PostApplyH
             : postEditContent
           // The ONLY cap check and the ONLY rollback on the write path; the
           // hashline and section-scoped modes both arrive here.
-          const verdict = enforcePlanCap(resolved, originalContent, finalContent)
+          const verdict = enforcePlanCap(resolved, originalContent, finalContent, cap)
           if (verdict.kind === "rolled-back") {
             settled = true
             return verdict.payload
@@ -137,7 +137,7 @@ export function createPlanUpdateTool(ctx?: PluginContext, postApply?: PostApplyH
           if (finalContent !== postEditContent) {
             atomicWrite(resolved, finalContent)
           }
-          const { warnings } = validatePlanContract(finalContent)
+          const { warnings } = validatePlanContract(finalContent, cap)
           settled = true
           return JSON.stringify({
             success: true,

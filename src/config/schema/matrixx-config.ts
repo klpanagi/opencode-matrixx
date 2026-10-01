@@ -24,6 +24,7 @@ import { ActivePresetSchema, ModelPresetsSchema } from "./model-presets"
 import { MorpheusConfigSchema } from "./morpheus"
 import { MorpheusAgentConfigSchema } from "./morpheus-agent"
 import { NotificationConfigSchema } from "./notification"
+import { PlansConfigSchema } from "./plans"
 import { RtkConfigSchema } from "./rtk"
 import { RuntimeFallbackConfigSchema } from "./runtime-fallback"
 import { SecurityConfigSchema } from "./security"
@@ -74,6 +75,7 @@ export const MatrixxConfigSchema = z.object({
   matrix_loop: MatrixLoopConfigSchema.optional(),
   background_task: BackgroundTaskConfigSchema.optional(),
   notification: NotificationConfigSchema.optional(),
+  plans: PlansConfigSchema.optional(),
   babysitting: BabysittingConfigSchema.optional(),
   /** Canonical task-system configuration (master switch, storage, enforcer, poll timeout).
    * Legacy `task`, `morpheus.tasks`, `experimental.task_system` still parse
