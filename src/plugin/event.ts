@@ -1,6 +1,7 @@
 import type { MatrixxConfig } from "../config"
 import type { CreatedHooks } from "../create-hooks"
 import type { Managers } from "../create-managers"
+import { invalidateSdkMessageCache } from "../features/hook-message-injector"
 import {
   clearSessionAgent,
   getMainSessionID,
@@ -125,6 +126,7 @@ export function createEventHandler(args: {
       if (sessionInfo?.id) {
         clearSessionAgent(sessionInfo.id)
         resetMessageCursor(sessionInfo.id)
+        invalidateSdkMessageCache(sessionInfo.id)
         firstMessageVariantGate.clear(sessionInfo.id)
         await lspManager.cleanupTempDirectoryClients()
         await managers.tmuxSessionManager.onSessionDeleted({
