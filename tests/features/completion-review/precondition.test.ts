@@ -103,12 +103,12 @@ afterAll(() => {
 })
 
 describe("Plan A invariants that gate Plan B", () => {
-  test("MAX_PLAN_FILE_BYTES is unchanged at 102400", () => {
+  test("MAX_PLAN_FILE_BYTES is 140000 after the deliberate raise", () => {
     //#given Plan A converted the size cap from a wall into a ceiling
     //#when the sanctioned constant is read
     const cap = MAX_PLAN_FILE_BYTES
-    //#then it is still the pre-cutover value
-    expect(cap).toBe(102400)
+    //#then it is the deliberately raised value
+    expect(cap).toBe(140000)
   })
 
   test("validate.ts accumulates errors through exactly one errors.push site", () => {

@@ -4844,8 +4844,8 @@
       "type": "object",
       "properties": {
         "max_plan_file_bytes": {
-          "description": "Max bytes for a single plan file (default: 100KB, min: 10KB, max: 512KB)",
-          "default": 102400,
+          "description": "Max bytes for a single plan file (default: 140KB, min: 10KB, max: 512KB)",
+          "default": 140000,
           "type": "integer",
           "minimum": 10240,
           "maximum": 524288

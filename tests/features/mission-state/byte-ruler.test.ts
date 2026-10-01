@@ -52,7 +52,7 @@ describe("measurePlanBytes", () => {
 })
 
 describe("MAX_PLAN_FILE_BYTES", () => {
-  test("still evaluates to 102400 after the dedupe", () => {
+  test("still evaluates to 140000 after the raise", () => {
     //#given
     const cap = MAX_PLAN_FILE_BYTES
 
@@ -60,6 +60,6 @@ describe("MAX_PLAN_FILE_BYTES", () => {
     const value = cap
 
     //#then
-    expect(value).toBe(102400)
+    expect(value).toBe(140000)
   })
 })

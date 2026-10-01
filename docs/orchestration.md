@@ -188,7 +188,7 @@ on `.matrixx/plans/*.md` is blocked by `task-edit-guard`.
 | `plan_update` | Edit via LINE#ID hashline anchors; post-edit contract warnings surfaced |
 | `plan_delete` | Remove a plan file |
 
-**Write-time size cap**: `plan_create` rejects content exceeding 102,400 bytes
+**Write-time size cap**: `plan_create` rejects content exceeding 140,000 bytes
 (`size_exceeded` error). `plan_update` guards the same cap post-edit.
 
 **Soft render cap**: `plan_read` returns at most 40,000 rendered bytes per call.

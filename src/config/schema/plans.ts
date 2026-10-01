@@ -12,7 +12,7 @@ export const PlansConfigSchema = z.object({
     // features/mission-state/constants.ts).
     .default(MAX_PLAN_FILE_BYTES)
     .optional()
-    .describe("Max bytes for a single plan file (default: 100KB, min: 10KB, max: 512KB)"),
+    .describe("Max bytes for a single plan file (default: 140KB, min: 10KB, max: 512KB)"),
 })
 
 export type PlansConfig = z.infer<typeof PlansConfigSchema>

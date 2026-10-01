@@ -371,7 +371,7 @@
   // Plans — work plan file size cap (Oracle plans under .matrixx/plans/)
   // ─────────────────────────────────────────────────────────────────────────
   // "plans": {
-  //   "max_plan_file_bytes": 102400         // (default: 102400 = 100KB, min: 10240, max: 524288)
+  //   "max_plan_file_bytes": 140000         // (default: 140000 = 140KB, min: 10240, max: 524288)
   // },
 
   // ─────────────────────────────────────────────────────────────────────────

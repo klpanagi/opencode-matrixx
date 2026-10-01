@@ -150,9 +150,9 @@ describe("plan_list progress enrichment", () => {
     expect(over?.progress).toEqual({ unreadable: true })
   })
 
-  test("a 120,000-byte plan is listed with its real size so it can be found and repaired", async () => {
+  test("a 150,000-byte plan is listed with its real size so it can be found and repaired", async () => {
     //#given a plan well past the cap, sized the way a real runaway plan would be
-    const body = buildPlanBodyOfBytes(120_000, "# Runaway\n")
+    const body = buildPlanBodyOfBytes(150_000, "# Runaway\n")
     await Bun.write(join(testDir, ".matrixx/plans/runaway-plan.md"), body)
     const listTool = createPlanListTool()
 

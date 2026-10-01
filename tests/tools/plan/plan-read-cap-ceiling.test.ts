@@ -7,8 +7,8 @@ import { MAX_PLAN_READ_RENDERED_BYTES } from "../../../src/tools/plan/constants"
 import { createPlanReadTool } from "../../../src/tools/plan/plan-read"
 import { makePlanDir, removePlanDir, testContext, writePlan } from "./plan-read-section-fixtures"
 
-/** A plan comfortably OVER the cap (120,000 bytes) with more than 100 real lines. */
-const OVER_CAP_TARGET = 120_000
+/** A plan comfortably OVER the cap (150,000 bytes) with more than 100 real lines. */
+const OVER_CAP_TARGET = 150_000
 const PLAN_NAME = "over-cap-plan.md"
 
 function buildOverCapSectionedPlan(): string {

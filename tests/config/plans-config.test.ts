@@ -4,7 +4,7 @@ import { MatrixxConfigSchema, PlansConfigSchema } from "../../src/config/schema"
 import { MAX_PLAN_FILE_BYTES, resolvePlanCap } from "../../src/features/mission-state/constants"
 
 describe("plans.max_plan_file_bytes config", () => {
-  test("defaults to 102400 when key is omitted", () => {
+  test("defaults to MAX_PLAN_FILE_BYTES when key is omitted", () => {
     //#given
     const raw = {}
 
@@ -12,7 +12,7 @@ describe("plans.max_plan_file_bytes config", () => {
     const result = PlansConfigSchema.parse(raw)
 
     //#then
-    expect(result.max_plan_file_bytes).toBe(102_400)
+    expect(result.max_plan_file_bytes).toBe(MAX_PLAN_FILE_BYTES)
   })
 
   test("accepts a custom value via MatrixxConfig", () => {
@@ -57,7 +57,7 @@ describe("plans.max_plan_file_bytes config", () => {
 
     //#then
     expect(cap).toBe(MAX_PLAN_FILE_BYTES)
-    expect(cap).toBe(102_400)
+    expect(cap).toBe(140_000)
   })
 
   test("resolvePlanCap honors configured value", () => {
