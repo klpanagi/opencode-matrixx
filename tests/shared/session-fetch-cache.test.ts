@@ -1,10 +1,7 @@
 import { afterEach, beforeEach, describe, expect, it } from "bun:test"
-import { mkdirSync, rmSync, writeFileSync } from "node:fs"
-import { join } from "node:path"
 import { findFirstMessageWithAgentFromSDK, findNearestMessageWithFieldsFromSDK } from "../../src/features/hook-message-injector"
 import { invalidateSdkMessageCache } from "../../src/features/hook-message-injector/sdk-message-cache"
 import type { OpencodeClient } from "../../src/features/hook-message-injector/injector"
-import { _resetMissionStateCacheForTesting, readMissionState } from "../../src/features/mission-state/storage"
 
 function makeClient(payload: unknown) {
   let calls = 0
@@ -109,76 +106,5 @@ describe("sdk transcript cache", () => {
     expect(first).toBeNull()
     expect(second).toBeNull()
     expect(calls).toBe(2)
-  })
-})
-
-describe("readMissionState cache", () => {
-  const dir = join(import.meta.dir, "mission-cache-fixture")
-  const missionDir = join(dir, ".matrixx")
-
-  beforeEach(() => {
-    rmSync(dir, { recursive: true, force: true })
-    mkdirSync(missionDir, { recursive: true })
-  })
-
-  afterEach(() => {
-    rmSync(dir, { recursive: true, force: true })
-  })
-
-  function write(agent: string) {
-    writeFileSync(join(missionDir, "mission.json"), JSON.stringify({ agent, session_ids: ["ses_1"] }))
-  }
-
-  //#given a mission file on disk
-  //#when readMissionState is called twice
-  //#then both calls observe the same parsed state
-  it("returns equivalent state across repeat reads", async () => {
-    write("architect")
-
-    const first = readMissionState(dir)
-    const second = readMissionState(dir)
-
-    expect(first?.agent).toBe("architect")
-    expect(second?.agent).toBe("architect")
-  })
-
-  //#given a cached mission state
-  //#when the file content changes on disk
-  //#then the new content is observed
-  it("observes file changes", async () => {
-    write("architect")
-    expect(readMissionState(dir)?.agent).toBe("architect")
-
-    write("oracle")
-    expect(readMissionState(dir)?.agent).toBe("oracle")
-  })
-
-  //#given a cached mission state handed to a caller
-  //#when the caller mutates session_ids in place
-  //#then the cached copy is unaffected
-  it("does not leak caller mutations into the cache", async () => {
-    const { readMissionState, _resetMissionStateCacheForTesting } = await import(
-      "../../src/features/mission-state/storage"
-    )
-    _resetMissionStateCacheForTesting()
-    write("architect")
-
-    const first = readMissionState(dir)
-    first?.session_ids?.push("ses_mutated")
-
-    expect(readMissionState(dir)?.session_ids).toEqual(["ses_1"])
-  })
-
-  //#given no mission file
-  //#when readMissionState is called
-  //#then it returns null
-  it("returns null when the mission file is absent", async () => {
-    const { readMissionState, _resetMissionStateCacheForTesting } = await import(
-      "../../src/features/mission-state/storage"
-    )
-    _resetMissionStateCacheForTesting()
-    rmSync(join(missionDir, "mission.json"), { force: true })
-
-    expect(readMissionState(dir)).toBeNull()
   })
 })

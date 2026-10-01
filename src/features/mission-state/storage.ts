@@ -4,7 +4,7 @@
  * Handles reading/writing mission.json for active plan tracking.
  */
 
-import { existsSync, mkdirSync, readdirSync, readFileSync, statSync, writeFileSync } from "node:fs"
+import { existsSync, mkdirSync, readdirSync, readFileSync, writeFileSync } from "node:fs"
 import { basename, dirname, join } from "node:path"
 import {
   MISSION_DIR,
@@ -22,46 +22,13 @@ function getMissionFilePath(directory: string): string {
   return join(directory, MISSION_DIR, MISSION_FILE)
 }
 
-interface MissionCacheEntry {
-  mtimeMs: number
-  size: number
-  state: MissionState | null
-}
-
-const missionCache = new Map<string, MissionCacheEntry>()
-
 export function readMissionState(directory: string): MissionState | null {
   const filePath = getMissionFilePath(directory)
 
-  let mtimeMs = -1
-  let size = -1
-  try {
-    const stats = statSync(filePath)
-    mtimeMs = stats.mtimeMs
-    size = stats.size
-  } catch {
-    missionCache.delete(directory)
+  if (!existsSync(filePath)) {
     return null
   }
 
-  const cached = missionCache.get(directory)
-  if (cached && cached.mtimeMs === mtimeMs && cached.size === size) {
-    return cloneMissionState(cached.state)
-  }
-
-  const state = readAndParseMissionState(filePath)
-  missionCache.set(directory, { mtimeMs, size, state })
-  return cloneMissionState(state)
-}
-
-// Callers such as appendSessionId mutate the returned state in place. Handing
-// out the cached object would let those writes leak into the cache.
-function cloneMissionState(state: MissionState | null): MissionState | null {
-  if (!state) return null
-  return { ...state, session_ids: state.session_ids ? [...state.session_ids] : state.session_ids }
-}
-
-function readAndParseMissionState(filePath: string): MissionState | null {
   try {
     const content = readFileSync(filePath, "utf-8")
     const parsed: unknown = JSON.parse(content)
@@ -142,10 +109,6 @@ export function appendSessionId(directory: string, sessionId: string): MissionSt
   }
 
   return state
-}
-
-export function _resetMissionStateCacheForTesting(): void {
-  missionCache.clear()
 }
 
 export function clearMissionState(directory: string): boolean {
