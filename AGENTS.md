@@ -166,7 +166,7 @@ Local-dev install: `bun run build`, then add `"plugin": ["file:///abs/path/to/ma
 
 **Dual test layout** — CI discovers tests via `find tests script -name '*.test.ts'`, so files under `tests/**` run in CI while co-located `src/**/*.test.ts` are CI-orphaned (never discovered by the `find` glob). The mock-heavy isolation list has a single source of truth: `script/mock-heavy-list.txt`. Both `.github/workflows/ci.yml` and `publish.yml` read it; `script/run-ci.sh` also reads it for the catch-all exclusion. Never duplicate the list inline in a workflow file.
 
-**Task system is execution substrate** — the file-backed `.matrixx/tasks/T-{uuid}.json` store is unconditional (project-scoped via `getTaskDir()`, atomic `tmp+renameSync`, `task-continuation-enforcer` with 30s lock). Never mutate `.matrixx/tasks/` via bash/`sed`; use `task_create/update/get/list/cleanup` tools. `.matrixx/plans/*.md` checkbox `- [ ]`→`- [x]` via `Read`+`Edit` LINE#ID only (blocked by `task-edit-guard`).
+**Task system is execution substrate** — the file-backed `.matrixx/tasks/T-{uuid}.json` store is unconditional (project-scoped via `getTaskDir()`, atomic `tmp+renameSync`, `task-continuation-enforcer` with 30s lock). Never mutate `.matrixx/tasks/` via bash/`sed`; use `task_create/update/get/list/cleanup` tools. `.matrixx/plans/*.md` checkbox `- [ ]`→`- [x]` via `plan_read`→`plan_update` with LINE#ID only (generic `Read`/`Edit` blocked by `task-edit-guard`).
 
 `bunfig.toml` preloads `tests/test-setup.ts` → `_resetForTesting()` before each test.
 
