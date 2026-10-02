@@ -1,6 +1,14 @@
 /// <reference types="bun-types" />
 
 import { describe, expect, test } from "bun:test"
+import { _setDisciplinePathForTesting } from "../../src/shared/context-mode-enforcement"
+import { afterAll, beforeEach } from "bun:test"
+
+// T8: the compact fallback is only emitted when the context-mode package is
+// absent. These guards pin that kept-fallback state so the pinned prose below
+// stays meaningful.
+beforeEach(() => _setDisciplinePathForTesting(null))
+afterAll(() => _setDisciplinePathForTesting(undefined))
 import { fallbackCompactDiscipline, fallbackFullDiscipline } from "../../src/agents/dynamic-agent-prompt-builder"
 
 // TODO-4 (issue #110 A6): fallback discipline size regression guard —

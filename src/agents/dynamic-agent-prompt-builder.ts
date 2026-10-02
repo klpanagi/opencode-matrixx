@@ -1,5 +1,6 @@
 import { readFileSync } from "node:fs"
 import {
+  hasWorkingSubstitute,
   resolveContextModeDisciplinePath,
   hasGrepGlobToolNames as sharedHasGrepGlobToolNames,
 } from "../shared/context-mode-enforcement"
@@ -444,6 +445,26 @@ function headroomDcpClause(dcpMode: DcpCompressionMode): string {
   return " No `compress` tool exists (DCP inactive).";
 }
 
+/**
+ * Minimal pointer emitted by every per-agent discipline tier once the
+ * `<context_window_protection>` system block (T6/T7 transform) already carries
+ * the full routing prose. Names the ctx_* tools and the marker, keeps the
+ * "Context Discipline" heading so `injectContextDiscipline` stays idempotent.
+ */
+export function contextModeDisciplinePointerBody(): string {
+  return "Full routing rules are injected once per session in the `<context_window_protection>` system block — follow them there, do not re-derive them here. Key tools: ctx_search / ctx_batch_execute / ctx_execute / ctx_execute_file / ctx_fetch_and_index / ctx_index / ctx_stats. **When in doubt, use ctx_*.**"
+}
+
+export function contextModeDisciplinePointer(tier: "full" | "compact" | "explore"): string {
+  const scope =
+    tier === "full"
+      ? "Always"
+      : tier === "compact"
+        ? "When ctx_* tools are available"
+        : "When available"
+  return `### Context Discipline (${scope})\n\n${contextModeDisciplinePointerBody()}`
+}
+
 export function fallbackFullDiscipline(hasGrepGlob: boolean, dcpMode: DcpCompressionMode = resolveDcpCompressionMode()): string {
   const analysis = hasGrepGlob
     ? "| Analysis / Processing | Use ctx_* tools — NEVER raw read/bash/grep/glob for analysis |"
@@ -469,6 +490,7 @@ ${compression}
 }
 
 export function fallbackCompactDiscipline(hasGrepGlob: boolean, dcpMode: DcpCompressionMode = resolveDcpCompressionMode()): string {
+  if (hasWorkingSubstitute()) return contextModeDisciplinePointer("compact")
   const analysis = hasGrepGlob
     ? "| Analysis / Aggregation / Counting | ctx_batch_execute / ctx_execute(_file) — NEVER raw read/grep for analysis |"
     : "| Analysis / Aggregation / Counting | ctx_batch_execute / ctx_execute(_file) — NEVER raw read for analysis |"
@@ -520,6 +542,7 @@ function readDisciplineFile(): { text: string; version: string; path: string } {
 }
 
 function loadDiscipline(kind: "full" | "compact", hasGrepGlob = true, dcpMode: DcpCompressionMode = resolveDcpCompressionMode(), modelID?: string): string {
+  if (hasWorkingSubstitute()) return appendModelDirective(contextModeDisciplinePointer(kind), modelID)
   const fallbackKey = `${hasGrepGlob ? "1" : "0"}:${dcpMode}`
   const runtimeCache = kind === "full" ? cachedRuntimeFull : cachedRuntimeCompact
   const fallbackCache = kind === "full" ? cachedFallbackFull : cachedFallbackCompact
@@ -577,7 +600,7 @@ export function buildExploreDisciplineSection(hasContextMode = false, hasHeadroo
   if (!hasContextMode && !hasHeadroom) return "";
   const parts: string[] = [];
   if (hasContextMode) {
-    parts.push(exploreCtxPart(hasGrepGlob));
+    parts.push(hasWorkingSubstitute() ? contextModeDisciplinePointerBody() : exploreCtxPart(hasGrepGlob));
   }
   if (hasHeadroom) {
     parts.push("Use headroom_retrieve / headroom_search for compressed history — NEVER re-read full history.");

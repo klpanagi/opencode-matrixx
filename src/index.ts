@@ -106,6 +106,10 @@ const pluginConfig = await loadPluginConfig(ctx.directory, ctx)
 
       await hooks.evolutionCompressor?.["experimental.session.compacting"]?.(_input, output)
     },
+
+    "experimental.chat.system.transform": async (input, output): Promise<void> => {
+      await hooks.contextModeRouting(input, output)
+    },
   }
 }
 

@@ -1,6 +1,9 @@
 /// <reference types="bun-types" />
 
 import { describe, expect, test } from "bun:test"
+import { rmSync } from "node:fs"
+import { tmpdir } from "node:os"
+import { resolve } from "node:path"
 import type { MatrixxConfig } from "../../../src/config"
 import { BLOCK_MESSAGE_GREP_GLOB } from "../../../src/hooks/context-mode-enforcer/constants"
 import { createContextModeEnforcerHook } from "../../../src/hooks/context-mode-enforcer/hook"
@@ -8,15 +11,20 @@ import { _setDisciplinePathForTesting } from "../../../src/shared/context-mode-e
 
 const FAKE_PATH = "/nonexistent-fake/AGENTS.md"
 
+let seq = 0
+
 function makeConfig(contextMode: unknown): MatrixxConfig {
   return { context_mode: contextMode } as unknown as MatrixxConfig
 }
 
 function runHook(contextMode: unknown, tool: string, args: Record<string, unknown> = {}) {
+  // Guidance advisories fire at most once per session, so each test needs its own.
+  const sessionID = `ses_legacy_${++seq}`
+  rmSync(resolve(tmpdir(), `matrixx-ctx-guidance-s-${sessionID}`), { recursive: true, force: true })
   const hook = createContextModeEnforcerHook(makeConfig(contextMode))
   const output: { args: Record<string, unknown>; message?: string } = { args }
   const promise = hook["tool.execute.before"](
-    { tool, sessionID: "ses_1" } as never,
+    { tool, sessionID } as never,
     output as never,
   )
   return { promise, output }

@@ -1,7 +1,15 @@
 /// <reference types="bun-types" />
 
-import { describe, expect, it } from "bun:test"
+import { afterAll, beforeEach, describe, expect, it } from "bun:test"
 import { injectContextDiscipline } from "../../src/plugin-handlers/agent-config-handler"
+import { _setDisciplinePathForTesting } from "../../src/shared/context-mode-enforcement"
+
+// T8: with the context-mode package installed the appended block is the
+// pointer (full routing arrives via the <context_window_protection> transform).
+// Pinning the package as absent exercises the kept static fallback, which is
+// what the assertions below pin.
+beforeEach(() => _setDisciplinePathForTesting(null))
+afterAll(() => _setDisciplinePathForTesting(undefined))
 
 function makeAgents(names: string[]): Record<string, Record<string, unknown>> {
   const agents: Record<string, Record<string, unknown>> = {}
@@ -170,6 +178,23 @@ describe("injectContextDiscipline pure", () => {
     //#then: edit-read guidance in either form
     const prompt = (agents["cipher"] as { prompt: string }).prompt
     expect(prompt.includes("LINE#ID") || prompt.includes("reading correct") || prompt.includes("ctx_execute_file")).toBe(true)
+  })
+
+  it("should append the pointer instead of the static table when the package is installed", () => {
+    //#given: the context-mode package resolves a discipline file
+    _setDisciplinePathForTesting("/nonexistent/context-mode/AGENTS.md")
+    const agents = makeAgents(["cipher", "trinity"])
+
+    //#when
+    injectContextDiscipline(["ctx_search"], agents)
+
+    //#then: the pointer names the ctx_* tools and the marker, and the static table is gone
+    for (const name of ["cipher", "trinity"]) {
+      const prompt = (agents[name] as { prompt: string }).prompt
+      expect(prompt).toContain("<context_window_protection>")
+      expect(prompt).toContain("ctx_search")
+      expect(prompt).not.toContain("| Scenario | Tool |")
+    }
   })
 
   it("should not mutate when agents empty", () => {

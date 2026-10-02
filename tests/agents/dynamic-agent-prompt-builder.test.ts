@@ -1,6 +1,7 @@
 /// <reference types="bun-types" />
 
-import { describe, expect, it } from "bun:test"
+import { afterAll, beforeEach, describe, expect, it } from "bun:test"
+import { _setDisciplinePathForTesting } from "../../src/shared/context-mode-enforcement"
 import {
   type AvailableAgent,
   type AvailableCategory,
@@ -279,6 +280,9 @@ describe("categorizeTools", () => {
 })
 
 describe("buildContextDisciplineSection", () => {
+  beforeEach(() => _setDisciplinePathForTesting(null))
+  afterAll(() => _setDisciplinePathForTesting(undefined))
+
 
   it("should return empty string when context-mode not available", () => {
     //#given: hasContextMode = false
@@ -418,6 +422,9 @@ describe("buildHeadroomSection", () => {
 })
 
 describe("DCP min-band semantics (guided proactive compress)", () => {
+  beforeEach(() => _setDisciplinePathForTesting(null))
+  afterAll(() => _setDisciplinePathForTesting(undefined))
+
   it("guided full-table row permits proactive compress on closed sections with IDs + usage signals", () => {
     //#given guided DCP auto-mode fallback discipline
     const guided = fallbackFullDiscipline(true, "guided")
@@ -583,6 +590,9 @@ describe("buildCompactContextDisciplineSection", () => {
 })
 
 describe("buildExploreDisciplineSection", () => {
+  beforeEach(() => _setDisciplinePathForTesting(null))
+  afterAll(() => _setDisciplinePathForTesting(undefined))
+
   it("should return empty when neither available", () => {
     //#given
     expect(buildExploreDisciplineSection(false, false)).toBe("")

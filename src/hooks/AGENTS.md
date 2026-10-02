@@ -17,6 +17,7 @@ hooks/
 ├── category-skill-reminder/      # Category+skill delegation reminders (597 lines)
 ├── comment-checker/              # Prevents AI slop comments (710 lines)
 ├── compaction-context-injector/  # Injects context on compaction (128 lines)
+├── context-mode-enforcer/        # Routes raw file/network work to the context-mode sandbox; companion system-transform lives in `src/features/context-mode-routing/` (~131 lines)
 ├── context-window-monitor.ts     # Reminds of headroom at 70% (99 lines)
 ├── delegate-task-retry/          # Retries failed delegations (266 lines)
 ├── design-intent-preserver/      # Preserves design intent across edits
@@ -52,17 +53,18 @@ hooks/
 |-------|-------------|-----------|-------|
 | UserPromptSubmit | `chat.message` | Yes | 4 |
 | ChatParams | `chat.params` | No | 2 |
-| PreToolUse | `tool.execute.before` | Yes | 13 |
+| PreToolUse | `tool.execute.before` | Yes | 14 |
 | PostToolUse | `tool.execute.after` | No | 18 |
 | SessionEvent | `event` | No | 17 |
 | MessagesTransform | `experimental.chat.messages.transform` | No | 1 |
 | Compaction | `onSummarize` | No | 1 |
 
-## BLOCKING HOOKS (9)
+## BLOCKING HOOKS (10)
 
 | Hook | Event | Blocks When |
 |------|-------|-------------|
 | auto-slash-command | chat.message | Command execution fails |
+| context-mode-enforcer | tool.execute.before | Conditional, only under `enforce`: `grep`/`glob` and `webfetch` blocked when `hasWorkingSubstitute()` is true (use `ctx_search` / `ctx_fetch_and_index`); fetch-shaped `bash` blocked only when `bash` is also in `blockedTools`; `read` is warn-only and never throws. Non-enforce mode only attaches `output.message`, and a per-session throttle (`guidance-throttle.ts`) shows each guidance once per session |
 | keyword-detector | chat.message | Keyword injection fails |
 | non-interactive-env | tool.execute.before | Interactive command in non-TTY |
 | oracle-md-only | tool.execute.before | Write outside .morpheus/*.md |
@@ -72,7 +74,7 @@ hooks/
 ## EXECUTION ORDER
 
 **UserPromptSubmit**: keywordDetector → autoSlashCommand → startWork
-**PreToolUse**: subagentQuestionBlocker → nonInteractiveEnv → commentChecker → directoryAgentsInjector → rulesInjector → oracleMdOnly → morpheusJuniorNotepad → writeExistingFileGuard → architectHook
+**PreToolUse**: subagentQuestionBlocker → nonInteractiveEnv → commentChecker → directoryAgentsInjector → rulesInjector → oracleMdOnly → contextModeEnforcer (fail-fast wave, after oracleMdOnly) → morpheusJuniorNotepad → writeExistingFileGuard → architectHook
 **PostToolUse**: toolOutputTruncator → contextWindowMonitor → commentChecker → directoryAgentsInjector → rulesInjector → emptyTaskResponseDetector → agentUsageReminder → interactiveBashSession → editErrorRecovery → delegateTaskRetry → architectHook → taskResumeInfo → taskReminder
 
 ## HOW TO ADD
