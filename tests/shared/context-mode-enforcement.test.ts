@@ -13,19 +13,19 @@ import {
 const FAKE_PATH = "/nonexistent-fake/AGENTS.md"
 
 describe("context-mode-enforcement", () => {
-  test("canonical default blocks grep and glob only", () => {
+  test("canonical default blocks grep, glob and webfetch", () => {
     //#given: the shared default
     //#when: inspected
     //#then: hook, constants and schema agree on it
-    expect([...CONTEXT_MODE_DEFAULT_BLOCKED_TOOLS]).toEqual(["grep", "glob"])
+    expect([...CONTEXT_MODE_DEFAULT_BLOCKED_TOOLS]).toEqual(["grep", "glob", "webfetch"])
   })
 
   test("resolveContextModeEnforcement applies defaults", () => {
     //#given: no config
     //#when: resolved
     const got = resolveContextModeEnforcement(undefined)
-    //#then: enabled, warn-only, grep+glob
-    expect(got).toEqual({ enabled: true, enforce: false, blockedTools: ["grep", "glob"] })
+    //#then: enabled, warn-only, grep+glob+webfetch
+    expect(got).toEqual({ enabled: true, enforce: false, blockedTools: ["grep", "glob", "webfetch"] })
   })
 
   test("resolveContextModeEnforcement lowercases blocked tools", () => {

@@ -4,7 +4,7 @@ import { join } from "node:path"
 import { getOpenCodeCacheDir } from "./data-path"
 
 /** Canonical default — hook, constants, and schema must all agree on this. */
-export const CONTEXT_MODE_DEFAULT_BLOCKED_TOOLS = ["grep", "glob"] as const
+export const CONTEXT_MODE_DEFAULT_BLOCKED_TOOLS = ["grep", "glob", "webfetch"] as const
 
 export interface ContextModeEnforcement {
   enabled: boolean

@@ -30,7 +30,7 @@ export function createToolExecuteBeforeHandler(args: {
   hooks: CreatedHooks
 }): (
   input: { tool: string; sessionID: string; callID: string },
-  output: { args: Record<string, unknown> },
+  output: { args: Record<string, unknown>; message?: string },
 ) => Promise<void> {
   const { ctx, hooks } = args
 
@@ -96,7 +96,7 @@ const rtkBashRewriterHook = hooks.rtkBashRewriter?.["tool.execute.before"]
     //   rejections. Switching from allSettled to all also drops the
     //   per-call result-array allocation.
     //
-    //   `oracleMdOnly` is BOTH BLOCKING (Wave 2) AND MUTATOR (Wave 3).
+    //    `oracleMdOnly` is BOTH BLOCKING (Wave 2) AND MUTATOR (Wave 3).
     //   It runs here for the BLOCKING behavior, then again in Wave 3 for
     //   the output.args.prompt prepend. The first invocation never mutates
     //   the throw path (throws on BLOCKED_TOOLS usage).
@@ -146,12 +146,22 @@ const rtkBashRewriterHook = hooks.rtkBashRewriter?.["tool.execute.before"]
       }
     }
 
+    // Task T5: Wave 2 mutators (e.g. contextModeEnforcer) set `output.message`,
+    // but Wave 3 hooks (e.g. bashFileReadGuard) ASSIGN to it, clobbering the
+    // earlier text. Capture it after Wave 2 so it can be merged back after Wave 3.
+    const preexistingMessage = typeof output.message === "string" ? output.message : undefined
+
     await rtkBashRewriterHook?.(input, output)
     await nonInteractiveEnvHook?.(input, output)
     await bashFileReadGuardHook?.(input, output)
     await oracleMdOnlyHook?.(input, output)
     await mouseNotepadHook?.(input, output)
     await architectHookHook?.(input, output)
+
+    const wave3Message = typeof output.message === "string" ? output.message : undefined
+    if (preexistingMessage && preexistingMessage !== wave3Message && !wave3Message?.startsWith(preexistingMessage)) {
+      output.message = [preexistingMessage, wave3Message].filter(Boolean).join("\n\n")
+    }
 
     if (resolvePromise) {
       const resolvedAgent = await resolvePromise

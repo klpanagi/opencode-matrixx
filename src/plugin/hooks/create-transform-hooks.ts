@@ -3,6 +3,7 @@ import {
   contextCollector,
   createContextInjectorMessagesTransformHook,
 } from "../../features/context-injector"
+import { createContextModeSystemTransformHook } from "../../features/context-mode-routing"
 
 import {
   createDesignIntentPreserverHook,
@@ -27,6 +28,7 @@ export type TransformHooks = {
   dcpNudgeSanitizer: ReturnType<typeof createDcpNudgeSanitizerHook> | null
   toolPairValidator: ReturnType<typeof createToolPairValidatorHook> | null
   designIntentPreserver: ReturnType<typeof createDesignIntentPreserverHook> | null
+  contextModeRouting: ReturnType<typeof createContextModeSystemTransformHook>
 }
 
 export function createTransformHooks(args: {
@@ -119,5 +121,6 @@ export function createTransformHooks(args: {
     dcpNudgeSanitizer,
     toolPairValidator,
     designIntentPreserver,
+    contextModeRouting: createContextModeSystemTransformHook(pluginConfig),
   }
 }

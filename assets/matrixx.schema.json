@@ -5405,11 +5405,19 @@
         "blocked_tools": {
           "default": [
             "grep",
-            "glob"
+            "glob",
+            "webfetch"
           ],
           "type": "array",
           "items": {
-            "type": "string"
+            "type": "string",
+            "enum": [
+              "read",
+              "grep",
+              "glob",
+              "bash",
+              "webfetch"
+            ]
           }
         }
       },
