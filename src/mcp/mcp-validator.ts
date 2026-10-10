@@ -1,4 +1,5 @@
 import type { WebsearchConfig } from "../config/schema"
+import type { ScholarConfig } from "../config/schema/scholar"
 
 export interface McpCreationFailure {
   name: string
@@ -14,6 +15,18 @@ export function validateWebsearchConfig(config?: WebsearchConfig): McpValidation
       ok: false,
       error: "TAVILY_API_KEY environment variable is required for Tavily provider",
     }
+  }
+  return { ok: true }
+}
+
+// Redaction rule: errors never echo key material — field names and shapes only.
+export function validateScholarConfig(config?: ScholarConfig): McpValidationResult {
+  if (!config) return { ok: true }
+  if (config.s2ApiKey !== undefined && config.s2ApiKey.length === 0) {
+    return { ok: false, error: "scholar.s2ApiKey must be a non-empty string when set" }
+  }
+  if (config.mailto !== undefined && !/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(config.mailto)) {
+    return { ok: false, error: "scholar.mailto must be a valid email address when set" }
   }
   return { ok: true }
 }

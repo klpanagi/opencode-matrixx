@@ -1,7 +1,8 @@
 import type { MatrixxConfig } from "../config/schema"
 import { context7 } from "./context7"
 import { document_reader } from "./document-reader"
-import { isCommandAvailable, type McpCreationFailure, validateWebsearchConfig } from "./mcp-validator"
+import { isCommandAvailable, type McpCreationFailure, validateScholarConfig, validateWebsearchConfig } from "./mcp-validator"
+import { createScholarMcpConfig } from "./scholar"
 import { createWebsearchConfig } from "./websearch"
 
 export type { McpCreationFailure } from "./mcp-validator"
@@ -96,6 +97,33 @@ export function createBuiltinMcps(
         "uvx (uv package manager) not found in PATH. Install with: curl -LsSf https://astral.sh/uv/install.sh | sh",
       )
       mcps.document_reader = DISABLED_LOCAL_STUB
+    }
+  }
+
+  if (!disabledMcps.includes("scholar")) {
+    const validation = validateScholarConfig(config?.scholar)
+    if (!validation.ok) {
+      recordFailure("scholar", validation.error)
+      mcps.scholar = DISABLED_LOCAL_STUB
+    } else if (!config?.scholar) {
+      mcps.scholar = DISABLED_LOCAL_STUB
+    } else {
+      let scholarConfig: BuiltinMcpConfig | undefined
+      Object.defineProperty(mcps, "scholar", {
+        enumerable: true,
+        configurable: true,
+        get() {
+          if (!scholarConfig) {
+            try {
+              scholarConfig = createScholarMcpConfig()
+            } catch (err) {
+              recordFailure("scholar", err instanceof Error ? err.message : String(err))
+              scholarConfig = DISABLED_LOCAL_STUB
+            }
+          }
+          return scholarConfig
+        },
+      })
     }
   }
 

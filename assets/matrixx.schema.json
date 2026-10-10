@@ -149,7 +149,10 @@
           "bdd-backend",
           "bdd-contract",
           "bdd-frontend",
-          "bdd-tests"
+          "bdd-tests",
+          "paper-review",
+          "paper-review-deep",
+          "eu-proposal-review"
         ]
       }
     },
@@ -4972,6 +4975,21 @@
             "exa",
             "tavily"
           ]
+        }
+      },
+      "additionalProperties": false
+    },
+    "scholar": {
+      "type": "object",
+      "properties": {
+        "s2ApiKey": {
+          "type": "string",
+          "minLength": 1
+        },
+        "mailto": {
+          "type": "string",
+          "format": "email",
+          "pattern": "^(?!\\.)(?!.*\\.\\.)([A-Za-z0-9_'+\\-\\.]*)[A-Za-z0-9_+-]@([A-Za-z0-9][A-Za-z0-9\\-]*\\.)+[A-Za-z]{2,}$"
         }
       },
       "additionalProperties": false

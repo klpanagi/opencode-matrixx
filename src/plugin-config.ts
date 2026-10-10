@@ -261,6 +261,10 @@ export async function loadPluginConfig(
 
   const projectConfig = loadConfigFromPath(projectConfigPath, ctx);
   if (projectConfig) {
+    if (projectConfig.scholar !== undefined) {
+      log("Ignoring scholar section in project config — scholar keys are user-config only");
+      delete projectConfig.scholar;
+    }
     config = mergeConfigs(config, projectConfig);
   }
 

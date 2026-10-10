@@ -53,6 +53,9 @@ const skillLoaders: Record<string, () => BuiltinSkill> = {
   "matrixx-self-config": () => require("./skills/matrixx-self-config").matrixxSelfConfigSkill,
   "ulw-research": () => require("./skills/ulw-research").ulwResearchSkill,
   "remove-ai-slops": () => require("./skills/remove-ai-slops").removeAiSlopsSkill,
+  "paper-review": () => require("./skills/paper-review").paperReviewSkill,
+  "paper-review-deep": () => require("./skills/paper-review-deep").paperReviewDeepSkill,
+  "eu-proposal-review": () => require("./skills/eu-proposal-review").euProposalReviewSkill,
   // ZeroMQ expertise family
   "zeromq-core": () => require("./skills/zeromq-core").zeromqCoreSkill,
   "zeromq-sockets-patterns": () => require("./skills/zeromq-sockets-patterns").zeromqSocketsPatternsSkill,

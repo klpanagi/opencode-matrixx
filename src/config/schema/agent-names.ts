@@ -56,6 +56,9 @@ export const BuiltinSkillNameSchema = z.enum([
   "bdd-contract",
   "bdd-frontend",
   "bdd-tests",
+  "paper-review",
+  "paper-review-deep",
+  "eu-proposal-review",
 ])
 
 export type AgentName = z.infer<typeof BuiltinAgentNameSchema>

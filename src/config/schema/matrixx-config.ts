@@ -27,6 +27,7 @@ import { NotificationConfigSchema } from "./notification"
 import { PlansConfigSchema } from "./plans"
 import { RtkConfigSchema } from "./rtk"
 import { RuntimeFallbackConfigSchema } from "./runtime-fallback"
+import { ScholarConfigSchema } from "./scholar"
 import { SecurityConfigSchema } from "./security"
 import { SkillsConfigSchema } from "./skills"
 import { TaskConfigSchema } from "./task"
@@ -87,6 +88,8 @@ export const MatrixxConfigSchema = z.object({
   tdd_enforcer: TddEnforcerConfigSchema.optional(),
   browser_automation_engine: BrowserAutomationConfigSchema.optional(),
   websearch: WebsearchConfigSchema.optional(),
+  /** Scholar (S2/OpenAlex/CrossRef/arXiv) keys — user config only, never project config. */
+  scholar: ScholarConfigSchema.optional(),
   tmux: TmuxConfigSchema.optional(),
   morpheus: MorpheusConfigSchema.optional(),
   /** Assembly tool configuration — provider models for multi-model voting */

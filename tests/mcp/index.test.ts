@@ -41,7 +41,8 @@ describe("createBuiltinMcps — new { mcps, failures } contract", () => {
     expect(result.mcps).toHaveProperty("websearch")
     expect(result.mcps).toHaveProperty("context7")
     expect(result.mcps).toHaveProperty("document_reader")
-    expect(Object.keys(result.mcps)).toHaveLength(3)
+    expect(result.mcps).toHaveProperty("scholar")
+    expect(Object.keys(result.mcps)).toHaveLength(4)
     expect(result.failures).toHaveLength(0)
   })
 
@@ -58,12 +59,12 @@ describe("createBuiltinMcps — new { mcps, failures } contract", () => {
     expect(result.mcps).toHaveProperty("websearch")
     expect(result.mcps).not.toHaveProperty("context7")
     expect(result.mcps).toHaveProperty("document_reader")
-    expect(Object.keys(result.mcps)).toHaveLength(2)
+    expect(Object.keys(result.mcps)).toHaveLength(3)
     expect(result.failures).toHaveLength(0)
   })
   test("filters out all built-in MCPs when all disabled", () => {
     //#given
-    const disabledMcps = ["websearch", "context7", "document_reader"]
+    const disabledMcps = ["websearch", "context7", "document_reader", "scholar"]
 
     //#when
     const result = createBuiltinMcps(disabledMcps, undefined, {
@@ -88,7 +89,7 @@ describe("createBuiltinMcps — new { mcps, failures } contract", () => {
     expect(result.mcps).toHaveProperty("websearch")
     expect(result.mcps).not.toHaveProperty("context7")
     expect(result.mcps).toHaveProperty("document_reader")
-    expect(Object.keys(result.mcps)).toHaveLength(2)
+    expect(Object.keys(result.mcps)).toHaveLength(3)
   })
 })
 
