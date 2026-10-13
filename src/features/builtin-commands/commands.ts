@@ -10,6 +10,8 @@ import { CANCEL_LOOP_TEMPLATE, MATRIX_LOOP_TEMPLATE } from "./templates/matrix-l
 import { PICKUP_TEMPLATE } from "./templates/pickup"
 import { PLAN_REVIEW_TEMPLATE } from "./templates/plan-review"
 import { PRESET_TEMPLATE } from "./templates/preset"
+import { QUALITY_ASSURANCE_TEMPLATE } from "./templates/quality-assurance"
+import { QUALITY_AUDIT_TEMPLATE } from "./templates/quality-audit"
 import { REFACTOR_TEMPLATE } from "./templates/refactor"
 import { REMOVE_DEADCODE_TEMPLATE } from "./templates/remove-deadcode"
 import { RESEARCH_TEMPLATE } from "./templates/research"
@@ -236,6 +238,28 @@ ${TASK_LIST_TEMPLATE}
 $ARGUMENTS
 </user-request>`,
     argumentHint: "[--all] [--status <pending|in_progress|completed|deleted>]",
+  },
+  "quality-audit": {
+    description: "(builtin) Run a read-only deterministic quality audit with graded report",
+    template: `<command-instruction>
+${QUALITY_AUDIT_TEMPLATE}
+</command-instruction>
+
+<user-request>
+$ARGUMENTS
+</user-request>`,
+    argumentHint: "[--scope=file|module|project] [--target=<path>]",
+  },
+  "quality-assurance": {
+    description: "(builtin) Drive quality to target grade via bounded oracle-smith-tdd loop",
+    template: `<command-instruction>
+${QUALITY_ASSURANCE_TEMPLATE}
+</command-instruction>
+
+<user-request>
+$ARGUMENTS
+</user-request>`,
+    argumentHint: "[--scope=file|module|project] [--target-grade=B] [--max-iterations=3] [--target=<path>]",
   },
 }
 
