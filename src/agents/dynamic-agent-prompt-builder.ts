@@ -433,16 +433,16 @@ export function hasGrepGlobToolNames(toolNames: readonly string[]): boolean {
 
 function compressionRow(dcpMode: DcpCompressionMode): string {
   if (dcpMode === "guided")
-    return "| Compression | DCP's `compress` never bare without message IDs; proactive on closed sections with IDs + ctx_stats/headroom signals |"
+    return "| Compression | `compress` never bare without message IDs; proactive on closed sections + ctx_stats; no prose substitute |"
   if (dcpMode === "manual")
-    return "| Compression | DCP manual mode: `compress` only after trigger prompt; never self-trigger (watch ctx_stats) |"
-  return "| Compression | No `compress` tool (DCP inactive) — never call it (watch ctx_stats) |"
+    return "| Compression | `compress` only after trigger prompt; no prose substitute (watch ctx_stats) |"
+  return "| Compression | No `compress` tool (DCP inactive); no prose substitute (watch ctx_stats) |"
 }
 
 function headroomDcpClause(dcpMode: DcpCompressionMode): string {
-  if (dcpMode === "guided") return " DCP auto-mode: `compress` never bare without message IDs; proactive on closed sections with IDs + headroom/ctx_stats signals."
-  if (dcpMode === "manual") return " DCP manual mode: `compress` only after the manual trigger."
-  return " No `compress` tool exists (DCP inactive).";
+  if (dcpMode === "guided") return " DCP auto-mode: `compress` never bare without message IDs; proactive on closed sections + ctx_stats; tool absent -> state unavailable and stop, no prose substitute."
+  if (dcpMode === "manual") return " DCP manual mode: `compress` only after the manual trigger; tool absent -> state unavailable and stop, no prose substitute."
+  return " No `compress` tool exists (DCP inactive); no prose substitute - state unavailable and stop.";
 }
 
 /**

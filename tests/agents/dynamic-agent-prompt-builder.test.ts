@@ -704,3 +704,26 @@ describe("buildArchitectReferralSection (issue #111 option b)", () => {
     expect(result).toContain('task(subagent_type="architect")')
   })
 })
+
+describe("DCP compression no-substitute guard (issue #165)", () => {
+  it("guided/manual/none rows forbid prose-summary substitute when tool absent", () => {
+    //#given every DCP compression mode
+    const guided = fallbackFullDiscipline(true, "guided")
+    const manual = fallbackFullDiscipline(true, "manual")
+    const inactive = fallbackFullDiscipline(true, "none")
+    //#when reading the Compression rows
+    //#then no mode may emit a prose summary as a compression substitute
+    for (const row of [guided, manual, inactive]) {
+      expect(row).toContain("no prose substitute")
+    }
+  })
+
+  it("headroom ownership clause forbids prose-summary substitute", () => {
+    //#given headroom available in guided mode
+    const guided = buildHeadroomSection(true, "guided")
+    //#when reading the ownership clause
+    //#then substitute ban present alongside existing ownership wording
+    expect(guided).toContain("the `compress` tool is DCP's")
+    expect(guided).toContain("no prose substitute")
+  })
+})
