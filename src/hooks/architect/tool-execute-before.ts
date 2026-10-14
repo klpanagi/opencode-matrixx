@@ -2,6 +2,7 @@ import type { PluginInput } from "@opencode-ai/plugin"
 import { log } from "../../shared/logger"
 import { isCallerOrchestrator } from "../../shared/session-utils"
 import { SYSTEM_DIRECTIVE_PREFIX } from "../../shared/system-directive"
+import { classifyBashCommand } from "./bash-command-policy"
 import { HOOK_NAME } from "./hook-name"
 import { isMatrixPath } from "./matrix-path"
 import { ORCHESTRATOR_DELEGATION_REQUIRED, SINGLE_TASK_DIRECTIVE } from "./system-reminder-templates"
@@ -37,6 +38,27 @@ export function createToolExecuteBeforeHandler(input: {
           tool: toolInput.tool,
           filePath,
         })
+      }
+      return
+    }
+
+    // Bash policy: verdict comes ONLY from classifyBashCommand (bash-command-policy); block fail-closed on deny.
+    if (toolInput.tool === "bash") {
+      const command = toolOutput.args.command as string | undefined
+      if (!command) {
+        return
+      }
+      if (classifyBashCommand(command) === "deny") {
+        log(`[${HOOK_NAME}] BLOCKED orchestrator bash mutation`, {
+          sessionID: toolInput.sessionID,
+          tool: toolInput.tool,
+          command: command.slice(0, 120),
+        })
+        throw new Error(
+          "Blocked: orchestrator must delegate file mutations to specialists. " +
+            "Use task with category instead of raw bash for: " +
+            command.slice(0, 120),
+        )
       }
       return
     }
