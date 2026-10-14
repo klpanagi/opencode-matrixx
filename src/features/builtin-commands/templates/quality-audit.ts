@@ -6,11 +6,11 @@ export const QUALITY_AUDIT_TEMPLATE = `You are running a read-only deterministic
 /quality-audit [--scope=file|module|project] [--target=<path>]
 \`\`\`
 
-- --scope: file | module | project (default: module).
+- --scope: file | module | project (default: project).
   - file: single --target path only.
   - module: the directory containing --target.
   - project: full tree.
-- --target: path scoping the audit. Optional for project scope; required for file scope.
+- --target: path scoping the audit. Optional for project scope; required for file and module scope.
 - Diff-scoped fast path: when the working tree has uncommitted changes, restrict
   gathering to changed files first (UNVERIFIED CLAIM: exact git-diff refspec
   origin/dev...HEAD vs staged is unverified — use whatever diff the session
@@ -26,8 +26,8 @@ export const QUALITY_AUDIT_TEMPLATE = `You are running a read-only deterministic
 
 1. **Resolve the scope, or stop.** Parse --scope and --target from
    <user-request>. Resolve --target against the working tree. If the target is
-   unresolvable (missing path, invalid --scope value, file scope without a
-   target), ERROR AND STOP: state the scope, the target, and why resolution
+   unresolvable (missing path, invalid --scope value, file or module scope
+   without a target), ERROR AND STOP: state the scope, the target, and why resolution
    failed, and create no report file. Never proceed on an empty or partial
    resolution, and never substitute a different target.
 

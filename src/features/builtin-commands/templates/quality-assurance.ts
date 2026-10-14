@@ -6,16 +6,16 @@ export const QUALITY_ASSURANCE_TEMPLATE = `# Quality Assurance Command
 /quality-assurance [--scope=file|module|project] [--target-grade=B] [--max-iterations=3] [--target=<path>]
 \`\`\`
 
-Defaults: --scope=module, --target-grade=B, --max-iterations=3.
+Defaults: --scope=project, --target-grade=B, --max-iterations=3.
 
 Arguments:
-  --scope: Assurance scope (default: module)
+  --scope: Assurance scope (default: project)
     - file: Single file only (requires --target=<path>)
-    - module: Module/directory scope (default)
+    - module: Module/directory scope (requires --target)
     - project: Entire codebase
   --target-grade: Grade to reach before stopping (default: B). Grades A-F.
   --max-iterations: Bounded loop cap (default: 3). Values >3 require an explicit user flag.
-  --target: Path restricting edits when --scope=file (or a module path when --scope=module).
+  --target: Path restricting edits when --scope=file (or a module path when --scope=module). Required for file and module scope.
 
 This loop is BOUNDED with a fixed cap. It never loops without a bound and never chases perfection without a cap.
 
