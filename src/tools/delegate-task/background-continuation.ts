@@ -2,6 +2,7 @@ import { storeToolMetadata } from "../../features/tool-metadata-store"
 import { getSessionTools } from "../../shared/session-state"
 import { formatDetailedError } from "./error-formatting"
 import type { ExecutorContext, ParentContext } from "./executor-types"
+import { buildContinuationTitle } from "./task-title"
 import type { DelegateTaskArgs, ToolContextWithMetadata } from "./types"
 
 export async function executeBackgroundContinuation(
@@ -26,7 +27,7 @@ export async function executeBackgroundContinuation(
     })
 
     const bgContMeta = {
-      title: `Continue: ${args.description}`,
+      title: buildContinuationTitle(args.description),
       metadata: {
         prompt: args.prompt,
         agent: task.agent,

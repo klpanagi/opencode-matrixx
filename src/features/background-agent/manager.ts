@@ -363,8 +363,9 @@ export class BackgroundManager {
     try {
       const current = await this.client.session.get({ path: { id: sessionID } })
       const existing = (current?.data as { title?: string } | undefined)?.title
-      if (existing !== undefined && existing.trim() !== "") return
+      if (existing !== undefined && existing.trim() !== "" && existing.trim().toLowerCase() !== "undefined") return
       const title = handle.title ?? buildSubagentTitle(handle.description, handle.agent)
+      if (title.trim() === "" || title.toLowerCase().includes("undefined")) return
       await this.client.session.update({ path: { id: sessionID }, body: { title } })
     } catch (error) {
       log("[background-agent] Session title repair failed:", { sessionID, taskId: handle.taskId, error })
@@ -381,6 +382,14 @@ export class BackgroundManager {
 
     if (!input.agent || input.agent.trim() === "") {
       throw new Error("Agent parameter is required")
+    }
+
+    // Defense-in-depth: LaunchInput.description is typed required but callers may
+    // pass undefined at runtime (LLM omission). Normalize so titles never render
+    // "undefined" and handles always pass BgHandleSchema.
+    if (typeof input.description !== "string" || input.description.trim() === "") {
+      const fromPrompt = typeof input.prompt === "string" && input.prompt.trim() !== "" ? input.prompt.trim().split(/\s+/).slice(0, 5).join(" ") : "";
+      input.description = fromPrompt !== "" ? fromPrompt.slice(0, 80) : "Background task";
     }
 
     const task: BackgroundTask = {
@@ -698,7 +707,7 @@ export class BackgroundManager {
       await this.onSubagentSessionCreated({
         sessionID,
         parentID: input.parentSessionID,
-        title: input.description,
+        title: buildSubagentTitle(input.description, input.agent),
       }).catch((err) => {
         log("[background-agent] Failed to spawn tmux pane:", err)
       })

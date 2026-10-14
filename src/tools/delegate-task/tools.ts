@@ -19,6 +19,7 @@ import {
 } from "./executor"
 import { MOUSE_AGENT } from "./mouse-agent"
 import { buildSystemContent } from "./prompt-builder"
+import { resolveTaskDescription } from "./task-title"
 import type { DelegateTaskArgs, DelegateTaskToolOptions, ToolContextWithMetadata } from "./types"
 
 export { resolveCategoryConfig } from "./categories"
@@ -120,6 +121,15 @@ Do NOT confuse with task_create/task_update/task_list/task_get/task_cleanup (the
     async execute(args: DelegateTaskArgs, toolContext) {
 
       const ctx = toolContext as ToolContextWithMetadata
+
+      // Normalize description: the model may omit it, yielding `undefined" titles.
+      // Resolve once here so every downstream path (metadata, launch, toast) is safe.
+      args.description = resolveTaskDescription({
+        description: args.description,
+        prompt: args.prompt,
+        category: args.category,
+        subagent_type: args.subagent_type,
+      })
 
       if (args.category) {
         if (args.subagent_type && args.subagent_type !== MOUSE_AGENT) {
