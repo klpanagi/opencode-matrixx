@@ -1,0 +1,19 @@
+{
+  "version": 1,
+  "waivers": [
+    {
+      "rule": "SF002",
+      "file": "waived.py",
+      "symbol": "poll_once",
+      "reason": "Empty poll returns None by design; callers check for None.",
+      "reviewedAt": "2026-10-14"
+    },
+    {
+      "rule": "SF002",
+      "file": "waived.py",
+      "symbol": "fetch_batch",
+      "reason": "Empty batch returns [] by design; callers handle empty list.",
+      "reviewedAt": "2026-10-14"
+    }
+  ]
+}

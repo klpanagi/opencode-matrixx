@@ -1,0 +1,13 @@
+{
+  "version": 1,
+  "waivers": [
+    {
+      "rule": "SF002",
+      "file": "waived.py",
+      "symbol": "poll_once",
+      "reason": "Empty poll returns None by design; callers check for None. Reviewed log-and-default, accepted.",
+      "reviewedAt": "2026-10-14",
+      "owner": "qa-loop"
+    }
+  ]
+}

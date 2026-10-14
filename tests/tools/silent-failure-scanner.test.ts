@@ -6,8 +6,16 @@ import { createSilentFailureScannerTool } from "../../src/tools/silent-failure-s
 
 const FIXTURES = join(import.meta.dir, "..", "fixtures", "silent-failure-scanner")
 
-type Finding = { rule: string; severity: string; file: string; line: number }
-type ScanResult = { status: 0 | 1 | 2; findings: Finding[]; summary: { total: number } }
+type Finding = { rule: string; severity: string; file: string; line: number; symbol?: string }
+type ScanResult = {
+  status: 0 | 1 | 2
+  findings: Finding[]
+  waived?: Finding[]
+  staleWaivers?: unknown[]
+  waiverWarnings?: { kind: string; message: string }[]
+  waiverFile?: string
+  summary: { total: number; waived?: number; stale?: number; byRule: Record<string, number> }
+}
 
 function scanner() {
   return createSilentFailureScannerTool({ directory: FIXTURES } as unknown as PluginInput)
@@ -87,6 +95,103 @@ describe("silent_failure_scan", () => {
 
       //#then no findings
       expect(result.findings).toHaveLength(0)
+    })
+  })
+
+  describe("waivers", () => {
+    test("waived finding is excluded from status but still reported", async () => {
+      //#given a file with two SF002 sites and a waiver covering one symbol
+      //#when the scanner runs with the waiver file
+      const result = await scan({ path: "waived.py", waivers: "waivers.json" })
+
+      //#then only the unwaived site counts toward the status
+      expect(result.findings).toHaveLength(1)
+      expect(result.findings[0].symbol).toBe("fetch_batch")
+      expect(result.waived).toHaveLength(1)
+      expect(result.waived?.[0].symbol).toBe("poll_once")
+      expect(result.status).toBe(1)
+      expect(result.summary.waived).toBe(1)
+    })
+
+    test("all findings waived exits clean", async () => {
+      //#given waivers covering every finding in the file
+      //#when the scanner runs
+      const result = await scan({ path: "waived.py", waivers: "waivers-all.json" })
+
+      //#then the report is clean with full transparency
+      expect(result.findings).toHaveLength(0)
+      expect(result.waived).toHaveLength(2)
+      expect(result.status).toBe(0)
+    })
+
+    test("stale waiver forces a warning status", async () => {
+      //#given a clean file and a waiver matching nothing
+      //#when the scanner runs
+      const result = await scan({ path: "clean.py", waivers: "waivers-stale.json" })
+
+      //#then the stale entry is reported and status warns
+      expect(result.findings).toHaveLength(0)
+      expect(result.staleWaivers).toHaveLength(1)
+      expect(result.summary.stale).toBe(1)
+      expect(result.status).toBe(1)
+    })
+
+    test("unreadable waiver file degrades gracefully", async () => {
+      //#given a garbage waiver file and a missing one
+      //#when the scanner runs
+      const bad = await scan({ path: "waived.py", waivers: "waivers-bad.json" })
+      const missing = await scan({ path: "waived.py", waivers: "no-such-file.json" })
+
+      //#then the scan continues unfiltered with a recorded warning
+      for (const result of [bad, missing]) {
+        expect(result.findings).toHaveLength(2)
+        expect(result.status).toBe(1)
+        expect(result.waiverWarnings?.length).toBeGreaterThan(0)
+      }
+    })
+
+    test("invalid entries are skipped while valid ones apply", async () => {
+      //#given a waiver file with one good and one bad entry
+      //#when the scanner runs
+      const result = await scan({ path: "waived.py", waivers: "waivers-invalid.json" })
+
+      //#then the valid waiver applies and the bad entry is reported
+      expect(result.findings).toHaveLength(1)
+      expect(result.waived).toHaveLength(1)
+      expect(result.waiverWarnings?.some((w) => w.kind === "invalid-entry")).toBe(true)
+    })
+
+    test("waivers under .matrixx are rejected", async () => {
+      //#given a waiver path inside gitignored .matrixx state
+      //#when the scanner runs
+      const result = await scan({ path: "waived.py", waivers: ".matrixx/quality/waivers.json" })
+
+      //#then the file is refused with a warning and nothing is waived
+      expect(result.findings).toHaveLength(2)
+      expect(result.waived).toHaveLength(0)
+      expect(result.waiverWarnings?.length).toBeGreaterThan(0)
+    })
+  })
+
+  describe("enclosing symbols", () => {
+    test("python findings carry their enclosing def", async () => {
+      //#given the dirty python fixture
+      //#when the scanner runs
+      const result = await scan({ path: "bad.py" })
+
+      //#then each finding names its enclosing function
+      const byRule = Object.fromEntries(result.findings.map((f) => [f.rule, f.symbol]))
+      expect(byRule["SF001"]).toBe("compute")
+      expect(byRule["SF002"]).toBe("fetch")
+    })
+
+    test("typescript findings carry their enclosing function", async () => {
+      //#given the dirty typescript fixture
+      //#when the scanner runs
+      const result = await scan({ path: "bad.ts" })
+
+      //#then the empty catch names its function
+      expect(result.findings[0].symbol).toBe("readConfig")
     })
   })
 })

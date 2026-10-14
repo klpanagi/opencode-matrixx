@@ -1,0 +1,18 @@
+{
+  "version": 1,
+  "waivers": [
+    {
+      "rule": "SF002",
+      "file": "waived.py",
+      "symbol": "poll_once",
+      "reason": "Valid entry: empty poll returns None by design.",
+      "reviewedAt": "2026-10-14"
+    },
+    {
+      "rule": "SF999",
+      "file": "",
+      "symbol": "whatever",
+      "reviewedAt": "not-a-date"
+    }
+  ]
+}

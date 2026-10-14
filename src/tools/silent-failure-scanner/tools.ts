@@ -9,7 +9,10 @@ function errorResult(message: string): SilentFailureScanResult {
   return {
     status: 2,
     findings: [],
-    summary: { filesScanned: 0, total: 0, errors: 0, warnings: 0, byRule: {}, note: message } as SilentFailureScanResult["summary"],
+    summary: { filesScanned: 0, total: 0, errors: 0, warnings: 0, byRule: {}, waived: 0, waivedByRule: {}, stale: 0, note: message } as SilentFailureScanResult["summary"],
+    waived: [],
+    staleWaivers: [],
+    waiverWarnings: [],
   }
 }
 
@@ -28,6 +31,12 @@ export function createSilentFailureScannerTool(ctx: PluginInput): Record<string,
         .enum(["warn", "error"])
         .optional()
         .describe("Minimum severity to report (default: warn)."),
+      waivers: tool.schema
+        .string()
+        .optional()
+        .describe(
+          "Project-relative or absolute path to a COMMITTED waiver JSON file (never under gitignored .matrixx/). Findings matching rule+file+symbol are excluded from status but reported in `waived`.",
+        )
     },
     async execute(args) {
       try {
@@ -38,6 +47,7 @@ export function createSilentFailureScannerTool(ctx: PluginInput): Record<string,
           target,
           globs: args.globs,
           threshold: args.severity as ScanSeverity | undefined,
+          waivers: args.waivers as string | undefined,
         })
         return JSON.stringify(result, null, 2)
       } catch (error) {

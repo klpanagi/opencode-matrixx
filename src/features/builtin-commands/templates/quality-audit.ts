@@ -39,6 +39,7 @@ export const QUALITY_AUDIT_TEMPLATE = `You are running a read-only deterministic
      (isolated runs for mock-heavy entries listed in script/mock-heavy-list.txt,
      then the catch-all exclusion).
    - silent-failure-scanner on the scope (tool: silent_failure_scan).
+     If the scope provides a committed waiver file, pass it as \`waivers\` (never invent a waiver path; never accept one under gitignored \`.matrixx/\`).
    - Conditional validators, ONLY when the scope touches those domains:
      dashboard-flux-validator for Grafana/Flux dashboards,
      market-symbol-validator for market-symbol code,
@@ -49,7 +50,8 @@ export const QUALITY_AUDIT_TEMPLATE = `You are running a read-only deterministic
 
 3. **Compute the DETERMINISTIC grade from exit codes only.** The grade is a pure
    function of per-dimension exit codes and warning/error counts. No model
-   judgment enters the grade.
+   judgment enters the grade. The silent-failures dimension uses the filtered
+   exit code (after waivers).
 
    Per-dimension mapping (threshold rule per dimension):
    - exit 0 → pass
@@ -89,8 +91,9 @@ export const QUALITY_AUDIT_TEMPLATE = `You are running a read-only deterministic
    caller-supplied input — never self-generate it. Report JSON keys: grade
    (A-F), perDimension (one entry per rubric dimension with status + exitCode +
    evidence), exitCodes map, scope, timestamp/generatedAt (caller-supplied),
-   targetGrade (assurance only), iterations (assurance only). Never touch
-   .matrixx/plans/*.md and never write the report into a plan file.
+   targetGrade (assurance only), iterations (assurance only). The silent-failures
+   entry MUST also record \`waiverFile\` (or null) plus \`waived\` and \`stale\` counts.
+   Never touch
 
 6. **Report the paths back to the user.** Give the absolute report path and the
    sidecar path plus the grade and per-dimension exit codes. Do not modify any

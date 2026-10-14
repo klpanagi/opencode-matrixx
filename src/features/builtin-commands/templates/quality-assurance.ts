@@ -59,7 +59,8 @@ never automatically and never as part of this loop.
 Each iteration writes \`.matrixx/quality/<scope>-<timestamp>.md\` + the \`.json\`
 sidecar together (timestamp caller-supplied, unique per run, last-write-wins).
 The JSON carries grade (A-F), perDimension (each: status + exitCode +
-evidence), exitCodes map, scope, timestamp/generatedAt (caller-supplied),
+evidence; the silent-failures entry MUST also record \`waiverFile\` (or null) plus
+\`waived\` and \`stale\` counts), exitCodes map, scope, timestamp/generatedAt (caller-supplied),
 targetGrade, and iterations (incremented each iteration). Exits: 0=pass /
 1=warnings / 2=errors. v1 is advisory-only: a low grade never halts, retries,
 or rejects. Never write to \`.matrixx/plans/\`; never open or mutate a plan file.

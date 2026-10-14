@@ -1,7 +1,13 @@
 import { existsSync, readdirSync, readFileSync, statSync } from "node:fs"
-import { join, relative } from "node:path"
+import { join, relative, resolve, sep } from "node:path"
 import { DEFAULT_GLOBS, IGNORED_DIRS, RULE_CATALOG, SEVERITY_RANK } from "./constants"
-import type { ScanSeverity, SilentFailureFinding, SilentFailureScanResult } from "./types"
+import type {
+  ScanSeverity,
+  SilentFailureFinding,
+  SilentFailureScanResult,
+  SilentFailureWaiver,
+  SilentFailureWaiverWarning,
+} from "./types"
 
 interface ExceptBlock {
   headerLine: number
@@ -16,7 +22,13 @@ interface GatherAssignment {
   returnExceptions: boolean
 }
 
-function finding(rule: string, file: string, line: number, excerpt: string): SilentFailureFinding {
+function finding(
+  rule: string,
+  file: string,
+  line: number,
+  excerpt: string,
+  symbol: string,
+): SilentFailureFinding {
   const meta = RULE_CATALOG[rule]
   const severity: ScanSeverity = meta?.severity ?? "warn"
   return {
@@ -27,6 +39,7 @@ function finding(rule: string, file: string, line: number, excerpt: string): Sil
     excerpt: excerpt.trim().slice(0, 160),
     why: meta?.why ?? "Silent-failure anti-pattern.",
     fix: meta?.fix ?? "Handle the error explicitly.",
+    symbol,
   }
 }
 
@@ -134,6 +147,25 @@ function accumulateBalanced(
   return text
 }
 
+function extractSymbol(lines: string[], lineIdx: number, lang: "py" | "ts"): string {
+  for (let i = lineIdx; i >= 0; i--) {
+    const line = lines[i]
+    if (lang === "py") {
+      const match = /^(?:\s*)(?:def|class)\s+([A-Za-z_]\w*)/.exec(line)
+      if (match?.[1]) return match[1]
+    } else {
+      const match =
+        /(?:export\s+default\s+)?(?:export\s+)?(?:async\s+)?function\s*\*?\s*([A-Za-z_]\w*)/.exec(line) ??
+        /(?:const|let|var)\s+([A-Za-z_]\w*)\s*=\s*(?:async\s*)?function\b/.exec(line) ??
+        /(?:const|let|var)\s+([A-Za-z_]\w*)\s*=\s*(?:async\s*)?(?:\([^)]*\)|[A-Za-z_]\w*)\s*=>/.exec(line) ??
+        /class\s+([A-Za-z_]\w*)/.exec(line) ??
+        /([A-Za-z_]\w*)\s*\([^)]*\)\s*\{/.exec(line)
+      if (match?.[1]) return match[1]
+    }
+  }
+  return ""
+}
+
 function collectExceptBlocks(lines: string[]): ExceptBlock[] {
   const blocks: ExceptBlock[] = []
   for (let i = 0; i < lines.length; i++) {
@@ -198,7 +230,8 @@ function scanGather(lines: string[], file: string): SilentFailureFinding[] {
     const parenIndex = idx + marker.length - 1
     const callText = accumulateBalanced(lines, i, parenIndex, "(", ")")
     const returnExceptions = /return_exceptions\s*=\s*True/.test(callText)
-    if (!returnExceptions) out.push(finding("SF003", file, i + 1, lines[i]))
+    if (!returnExceptions)
+      out.push(finding("SF003", file, i + 1, lines[i], extractSymbol(lines, i, "py")))
     const assign = /^\s*(\w+)\s*=\s*await\s+(?:asyncio\.)?gather\s*\(/.exec(lines[i])
     if (assign) assignments.push({ variable: assign[1], line: i, returnExceptions })
   }
@@ -209,7 +242,7 @@ function scanGather(lines: string[], file: string): SilentFailureFinding[] {
     const indexRe = new RegExp(`\\b${item.variable}\\s*\\[`)
     for (let j = item.line + 1; j < lines.length; j++) {
       if (indexRe.test(lines[j])) {
-        out.push(finding("SF004", file, j + 1, lines[j]))
+        out.push(finding("SF004", file, j + 1, lines[j], extractSymbol(lines, j, "py")))
         break
       }
     }
@@ -222,16 +255,17 @@ function scanPython(text: string, file: string): SilentFailureFinding[] {
   const out: SilentFailureFinding[] = []
   for (const block of collectExceptBlocks(lines)) {
     if (isSilentExcept(block, lines)) {
-      out.push(finding("SF001", file, block.headerLine + 1, lines[block.headerLine]))
+      out.push(finding("SF001", file, block.headerLine + 1, lines[block.headerLine], extractSymbol(lines, block.headerLine, "py")))
       continue
     }
     if (isLogThenDefault(block, lines)) {
-      out.push(finding("SF002", file, block.headerLine + 1, lines[block.headerLine]))
+      out.push(finding("SF002", file, block.headerLine + 1, lines[block.headerLine], extractSymbol(lines, block.headerLine, "py")))
     }
   }
   out.push(...scanGather(lines, file))
   for (let i = 0; i < lines.length; i++) {
-    if (/createEmpty\s*[:=]\s*true/i.test(lines[i])) out.push(finding("SF005", file, i + 1, lines[i]))
+    if (/createEmpty\s*[:=]\s*true/i.test(lines[i]))
+      out.push(finding("SF005", file, i + 1, lines[i], extractSymbol(lines, i, "py")))
   }
   return out
 }
@@ -246,17 +280,88 @@ function scanTypeScript(text: string, file: string): SilentFailureFinding[] {
     const block = accumulateBalanced(lines, i, braceIndex, "{", "}")
     const inner = block.length >= 2 ? block.slice(1, block.length - 1) : ""
     if (inner.trim() === "") {
-      out.push(finding("SF001", file, i + 1, lines[i]))
+      out.push(finding("SF001", file, i + 1, lines[i], extractSymbol(lines, i, "ts")))
       continue
     }
     const hasLog = /\bconsole\.(?:warn|error|log)\s*\(/.test(inner)
     const hasDefault = /\breturn\s+(?:null|undefined|\[\s*\]|\{\s*\}|0|false)\b/.test(inner)
-    if (hasLog && hasDefault) out.push(finding("SF002", file, i + 1, lines[i]))
+    if (hasLog && hasDefault) out.push(finding("SF002", file, i + 1, lines[i], extractSymbol(lines, i, "ts")))
   }
   for (let i = 0; i < lines.length; i++) {
-    if (/createEmpty\s*[:=]\s*true/i.test(lines[i])) out.push(finding("SF005", file, i + 1, lines[i]))
+    if (/createEmpty\s*[:=]\s*true/i.test(lines[i]))
+      out.push(finding("SF005", file, i + 1, lines[i], extractSymbol(lines, i, "ts")))
   }
   return out
+}
+
+interface LoadedWaivers {
+  entries: SilentFailureWaiver[]
+  warnings: SilentFailureWaiverWarning[]
+  resolved?: string
+}
+
+function isCommittedWaiverPath(base: string, abs: string): boolean {
+  const rel = relative(resolve(base), resolve(abs))
+  if (rel === ".." || rel.startsWith(`..${sep}`)) return false
+  const segments = rel.split(sep)
+  if (segments[0] === ".matrixx") return false
+  if (segments.some((s) => IGNORED_DIRS.has(s))) return false
+  return true
+}
+
+function isValidWaiverEntry(entry: unknown): entry is SilentFailureWaiver {
+  if (typeof entry !== "object" || entry === null) return false
+  const e = entry as Record<string, unknown>
+  return (
+    typeof e.rule === "string" &&
+    e.rule in RULE_CATALOG &&
+    typeof e.file === "string" &&
+    e.file.trim() !== "" &&
+    typeof e.symbol === "string" &&
+    typeof e.reason === "string" &&
+    e.reason.trim() !== "" &&
+    typeof e.reviewedAt === "string" &&
+    /^\d{4}-\d{2}-\d{2}$/.test(e.reviewedAt)
+  )
+}
+
+function loadWaivers(base: string, waiversParam?: string): LoadedWaivers {
+  if (waiversParam === undefined || waiversParam.trim() === "") return { entries: [], warnings: [] }
+  const abs = waiversParam.startsWith("/") ? waiversParam : resolve(base, waiversParam)
+  const refused = (message: string): LoadedWaivers => ({
+    entries: [],
+    warnings: [{ kind: "load-warning", message }],
+    resolved: abs,
+  })
+  if (!isCommittedWaiverPath(base, abs))
+    return refused(`waiver file refused (must be committed, never under .matrixx/): ${waiversParam}`)
+  let raw: string
+  try {
+    raw = readFileSync(abs, "utf8")
+  } catch {
+    return refused(`waiver file not readable: ${waiversParam}`)
+  }
+  let parsed: unknown
+  try {
+    parsed = JSON.parse(raw)
+  } catch {
+    return refused(`waiver file is not valid JSON: ${waiversParam}`)
+  }
+  const list = Array.isArray(parsed) ? parsed : (parsed as { waivers?: unknown }).waivers
+  if (!Array.isArray(list))
+    return refused(`waiver file must be {version:1,waivers:[...]} or a bare array: ${waiversParam}`)
+  const entries: SilentFailureWaiver[] = []
+  const warnings: SilentFailureWaiverWarning[] = []
+  for (let index = 0; index < list.length; index++) {
+    const entry = list[index]
+    if (isValidWaiverEntry(entry)) entries.push(entry)
+    else warnings.push({ kind: "invalid-entry", message: `waiver entry ${index} invalid, skipped`, entry })
+  }
+  return { entries, warnings, resolved: abs }
+}
+
+function waiverKey(rule: string, file: string, symbol: string): string {
+  return `${rule}${file}${symbol}`
 }
 
 export function scanPath(opts: {
@@ -264,6 +369,7 @@ export function scanPath(opts: {
   target: string
   globs?: string[]
   threshold?: ScanSeverity
+  waivers?: string
 }): SilentFailureScanResult {
   const globs = opts.globs && opts.globs.length > 0 ? opts.globs : DEFAULT_GLOBS
   const threshold = opts.threshold ?? "warn"
@@ -284,19 +390,48 @@ export function scanPath(opts: {
   const minRank = SEVERITY_RANK[threshold]
   const filtered = findings.filter((f) => SEVERITY_RANK[f.severity] >= minRank)
 
+  const waiverLoad = loadWaivers(opts.base, opts.waivers)
+  const waiverKeys = new Set(waiverLoad.entries.map((e) => waiverKey(e.rule, e.file, e.symbol)))
+  const active: SilentFailureFinding[] = []
+  const waived: SilentFailureFinding[] = []
+  for (const item of filtered) {
+    if (waiverKeys.has(waiverKey(item.rule, item.file, item.symbol))) waived.push(item)
+    else active.push(item)
+  }
+  const staleWaivers = waiverLoad.entries.filter(
+    (e) => !filtered.some((f) => f.rule === e.rule && f.file === e.file && f.symbol === e.symbol),
+  )
+
   let errors = 0
   let warnings = 0
   const byRule: Record<string, number> = {}
-  for (const item of filtered) {
+  for (const item of active) {
     if (item.severity === "error") errors += 1
     else warnings += 1
     byRule[item.rule] = (byRule[item.rule] ?? 0) + 1
   }
-  const status: 0 | 1 | 2 = errors > 0 ? 2 : warnings > 0 ? 1 : 0
+  const waivedByRule: Record<string, number> = {}
+  for (const item of waived) {
+    waivedByRule[item.rule] = (waivedByRule[item.rule] ?? 0) + 1
+  }
+  const status: 0 | 1 | 2 = errors > 0 ? 2 : warnings > 0 ? 1 : staleWaivers.length > 0 ? 1 : 0
 
   return {
     status,
-    findings: filtered,
-    summary: { filesScanned: files.length, total: filtered.length, errors, warnings, byRule },
+    findings: active,
+    waived,
+    summary: {
+      filesScanned: files.length,
+      total: active.length,
+      errors,
+      warnings,
+      byRule,
+      waived: waived.length,
+      waivedByRule,
+      stale: staleWaivers.length,
+    },
+    waiverFile: waiverLoad.resolved,
+    staleWaivers,
+    waiverWarnings: waiverLoad.warnings,
   }
 }
