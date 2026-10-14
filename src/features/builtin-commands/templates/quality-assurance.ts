@@ -50,9 +50,9 @@ Run these steps in this exact order per iteration:
 - Zero-delta: new grade == old grade with no new fixes remaining.
 - Iteration cap reached: iterations == --max-iterations (default 3).
 
-When any stop condition fires, stop immediately. Then run the auditor
-post-review: the auditor agent gives a read-only advisory verdict on the final
-report. Advisory only — it never edits, never retries, never rejects.
+When any stop condition fires, stop immediately. No post-review step follows:
+the auditor agent is invoked ONLY by the explicit \`/plan-review\` command,
+never automatically and never as part of this loop.
 
 ## Report Contract (same as audit)
 
@@ -69,8 +69,8 @@ or rejects. Never write to \`.matrixx/plans/\`; never open or mutate a plan file
 Identical to the audit forbid-list EXCEPT the TDD-implement step MAY Edit/Write
 source files strictly within --scope/--target only:
 
-- All other steps (baseline, oracle delta-plan, smith gate, verify, auditor
-  post-review) are read-only: NO Edit/Write to source, NO lsp_rename, NO
+- All other steps (baseline, oracle delta-plan, smith gate, verify) are
+  read-only: NO Edit/Write to source, NO lsp_rename, NO
   non-dryRun ast_grep_replace, NO task_create/task_update, NO plan_update.
 - Report writes are report + sidecar only.
 - Per-iteration wall-clock timeout 300 (5 min). Exceeding the timeout stops the
