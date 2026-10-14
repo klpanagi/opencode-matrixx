@@ -8,6 +8,7 @@ import { setSessionTools } from "../../shared/session-state"
 import { getDeliverableTag, isPlanFamily } from "./constants"
 import type { ExecutorContext, SessionMessage } from "./executor-types"
 import { type SyncContinuationDeps, syncContinuationDeps } from "./sync-continuation-deps"
+import { buildContinuationTitle } from "./task-title"
 import type { DelegateTaskArgs, ToolContextWithMetadata } from "./types"
 
 export async function executeSyncContinuation(
@@ -61,7 +62,7 @@ export async function executeSyncContinuation(
     }
 
     const syncContMeta = {
-      title: `Continue: ${args.description}`,
+      title: buildContinuationTitle(args.description),
       metadata: {
         prompt: args.prompt,
         ...(resumeAgent !== undefined ? { agent: resumeAgent } : {}),

@@ -25,7 +25,7 @@ export const BgHandleSchema = z
     taskId: z.string(),
     parentSessionID: z.string(),
     parentMessageID: z.string(),
-    description: z.string(),
+    description: z.string().default("Background task"),
     title: z.string().optional(),
     agent: z.string(),
     status: z.enum(["pending", "running", "completed", "error", "cancelled", "interrupt", "stopped", "statusUncertain"]),
@@ -68,8 +68,11 @@ function ensureDir(dirPath: string): void {
 }
 
 /** Single source of truth for the OpenCode subagent session title format. */
-export function buildSubagentTitle(description: string, agent: string): string {
-  return `${description} (@${agent} subagent)`
+export function buildSubagentTitle(description: unknown, agent: unknown): string {
+  const desc = typeof description === "string" && description.trim() !== "" && description.trim().toLowerCase() !== "undefined" ? description.trim() : "Background task";
+  const ag = typeof agent === "string" && agent.trim() !== "" ? agent.trim() : "";
+  if (ag !== "") return `${desc} (@${ag} subagent)`;
+  return desc;
 }
 
 /** Project a full task onto the lightweight, persistable handle index. */
