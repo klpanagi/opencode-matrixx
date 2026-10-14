@@ -81,3 +81,55 @@ describe("BackgroundTaskConfigSchema admission fields", () => {
     }
   })
 })
+
+describe("BackgroundTaskConfigSchema handleTtlMs", () => {
+  test("accepts handleTtlMs: 60000 (minimum value)", () => {
+    //#given
+    const config = { handleTtlMs: 60000 }
+
+    //#when
+    const result = BackgroundTaskConfigSchema.safeParse(config)
+
+    //#then
+    expect(result.success).toBe(true)
+    if (result.success) {
+      expect(result.data.handleTtlMs).toBe(60000)
+    }
+  })
+
+  test("rejects handleTtlMs below minimum", () => {
+    //#given
+    const config = { handleTtlMs: 30000 }
+
+    //#when
+    const result = BackgroundTaskConfigSchema.safeParse(config)
+
+    //#then
+    expect(result.success).toBe(false)
+  })
+
+  test("rejects non-integer handleTtlMs", () => {
+    //#given
+    const config = { handleTtlMs: 60000.5 }
+
+    //#when
+    const result = BackgroundTaskConfigSchema.safeParse(config)
+
+    //#then
+    expect(result.success).toBe(false)
+  })
+
+  test("omitted handleTtlMs parses to undefined", () => {
+    //#given
+    const config = {}
+
+    //#when
+    const result = BackgroundTaskConfigSchema.safeParse(config)
+
+    //#then
+    expect(result.success).toBe(true)
+    if (result.success) {
+      expect(result.data.handleTtlMs).toBeUndefined()
+    }
+  })
+})
