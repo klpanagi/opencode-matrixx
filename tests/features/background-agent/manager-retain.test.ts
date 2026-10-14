@@ -86,7 +86,7 @@ function makeMockClient(overrides?: {
   }
 }
 
-function buildManager(ctx: MockClient): BackgroundManager {
+function buildManager(ctx: MockClient, config?: import("../../../src/config/schema/background-task").BackgroundTaskConfig): BackgroundManager {
   const toastMgr = initTaskToastManager(ctx.session)
   const mgr = new BackgroundManager(
     {
@@ -96,6 +96,7 @@ function buildManager(ctx: MockClient): BackgroundManager {
       llm: { chat: async () => ({ content: "" }) },
       directoryConfig: {},
     } as never,
+    config,
   )
   mgr["taskToastManager"] = toastMgr as never
   return mgr
@@ -275,5 +276,59 @@ describe("Retention invariant", () => {
       expect(reap!.status).toBe("running")
       expect(reap!.terminalReason).toBe(undefined)
     })
+  })
+})
+
+describe("Configured handle TTL", () => {
+  beforeEach(() => {
+    _resetPruneThrottleForTesting()
+    _resetTaskToastManagerForTesting()
+    _resetMessageDirCacheForTesting()
+    subagentSessions.clear()
+  })
+
+  function makeTerminalTask(id: string, completedAt: Date): BackgroundTask {
+    return {
+      id,
+      status: "completed",
+      sessionID: `sess_${id}`,
+      parentSessionID: "sess_parent_ttl",
+      parentMessageID: "msg_ttl",
+      description: "ttl task",
+      prompt: "ttl",
+      agent: "oracle",
+      startedAt: new Date(completedAt.getTime() - 60_000),
+      completedAt,
+    }
+  }
+
+  test("evicts 2-minute-old terminal task when handleTtlMs is 60000", async () => {
+    //#given
+    const ctx = makeMockClient()
+    const mgr = buildManager(ctx, { handleTtlMs: 60000 })
+    const task = makeTerminalTask("bg_ttl_evict", new Date(Date.now() - 2 * 60 * 1000))
+    mgr["tasks"].set(task.id, task)
+    ;(mgr as unknown as { lastPruneAt: number }).lastPruneAt = 0
+
+    //#when
+    ;(mgr as unknown as { pruneStaleTasksAndNotifications: () => void }).pruneStaleTasksAndNotifications()
+
+    //#then
+    expect(mgr["tasks"].has(task.id)).toBe(false)
+  })
+
+  test("retains 2-minute-old terminal task with default config", async () => {
+    //#given
+    const ctx = makeMockClient()
+    const mgr = buildManager(ctx)
+    const task = makeTerminalTask("bg_ttl_keep", new Date(Date.now() - 2 * 60 * 1000))
+    mgr["tasks"].set(task.id, task)
+    ;(mgr as unknown as { lastPruneAt: number }).lastPruneAt = 0
+
+    //#when
+    ;(mgr as unknown as { pruneStaleTasksAndNotifications: () => void }).pruneStaleTasksAndNotifications()
+
+    //#then
+    expect(mgr["tasks"].has(task.id)).toBe(true)
   })
 })

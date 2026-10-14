@@ -33,6 +33,8 @@ export const BackgroundTaskConfigSchema = z.object({
   staleTimeoutMs: z.number().min(60000).optional(),
   /** Timeout for tasks that never received any progress update, falling back to startedAt (default: 600000 = 10 minutes, minimum: 60000 = 1 minute) */
   messageStalenessTimeoutMs: z.number().min(60000).optional(),
+  /** Handle retention window in ms (default: 1800000 = 30 min, minimum: 60000 = 1 min). Controls how long persisted `.matrixx/bg-handles/*.json` survive for `background_revive`, and how long terminal tasks + completion notifications are retained in memory. */
+  handleTtlMs: z.number().int().min(60000).max(2147483647).optional(),
   /** Shorthand for circuitBreaker.maxToolCalls */
   maxToolCalls: z.number().int().min(10).optional(),
   /** Circuit breaker settings to prevent runaway background tasks */

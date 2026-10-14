@@ -35,7 +35,7 @@ import {
   getSessionErrorMessage,
   isAbortedSessionError,
   } from "./error-helpers"
-import { type BgHandle, readHandles, sweepStaleHandles, writeHandle } from "./handle-index"
+import { type BgHandle, buildSubagentTitle, readHandles, sweepStaleHandles, writeHandle } from "./handle-index"
 import {
   type CircuitBreakerSettings,
   detectRepetitiveToolUse,
@@ -209,6 +209,11 @@ export class BackgroundManager {
     }
   }
 
+  /** Configured bg-handle retention window; falls back to the 30-minute default. */
+  private taskTtlMs(): number {
+    return this.config?.handleTtlMs ?? TASK_TTL_MS
+  }
+
   private armWallclock(task: BackgroundTask): void {
     const timeoutMs = this.config?.wallClockTimeoutMs ?? DEFAULT_WALL_CLOCK_TIMEOUT_MS
     if (timeoutMs === 0 || timeoutMs === undefined || !task.startedAt) return
@@ -275,7 +280,7 @@ export class BackgroundManager {
    * re-acquired for restored running handles (C7).
    */
   async restoreHandles(): Promise<void> {
-    const swept = sweepStaleHandles(this.directory)
+    const swept = sweepStaleHandles(this.directory, this.taskTtlMs())
     const handles = readHandles(this.directory)
 
     let restored = 0
@@ -330,6 +335,7 @@ export class BackgroundManager {
       task.status = "running"
       if (task.sessionID) {
         registerSubagentSession(task.sessionID, task.parentSessionID)
+        await this.repairSessionTitle(task.sessionID, handle)
       }
       // C7: a restored running handle must NOT re-acquire its concurrency slot.
       task.concurrencyKey = undefined
@@ -346,6 +352,23 @@ export class BackgroundManager {
     task.completedAt = new Date()
     this.persistHandle(task)
     this.disarmWallclock(task.id)
+  }
+
+  /**
+   * Best-effort repair of the OpenCode session title for a restored running
+   * task. Only writes when the current title is empty/whitespace; never throws
+   * so the fire-and-forget restore path stays rejection-free.
+   */
+  private async repairSessionTitle(sessionID: string, handle: BgHandle): Promise<void> {
+    try {
+      const current = await this.client.session.get({ path: { id: sessionID } })
+      const existing = (current?.data as { title?: string } | undefined)?.title
+      if (existing !== undefined && existing.trim() !== "") return
+      const title = handle.title ?? buildSubagentTitle(handle.description, handle.agent)
+      await this.client.session.update({ path: { id: sessionID }, body: { title } })
+    } catch (error) {
+      log("[background-agent] Session title repair failed:", { sessionID, taskId: handle.taskId, error })
+    }
   }
 
   async launch(input: LaunchInput): Promise<BackgroundTask> {
@@ -644,7 +667,7 @@ export class BackgroundManager {
     const createResult = await this.client.session.create({
       body: {
         parentID: input.parentSessionID,
-        title: `${input.description} (@${input.agent} subagent)`,
+        title: buildSubagentTitle(input.description, input.agent),
       },
       query: {
         directory: parentDirectory,
@@ -2010,6 +2033,7 @@ export class BackgroundManager {
 
   private pruneStaleTasksAndNotifications(): void {
     const now = Date.now()
+    const ttlMs = this.taskTtlMs()
 
     for (const [taskId, task] of this.tasks.entries()) {
       // Running tasks are never prune-killed: execution bounds belong to the
@@ -2020,7 +2044,7 @@ export class BackgroundManager {
       }
       const wasPending = task.status === "pending"
       // Terminal tasks age from completion so a long run keeps its full
-      // 30-minute revive window; pending tasks age from queue time.
+      // configured revive window; pending tasks age from queue time.
       const timestamp = wasPending
         ? task.queuedAt?.getTime()
         : (task.completedAt?.getTime() ?? task.startedAt?.getTime() ?? task.queuedAt?.getTime())
@@ -2030,7 +2054,7 @@ export class BackgroundManager {
       }
 
       const age = now - timestamp
-      if (age > TASK_TTL_MS) {
+      if (age > ttlMs) {
         // Terminal tasks are simply evicted from memory; the persisted handle
         // on disk remains the revive path until sweepStaleHandles removes it.
         if (!wasPending) {
@@ -2046,7 +2070,7 @@ export class BackgroundManager {
           }
           continue
         }
-        const errorMessage = "Task timed out while queued (30 minutes)"
+        const errorMessage = `Task timed out while queued (${Math.round(ttlMs / 60000)} minutes)`
 
         log("[background-agent] Pruning stale task:", { taskId, status: task.status, age: `${Math.round(age / 1000)}s` })
         task.status = "error"
@@ -2098,7 +2122,7 @@ export class BackgroundManager {
         const ts = task.completedAt ?? task.startedAt
         if (!ts) return false
         const age = now - ts.getTime()
-        return age <= TASK_TTL_MS
+        return age <= ttlMs
       })
       if (validNotifications.length === 0) {
         this.notifications.delete(sessionID)
