@@ -6,4 +6,6 @@ export type {
   SilentFailureFinding,
   SilentFailureScanResult,
   SilentFailureSummary,
+  SilentFailureWaiver,
+  SilentFailureWaiverWarning,
 } from "./types"

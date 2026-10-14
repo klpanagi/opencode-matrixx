@@ -4,7 +4,7 @@
 
 15 AI agents with factory functions, fallback chains, and model-specific prompt variants. Each agent has metadata (category, cost, triggers) and configurable tool restrictions.
 
-`Smith` is the **pre-execution** reviewer (binary `[OKAY]`/`[REJECT]`, max 3 blockers). `Auditor` is the **post-execution** reviewer (Summary / Score / Complexity / Required Effort), invoked **only** by the explicit `/plan-review` command — never automatically, and never on a hook, idle, or completion trigger.
+`Smith` is the **pre-execution** reviewer (binary `[OKAY]`/`[REJECT]`, max 3 blockers). `Auditor` is the **post-execution** reviewer (Summary / Score / Complexity / Required Effort), invoked **only** by the explicit `/plan-review` command — never automatically (including never as a post-step of `/quality-assurance` or any other command loop), and never on a hook, idle, or completion trigger.
 
 ## STRUCTURE
 ```
@@ -30,7 +30,7 @@ agents/
 ├── sentinel.ts                 # Security auditor (220 lines)
 ├── merovingian.ts              # High-IQ consultation
 ├── smith.ts                    # Plan validator (244 lines) — pre-execution reviewer
-├── auditor.ts                  # Post-execution plan auditor (147 lines) — /plan-review only
+├── auditor.ts                  # Post-execution plan auditor (147 lines) — /plan-review only, never automatic
 ├── construct.ts        # Media analyzer (58 lines)
 ├── sati.ts                     # Frontend specialist
 ├── trinity.ts                  # Codebase search

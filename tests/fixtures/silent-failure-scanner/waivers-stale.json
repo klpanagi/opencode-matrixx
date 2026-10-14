@@ -1,0 +1,12 @@
+{
+  "version": 1,
+  "waivers": [
+    {
+      "rule": "SF002",
+      "file": "waived.py",
+      "symbol": "renamed_away",
+      "reason": "Stale entry: symbol no longer exists.",
+      "reviewedAt": "2026-01-01"
+    }
+  ]
+}

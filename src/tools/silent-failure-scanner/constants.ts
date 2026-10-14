@@ -9,7 +9,9 @@ Rules:
 - SF004 results from \`gather(return_exceptions=True)\` indexed without per-result \`isinstance\` inspection.
 - SF005 gap-masking flags such as \`createEmpty: true\`.
 
-Detection is line-oriented with bounded block tracking (documented fallback); no AST dependency. Use \`severity\` to filter the report to a minimum severity ("warn" reports warnings and errors; "error" reports errors only).`
+Detection is line-oriented with bounded block tracking (documented fallback); no AST dependency. Use \`severity\` to filter the report to a minimum severity ("warn" reports warnings and errors; "error" reports errors only).
+
+Waivers: pass \`waivers\` (project-relative or absolute path to a COMMITTED waiver JSON file — never under gitignored \`.matrixx/\`) shaped \`{version:1,waivers:[{rule,file,symbol,reason,reviewedAt,owner?}]}\`. The match key is rule+file+enclosing-symbol (never line numbers); matched findings are excluded from the status but reported in \`waived\`. Entries matching nothing appear in \`staleWaivers\` and force status to at least 1.`
 
 export const DEFAULT_GLOBS = ["**/*.py", "**/*.ts", "**/*.tsx", "**/*.js", "**/*.jsx"]
 

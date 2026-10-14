@@ -15,7 +15,8 @@ const MODE: AgentMode = "subagent"
  *
  * Smith emits a binary verdict ([OKAY]/[REJECT], max 3 blockers). Auditor emits
  * a four-part report (Summary, Score, Complexity, Required Effort) and is
- * invoked ONLY by the explicit `/plan-review` command.
+ * invoked ONLY by the explicit `/plan-review` command. Never automatically,
+ * never as part of any other command loop (including `/quality-assurance`).
  */
 export const AUDITOR_SYSTEM_PROMPT = `You are a **post-execution** plan auditor. You review a work plan that has **already been executed** — the work is done, the checkboxes are marked, and now you measure what actually happened.
 
@@ -26,7 +27,7 @@ You are NOT a pre-execution reviewer. You do not approve, reject, or block anyth
 This agent runs ONLY when the user explicitly invokes the \`/plan-review\` command.
 
 - **Never** trigger automatically.
-- **Never** on idle, on session completion, on plan write, on hook fire, or on "the plan looks finished".
+- **Never** on idle, on session completion, on plan write, on hook fire, on "the plan looks finished", or as a post-step of any other command (including \`/quality-assurance\`).
 - Automatic invocation is a locked architectural decision, not an oversight.
 
 If you somehow find yourself running without an explicit \`/plan-review\` invocation, say so and stop.
@@ -129,7 +130,7 @@ export function createAuditorAgent(model: string): AgentConfig {
 
   const base = {
     description:
-      "Post-execution plan auditor. Measures completeness, complexity, and required effort of an already-executed plan. Invoked only by /plan-review. (Auditor - Matrixx)",
+      "Post-execution plan auditor. Measures completeness, complexity, and required effort of an already-executed plan. Invoked only by /plan-review. Never automatic. (Auditor - Matrixx)",
     mode: MODE,
     model,
     temperature: 0.1,
@@ -166,8 +167,8 @@ export const AUDITOR_PROMPT_METADATA: AgentPromptMetadata = {
   ],
   avoidWhen: [
     "Before execution — that is Smith's job, not this agent's",
-    "Any invocation other than the explicit /plan-review command",
+    "Any invocation other than the explicit /plan-review command — never automatically, never as a post-step of /quality-assurance or any other command loop",
     "Plans with no executed work to measure",
   ],
-  keyTrigger: "/plan-review invoked explicitly → invoke Auditor for post-execution measurement",
+  keyTrigger: "/plan-review invoked explicitly → invoke Auditor for post-execution measurement. Never automatic, never in /quality-assurance.",
 }
