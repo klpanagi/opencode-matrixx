@@ -35,7 +35,7 @@ import {
   getSessionErrorMessage,
   isAbortedSessionError,
   } from "./error-helpers"
-import { type BgHandle, readHandles, sweepStaleHandles, writeHandle } from "./handle-index"
+import { type BgHandle, buildSubagentTitle, readHandles, sweepStaleHandles, writeHandle } from "./handle-index"
 import {
   type CircuitBreakerSettings,
   detectRepetitiveToolUse,
@@ -330,6 +330,7 @@ export class BackgroundManager {
       task.status = "running"
       if (task.sessionID) {
         registerSubagentSession(task.sessionID, task.parentSessionID)
+        await this.repairSessionTitle(task.sessionID, handle)
       }
       // C7: a restored running handle must NOT re-acquire its concurrency slot.
       task.concurrencyKey = undefined
@@ -346,6 +347,23 @@ export class BackgroundManager {
     task.completedAt = new Date()
     this.persistHandle(task)
     this.disarmWallclock(task.id)
+  }
+
+  /**
+   * Best-effort repair of the OpenCode session title for a restored running
+   * task. Only writes when the current title is empty/whitespace; never throws
+   * so the fire-and-forget restore path stays rejection-free.
+   */
+  private async repairSessionTitle(sessionID: string, handle: BgHandle): Promise<void> {
+    try {
+      const current = await this.client.session.get({ path: { id: sessionID } })
+      const existing = (current?.data as { title?: string } | undefined)?.title
+      if (existing !== undefined && existing.trim() !== "") return
+      const title = handle.title ?? buildSubagentTitle(handle.description, handle.agent)
+      await this.client.session.update({ path: { id: sessionID }, body: { title } })
+    } catch (error) {
+      log("[background-agent] Session title repair failed:", { sessionID, taskId: handle.taskId, error })
+    }
   }
 
   async launch(input: LaunchInput): Promise<BackgroundTask> {
@@ -644,7 +662,7 @@ export class BackgroundManager {
     const createResult = await this.client.session.create({
       body: {
         parentID: input.parentSessionID,
-        title: `${input.description} (@${input.agent} subagent)`,
+        title: buildSubagentTitle(input.description, input.agent),
       },
       query: {
         directory: parentDirectory,

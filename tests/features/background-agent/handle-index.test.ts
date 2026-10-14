@@ -1,10 +1,11 @@
 import { afterEach, beforeEach, describe, expect, test } from "bun:test"
-import { existsSync, mkdtempSync, readdirSync, rmSync, writeFileSync } from "node:fs"
+import { existsSync, mkdtempSync, readdirSync, readFileSync, rmSync, writeFileSync } from "node:fs"
 import { tmpdir } from "node:os"
 import { join } from "node:path"
 import {
   BG_HANDLE_FILE_PREFIX,
   type BgHandle,
+  buildSubagentTitle,
   deleteHandleFile,
   getBgHandleDir,
   getHandlePath,
@@ -269,5 +270,58 @@ describe("handle file prefix", () => {
     //#when comparing against the task id format
     //#then handle ids and file names share the bg_ prefix
     expect(BG_HANDLE_FILE_PREFIX).toBe("bg_")
+  })
+})
+describe("buildSubagentTitle", () => {
+  test("produces description plus agent suffix", () => {
+    //#given a description and agent
+    //#when building the subagent title
+    const title = buildSubagentTitle("Investigate the thing", "explore")
+
+    //#then it matches the single source-of-truth format
+    expect(title).toBe("Investigate the thing (@explore subagent)")
+  })
+})
+
+describe("toHandle title", () => {
+  test("includes title equal to buildSubagentTitle", () => {
+    //#given a task
+    const task = makeTask()
+
+    //#when projecting to a handle
+    const handle = toHandle(task)
+
+    //#then the title matches the shared helper
+    expect(handle.title).toBe(buildSubagentTitle(task.description, task.agent))
+  })
+})
+
+describe("handle title persistence", () => {
+  test("a handle JSON without title still parses (backward compat)", () => {
+    //#given a persisted handle file without a title field
+    const task = makeTask()
+    writeHandle(dir, task)
+    const raw = JSON.parse(readFileSync(getHandlePath(dir, task.id), "utf-8")) as Record<string, unknown>
+    delete raw["title"]
+    writeFileSync(getHandlePath(dir, task.id), JSON.stringify(raw), "utf-8")
+
+    //#when reading handles
+    const handles = readHandles(dir)
+
+    //#then the old handle still parses
+    expect(handles).toHaveLength(1)
+    expect(handles[0].taskId).toBe(task.id)
+  })
+
+  test("round-trip preserves the title", () => {
+    //#given a persisted handle
+    const task = makeTask()
+    writeHandle(dir, task)
+
+    //#when reading it back
+    const [handle] = readHandles(dir)
+
+    //#then the title round-trips
+    expect(handle.title).toBe(buildSubagentTitle(task.description, task.agent))
   })
 })
