@@ -281,7 +281,9 @@
           "assembly",
           "ultrawork",
           "bdd-pipeline",
-          "plan-review"
+          "plan-review",
+          "quality-audit",
+          "quality-assurance"
         ]
       }
     },

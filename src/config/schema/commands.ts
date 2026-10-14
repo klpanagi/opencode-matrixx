@@ -16,6 +16,8 @@ export const BuiltinCommandNameSchema = z.enum([
   "ultrawork",
   "bdd-pipeline",
   "plan-review",
+  "quality-audit",
+  "quality-assurance",
 ])
 
 export type BuiltinCommandName = z.infer<typeof BuiltinCommandNameSchema>
