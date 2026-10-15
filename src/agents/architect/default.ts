@@ -28,12 +28,15 @@ One task per delegation. Parallel when independent. Verify everything.
 
 Use \`task()\` with EITHER category OR agent (mutually exclusive):
 
+\`description\` is REQUIRED on every \`task()\` call — a 3-5 word title (e.g. \`description="Implement login handler"\`). It becomes the background task title; omitting it leaves tasks untitled.
+
 \`\`\`typescript
 // Option A: Category + Skills (spawns Mouse with domain config)
 task(
   category="[category-name]",
   load_skills=["skill-1", "skill-2"],
   run_in_background=false,
+  description="[3-5 word task title]",
   prompt="..."
 )
 
@@ -42,6 +45,7 @@ task(
   subagent_type="[agent-name]",
   load_skills=[],
   run_in_background=false,
+  description="[3-5 word task title]",
   prompt="..."
 )
 \`\`\`
@@ -175,6 +179,7 @@ task(
   category="[category]",
   load_skills=["[relevant-skills]"],
   run_in_background=false,
+  description="[task title from plan checkbox]",
   prompt=\`[FULL 6-SECTION PROMPT]\`
 )
 \`\`\`
@@ -234,6 +239,7 @@ This returns a compact manifest with progress counts. Count remaining top-level 
 task(
   session_id="ses_xyz789",  // ALWAYS use the session from the failed task
   load_skills=[...],
+  description="Fix {failing task title}",
   prompt="Verification failed: {actual error}. Fix."
 )
 \`\`\`
@@ -251,6 +257,7 @@ If task fails:
     task(
       session_id="ses_xyz789",  // Session from failed task
       load_skills=[...],
+      description="Fix {failing task title}",
       prompt="FAILED: {error}. Fix by: {specific instruction}"
     )
     \`\`\`
@@ -297,21 +304,21 @@ ACCUMULATED WISDOM:
 
 **For exploration (explore/librarian)**: ALWAYS background
 \`\`\`typescript
-task(subagent_type="trinity", load_skills=[], run_in_background=true, ...)
-task(subagent_type="operator", load_skills=[], run_in_background=true, ...)
+task(subagent_type="trinity", load_skills=[], run_in_background=true, description="Explore [area]", ...)
+task(subagent_type="operator", load_skills=[], run_in_background=true, description="Research [topic]", ...)
 \`\`\`
 
 **For task execution**: NEVER background
 \`\`\`typescript
-task(category="...", load_skills=[...], run_in_background=false, ...)
+task(category="...", load_skills=[...], run_in_background=false, description="[3-5 word task title]", ...)
 \`\`\`
 
 **Parallel task groups**: Invoke multiple in ONE message
 \`\`\`typescript
 // Tasks 2, 3, 4 are independent - invoke together
-task(category="bullet-time", load_skills=[], run_in_background=false, prompt="Task 2...")
-task(category="bullet-time", load_skills=[], run_in_background=false, prompt="Task 3...")
-task(category="bullet-time", load_skills=[], run_in_background=false, prompt="Task 4...")
+task(category="bullet-time", load_skills=[], run_in_background=false, description="Task 2: [title]", prompt="Task 2...")
+task(category="bullet-time", load_skills=[], run_in_background=false, description="Task 3: [title]", prompt="Task 3...")
+task(category="bullet-time", load_skills=[], run_in_background=false, description="Task 4: [title]", prompt="Task 4...")
 \`\`\`
 
 **Background management**:

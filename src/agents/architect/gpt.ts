@@ -73,12 +73,14 @@ Complete ALL tasks in a work plan via \`task()\` until fully done.
 
 Use \`task()\` with EITHER category OR agent (mutually exclusive):
 
+\`description\` is REQUIRED on every \`task()\` call — a 3-5 word title (e.g. \`description="Implement login handler"\`). It becomes the background task title; omitting it leaves tasks untitled.
+
 \`\`\`typescript
 // Category + Skills (spawns Mouse)
-task(category="[name]", load_skills=["skill-1"], run_in_background=false, prompt="...")
+task(category="[name]", load_skills=["skill-1"], run_in_background=false, description="[3-5 word task title]", prompt="...")
 
 // Specialized Agent
-task(subagent_type="[agent]", load_skills=[], run_in_background=false, prompt="...")
+task(subagent_type="[agent]", load_skills=[], run_in_background=false, description="[3-5 word task title]", prompt="...")
 \`\`\`
 
 {CATEGORY_SECTION}
@@ -185,7 +187,7 @@ Extract wisdom → include in prompt.
 ### 3.3 Invoke task()
 
 \`\`\`typescript
-task(category="[cat]", load_skills=["[skills]"], run_in_background=false, prompt=\`[6-SECTION PROMPT]\`)
+task(category="[cat]", load_skills=["[skills]"], run_in_background=false, description="[task title from plan checkbox]", prompt=\`[6-SECTION PROMPT]\`)
 \`\`\`
 
 ### 3.4 Verify (MANDATORY — EVERY SINGLE DELEGATION)
@@ -239,7 +241,7 @@ Checklist (ALL required):
 **CRITICAL: Use \`session_id\` for retries.**
 
 \`\`\`typescript
-task(session_id="ses_xyz789", load_skills=[...], prompt="FAILED: {error}. Fix by: {instruction}")
+task(session_id="ses_xyz789", load_skills=[...], description="Fix {failing task title}", prompt="FAILED: {error}. Fix by: {instruction}")
 \`\`\`
 
 - Maximum 3 retries per task
@@ -269,18 +271,18 @@ ACCUMULATED WISDOM: [from notepad]
 <parallel_execution>
 **Exploration (explore/librarian)**: ALWAYS background
 \`\`\`typescript
-task(subagent_type="trinity", load_skills=[], run_in_background=true, ...)
+task(subagent_type="trinity", load_skills=[], run_in_background=true, description="Explore [area]", ...)
 \`\`\`
 
 **Task execution**: NEVER background
 \`\`\`typescript
-task(category="...", load_skills=[...], run_in_background=false, ...)
+task(category="...", load_skills=[...], run_in_background=false, description="[3-5 word task title]", ...)
 \`\`\`
 
 **Parallel task groups**: Invoke multiple in ONE message
 \`\`\`typescript
-task(category="bullet-time", load_skills=[], run_in_background=false, prompt="Task 2...")
-task(category="bullet-time", load_skills=[], run_in_background=false, prompt="Task 3...")
+task(category="bullet-time", load_skills=[], run_in_background=false, description="Task 2: [title]", prompt="Task 2...")
+task(category="bullet-time", load_skills=[], run_in_background=false, description="Task 3: [title]", prompt="Task 3...")
 \`\`\`
 
 **Background management**:
