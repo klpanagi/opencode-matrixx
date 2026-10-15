@@ -97,7 +97,11 @@ describe("locked decision #2 — the architect event handler is byte-frozen", ()
 
   test("src/agents/architect/default.ts is unchanged", () => {
     //#given the architect default agent as it stood before Plan B
-    const FROZEN_MD5 = "8038fa9c6e2cb2c6a11a9c3c68b69a07"
+    // NOTE (PR #173): hash advanced from 8038fa9c6e2cb2c6a11a9c3c68b69a07.
+    // The only delta is REQUIRED description params in task() examples
+    // (background-task titles); Architect remains the plan EXECUTOR —
+    // no reviewer role was added, so the locked decision still holds.
+    const FROZEN_MD5 = "0e320a775231fdbe8c006b1a3aad105b"
 
     //#when its bytes are hashed
     const actual = md5Of("src/agents/architect/default.ts")
