@@ -9,7 +9,7 @@ import { loadPluginConfig } from "./plugin-config"
 import { setAvailableToolNames } from "./plugin-handlers/agent-config-handler"
 import { createPluginInterface } from "./plugin-interface"
 import { createModelCacheState } from "./plugin-state"
-import { injectServerAuthIntoClient, log } from "./shared"
+import { formatCompactionAppendLog, injectServerAuthIntoClient, log, summarizeCompactionAppend, utf8ByteLength } from "./shared"
 import { setContextModeForPrompts } from "./shared/context-mode-enforcement"
 import { switchProfile } from "./shared/dcp-switch-profile"
 import { createFirstMessageVariantGate } from "./shared/first-message-variant"
@@ -92,19 +92,28 @@ const pluginConfig = await loadPluginConfig(ctx.directory, ctx)
       _input: { sessionID: string },
       output: { context: string[] },
     ): Promise<void> => {
+      let injectorBytes = 0
+      let planBytes = 0
       if (hooks.compactionContextInjector) {
-        output.context.push(hooks.compactionContextInjector(_input.sessionID))
+        const fragment = hooks.compactionContextInjector(_input.sessionID)
+        injectorBytes = utf8ByteLength(fragment)
+        output.context.push(fragment)
       }
 
       // Inject plan context if mission is active
       if (hooks.planPersister) {
         const planContext = hooks.planPersister.buildRehydrationContext(_input.sessionID)
         if (planContext) {
+          planBytes = utf8ByteLength(planContext)
           output.context.push(planContext)
         }
       }
 
+      const evolutionBase = output.context.length
       await hooks.evolutionCompressor?.["experimental.session.compacting"]?.(_input, output)
+      const evolutionBytes = output.context.slice(evolutionBase).reduce((n, f) => n + utf8ByteLength(f), 0)
+      const summary = summarizeCompactionAppend({ injector: injectorBytes, plan: planBytes, evolution: evolutionBytes })
+      log(formatCompactionAppendLog(_input.sessionID, summary.sources), { sessionID: _input.sessionID, addedBytes: summary.addedBytes, sources: summary.sources, hostTruncation: "not-performed-by-matrixx" })
     },
 
     "experimental.chat.system.transform": async (input, output): Promise<void> => {

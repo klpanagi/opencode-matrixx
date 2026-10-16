@@ -56,6 +56,7 @@ export interface SessionMetadata {
   directory: string
   title?: string
   parentID?: string
+  isChild?: boolean
   time: {
     created: number
     updated: number
