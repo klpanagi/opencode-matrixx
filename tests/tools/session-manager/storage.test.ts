@@ -265,7 +265,7 @@ describe("session-manager storage - getMainSessions", () => {
     )
   }
 
-  test("getMainSessions returns only sessions without parentID", async () => {
+  test("getMainSessions includes child sessions annotated with parentID (include-with-label)", async () => {
     // given
     const projectID = "proj_abc123"
     const now = Date.now()
@@ -282,8 +282,11 @@ describe("session-manager storage - getMainSessions", () => {
     const sessions = await storage.getMainSessions({ directory: "/test/path" })
 
     // then
-    expect(sessions.length).toBe(2)
-    expect(sessions.map((s) => s.id)).not.toContain("ses_child1")
+    expect(sessions.length).toBe(3);
+    const child = sessions.find((s) => s.id === "ses_child1");
+    expect(child).toBeDefined();
+    expect(child?.parentID).toBe("ses_main1");
+    expect(child?.isChild).toBe(true);
   })
 
   test("getMainSessions sorts by time.updated descending (most recent first)", async () => {
@@ -391,8 +394,11 @@ describe("session-manager storage - SDK path (beta mode)", () => {
 
     // then
     expect(mockClient.session.list).toHaveBeenCalled()
-    expect(sessions.length).toBe(1)
-    expect(sessions[0].id).toBe("ses_1")
+    expect(sessions.length).toBe(2);
+    expect(sessions[0].id).toBe("ses_1");
+    const child = sessions.find((s) => s.id === "ses_2");
+    expect(child?.parentID).toBe("ses_1");
+    expect(child?.isChild).toBe(true);
   })
 
   test("getAllSessions uses SDK when beta mode is enabled", async () => {

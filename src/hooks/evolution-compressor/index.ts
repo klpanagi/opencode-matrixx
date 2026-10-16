@@ -9,6 +9,8 @@ import type { PluginContext } from "../../plugin/types"
 import { log } from "../../shared/logger"
 import { createHostLlmCall } from "./host-llm-call"
 
+export const EVOLUTION_COMPRESSOR_HONESTY_SUFFIX =
+  "context-freed=0 (trace-store only; host truncation not performed)"
 function resolveConfig(a?: unknown, b?: unknown): EvolutionConfig | undefined {
   if (b && typeof b === "object" && "enabled" in (b as Record<string, unknown>)) return b as EvolutionConfig
   if (a && typeof a === "object" && "enabled" in (a as Record<string, unknown>)) return a as EvolutionConfig
@@ -77,7 +79,7 @@ export function createEvolutionCompressorHook(a?: PluginContext | EvolutionConfi
       } catch (cleanupError) {
         log("[evolution-compressor] retention cleanup failed", { error: String(cleanupError) })
       }
-      log(`[evolution-compressor] staged=${result.staged} promoted=${result.promoted} trigger=${trigger}`)
+      log(`[evolution-compressor] staged=${result.staged} promoted=${result.promoted} trigger=${trigger} ${EVOLUTION_COMPRESSOR_HONESTY_SUFFIX}`)
       return result
     } catch (e) {
       log("[evolution-compressor] failed", { error: String(e) })

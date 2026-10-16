@@ -3,6 +3,7 @@ import { join } from "node:path"
 import { parseJsoncSafe } from "../../../shared/jsonc-parser"
 import { getOpenCodeConfigDir } from "../../../shared/opencode-config-dir"
 import type { CheckResult, DoctorCheck } from "../types"
+import { readMatrixxConfig } from "./helpers"
 
 function loadDcpEnabled(): boolean | null {
   const userDir = getOpenCodeConfigDir({ binary: "opencode" })
@@ -23,12 +24,37 @@ function loadDcpEnabled(): boolean | null {
   return null
 }
 
+export function isMatrixxHooksEnabled(): boolean {
+  const cfg = readMatrixxConfig()
+  if (!cfg) return false
+  const disabled = cfg.disabled_hooks
+  if (Array.isArray(disabled) && disabled.includes("evolution-compressor")) return false
+  return true
+}
+
+export function buildDcpConfusionDetail(opts: { dcpEnabled: boolean | null; dcpInstalled: boolean; matrixxHooksEnabled: boolean }): string | null {
+  if (!opts.matrixxHooksEnabled) return null
+  if (opts.dcpEnabled === false)
+    return "Matrixx evolution-compressor is trace-store only and cannot drop context while DCP is disabled (dcp.enabled=false); only external DCP truncates host context."
+  if (opts.dcpInstalled)
+    return "Two different compressors: external DCP truncates host context (watch for DCP -383K/+80K banners); Matrixx evolution-compressor is trace-store only (only writes the skill-trace store: staged, promoted, audit, see src/hooks/evolution-compressor/index.ts:54-80) and never truncates context (watch for [evolution-compressor] staged and promoted trace lines)."
+  return null
+}
+
 export const dcpCheck: DoctorCheck = {
   name: "dcp-integration",
   category: "integrations",
   check: (): CheckResult => {
     const enabled = loadDcpEnabled()
     if (enabled === false) {
+      if (isMatrixxHooksEnabled()) {
+        return {
+          name: "dcp-integration",
+          status: "pass",
+          message: "DCP disabled — skipping (Matrixx trace-store note attached)",
+          detail: buildDcpConfusionDetail({ dcpEnabled: false, dcpInstalled: false, matrixxHooksEnabled: true }) ?? undefined,
+        }
+      }
       return {
         name: "dcp-integration",
         status: "pass",
@@ -62,10 +88,19 @@ export const dcpCheck: DoctorCheck = {
         }
       } catch {}
     }
+    const confusion = buildDcpConfusionDetail({ dcpEnabled: enabled, dcpInstalled: true, matrixxHooksEnabled: isMatrixxHooksEnabled() })
+    if (confusion) {
+      return {
+        name: "dcp-integration",
+        status: "warn",
+        message: `DCP plugin installed at ${pluginDir}${hasJsonc ? " (dcp.jsonc present)" : ""} — compressor disambiguation (see detail)`,
+        detail: confusion,
+      }
+    }
     return {
       name: "dcp-integration",
       status: "pass",
-      message: `DCP plugin installed at ${pluginDir}${hasJsonc ? " (dcp.jsonc present)" : ""}`,
+        message: `DCP plugin installed at ${pluginDir}${hasJsonc ? " (dcp.jsonc present)" : ""}`
     }
   },
 }

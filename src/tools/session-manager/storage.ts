@@ -8,6 +8,7 @@ import { normalizeSDKResponse } from "../../shared"
 import { getMessageDir } from "../../shared/opencode-message-dir"
 import { isSqliteBackend } from "../../shared/opencode-storage-detection"
 import { MESSAGE_STORAGE, PART_STORAGE, SESSION_STORAGE, TRANSCRIPT_DIR } from "./constants"
+import { normalizeDirForCompare } from "./path-normalize"
 import type { SessionInfo, SessionMessage, SessionMetadata, TodoItem } from "./types"
 
 interface GetMainSessionsOptions {
@@ -56,19 +57,23 @@ export function setStorageConfig(config: Partial<MatrixxConfig> | undefined): vo
   pluginConfig = config
 }
 
+function directoriesEqual(a: string, b: string): boolean {
+  return normalizeDirForCompare(a) === normalizeDirForCompare(b);
+}
+
 export async function getMainSessions(options: GetMainSessionsOptions): Promise<SessionMetadata[]> {
   // Beta mode: use SDK
   if (isSqliteBackend() && sdkClient) {
     try {
       const response = await sdkClient.session.list()
       const sessions = normalizeSDKResponse(response, [] as SessionMetadata[])
-      const mainSessions = sessions.filter((s) => !s.parentID)
+      const annotated = sessions.map((s) => (s.parentID ? { ...s, isChild: true } : s));
       if (options.directory) {
-        return mainSessions
-          .filter((s) => s.directory === options.directory)
-          .sort((a, b) => b.time.updated - a.time.updated)
+        return annotated
+          .filter((s) => directoriesEqual(s.directory, options.directory as string))
+          .sort((a, b) => b.time.updated - a.time.updated);
       }
-      return mainSessions.sort((a, b) => b.time.updated - a.time.updated)
+      return annotated.sort((a, b) => b.time.updated - a.time.updated);
     } catch {
       return []
     }
@@ -94,11 +99,9 @@ export async function getMainSessions(options: GetMainSessionsOptions): Promise<
           const content = await readFile(join(projectPath, file), "utf-8")
           const meta = JSON.parse(content) as SessionMetadata
 
-          if (meta.parentID) continue
+          if (options.directory && !directoriesEqual(meta.directory, options.directory)) continue;
+          sessions.push(meta.parentID ? { ...meta, isChild: true } : meta);
 
-          if (options.directory && meta.directory !== options.directory) continue
-
-          sessions.push(meta)
         } catch {
         }
       }
