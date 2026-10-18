@@ -5,6 +5,7 @@ import { CLEANUP_TASKS_TEMPLATE } from "./templates/cleanup-tasks"
 import { END_ULTRAWORK_TEMPLATE } from "./templates/end-ultrawork"
 import { EVOLUTION_TEMPLATE } from "./templates/evolution"
 import { HANDOFF_TEMPLATE } from "./templates/handoff"
+import { HUMANIZE_TEMPLATE } from "./templates/humanize"
 import { INIT_DEEP_TEMPLATE } from "./templates/init-deep"
 import { CANCEL_LOOP_TEMPLATE, MATRIX_LOOP_TEMPLATE } from "./templates/matrix-loop"
 import { PICKUP_TEMPLATE } from "./templates/pickup"
@@ -102,6 +103,17 @@ $ARGUMENTS
     template: `<command-instruction>
 ${STOP_CONTINUATION_TEMPLATE}
 </command-instruction>`,
+  },
+  humanize: {
+    description: "(builtin) Guided quality-focused humanization pipeline for prose, comments, and code (text/comments/code modes)",
+    template: `<command-instruction>
+${HUMANIZE_TEMPLATE}
+</command-instruction>
+
+<user-request>
+$ARGUMENTS
+</user-request>`,
+    argumentHint: "[target] [--mode=text|comments|code|all] [--dry-run]",
   },
   handoff: {
     description: "(builtin) Create a detailed context summary for continuing work in a new session",
