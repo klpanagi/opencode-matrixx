@@ -1,9 +1,11 @@
 import { existsSync, readFileSync } from "node:fs"
 import { type ToolDefinition, tool } from "@opencode-ai/plugin/tool"
+import { formatCompletionWarning, resolvePlanCompletion } from "../../features/mission-state/completion"
 import { atomicWrite } from "../../features/mission-state/plan-storage"
 import {
   findAppendixStart,
   type PlanFrontMatter,
+  parsePlanFrontMatter,
   serializePlanFrontMatter,
   shouldMigrate,
   validatePlanContract,
@@ -138,6 +140,13 @@ export function createPlanUpdateTool(ctx?: PluginContext, postApply?: PostApplyH
             atomicWrite(resolved, finalContent)
           }
           const { warnings } = validatePlanContract(finalContent, cap)
+          // Warn-only completion mismatch (Task 6): verdict from resolvePlanCompletion.
+          // Never blocks (success stays true) and never auto-flips status.
+          const completionFrontMatter = parsePlanFrontMatter(finalContent)
+          const completionMessage =
+            completionFrontMatter === null
+              ? null
+              : formatCompletionWarning(resolvePlanCompletion(finalContent, completionFrontMatter))
           settled = true
           return JSON.stringify({
             success: true,
@@ -147,6 +156,15 @@ export function createPlanUpdateTool(ctx?: PluginContext, postApply?: PostApplyH
             frontMatterInjected,
             // Every section hash is RECOMPUTED from the persisted text.
             ...(scoped.sectionIds.length === 0 ? {} : sectionWritePayload(finalContent, scoped.sectionIds)),
+            ...(completionMessage === null
+              ? {}
+              : {
+                completionWarning: {
+                  mismatch: true,
+                  // Fix hint lives here (not in completion.ts): flip status via plan_update.
+                  message: `${completionMessage} Fix: flip status via plan_update (or finish the checkboxes).`,
+                },
+              }),
           })
         } finally {
           if (!settled) atomicWrite(resolved, originalContent)

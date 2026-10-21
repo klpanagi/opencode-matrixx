@@ -1,8 +1,9 @@
 import { existsSync, statSync } from "node:fs"
 import { type ToolDefinition, tool } from "@opencode-ai/plugin/tool"
 import { countPlanProgressFromContent, readPlanFile } from "../../features/mission-state"
+import { formatCompletionWarning, resolvePlanCompletion } from "../../features/mission-state/completion"
 import { readPlanFileSpan } from "../../features/mission-state/plan-storage"
-import { parsePlanContract } from "../../features/plan-contract"
+import { parsePlanContract, parsePlanFrontMatter } from "../../features/plan-contract"
 import type { PluginContext } from "../../plugin/types"
 import { MAX_PLAN_FILE_BYTES, MAX_PLAN_READ_RENDERED_BYTES } from "./constants"
 import { classifyReadRefusal, fileTooLargePayload, readFailedPayload } from "./error-codes"
@@ -75,10 +76,18 @@ export function createPlanTasksTool(ctx?: PluginContext, cap: number = MAX_PLAN_
           isComplete: progress.isComplete,
           ...(progress.needsTriage ? { needsTriage: true } : {}),
         })
+        // Overlay (read-only): verdict + warn-only advisory; counts above untouched.
+        const frontMatter = parsePlanFrontMatter(content)
+        const completionWarning =
+          frontMatter === null
+            ? undefined
+            : (formatCompletionWarning(resolvePlanCompletion(content, frontMatter)) ?? undefined)
+        const completionField = completionWarning === undefined ? {} : { completionWarning }
         if (!overCap) {
           return JSON.stringify({
             filePath: resolved,
             progress: buildProgress(),
+            ...completionField,
             tasks: contract.tasks,
             dod: contract.dod,
           })
@@ -97,6 +106,7 @@ export function createPlanTasksTool(ctx?: PluginContext, cap: number = MAX_PLAN_
             filePath: resolved,
             degraded,
             progress: buildProgress(),
+            ...completionField,
             tasks: view.tasks,
             dod: view.dod,
             ...(view.tasksTruncated

@@ -17,6 +17,15 @@ const PlanTaskSchema = z.object({
 })
 
 const PlanFrontMatterSchema = z.object({
+  /**
+   * Lifecycle status. Forward-only: pending -> in_progress -> completed.
+   * A backward jump (e.g. completed -> in_progress) is rejected by
+   * {@link isPlanStatusTransitionAllowed} unless the caller passes the
+   * explicit `{ forceCompletion: true }` override. The schema itself
+   * constrains the VALUE to this enum; the ORDER invariant lives in the
+   * transition helper because Zod validates one snapshot, not a pair of
+   * snapshots (before/after).
+   */
   status: z.enum(["pending", "in_progress", "completed"]),
   revision: z.number().int().nonnegative(),
   phase: z.string().optional(),
@@ -68,3 +77,61 @@ export const PlanContractSchema = z
 
 /** Parsed, validated structured view of a plan. */
 export type PlanContract = z.infer<typeof PlanContractSchema>
+
+/**
+ * Canonical forward order of {@link PlanStatus}. Frozen: pending (0) ->
+ * in_progress (1) -> completed (2). A transition is forward when its target
+ * index is >= its source index (identity rewrites are idempotent, not jumps).
+ */
+export const PLAN_STATUS_ORDER = ["pending", "in_progress", "completed"] as const
+
+/** Explicit override that permits an otherwise-rejected backward jump. */
+export interface PlanStatusTransitionOptions {
+  /** When true, a backward jump is honored instead of rejected. */
+  forceCompletion?: boolean
+}
+
+/**
+ * Forward-only transition rule (documented invariant, enforced here).
+ *
+ * Returns true when moving from `from` to `to` is allowed: same-status or
+ * forward steps always pass; a backward step passes ONLY with
+ * `{ forceCompletion: true }`. Unknown statuses (outside the enum) return
+ * false — the schema rejects them at parse time and this guard rejects them
+ * at transition time.
+ */
+export function isPlanStatusTransitionAllowed(
+  from: string,
+  to: string,
+  options?: PlanStatusTransitionOptions,
+): boolean {
+  const fromIndex = (PLAN_STATUS_ORDER as readonly string[]).indexOf(from)
+  const toIndex = (PLAN_STATUS_ORDER as readonly string[]).indexOf(to)
+  if (fromIndex === -1 || toIndex === -1) return false
+  if (toIndex >= fromIndex) return true
+  return options?.forceCompletion === true
+}
+
+/** Inputs to the completion AND-gate (checkbox state + front-matter status). */
+export interface PlanCompletionGateInput {
+  /** True when every numbered checkbox in the plan body is checked. */
+  allChecked: boolean
+  /** Authoritative front-matter `status` value. */
+  status: string
+  /** Explicit human override; when true the gate passes regardless. */
+  forceCompletion?: boolean
+}
+
+/**
+ * AND-gate vs override rule for plan completion.
+ *
+ * A plan counts as complete ONLY when (all checkboxes checked AND
+ * `status === \"completed\"`). Any mismatch (checked but status lagging, or
+ * status completed while boxes remain open) evaluates to false so the caller
+ * can surface a WARN advisory — never silently auto-complete. The explicit
+ * human flag `{ forceCompletion: true }` overrides the gate and returns true.
+ */
+export function isPlanComplete(input: PlanCompletionGateInput): boolean {
+  if (input.forceCompletion === true) return true
+  return input.allChecked === true && input.status === "completed"
+}

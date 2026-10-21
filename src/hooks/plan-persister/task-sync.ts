@@ -20,7 +20,9 @@ import {
   syncCheckboxesDetailed,
   upsertMetadataComment,
 } from "../../features/mission-state"
+import { formatCompletionWarning, resolvePlanCompletion } from "../../features/mission-state/completion"
 import type { MissionState, PlanMeta } from "../../features/mission-state/types"
+import { parsePlanFrontMatter } from "../../features/plan-contract"
 import { getTaskDir, readJsonSafe } from "../../features/task-storage/storage"
 import { log } from "../../shared/logger"
 import { resolveTasksConfig } from "../../shared/task-system-gating"
@@ -103,6 +105,16 @@ export async function applyFilteredSync(input: FilteredSyncInput): Promise<Filte
     return { ...emptyResult("plan-write-failed"), flaggedVerification }
   }
   const matched = matchSubject === undefined ? undefined : findFlippedBox(content, synced, matchSubject)
+  // Overlay (read-only): verdict + warn-only log. Counts in `progress`/`meta` above
+  // are untouched; a mismatch is logged, never auto-flipped.
+  const syncedFrontMatter = parsePlanFrontMatter(synced)
+  const completionWarning =
+    syncedFrontMatter === null
+      ? null
+      : formatCompletionWarning(resolvePlanCompletion(synced, syncedFrontMatter))
+  if (completionWarning !== null) {
+    log(`[${HOOK_NAME}] Completion mismatch (warn-only; counts unchanged)`, { plan: planPath, warning: completionWarning })
+  }
   log(`[${HOOK_NAME}] Plan synced`, {
     plan: planPath,
     total: progress.total,

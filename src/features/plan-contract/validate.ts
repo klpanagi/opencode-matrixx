@@ -8,10 +8,12 @@
  * PARSING LIVES IN `./parse`. This file is the ADVISORY POLICY over the facts
  * the parser produces; it is the only place allowed to decide `ok` is false.
  */
+import { formatCompletionWarning, resolvePlanCompletion } from "../../features/mission-state/completion"
 import { MAX_PLAN_FILE_BYTES, measurePlanBytes } from "../../features/mission-state/constants"
 import { countPlanProgressFromContent } from "../../features/mission-state/storage"
 import { findAppendixStart } from "./appendix"
 import { CANONICAL_SECTIONS, OPTIONAL_TASK_SUBFIELDS, REQUIRED_TASK_SUBFIELDS } from "./constants"
+import { parsePlanFrontMatter } from "./front-matter"
 import {
   collectHeadings,
   type Heading,
@@ -148,6 +150,16 @@ export function validatePlanContract(content: string, cap: number = MAX_PLAN_FIL
 
   const tasks = parsePlanTasks(content)
   const progress = countPlanProgressFromContent(content)
+  // Overlay (read-only): checkbox AND-gate vs front-matter status. Counts above
+  // are untouched; a mismatch only appends a warn-only advisory. Plans without
+  // front-matter skip the overlay (nothing authoritative to agree with).
+  const frontMatter = parsePlanFrontMatter(content)
+  if (frontMatter !== null) {
+    const completionWarning = formatCompletionWarning(resolvePlanCompletion(content, frontMatter))
+    if (completionWarning !== null) {
+      warnings.push({ code: "completion_mismatch", message: completionWarning })
+    }
+  }
   if (progress.needsTriage || tasks.length === 0) {
     warnings.push({ code: "no_numbered_tasks", message: "Plan has no numbered tasks; it needs triage" })
   }

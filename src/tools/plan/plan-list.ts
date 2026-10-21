@@ -6,7 +6,9 @@ import {
   type PlanProgress,
   readPlanFile,
 } from "../../features/mission-state"
+import { formatCompletionWarning, resolvePlanCompletion } from "../../features/mission-state/completion"
 import { MAX_PLAN_FILE_BYTES } from "../../features/mission-state/constants"
+import { parsePlanFrontMatter } from "../../features/plan-contract"
 import type { PluginContext } from "../../plugin/types"
 import { PLAN_FILENAME_KEBAB_REGEX, PLANS_DIR } from "./constants"
 import { resolveDirectory } from "./types"
@@ -55,6 +57,13 @@ export function createPlanListTool(ctx?: PluginContext, cap: number = MAX_PLAN_F
               const content = readPlanFile(filePath, cap)
               const progress: PlanListProgress =
                 content === null ? { unreadable: true } : countPlanProgressFromContent(content)
+              // Overlay (read-only): verdict + warn-only advisory. Counts above are
+              // untouched; the field is absent unless front-matter disagrees with boxes.
+              const frontMatter = content === null ? null : parsePlanFrontMatter(content)
+              const completionWarning =
+                frontMatter === null || content === null
+                  ? undefined
+                  : (formatCompletionWarning(resolvePlanCompletion(content, frontMatter)) ?? undefined)
               return {
                 fileName,
                 filePath,
@@ -63,6 +72,7 @@ export function createPlanListTool(ctx?: PluginContext, cap: number = MAX_PLAN_F
                 size: stat.size,
                 overCap: stat.size > cap,
                 progress,
+                ...(completionWarning === undefined ? {} : { completionWarning }),
               }
             } catch {
               return null

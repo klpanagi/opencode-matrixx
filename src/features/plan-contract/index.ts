@@ -43,7 +43,7 @@ export {
   parsePlanContract,
   parsePlanTasks,
 } from "./parse"
-export { type PlanContract, PlanContractSchema } from "./schema"
+export { isPlanComplete, isPlanStatusTransitionAllowed, PLAN_STATUS_ORDER, type PlanCompletionGateInput, type PlanContract, PlanContractSchema, type PlanStatusTransitionOptions } from "./schema"
 export {
   buildSectionRegistry,
   CONSENSUS_H3_SEEDS,
