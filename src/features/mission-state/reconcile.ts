@@ -13,8 +13,10 @@ import { existsSync, mkdirSync, renameSync, statSync } from "node:fs"
 import { basename, join } from "node:path"
 import type { MatrixxConfig } from "../../config/schema"
 import { log } from "../../shared/logger"
+import { parsePlanFrontMatter } from "../plan-contract/front-matter"
 import { getTaskDir, listTaskFiles, readJsonSafe } from "../task-storage/storage"
 import { TaskSchema } from "../task-storage/types"
+import { formatCompletionWarning, resolvePlanCompletion } from "./completion"
 import { DEFAULT_STALE_AFTER_HOURS, ORACLE_PLANS_DIR, PLANS_ARCHIVE_DIR_NAME } from "./constants"
 import {
   atomicWrite,
@@ -23,7 +25,7 @@ import {
   readPlanFile,
   syncCheckboxesDetailed,
 } from "./plan-storage"
-import { findOraclePlans } from "./storage"
+import { findOraclePlans, readMissionState } from "./storage"
 
 export interface ReconcileTodo { content: string; status: string }
 
@@ -73,6 +75,15 @@ export function reconcilePlanFile(planPath: string, todos: ReconcileTodo[]): Rec
   }
   const result = reconcilePlanContent(content, todos)
   const wrote = result.changed && atomicWrite(planPath, result.content)
+  // Overlay (read-only): verdict + warn-only log on the reconciled content.
+  // Buckets/counts above are untouched; a mismatch is logged, never auto-flipped.
+  const reconciledFrontMatter = parsePlanFrontMatter(result.content)
+  if (reconciledFrontMatter !== null) {
+    const completionWarning = formatCompletionWarning(resolvePlanCompletion(result.content, reconciledFrontMatter))
+    if (completionWarning !== null) {
+      log("[mission-state] Completion mismatch (warn-only; counts unchanged)", { plan: planPath, warning: completionWarning })
+    }
+  }
   return { ...result, wrote }
 }
 
@@ -185,4 +196,49 @@ export function archiveStalePlans(directory: string, opts: ArchiveScanOptions = 
   const after = findOraclePlans(directory).length
   log("[mission-state] Archival complete", { before, after, moved: moved.length })
   return { candidates, moved, unknownTaskFiles: active.unknownTaskFiles, before, after }
+}
+
+export interface MissionReconcileOptions {
+  dryRun?: boolean
+  staleAfterHours?: number
+  activeTaskSubjects?: string[]
+  config?: Partial<MatrixxConfig>
+}
+
+export interface MissionReconcileResult {
+  wrote: boolean
+  reason: string
+  candidates: string[]
+  moved: string[]
+  unknownTaskFiles: string[]
+  suggestion?: string
+}
+
+/**
+ * Mission-aware orphan backfill (dry-run-first; default dryRun: true).
+ * Missing mission.json -> `{ wrote: false, reason: "no-mission-state" }` + stale-orphan
+ * candidates via isArchiveCandidate, zero writes, suggests start-work. Checkbox flips
+ * never happen here: any box rewrite stays on reconcilePlanFile/isHighConfidence path.
+ */
+export function reconcileMissionState(directory: string, opts: MissionReconcileOptions = {}): MissionReconcileResult {
+  const dryRun = opts.dryRun ?? true
+  const staleAfterHours = opts.staleAfterHours ?? DEFAULT_STALE_AFTER_HOURS
+  const active = opts.activeTaskSubjects !== undefined
+    ? { subjects: opts.activeTaskSubjects, unknownTaskFiles: [] as string[] }
+    : readActiveTaskSubjects(directory, opts.config)
+  const mission = readMissionState(directory)
+  const plans = findOraclePlans(directory)
+  if (mission === null) {
+    const candidates = plans.filter(
+      (p) => isArchiveCandidate(p, readPlanFile(p), active.subjects, staleAfterHours, null).reason === "stale-orphan",
+    )
+    log("[mission-state] Reconcile skipped: no mission state", { suggestion: "run start-work to establish mission" })
+    return { wrote: false, reason: "no-mission-state", candidates, moved: [], unknownTaskFiles: active.unknownTaskFiles, suggestion: "run start-work to establish mission" }
+  }
+  const candidates = plans.filter(
+    (p) => isArchiveCandidate(p, readPlanFile(p), active.subjects, staleAfterHours, mission.active_plan).candidate,
+  )
+  if (dryRun) return { wrote: false, reason: "dry-run", candidates, moved: [], unknownTaskFiles: active.unknownTaskFiles }
+  const archived = archiveStalePlans(directory, { staleAfterHours, activePlan: mission.active_plan, activeTaskSubjects: active.subjects, config: opts.config })
+  return { wrote: archived.moved.length > 0, reason: archived.moved.length > 0 ? "archived" : "converged", candidates: archived.candidates, moved: archived.moved, unknownTaskFiles: archived.unknownTaskFiles }
 }

@@ -10,6 +10,24 @@
  * `todoCompleted`, `updatedAt` and `sessionId`, and is NEVER removed. Front-matter
  * is ADDITIVE over that comment, not a replacement.
  *
+ * WHO MAY WRITE: the human owner via the `plan_update` tool ONLY. Agents and
+ * hooks MUST NEVER write `status` (or any front-matter field) directly — they
+ * propose transitions through plan content/edits and surface advisories; the
+ * human applies the status change. Direct programmatic status writes risk the
+ * silent-failure class where `status` and checkbox state diverge unnoticed.
+ *
+ * TRANSITIONS (forward-only, see `schema.ts`):
+ * `pending -> in_progress -> completed`. A backward jump (e.g.
+ * `completed -> in_progress`) is rejected by `isPlanStatusTransitionAllowed`
+ * unless the caller passes the explicit `{ forceCompletion: true }` override.
+ * Same-status rewrites are idempotent and always allowed.
+ *
+ * AND-GATE vs OVERRIDE (completion rule): a plan counts as complete ONLY when
+ * (every numbered checkbox checked AND `status === \"completed\"`), evaluated
+ * by `isPlanComplete`. Any mismatch evaluates to false so the caller surfaces
+ * a WARN advisory instead of silently auto-completing. The explicit human flag
+ * `forceCompletion: true` overrides the gate (advisory records the override).
+ *
  * Serialization is IDEMPOTENT: `parse(serialize(parse(content)))` equals
  * `parse(content)`, and `serialize(parse(serialize(fm)))` equals
  * `serialize(fm)`. On disagreement `status` comes from the front-matter while

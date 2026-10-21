@@ -7,6 +7,11 @@ import {
   archiveStalePlans,
   isHighConfidence,
   readActiveTaskSubjects,
+  reconcileMissionState,
+  reconcilePlanContent,
+  archiveStalePlans,
+  isHighConfidence,
+  readActiveTaskSubjects,
   reconcilePlanContent,
   reconcilePlanFile,
   shouldReconcileOnStartWork,
@@ -224,5 +229,33 @@ describe("readActiveTaskSubjects strict-schema handling", () => {
     //#then only the valid subject surfaces, the corrupt file is unknown
     expect(result.subjects).toEqual(["Implement task alpha"])
     expect(result.unknownTaskFiles).toEqual(["T-bad"])
+  })
+})
+
+describe("reconcileMissionState missing-state + orphan backfill", () => {
+  test("no-mission-state: wrote false + reason + zero writes", () => {
+    //#given a project dir with plans but no mission.json
+    const planPath = writePlan("orphan.md", "- [ ] Refactor widget factory", Date.now() - 30 * 24 * 3_600_000)
+    const before = readFileSync(planPath, "utf-8")
+    //#when reconciling mission orphans
+    const result = reconcileMissionState(projectDir, { dryRun: true })
+    //#then report-only with no-mission-state reason and unchanged bytes
+    expect(result.wrote).toBe(false)
+    expect(result.reason).toBe("no-mission-state")
+    expect(result.candidates).toContain(planPath)
+    expect(readFileSync(planPath, "utf-8")).toBe(before)
+  })
+
+  test("dry-run moves nothing even with stale orphan", () => {
+    //#given a stale orphan plus an established mission
+    const orphan = writePlan("orphan2.md", "- [ ] Refactor widget factory", Date.now() - 30 * 24 * 3_600_000)
+    mkdirSync(join(projectDir, ".matrixx", "mission"), { recursive: true })
+    writeFileSync(join(projectDir, ".matrixx", "mission", "mission.json"), JSON.stringify({ active_plan: join(plansDir, "other.md") }), "utf-8")
+    //#when dry-running
+    const result = reconcileMissionState(projectDir, { dryRun: true })
+    //#then candidates reported, nothing moved
+    expect(result.candidates).toContain(orphan)
+    expect(result.moved).toEqual([])
+    expect(result.wrote).toBe(false)
   })
 })

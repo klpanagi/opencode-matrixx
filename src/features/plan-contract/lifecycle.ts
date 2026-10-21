@@ -38,6 +38,12 @@
  *
  * NEVER promotes a front-matter state to an error, and never adds an
  * `errors.push` — `validate.ts` keeps exactly one, for empty content.
+ *
+ * STATUS TRANSITIONS are out of scope here (advisory only, no behavior
+ * change): forward-only `pending -> in_progress -> completed` and the
+ * completion AND-gate live in `schema.ts` (`isPlanStatusTransitionAllowed` /
+ * `isPlanComplete`) and are documented in `front-matter.ts`. This module never
+ * writes status, never auto-migrates (rule 4), and never re-keys the allowlist.
  */
 import { basename } from "node:path"
 import { parsePlanFrontMatter } from "./front-matter"
