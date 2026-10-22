@@ -3,7 +3,7 @@ import { afterEach, describe, expect, test } from "bun:test";
 import { mkdirSync, rmSync, symlinkSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
-import { normalizeDirForCompare } from "./path-normalize";
+import { normalizeDirForCompare } from "../../../src/tools/session-manager/path-normalize";
 
 describe("normalizeDirForCompare", () => {
   //#given temp sandbox dirs

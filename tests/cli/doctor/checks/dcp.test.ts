@@ -1,7 +1,7 @@
 /// <reference types="bun-types" />
 import { describe, expect, test } from "bun:test"
 
-import { buildDcpConfusionDetail, dcpCheck } from "./dcp"
+import { buildDcpConfusionDetail, dcpCheck } from "../../../../src/cli/doctor/checks/dcp"
 
 describe("dcpCheck confusion detection", () => {
   test("external-DCP-present + Matrixx enabled names both systems and log pointers", () => {

@@ -1,7 +1,7 @@
 /// <reference types="bun-types" />
 import { describe, expect, test } from "bun:test"
 
-import { buildRtkRoutingBlock, containsRtkMarker, MATRIXX_RTK_MARKER } from "./routing-block"
+import { buildRtkRoutingBlock, containsRtkMarker, MATRIXX_RTK_MARKER } from "../../../src/features/rtk-routing/routing-block"
 
 describe("MATRIXX_RTK_MARKER", () => {
   test("is the rtk discipline marker", () => {

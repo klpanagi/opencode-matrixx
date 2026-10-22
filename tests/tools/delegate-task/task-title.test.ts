@@ -1,6 +1,6 @@
 import { describe, expect, test } from "bun:test";
-import { buildSubagentTitle } from "../../features/background-agent/handle-index";
-import { buildContinuationTitle, buildTaskTitle, resolveTaskDescription } from "./task-title";
+import { buildSubagentTitle } from "../../../src/features/background-agent/handle-index";
+import { buildContinuationTitle, buildTaskTitle, resolveTaskDescription } from "../../../src/tools/delegate-task/task-title";
 
 describe("task-title fallback", () => {
   //#given missing description

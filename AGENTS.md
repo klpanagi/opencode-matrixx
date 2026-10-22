@@ -164,7 +164,7 @@ Local-dev install: `bun run build`, then add `"plugin": ["file:///abs/path/to/ma
 
 **Mock-heavy isolation** — ~30 files use `mock.module()` and pollute Bun's module cache. CI runs them isolated (one `bun test` per file/dir). When adding a new `mock.module()` test, add it to **both** `.github/workflows/ci.yml` and `publish.yml` in the mock-heavy list **and** the `grep -v -F` exclusion in the `find | xargs bun test` catch-all. Source of truth: `script/run-ci.sh` — never duplicate the exclusion list elsewhere. Verify via `bash script/run-ci.sh` or `act pull_request -j test`.
 
-**Dual test layout** — CI discovers tests via `find tests script -name '*.test.ts'`, so files under `tests/**` run in CI while co-located `src/**/*.test.ts` are CI-orphaned (never discovered by the `find` glob). The mock-heavy isolation list has a single source of truth: `script/mock-heavy-list.txt`. Both `.github/workflows/ci.yml` and `publish.yml` read it; `script/run-ci.sh` also reads it for the catch-all exclusion. Never duplicate the list inline in a workflow file.
+**Dual test layout** — CI discovers tests via `find tests script -name '*.test.ts'`, so files under `tests/**` run in CI while co-located `src/**/*.test.ts` are CI-orphaned (never discovered by the `find` glob). NEVER write test files in `src/` — always put them under `tests/` mirroring the `src/` path (e.g. `src/tools/foo/bar.ts` → `tests/tools/foo/bar.test.ts`, importing via `../../../src/...`). The mock-heavy isolation list has a single source of truth: `script/mock-heavy-list.txt`. Both `.github/workflows/ci.yml` and `publish.yml` read it; `script/run-ci.sh` also reads it for the catch-all exclusion. Never duplicate the list inline in a workflow file.
 
 **Task system is execution substrate** — the file-backed `.matrixx/tasks/T-{uuid}.json` store is unconditional (project-scoped via `getTaskDir()`, atomic `tmp+renameSync`, `task-continuation-enforcer` with 30s lock). Never mutate `.matrixx/tasks/` via bash/`sed`; use `task_create/update/get/list/cleanup` tools. `.matrixx/plans/*.md` checkbox `- [ ]`→`- [x]` via `plan_read`→`plan_update` with LINE#ID only (generic `Read`/`Edit` blocked by `task-edit-guard`).
 
@@ -188,6 +188,7 @@ Local-dev install: `bun run build`, then add `"plugin": ["file:///abs/path/to/ma
 | New command | `src/features/builtin-commands/` | Add template + register in `commands.ts` |
 | Schema field | `src/config/schema/` | Run `bun run build:schema` → regenerates `dist/` and `assets/matrixx.schema.json` |
 | User-facing skill | `.opencode/skills/<name>/SKILL.md` | Loaded by OpenCode session — not the plugin |
+| New test | `tests/<mirrored-src-path>.test.ts` | NEVER in `src/` — mirror the `src/` path under `tests/` and import via relative `../src/...`; `src/**/*.test.ts` is CI-orphaned |
 
 ## OPENCODE PLUGIN API (`@opencode-ai/plugin` v1.3.15)
 
@@ -209,7 +210,7 @@ Safe-creation: `isHookEnabled("name") ? safeCreateHook("name", () => createHook(
 
 ## TDD
 
-Mandatory when `tdd_enforcer.enabled=true` (now enabled in `~/.config/opencode/matrixx.jsonc`). `*.test.ts` alongside source → BDD comments `//#given` `//#when` `//#then` → fail → implement → pass → refactor. Never delete failing tests. See `tdd-enforcer` skill + `docs/quality.md` (Part B). When disabled, skill is stripped from `availableSkills` and Oracle still generates test decision but execution is not enforced.
+Mandatory when `tdd_enforcer.enabled=true` (now enabled in `~/.config/opencode/matrixx.jsonc`). NEVER write `*.test.ts` in `src/` — always create tests under `tests/` mirroring the `src/` path (e.g. `src/tools/foo/bar.ts` → `tests/tools/foo/bar.test.ts`) → BDD comments `//#given` `//#when` `//#then` → fail → implement → pass → refactor. Never delete failing tests. See `tdd-enforcer` skill + `docs/quality.md` (Part B). When disabled, skill is stripped from `availableSkills` and Oracle still generates test decision but execution is not enforced.
 
 ## CONVENTIONS
 
