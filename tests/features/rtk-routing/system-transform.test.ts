@@ -1,14 +1,14 @@
 /// <reference types="bun-types" />
 import { describe, expect, test } from "bun:test"
 
-import type { MatrixxConfig } from "../../config"
+import type { MatrixxConfig } from "../../../src/config"
 import {
   containsContextModeMarker,
   MATRIXX_CONTEXT_MODE_MARKER,
-} from "../context-mode-routing/routing-block"
-import { createContextModeSystemTransformHook as createCtxHook } from "../context-mode-routing/system-transform"
-import { containsRtkMarker, MATRIXX_RTK_MARKER } from "./routing-block"
-import { createRtkSystemTransformHook } from "./system-transform"
+} from "../../../src/features/context-mode-routing/routing-block"
+import { createContextModeSystemTransformHook as createCtxHook } from "../../../src/features/context-mode-routing/system-transform"
+import { containsRtkMarker, MATRIXX_RTK_MARKER } from "../../../src/features/rtk-routing/routing-block"
+import { createRtkSystemTransformHook } from "../../../src/features/rtk-routing/system-transform"
 
 function model() {
   return { providerID: "anthropic", modelID: "claude-opus-4-6" } as never

@@ -1,9 +1,9 @@
 /// <reference types="bun-types" />
 import { describe, expect, test } from "bun:test"
 
-import type { MatrixxConfig } from "../../config"
-import { buildContextModeRoutingBlock, MATRIXX_CONTEXT_MODE_MARKER } from "./routing-block"
-import { createContextModeSystemTransformHook } from "./system-transform"
+import type { MatrixxConfig } from "../../../src/config"
+import { buildContextModeRoutingBlock, MATRIXX_CONTEXT_MODE_MARKER } from "../../../src/features/context-mode-routing/routing-block"
+import { createContextModeSystemTransformHook } from "../../../src/features/context-mode-routing/system-transform"
 
 const BASE_CONFIG = {
   context_mode: { enabled: true },

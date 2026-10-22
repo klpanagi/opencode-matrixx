@@ -5,7 +5,7 @@ import {
   formatCompactionAppendLog,
   summarizeCompactionAppend,
   utf8ByteLength,
-} from "./compaction-log"
+} from "../../src/shared/compaction-log"
 
 describe("utf8ByteLength", () => {
   test("counts ASCII bytes via Buffer.byteLength", () => {

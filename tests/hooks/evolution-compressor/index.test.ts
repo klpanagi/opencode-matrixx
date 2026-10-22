@@ -6,7 +6,7 @@ import * as path from "node:path"
 describe("evolution-compressor honesty suffix", () => {
   test("exports a trace-store-only honesty suffix constant", async () => {
     //#given
-    const mod = await import("./index")
+    const mod = await import("../../../src/hooks/evolution-compressor/index")
 
     //#when
     const suffix: unknown = mod.EVOLUTION_COMPRESSOR_HONESTY_SUFFIX
@@ -20,7 +20,7 @@ describe("evolution-compressor honesty suffix", () => {
 
   test("staged/promoted log call site includes the honesty suffix", async () => {
     //#given
-    const source = fs.readFileSync(path.join(import.meta.dir, "index.ts"), "utf-8")
+    const source = fs.readFileSync(path.join(import.meta.dir, "../../../src/hooks/evolution-compressor/index.ts"), "utf-8")
 
     //#when
     const stagedLine = source.split("\n").find((line) => line.includes("staged=$" + "{result.staged}"))
