@@ -4,6 +4,7 @@ import {
   createContextInjectorMessagesTransformHook,
 } from "../../features/context-injector"
 import { createContextModeSystemTransformHook } from "../../features/context-mode-routing"
+import { createRtkSystemTransformHook } from "../../features/rtk-routing"
 
 import {
   createDesignIntentPreserverHook,
@@ -31,6 +32,7 @@ export type TransformHooks = {
   toolPairValidator: ReturnType<typeof createToolPairValidatorHook> | null
   designIntentPreserver: ReturnType<typeof createDesignIntentPreserverHook> | null
   contextModeRouting: ReturnType<typeof createContextModeSystemTransformHook>
+  rtkRouting: ReturnType<typeof createRtkSystemTransformHook>
 }
 
 export function createTransformHooks(args: {
@@ -133,5 +135,9 @@ export function createTransformHooks(args: {
     toolPairValidator,
     designIntentPreserver,
     contextModeRouting: createContextModeSystemTransformHook(pluginConfig),
+    // Unconditional construction mirroring contextModeRouting above: the internal
+    // `active` check (resolver: enabled && binaryPresent && hookEnabled) gates
+    // per-call, so enablement flows via the `hookEnabled` param (D5).
+    rtkRouting: createRtkSystemTransformHook(pluginConfig, { hookEnabled: isHookEnabled("rtk-bash-rewriter") }),
   }
 }

@@ -25,6 +25,7 @@ import {
   detectExternalNotificationPlugin,
   getNotificationConflictWarning,
   log,
+  resolveRtkEnforcement,
 } from "../../shared"
 import { safeCreateHook } from "../../shared/safe-create-hook"
 import { sessionExists } from "../../tools"
@@ -163,7 +164,11 @@ export function createSessionHooks(args: {
         }))
     : null
 
-  const rtkBashRewriter = isHookEnabled("rtk-bash-rewriter") && pluginConfig.rtk?.enabled
+  // Resolver re-evaluates per plugin load; hook retains per-call silent passthrough as backstop
+  // for stale startup (binary removed after load) — see truth table rows 1-5.
+  const rtkBashRewriter = resolveRtkEnforcement(pluginConfig.rtk, {
+    hookEnabled: isHookEnabled("rtk-bash-rewriter"),
+  }).active
     ? safeHook("rtk-bash-rewriter", () => createRtkBashRewriterHook(ctx, pluginConfig))
     : null
 

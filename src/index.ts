@@ -118,6 +118,7 @@ const pluginConfig = await loadPluginConfig(ctx.directory, ctx)
 
     "experimental.chat.system.transform": async (input, output): Promise<void> => {
       await hooks.contextModeRouting(input, output)
+      await hooks.rtkRouting(input, output)
     },
   }
 }
