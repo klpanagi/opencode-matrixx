@@ -1,6 +1,6 @@
 import { existsSync } from "node:fs"
 
-import { CLI_LANGUAGES, NAPI_LANGUAGES } from "./language-support"
+import { CLI_LANGUAGES } from "./language-support"
 import { getSgCliPath } from "./sg-cli-path"
 
 export interface EnvironmentCheckResult {
@@ -9,14 +9,10 @@ export interface EnvironmentCheckResult {
 		path: string
 		error?: string
 	}
-	napi: {
-		available: boolean
-		error?: string
-	}
 }
 
 /**
- * Check if ast-grep CLI and NAPI are available.
+ * Check if ast-grep CLI is available.
  * Call this at startup to provide early feedback about missing dependencies.
  */
 export function checkEnvironment(): EnvironmentCheckResult {
@@ -25,9 +21,6 @@ export function checkEnvironment(): EnvironmentCheckResult {
 		cli: {
 			available: false,
 			path: cliPath ?? "not found",
-		},
-		napi: {
-			available: false,
 		},
 	}
 
@@ -39,16 +32,6 @@ export function checkEnvironment(): EnvironmentCheckResult {
 		result.cli.error = `Binary not found: ${cliPath}`
 	}
 
-	// Check NAPI availability
-	try {
-		require("@ast-grep/napi")
-		result.napi.available = true
-	} catch (error) {
-		result.napi.available = false
-		result.napi.error = `@ast-grep/napi not installed: ${
-			error instanceof Error ? error.message : String(error)
-		}`
-	}
 
 	return result
 }
@@ -70,20 +53,9 @@ export function formatEnvironmentCheck(result: EnvironmentCheckResult): string {
 		lines.push("  Install: bun add -D @ast-grep/cli")
 	}
 
-	// NAPI status
-	if (result.napi.available) {
-		lines.push("[OK] NAPI: Available")
-	} else {
-		lines.push("[X] NAPI: Not available")
-		if (result.napi.error) {
-			lines.push(`  Error: ${result.napi.error}`)
-		}
-		lines.push("  Install: bun add -D @ast-grep/napi")
-	}
 
 	lines.push("")
 	lines.push(`CLI supports ${CLI_LANGUAGES.length} languages`)
-	lines.push(`NAPI supports ${NAPI_LANGUAGES.length} languages: ${NAPI_LANGUAGES.join(", ")}`)
 
 	return lines.join("\n")
 }
