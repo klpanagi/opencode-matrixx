@@ -4,7 +4,7 @@
 // not export functions (OpenCode treats every export as a plugin instance),
 // and its built bundle (`dist/index.js`, ~4 MB ESM) cannot be `require()`d
 // from a plain sandbox subprocess (ERR_REQUIRE_ESM + unresolvable externals
-// like `@ast-grep/napi` at eval time). Importing tool factories through the
+// like a native binding at eval time). Importing tool factories through the
 // plugin bundle is therefore the wrong path and aborts silently.
 //
 // This module re-exports ONLY pure tool factories. No plugin closure, no
