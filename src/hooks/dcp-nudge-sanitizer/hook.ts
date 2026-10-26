@@ -13,7 +13,7 @@
 import type { Part } from "@opencode-ai/sdk"
 
 import type { PluginContext } from "../../plugin/types"
-import { NUDGE_MARKERS, normalizeNudgeText } from "./constants"
+import { guardCompressDirective, NUDGE_MARKERS, normalizeNudgeText } from "./constants"
 
 interface MessageWithParts {
   info: unknown
@@ -54,7 +54,7 @@ export function sanitizeNudgeParts(messages: MessageWithParts[]): void {
         continue
       }
       keptNudge = true
-      ;(message.parts[i] as { text: string }).text = normalizeNudgeText(textPart.text)
+      ;(message.parts[i] as { text: string }).text = guardCompressDirective(normalizeNudgeText(textPart.text))
       i++
     }
   }

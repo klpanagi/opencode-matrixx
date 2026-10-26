@@ -117,4 +117,35 @@ describe("createDcpNudgeSanitizerHook — dedupe and cap sticky nudges", () => {
     expect((message.parts[0] as { type: string }).type).toBe("tool_use")
     expect(countNudges(message.parts)).toBe(1)
   })
+
+  test("appends availability guard to unconditional compress orders", async () => {
+    //#given
+    const message = makeMessage("assistant", "msg_1")
+    message.parts = [
+      textPart("<instruction name=iteration_nudge>You MUST use the `compress` tool now. Start from older history.</instruction>"),
+    ]
+
+    //#when
+    await runSanitizer([message])
+
+    //#then
+    expect(message.parts.length).toBe(1)
+    const kept = getText(message.parts[0])
+    expect(kept).toContain("`compress` tool")
+    expect(kept).toContain("state that explicitly and continue")
+  })
+
+  test("leaves already-conditional compress guidance untouched", async () => {
+    //#given
+    const conditional = "<instruction name=iteration_nudge>If your session exposes a `compress` tool, use it when context is low.</instruction>"
+    const message = makeMessage("assistant", "msg_1")
+    message.parts = [textPart(conditional)]
+
+    //#when
+    await runSanitizer([message])
+
+    //#then
+    expect(message.parts.length).toBe(1)
+    expect(getText(message.parts[0])).toBe(conditional)
+  })
 })
